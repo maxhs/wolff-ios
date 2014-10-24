@@ -14,4 +14,10 @@
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
     #import <CoreData/CoreData.h>
+    #import <AFNetworking/AFHTTPRequestOperationManager.h>
+    #import "MagicalRecord/CoreData+MagicalRecord.h"
+    #import "WFAppDelegate.h"
+    #import "Constants.h"
+    #import "UIFontDescriptor+Lato.h"
+    #import "ProgressHUD.h"
 #endif

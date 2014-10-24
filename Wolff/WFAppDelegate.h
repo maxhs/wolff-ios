@@ -7,16 +7,25 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "User+helper.h"
+
+@protocol WFLoginDelegate <NSObject>
+
+@optional
+- (void)incorrectEmail;
+- (void)incorrectPassword;
+@required
+- (void)loginSuccessful;
+@end
 
 @interface WFAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+@property (strong, nonatomic) AFHTTPRequestOperationManager *manager;
+@property (strong, nonatomic) User *currentUser;
+@property (weak, nonatomic) id<WFLoginDelegate> loginDelegate;
 
-@property (readonly, strong, nonatomic) NSManagedObjectContext *managedObjectContext;
-@property (readonly, strong, nonatomic) NSManagedObjectModel *managedObjectModel;
-@property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
-
-- (void)saveContext;
-- (NSURL *)applicationDocumentsDirectory;
+- (void)connectWithEmail:(NSString*)email andPassword:(NSString*)password;
+- (void)setUserDefaults;
 
 @end

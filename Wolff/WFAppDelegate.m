@@ -8,33 +8,106 @@
 
 #import "WFAppDelegate.h"
 
-#import "WFMasterViewController.h"
-
 @implementation WFAppDelegate
 
-@synthesize managedObjectContext = _managedObjectContext;
-@synthesize managedObjectModel = _managedObjectModel;
-@synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
+@synthesize manager = _manager;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    // Override point for customization after application launch.
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-        UISplitViewController *splitViewController = (UISplitViewController *)self.window.rootViewController;
-        UINavigationController *navigationController = [splitViewController.viewControllers lastObject];
-        splitViewController.delegate = (id)navigationController.topViewController;
-        
-        UINavigationController *masterNavigationController = splitViewController.viewControllers[0];
-        WFMasterViewController *controller = (WFMasterViewController *)masterNavigationController.topViewController;
-        controller.managedObjectContext = self.managedObjectContext;
-    } else {
-        UINavigationController *navigationController = (UINavigationController *)self.window.rootViewController;
-        WFMasterViewController *controller = (WFMasterViewController *)navigationController.topViewController;
-        controller.managedObjectContext = self.managedObjectContext;
+    [MagicalRecord setShouldDeleteStoreOnModelMismatch:YES];
+    [MagicalRecord setupAutoMigratingCoreDataStack];
+    
+    _manager = [[AFHTTPRequestOperationManager manager] initWithBaseURL:[NSURL URLWithString:kApiBaseUrl]];
+    
+    [self customizeAppearance];
+
+    // automatically log the user in if they
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsEmail] && [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsPassword]){
+        NSLog(@"app did finish launching and we should be automatically logging in");
+        [self connectWithEmail:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsEmail] andPassword:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsPassword]];
     }
+    
     return YES;
 }
-							
+
+- (void)connectWithEmail:(NSString*)email andPassword:(NSString*)password {
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken]){
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken] forKey:@"device_token"];
+    }
+    if (IDIOM == IPAD) {
+        [parameters setObject:@1 forKey:@"device_type"];
+    } else{
+        [parameters setObject:@2 forKey:@"device_type"];
+    }
+    
+    [parameters setObject:email forKey:@"email"];
+    [parameters setObject:password forKey:@"password"];
+    
+    [ProgressHUD show:@"Logging in..."];
+    
+    [_manager POST:[NSString stringWithFormat:@"%@/sessions",kApiBaseUrl] parameters:@{@"user":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //NSLog(@"Success connecting: %@",responseObject);
+        if ([responseObject objectForKey:@"user"]){
+            NSDictionary *userDict = [responseObject objectForKey:@"user"];
+            _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[userDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!_currentUser){
+                _currentUser = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [_currentUser populateFromDictionary:userDict];
+            [[NSUserDefaults standardUserDefaults] setObject:password forKey:kUserDefaultsPassword];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+            [self setUserDefaults];
+            
+            if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(loginSuccessful)]) {
+                [self.loginDelegate loginSuccessful];
+            }
+            
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                NSLog(@"Success logging in the user: %u",success);
+            }];
+        }
+        [ProgressHUD dismiss];
+    
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        if ([operation.responseString isEqualToString:kNoEmail]){
+            if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(incorrectEmail)]) {
+                [self.loginDelegate incorrectEmail];
+            }
+        } else if ([operation.responseString isEqualToString:kIncorrectPassword]){
+            if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(incorrectPassword)]) {
+                [self.loginDelegate incorrectPassword];
+            }
+        } else {
+            [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to log you in." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
+        }
+        //NSLog(@"Failed to connect: %@",error.description);
+        //NSLog(@"Response string: %@",operation.responseString);
+    }];
+}
+
+- (void)setUserDefaults {
+    [[NSUserDefaults standardUserDefaults] setObject:_currentUser.identifier forKey:kUserDefaultsId];
+    [[NSUserDefaults standardUserDefaults] setObject:_currentUser.email forKey:kUserDefaultsEmail];
+    [[NSUserDefaults standardUserDefaults] setObject:_currentUser.firstName forKey:kUserDefaultsFirstName];
+    [[NSUserDefaults standardUserDefaults] setObject:_currentUser.lastName forKey:kUserDefaultsLastName];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (void)customizeAppearance {
+    /*for (NSString* family in [UIFont familyNames]){
+        NSLog(@"%@", family);
+        for (NSString* name in [UIFont fontNamesForFamilyName: family])
+            NSLog(@"  %@", name);
+    }*/
+    [[UINavigationBar appearance] setBarStyle:UIBarStyleBlackTranslucent];
+    [[UIBarButtonItem appearance] setTintColor:[UIColor whiteColor]];
+    [[UIBarButtonItem appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kLato size:18]} forState:UIControlStateNormal];
+    
+    [self.window setBackgroundColor:[UIColor blackColor]];
+    [self.window setTintColor:[UIColor blackColor]];
+}
+
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
@@ -60,102 +133,8 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Saves changes in the application's managed object context before the application terminates.
-    [self saveContext];
-}
-
-- (void)saveContext
-{
-    NSError *error = nil;
-    NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
-    if (managedObjectContext != nil) {
-        if ([managedObjectContext hasChanges] && ![managedObjectContext save:&error]) {
-             // Replace this implementation with code to handle the error appropriately.
-             // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development. 
-            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-            abort();
-        } 
-    }
-}
-
-#pragma mark - Core Data stack
-
-// Returns the managed object context for the application.
-// If the context doesn't already exist, it is created and bound to the persistent store coordinator for the application.
-- (NSManagedObjectContext *)managedObjectContext
-{
-    if (_managedObjectContext != nil) {
-        return _managedObjectContext;
-    }
-    
-    NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
-    if (coordinator != nil) {
-        _managedObjectContext = [[NSManagedObjectContext alloc] init];
-        [_managedObjectContext setPersistentStoreCoordinator:coordinator];
-    }
-    return _managedObjectContext;
-}
-
-// Returns the managed object model for the application.
-// If the model doesn't already exist, it is created from the application's model.
-- (NSManagedObjectModel *)managedObjectModel
-{
-    if (_managedObjectModel != nil) {
-        return _managedObjectModel;
-    }
-    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"Wolff" withExtension:@"momd"];
-    _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
-    return _managedObjectModel;
-}
-
-// Returns the persistent store coordinator for the application.
-// If the coordinator doesn't already exist, it is created and the application's store added to it.
-- (NSPersistentStoreCoordinator *)persistentStoreCoordinator
-{
-    if (_persistentStoreCoordinator != nil) {
-        return _persistentStoreCoordinator;
-    }
-    
-    NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"Wolff.sqlite"];
-    
-    NSError *error = nil;
-    _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
-    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error]) {
-        /*
-         Replace this implementation with code to handle the error appropriately.
-         
-         abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development. 
-         
-         Typical reasons for an error here include:
-         * The persistent store is not accessible;
-         * The schema for the persistent store is incompatible with current managed object model.
-         Check the error message to determine what the actual problem was.
-         
-         
-         If the persistent store is not accessible, there is typically something wrong with the file path. Often, a file URL is pointing into the application's resources directory instead of a writeable directory.
-         
-         If you encounter schema incompatibility errors during development, you can reduce their frequency by:
-         * Simply deleting the existing store:
-         [[NSFileManager defaultManager] removeItemAtURL:storeURL error:nil]
-         
-         * Performing automatic lightweight migration by passing the following dictionary as the options parameter:
-         @{NSMigratePersistentStoresAutomaticallyOption:@YES, NSInferMappingModelAutomaticallyOption:@YES}
-         
-         Lightweight migration will only work for a limited set of schema changes; consult "Core Data Model Versioning and Data Migration Programming Guide" for details.
-         
-         */
-        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-        abort();
-    }    
-    
-    return _persistentStoreCoordinator;
-}
-
-#pragma mark - Application's Documents directory
-
-// Returns the URL to the application's Documents directory.
-- (NSURL *)applicationDocumentsDirectory
-{
-    return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+    //[self saveContext];
+    [MagicalRecord cleanUp];
 }
 
 @end
