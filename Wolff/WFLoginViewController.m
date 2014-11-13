@@ -6,8 +6,10 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
+#import "WFAppDelegate.h"
 #import "WFLoginViewController.h"
 #import "WFWebViewController.h"
+#import <Mixpanel/Mixpanel.h>
 
 @interface WFLoginViewController () <UIScrollViewDelegate,UITextFieldDelegate, WFLoginDelegate> {
     WFAppDelegate *delegate;
@@ -118,6 +120,8 @@
                 if ([[responseObject objectForKey:@"error"] isEqualToString:@"Email address not found."]){
                     [[[UIAlertView alloc] initWithTitle:@"No such luck." message:@"We couldn't find that email address in our system." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
                 }
+            } else {
+                [[Mixpanel sharedInstance] track:@"iPad: Password reset"];
             }
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed with password reset: %@",error.description);
@@ -165,7 +169,7 @@
 - (void)termsWebView {
     WFWebViewController *webViewVC = [[self storyboard] instantiateViewControllerWithIdentifier:@"WebView"];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:webViewVC];
-    [webViewVC setUrl:[NSURL URLWithString:[NSString stringWithFormat:@"%@/terms",kBaseUrl]]];
+    [webViewVC setUrl:[NSURL URLWithString:[NSString stringWithFormat:@"%@/home/terms",kBaseUrl]]];
     [webViewVC setTitle:@"Terms of Service"];
     [self presentViewController:nav animated:YES completion:^{
         
@@ -262,13 +266,13 @@
 
 - (void)styleForgotPasswordButton {
     [_forgotPasswordButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
-    [_forgotPasswordButton.titleLabel setFont:[UIFont fontWithName:kProximaNova size:14]];
+    [_forgotPasswordButton.titleLabel setFont:[UIFont fontWithName:kLato size:14]];
     [_forgotPasswordButton setTitle:@"Forgot password?" forState:UIControlStateNormal];
     [_forgotPasswordButton addTarget:self action:@selector(forgotPassword:) forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)styleTermsButton {
-    [_termsButton.titleLabel setFont:[UIFont fontWithName:kProximaNova size:14]];
+    [_termsButton.titleLabel setFont:[UIFont fontWithName:kLato size:14]];
     [_termsButton.titleLabel setTextColor:[UIColor lightGrayColor]];
     NSMutableAttributedString *termsString = [[NSMutableAttributedString alloc] initWithString:@"By continuing, you agree to our " attributes:nil];
     NSMutableAttributedString *linkString = [[NSMutableAttributedString alloc] initWithString:@"Terms of Service" attributes:@{NSUnderlineStyleAttributeName:[NSNumber numberWithInt:NSUnderlineStyleSingle]}];
@@ -285,7 +289,7 @@
     _loginButton.layer.cornerRadius = 19.f;
     _loginButton.layer.borderColor = [UIColor colorWithWhite:.825 alpha:0].CGColor;
     [_loginButton addTarget:self action:@selector(connect) forControlEvents:UIControlEventTouchUpInside];
-    //_loginButton.titleLabel setFont:[UIFont fontWithName:klat size:<#(CGFloat)#>]
+    [_loginButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleSubheadline forFont:kLato] size:0]];
 }
 
 - (void)textFieldTreatment:(UITextField*)textField {

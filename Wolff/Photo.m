@@ -17,6 +17,7 @@
 @dynamic thumbImageUrl;
 @dynamic smallImageUrl;
 @dynamic mediumImageUrl;
+@dynamic originalImageUrl;
 @dynamic createdDate;
 @dynamic art;
 

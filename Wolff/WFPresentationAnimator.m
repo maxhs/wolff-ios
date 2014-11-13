@@ -7,6 +7,7 @@
 //
 
 #import "WFPresentationAnimator.h"
+#import "Constants.h"
 
 @implementation WFPresentationAnimator
 

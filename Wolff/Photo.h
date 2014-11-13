@@ -18,6 +18,7 @@
 @property (nonatomic, retain) NSString * thumbImageUrl;
 @property (nonatomic, retain) NSString * smallImageUrl;
 @property (nonatomic, retain) NSString * mediumImageUrl;
+@property (nonatomic, retain) NSString * originalImageUrl;
 @property (nonatomic, retain) NSDate * createdDate;
 @property (nonatomic, retain) Art *art;
 

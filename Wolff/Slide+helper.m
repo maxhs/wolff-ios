@@ -8,6 +8,7 @@
 
 #import "Slide+helper.h"
 #import "Art+helper.h"
+#import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Slide (helper)
 - (void)populateFromDictionary:(NSDictionary *)dict {

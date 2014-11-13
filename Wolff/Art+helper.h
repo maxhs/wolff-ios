@@ -7,7 +7,9 @@
 //
 
 #import "Art.h"
+#import "Photo+helper.h"
 
 @interface Art (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
+- (Photo*)photo;
 @end

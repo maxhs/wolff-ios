@@ -6,6 +6,9 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 #ifndef Wolff_Constants_h
 #define Wolff_Constants_h
 
@@ -18,6 +21,7 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 
 #define kApiBaseUrl @"http://www.wolffapp.com/api/v1"
 #define kBaseUrl @"http://www.wolffapp.com"
+#define kTestFlightToken @"a37d3f4a-b21b-4f38-ac66-83c68b65a8a1"
 
 #define kUserDefaultsId @"user_id"
 #define kUserDefaultsPassword @"password"
@@ -29,7 +33,6 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kUserDefaultsAdmin @"admin"
 
 #define kMyriadLight @"MyriadPro-Light"
-#define kProximaNova @"ProximaNova-Regular"
 #define kMontserrat @"Montserrat-Regular"
 #define kLato @"Lato-Regular"
 #define kLatoLight @"Lato-Light"

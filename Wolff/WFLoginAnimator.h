@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
 @interface WFLoginAnimator : NSObject <UIViewControllerAnimatedTransitioning>

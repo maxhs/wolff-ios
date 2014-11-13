@@ -5,6 +5,9 @@
 //  Thanks to Related Code for the HUD foundations
 //
 
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
 @interface ProgressHUD : UIView
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 

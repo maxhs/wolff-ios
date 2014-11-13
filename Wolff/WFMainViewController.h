@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface WFMainViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate>
+@interface WFMainViewController : UIViewController
 
 @property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
 @property BOOL login;

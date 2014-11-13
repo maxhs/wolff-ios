@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6244" systemVersion="13F34" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6252" systemVersion="14A389" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="Art" representedClassName="Art" syncable="YES">
         <attribute name="caption" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="createdDate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="iconography" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="identifier" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
-        <attribute name="largeImageUrl" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="mediumImageUrl" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="smallImageUrl" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="thumbImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="artist" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Artist" inverseName="arts" inverseEntity="Artist" syncable="YES"/>
         <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Group" inverseName="arts" inverseEntity="Group" syncable="YES"/>
@@ -50,6 +46,7 @@
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="largeImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="mediumImageUrl" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="originalImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="smallImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="thumbImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="art" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Art" inverseName="photos" inverseEntity="Art" syncable="YES"/>
@@ -83,14 +80,14 @@
         <userInfo/>
     </entity>
     <elements>
-        <element name="Art" positionX="270" positionY="252" width="128" height="255"/>
+        <element name="Art" positionX="270" positionY="252" width="128" height="195"/>
         <element name="Artist" positionX="306" positionY="279" width="128" height="103"/>
         <element name="Group" positionX="288" positionY="270" width="128" height="90"/>
         <element name="Institution" positionX="261" positionY="234" width="128" height="103"/>
         <element name="Location" positionX="279" positionY="261" width="128" height="193"/>
+        <element name="Photo" positionX="279" positionY="324" width="128" height="165"/>
         <element name="Presentation" positionX="288" positionY="306" width="128" height="88"/>
         <element name="Slide" positionX="297" positionY="315" width="128" height="118"/>
         <element name="User" positionX="261" positionY="189" width="128" height="208"/>
-        <element name="Photo" positionX="279" positionY="324" width="128" height="148"/>
     </elements>
 </model>

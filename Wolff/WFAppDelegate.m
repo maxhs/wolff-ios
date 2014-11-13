@@ -6,18 +6,25 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
+#define MIXPANEL_TOKEN @"b091c81f24a93b828683bb5c3c260278"
+
 #import "WFAppDelegate.h"
+#import <Mixpanel/Mixpanel.h>
 
 @implementation WFAppDelegate
-
 @synthesize manager = _manager;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     [MagicalRecord setShouldDeleteStoreOnModelMismatch:YES];
     [MagicalRecord setupAutoMigratingCoreDataStack];
+    [Mixpanel sharedInstanceWithToken:MIXPANEL_TOKEN];
+    Mixpanel *mixpanel = [Mixpanel sharedInstance];
+    [mixpanel track:@"iPad: Launch"];
     
     _manager = [[AFHTTPRequestOperationManager manager] initWithBaseURL:[NSURL URLWithString:kApiBaseUrl]];
+    [_manager.requestSerializer setAuthorizationHeaderFieldWithUsername:@"wolff_mobile" password:@"e065c6aaebbdaec80f53e1a9c7c1eeb8"];
+    [_manager.requestSerializer setValue:(IDIOM == IPAD) ? @"2" : @"1" forHTTPHeaderField:@"device_type"];
     
     [self customizeAppearance];
 
@@ -35,11 +42,6 @@
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken] forKey:@"device_token"];
     }
-    if (IDIOM == IPAD) {
-        [parameters setObject:@1 forKey:@"device_type"];
-    } else{
-        [parameters setObject:@2 forKey:@"device_type"];
-    }
     
     [parameters setObject:email forKey:@"email"];
     [parameters setObject:password forKey:@"password"];
@@ -55,6 +57,7 @@
                 _currentUser = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [_currentUser populateFromDictionary:userDict];
+            [[NSUserDefaults standardUserDefaults] setObject:email forKey:kUserDefaultsEmail];
             [[NSUserDefaults standardUserDefaults] setObject:password forKey:kUserDefaultsPassword];
             [[NSUserDefaults standardUserDefaults] synchronize];
             [self setUserDefaults];
@@ -102,6 +105,7 @@
     }*/
     [[UINavigationBar appearance] setBarStyle:UIBarStyleBlackTranslucent];
     [[UIBarButtonItem appearance] setTintColor:[UIColor whiteColor]];
+    [[UINavigationBar appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kLato size:21]}];
     [[UIBarButtonItem appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kLato size:18]} forState:UIControlStateNormal];
     
     [self.window setBackgroundColor:[UIColor blackColor]];
@@ -132,8 +136,6 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
-    // Saves changes in the application's managed object context before the application terminates.
-    //[self saveContext];
     [MagicalRecord cleanUp];
 }
 

@@ -5,7 +5,9 @@
 //  Thanks to Related Code for the HUD foundations
 //
 
+#import "Constants.h"
 #import "ProgressHUD.h"
+#import "UIFontDescriptor+Lato.h"
 
 @implementation ProgressHUD
 

@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
+#import "WFAppDelegate.h"
 #import "WFArtsViewController.h"
 #import "WFArtCell.h"
 #import "User+helper.h"

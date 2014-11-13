@@ -13,10 +13,6 @@
 
 @dynamic identifier;
 @dynamic title;
-@dynamic thumbImageUrl;
-@dynamic smallImageUrl;
-@dynamic mediumImageUrl;
-@dynamic largeImageUrl;
 @dynamic caption;
 @dynamic iconography;
 @dynamic artist;

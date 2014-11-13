@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
+#import "WFAppDelegate.h"
 #import "WFPresentationSplitViewController.h"
 #import "WFSlideCollectionCell.h"
 #import "WFSlideTableCell.h"
@@ -48,12 +49,6 @@
     
     topInset = self.navigationController.navigationBar.frame.size.height + 20;
     self.collectionView.contentInset = UIEdgeInsetsMake(topInset+10, 10, 10, 10);
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 #pragma mark - Table view data source
@@ -180,4 +175,9 @@
     [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
 @end

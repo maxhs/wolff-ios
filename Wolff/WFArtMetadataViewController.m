@@ -6,15 +6,16 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
+#import "WFAppDelegate.h"
 #import "WFArtMetadataViewController.h"
 #import "WFArtMetadataCell.h"
 #import "WFMainViewController.h"
 #import "WFArtsViewController.h"
 
+
 @interface WFArtMetadataViewController () {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-    UITapGestureRecognizer *dismissGesture;
 }
 
 @end
@@ -28,9 +29,6 @@
     [super viewDidLoad];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    dismissGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismiss)];
-    dismissGesture.numberOfTapsRequired = 1;
-    [self.presentingViewController.view addGestureRecognizer:dismissGesture];
     
     [self setupHeader];
 }
@@ -41,14 +39,18 @@
     
     [_creditButton.titleLabel setFont:[UIFont fontWithName:kMyriadLight size:20]];
     [_postedByButton.titleLabel setFont:[UIFont fontWithName:kMyriadLight size:20]];
-    [_backButton addTarget:self action:@selector(tapDismiss) forControlEvents:UIControlEventTouchUpInside];
-    
+    [_backButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    //[self loadArtMetadata];
 }
 
 - (void)dismiss {
-    self.presentingViewController.view.gestureRecognizers = nil;
+    NSLog(@"dismissing");
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        dismissGesture = nil;
+
     }];
 }
 
@@ -61,10 +63,6 @@
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error fetching art metadata: %@",error.description);
     }];
-}
-
-- (void)tapDismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
 #pragma mark - Table view data source

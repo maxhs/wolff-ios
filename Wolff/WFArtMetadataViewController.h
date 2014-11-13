@@ -18,6 +18,5 @@
 @property (weak, nonatomic) IBOutlet UIButton *creditButton;
 @property (weak, nonatomic) IBOutlet UIButton *backButton;
 @property (strong, nonatomic) Art *art;
-- (void)tapDismiss;
 
 @end

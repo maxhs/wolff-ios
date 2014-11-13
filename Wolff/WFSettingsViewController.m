@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
+#import "WFAppDelegate.h"
 #import "WFSettingsViewController.h"
 #import "WFSettingsCell.h"
 #import "Institution+helper.h"
@@ -147,7 +148,7 @@
 }
 
 - (void)logout {
-    [self cleanAndResetDB];
+    //[self cleanAndResetDB];
     NSLog(@"Log out!");
     NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
     [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
@@ -159,7 +160,7 @@
     [ProgressHUD dismiss];
 }
 
-- (void)cleanAndResetDB {
+/*- (void)cleanAndResetDB {
     NSError *error = nil;
     NSURL *storeURL = [NSPersistentStore MR_urlForStoreName:[MagicalRecord defaultStoreName]];
     [MagicalRecord cleanUp];
@@ -168,7 +169,7 @@
     } else{
         NSLog(@"Error deleting persistent store description: %@ %@", error.description,storeURL);
     }
-}
+}*/
 
 - (void)registerForKeyboardNotifications
 {

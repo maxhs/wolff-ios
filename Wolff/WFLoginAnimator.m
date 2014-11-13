@@ -6,7 +6,10 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import "WFLoginAnimator.h"
+#import "Constants.h"
 
 @implementation WFLoginAnimator
 

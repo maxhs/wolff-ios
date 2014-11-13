@@ -7,6 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <AFNetworking/AFHTTPRequestOperationManager.h>
+#import "Constants.h"
+#import "UIFontDescriptor+Lato.h"
+#import "ProgressHUD.h"
 #import "User+helper.h"
 
 @protocol WFLoginDelegate <NSObject>

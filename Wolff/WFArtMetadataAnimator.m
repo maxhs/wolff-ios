@@ -7,6 +7,8 @@
 //
 
 #import "WFArtMetadataAnimator.h"
+#import "Constants.h"
+
 @interface WFArtMetadataAnimator () {
     
 }

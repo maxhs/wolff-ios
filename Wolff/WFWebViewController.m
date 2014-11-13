@@ -7,6 +7,7 @@
 //
 
 #import "WFWebViewController.h"
+#import "WFAppDelegate.h"
 
 @interface WFWebViewController () <UIWebViewDelegate> {
     UIBarButtonItem *backButton;

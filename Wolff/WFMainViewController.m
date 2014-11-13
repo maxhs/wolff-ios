@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
+#import "WFAppDelegate.h"
 #import "WFMainViewController.h"
 #import "WFPresentationSplitViewController.h"
 #import "WFPresentationAnimator.h"
@@ -17,8 +18,9 @@
 #import "WFSettingsViewController.h"
 #import "WFLoginAnimator.h"
 #import "WFLoginViewController.h"
+#import <SDWebImage/UIImageView+WebCache.h>
 
-@interface WFMainViewController () <UIViewControllerTransitioningDelegate, WFLoginDelegate> {
+@interface WFMainViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     UIBarButtonItem *presentationsButton;
@@ -58,7 +60,6 @@
             height = screenWidth();
         }
     }
-    NSLog(@"what is width? %f, and screenWidth? %d",width,screenWidth());
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     delegate.loginDelegate = self;
     manager = delegate.manager;
@@ -110,7 +111,7 @@
 - (void)loadUserArt {
     if (delegate.currentUser){
         [manager GET:[NSString stringWithFormat:@"%@/arts",kApiBaseUrl] parameters:@{@"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success getting user art: %@", responseObject);
+            //NSLog(@"Success getting user art: %@", responseObject);
             
             [delegate.currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
             if (!arts){
@@ -118,31 +119,28 @@
             } else {
                 arts = delegate.currentUser.arts.array.mutableCopy;
             }
+            NSLog(@"arts count: %d",arts.count);
             [self.tableView reloadData];
+            [self.collectionView reloadData];
             
-            [ProgressHUD dismiss];
-            if (mainRefresh.isRefreshing){
-                [mainRefresh endRefreshing];
-            }
+            [self endRefresh];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to get user art: %@",error.description);
             [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to load your art. Please try again soon." delegate:nil cancelButtonTitle:@"Cancel" otherButtonTitles:nil] show];
-            [ProgressHUD dismiss];
-            if (mainRefresh.isRefreshing){
-                [mainRefresh endRefreshing];
-            }
+            
+            [self endRefresh];
         }];
+    }
+}
+- (void)endRefresh {
+    [ProgressHUD dismiss];
+    if (mainRefresh.isRefreshing){
+        [mainRefresh endRefreshing];
     }
 }
 
 - (void)add {
     
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 #pragma mark - Table view data source
@@ -164,7 +162,6 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     WFMainTableCell *cell = (WFMainTableCell *)[tableView dequeueReusableCellWithIdentifier:@"MainCell"];
-    
     if (indexPath.section == 0){
         Art *art;
         if (searching) {
@@ -188,10 +185,14 @@
     }
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSLog(@"did select something");
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
 
 #pragma mark – UICollectionViewDelegateFlowLayout
+
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    NSLog(@"what is it? %f",(width-kMainSplitWidth)/3);
     if (IDIOM == IPAD){
         return CGSizeMake((width-kMainSplitWidth)/3,(width-kMainSplitWidth)/3);
     } else {
@@ -206,8 +207,7 @@
 #pragma mark - UICollectionView Datasource
 
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
-    //return arts.count;
-    return 12;
+    return arts.count;
 }
 
 - (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
@@ -218,18 +218,18 @@
     WFArtCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"ArtCell" forIndexPath:indexPath];
     cell.layer.borderColor = [UIColor colorWithWhite:1 alpha:.023].CGColor;
     cell.layer.borderWidth = 0.f;
-    /*Art *art = arts[indexPath.row];
-    //NSLog(@"art url: %@",art.mediumImageUrl);
-    if (art.mediumImageUrl.length){
-     [cell.artImageView setImageWithURL:[NSURL URLWithString:art.mediumImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType) {
-     [UIView animateWithDuration:.23 animations:^{
-     [cell.artImageView setAlpha:1.0];
-     }];
-     }];
+    Art *art = arts[indexPath.item];
+    NSLog(@"art: %@",art.photo.largeImageUrl);
+    if (art.photo.largeImageUrl.length){
+        [cell.artImageView sd_setImageWithURL:[NSURL URLWithString:art.photo.largeImageUrl]  placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+            [UIView animateWithDuration:.23 animations:^{
+                [cell.artImageView setAlpha:1.0];
+            }];
+        }];
+        
      } else {
-     [cell.artImageView setImage:nil];
-     }*/
-    [cell.artImageView setImage:[UIImage imageNamed:@"art.jpg"]];
+         [cell.artImageView setImage:nil];
+     }
     
     return cell;
 }
@@ -342,17 +342,6 @@
     [self showMetadata:art];
 }
 
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
-    [super prepareForSegue:segue sender:sender];
-    if ([segue.identifier isEqualToString:@"Art"]){
-        Art *art = (Art*)sender;
-        NSLog(@"should be segueing to art with name: %@",art.title);
-        WFArtViewController *vc = [segue destinationViewController];
-        [vc setArt:art];
-    }
-}
-
 - (void)showMetadata:(Art*)art{
     WFArtMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"ArtMetadata"];
     [vc setArt:art];
@@ -457,6 +446,24 @@
             [filteredArts addObject:art];
         }
     }
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    [super prepareForSegue:segue sender:sender];
+    if ([segue.identifier isEqualToString:@"Art"]){
+        Art *art = (Art*)sender;
+        NSLog(@"should be segueing to art with name: %@",art.title);
+        WFArtViewController *vc = [segue destinationViewController];
+        [vc setArt:art];
+    }
+}
+
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
 }
 
 @end

@@ -8,6 +8,7 @@
 
 #import "Art+helper.h"
 #import "Photo+helper.h"
+#import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Art (helper)
 - (void)populateFromDictionary:(NSDictionary*)dictionary {
@@ -34,5 +35,9 @@
         }
         self.photos = set;
     }
+}
+
+- (Photo *)photo {
+    return (self.photos.count ? self.photos.firstObject : nil);
 }
 @end

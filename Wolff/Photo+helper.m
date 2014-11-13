@@ -10,6 +10,7 @@
 
 @implementation Photo (helper)
 - (void)populateFromDictionary:(NSDictionary*)dictionary {
+    //NSLog(@"Photo helper: %@",dictionary);
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }
@@ -28,6 +29,9 @@
     }
     if ([dictionary objectForKey:@"large_image_url"] && [dictionary objectForKey:@"large_image_url"] != [NSNull null]){
         self.largeImageUrl = [dictionary objectForKey:@"large_image_url"];
+    }
+    if ([dictionary objectForKey:@"original_image_url"] && [dictionary objectForKey:@"original_image_url"] != [NSNull null]){
+        self.originalImageUrl = [dictionary objectForKey:@"original_image_url"];
     }
 }
 @end

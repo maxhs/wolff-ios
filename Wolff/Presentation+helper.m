@@ -8,6 +8,7 @@
 
 #import "Presentation+helper.h"
 #import "Slide+helper.h"
+#import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Presentation (helper)
 - (void)populateFromDictionary:(NSDictionary *)dict{

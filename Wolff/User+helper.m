@@ -8,6 +8,8 @@
 
 #import "User+helper.h"
 #import "Art+helper.h"
+#import "Institution+helper.h"
+#import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation User (helper)
 
@@ -41,6 +43,16 @@
             [set addObject:art];
         }
         self.arts = set;
+    }
+    if ([dictionary objectForKey:@"institution"] && [dictionary objectForKey:@"institution"] != [NSNull null]){
+    
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"institution"] objectForKey:@"id"]];
+        Institution *institution = [Institution MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!institution){
+            institution = [Institution MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        [institution populateFromDictionary:[dictionary objectForKey:@"institution"]];
+        self.institution = institution;
     }
 }
 
