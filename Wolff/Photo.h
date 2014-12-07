@@ -14,6 +14,7 @@
 @interface Photo : NSManagedObject
 
 @property (nonatomic, retain) NSNumber * identifier;
+@property (nonatomic, retain) NSNumber * visible;
 @property (nonatomic, retain) NSString * largeImageUrl;
 @property (nonatomic, retain) NSString * thumbImageUrl;
 @property (nonatomic, retain) NSString * smallImageUrl;

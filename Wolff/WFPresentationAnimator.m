@@ -16,6 +16,16 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
+    CGFloat width, height;
+    //if (IDIOM == IPAD){
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        width = screenWidth();
+        height = screenHeight();
+    } else {
+        width = screenHeight();
+        height = screenWidth();
+    }
+    //}
     
     // Grab the from and to view controllers from the context
     UIViewController *fromViewController, *toViewController;
@@ -43,10 +53,10 @@
         [transitionContext.containerView addSubview:toView];
         
         CGRect startFrame = endFrame;
-        startFrame.origin.x -= screenWidth();
+        startFrame.origin.x -= width;
         
         CGRect originEndFrame = endFrame;
-        originEndFrame.origin.x += screenWidth();
+        originEndFrame.origin.x += width;
         
         toViewController.view.frame = startFrame;
         
@@ -64,9 +74,9 @@
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
         
-        endFrame.origin.x -= screenWidth();
+        endFrame.origin.x -= width;
         CGRect originStartFrame = toViewController.view.frame;
-        originStartFrame.origin.x = screenWidth();
+        originStartFrame.origin.x = width;
         toViewController.view.frame = originStartFrame;
         CGRect originEndFrame = toViewController.view.frame;
         originEndFrame.origin.x = 0;

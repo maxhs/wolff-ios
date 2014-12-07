@@ -10,14 +10,21 @@
 #import "WFPresentationSplitViewController.h"
 #import "WFSlideCollectionCell.h"
 #import "WFSlideTableCell.h"
+#import "WFSlideDetailViewController.h"
+#import "WFPresentationViewController.h"
+#import "WFSlideAnimator.h"
+#import "WFPresentationFocusAnimator.h"
 
-@interface WFPresentationSplitViewController () {
+@interface WFPresentationSplitViewController () <UIViewControllerTransitioningDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     CGFloat width;
     CGFloat height;
     UIBarButtonItem *dismissButton;
+    UIBarButtonItem *playButton;
+    UIBarButtonItem *newSlideButton;
     CGFloat topInset;
+    BOOL showPresentation;
 }
 
 @end
@@ -29,26 +36,37 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation) || [[[UIDevice currentDevice] systemName] floatValue] >= 8.f){
-        width = screenWidth();
-        height = screenHeight();
-    } else {
-        height = screenWidth();
-        width = screenHeight();
+    if (IDIOM == IPAD){
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+            width = screenWidth();
+            height = screenHeight();
+        } else {
+            width = screenHeight();
+            height = screenWidth();
+        }
     }
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
+    
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     [self.navigationController.navigationBar setTranslucent:YES];
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"whiteX"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     self.navigationController.navigationBar.tintColor = [UIColor whiteColor];
     
+    
+    newSlideButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(newSlide)];
+    playButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(playPresentation)];
+    self.navigationItem.rightBarButtonItems = @[newSlideButton, playButton];
+    
     [self.tableView setBackgroundColor:[UIColor colorWithWhite:.1 alpha:1]];
     self.tableView.rowHeight = 160.f;
     
+    self.title = _presentation.title;
+    
+    //manually set the collectionView's top inset
     topInset = self.navigationController.navigationBar.frame.size.height + 20;
-    self.collectionView.contentInset = UIEdgeInsetsMake(topInset+10, 10, 10, 10);
+    self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
 }
 
 #pragma mark - Table view data source
@@ -60,16 +78,14 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return 6;
-    //return _presentation.slides.count;
+    return _presentation.slides.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     WFSlideTableCell *cell = (WFSlideTableCell *)[tableView dequeueReusableCellWithIdentifier:@"SlideTableCell"];
-    if (cell == nil) {
-        cell = [[[NSBundle mainBundle] loadNibNamed:@"WFSlideTableCell" owner:nil options:nil] lastObject];
-    }
+    Slide *slide = _presentation.slides[indexPath.row];
+    [cell configureForSlide:slide];
     return cell;
 }
 
@@ -89,12 +105,10 @@
     }   
 }
 
-/*
 // Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-{
+- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
+    
 }
-*/
 
 - (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -113,7 +127,7 @@
 #pragma mark – UICollectionViewDelegateFlowLayout
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (IDIOM == IPAD){
-        return CGSizeMake((width-kMainSplitWidth)/3,(width-kMainSplitWidth)/3);
+        return CGSizeMake((width-kPresentationSplitWidth)/3,(width-kPresentationSplitWidth)/3);
     } else {
         return CGSizeMake(width/3,width/3);
     }
@@ -126,8 +140,7 @@
 #pragma mark - UICollectionView Datasource
 
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
-    //return arts.count;
-    return 12;
+    return _presentation.slides.count;
 }
 
 - (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
@@ -136,19 +149,8 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideCollectionCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SlideCollectionCell" forIndexPath:indexPath];
-    cell.layer.borderColor = [UIColor colorWithWhite:1 alpha:.023].CGColor;
-    cell.layer.borderWidth = .5f;
     Slide *slide = _presentation.slides[indexPath.row];
-    //NSLog(@"art url: %@",art.mediumImageUrl);
-    /*if (art.mediumImageUrl.length){
-     [cell.artImageView setImageWithURL:[NSURL URLWithString:art.mediumImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType) {
-     [UIView animateWithDuration:.23 animations:^{
-     [cell.artImageView setAlpha:1.0];
-     }];
-     }];
-     } else {
-     [cell.artImageView setImage:nil];
-     }*/
+    [cell configureForSlide:slide];
     
     return cell;
 }
@@ -168,7 +170,60 @@
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
     Slide *slide = _presentation.slides[indexPath.item];
-    NSLog(@"slide selected: %@",slide.caption);
+    [self showSlideDetail:slide];
+}
+
+- (void)showSlideDetail:(Slide*)slide {
+    showPresentation = NO;
+    WFSlideDetailViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slide"];
+    [vc setSlide:slide];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+- (void)newSlide {
+    Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    [_presentation addSlide:slide];
+    [self.collectionView reloadData];
+}
+
+- (void)playPresentation {
+    showPresentation = YES;
+    WFPresentationViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Presentation"];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
+                                                                  presentingController:(UIViewController *)presenting
+                                                                      sourceController:(UIViewController *)source {
+    if (showPresentation){
+        WFPresentationFocusAnimator *animator = [WFPresentationFocusAnimator new];
+        animator.presenting = YES;
+        return animator;
+    } else {
+        WFSlideAnimator *animator = [WFSlideAnimator new];
+        animator.presenting = YES;
+        return animator;
+    }
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
+    if (showPresentation){
+        WFPresentationFocusAnimator *animator = [WFPresentationFocusAnimator new];
+        return animator;
+    } else {
+        WFSlideAnimator *animator = [WFSlideAnimator new];
+        return animator;
+    }
 }
 
 - (void)dismiss {

@@ -11,7 +11,6 @@
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 #import <AFNetworking/AFHTTPRequestOperationManager.h>
 #import "Constants.h"
-#import "UIFontDescriptor+Lato.h"
 #import "ProgressHUD.h"
 #import "User+helper.h"
 
@@ -31,7 +30,7 @@
 @property (strong, nonatomic) User *currentUser;
 @property (weak, nonatomic) id<WFLoginDelegate> loginDelegate;
 
-- (void)connectWithEmail:(NSString*)email andPassword:(NSString*)password;
+- (void)connectWithParameters:(NSMutableDictionary*)parameters;
 - (void)setUserDefaults;
 
 @end

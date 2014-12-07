@@ -13,6 +13,7 @@
 
 @dynamic identifier;
 @dynamic title;
+@dynamic presentationDescription;
 @dynamic slides;
 
 @end

@@ -19,6 +19,21 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
+		<key>Pods-ObjectiveRecord.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>Pods-ObjectiveSugar.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>Pods-PaymentKit.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>Pods-SDWebImage.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -37,32 +52,47 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>6AE8894B5C2EA8CE1A425361</key>
+		<key>175EE811111E1C147B645792</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>6EC6D0A793488F759CD9200A</key>
+		<key>3E8F8A734E9AFAD0C055DBC1</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>87C3E2AC2EC4B4BDEE0C2BBD</key>
+		<key>46B6351A468EBF6D5B2EB2CB</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>8B2FCEE420E2C277CDDE51CE</key>
+		<key>4FD2EA5F21EE9B18987D1E65</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>A70D3F4A673B20999D741D71</key>
+		<key>76D8D0E1AE7E8D08FAD14F9E</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>FCF71A66CD09D0884CF692E7</key>
+		<key>9946816E51FC1FB35F300201</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>9AABF7DB127EC59E28B15487</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B6F57498691F8588CBA6C60E</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>EBFA1D1207AA55EB4993A23E</key>
 		<dict>
 			<key>primary</key>
 			<true/>

@@ -7,8 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Slide+helper.h"
 
 @interface WFSlideCollectionCell : UICollectionViewCell
 
 @property (weak, nonatomic) IBOutlet UIView *slideBackgroundView;
+@property (weak, nonatomic) IBOutlet UILabel *captionLabel;
+@property (weak, nonatomic) IBOutlet UIImageView *singleArtImageView;
+- (void)configureForSlide:(Slide*)slide;
 @end

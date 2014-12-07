@@ -31,6 +31,10 @@ install_resource()
       echo "xcrun momc \"${PODS_ROOT}/$1\" \"${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/`basename "$1" .xcdatamodeld`.momd\""
       xcrun momc "${PODS_ROOT}/$1" "${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/`basename "$1" .xcdatamodeld`.momd"
       ;;
+    *.xcmappingmodel)
+      echo "xcrun mapc \"${PODS_ROOT}/$1\" \"${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/`basename "$1" .xcmappingmodel`.cdm\""
+      xcrun mapc "${PODS_ROOT}/$1" "${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/`basename "$1" .xcmappingmodel`.cdm"
+      ;;
     *.xcassets)
       ;;
     /*)
@@ -59,6 +63,27 @@ install_resource()
                     install_resource "Mixpanel/Mixpanel/MPCloseBtn@2x.png"
                     install_resource "Mixpanel/Mixpanel/MPNotification.storyboard"
                     install_resource "Mixpanel/Mixpanel/MPSurvey.storyboard"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/amex.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/amex@2x.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/cvc-amex.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/cvc-amex@2x.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/cvc.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/cvc@2x.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/diners.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/diners@2x.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/discover.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/discover@2x.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/jcb.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/jcb@2x.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/mastercard.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/mastercard@2x.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/placeholder.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/placeholder@2x.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/visa.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/Cards/visa@2x.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/gradient@2x.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/textfield.png"
+                    install_resource "PaymentKit/PaymentKit/Resources/textfield@2x.png"
           
 rsync -avr --copy-links --no-relative --exclude '*/.svn/*' --files-from="$RESOURCES_TO_COPY" / "${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
 if [[ "${ACTION}" == "install" ]]; then

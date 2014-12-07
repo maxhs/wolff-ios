@@ -18,9 +18,11 @@
 #import "WFSettingsViewController.h"
 #import "WFLoginAnimator.h"
 #import "WFLoginViewController.h"
+#import "WFPresentationsViewController.h"
 #import <SDWebImage/UIImageView+WebCache.h>
+#import "WFSettingsAnimator.h"
 
-@interface WFMainViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate> {
+@interface WFMainViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate, UIPopoverControllerDelegate, WFPresentationDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     UIBarButtonItem *presentationsButton;
@@ -33,6 +35,7 @@
     UIBarButtonItem *loginButton;
     BOOL metadata;
     BOOL searching;
+    BOOL settings;
     CGFloat topInset;
     UIRefreshControl *mainRefresh;
 }
@@ -73,6 +76,16 @@
     [mainRefresh addTarget:self action:@selector(refreshMain:) forControlEvents:UIControlEventValueChanged];
     [self.tableView addSubview:mainRefresh];
     [self.searchBar setPlaceholder:@"Search catalog"];
+    //reset the search bar font
+    for (id subview in [self.searchBar.subviews.firstObject subviews]){
+        if ([subview isKindOfClass:[UITextField class]]){
+            UITextField *searchTextField = (UITextField*)subview;
+            [searchTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
+            break;
+        }
+    }
+    [self.searchBar setSearchBarStyle:UISearchBarStyleMinimal];
+    
 }
 
 - (void)refreshMain:(UIRefreshControl*)refreshControl {
@@ -90,13 +103,13 @@
 }
 
 - (void)setUpNavBar {
-    presentationsButton = [[UIBarButtonItem alloc] initWithTitle:@"Presentations" style:UIBarButtonItemStylePlain target:self action:@selector(showPresentations)];
+    presentationsButton = [[UIBarButtonItem alloc] initWithTitle:@"Presentations" style:UIBarButtonItemStylePlain target:self action:@selector(showPresentations:)];
     self.navigationItem.leftBarButtonItem = presentationsButton;
     
     addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(add)];
     
     if (delegate.currentUser){
-        settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"settings"] style:UIBarButtonItemStylePlain target:self action:@selector(goToSettings)];
+        settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"settings"] style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
         self.navigationItem.rightBarButtonItems = @[addButton,settingsButton];
     } else {
         loginButton = [[UIBarButtonItem alloc] initWithTitle:@"Login" style:UIBarButtonItemStylePlain target:self action:@selector(showLogin)];
@@ -219,7 +232,6 @@
     cell.layer.borderColor = [UIColor colorWithWhite:1 alpha:.023].CGColor;
     cell.layer.borderWidth = 0.f;
     Art *art = arts[indexPath.item];
-    NSLog(@"art: %@",art.photo.largeImageUrl);
     if (art.photo.largeImageUrl.length){
         [cell.artImageView sd_setImageWithURL:[NSURL URLWithString:art.photo.largeImageUrl]  placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.23 animations:^{
@@ -336,8 +348,7 @@
 }
 
 #pragma mark - UICollectionViewDelegate
-- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
-{
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     Art *art = arts[indexPath.item];
     [self showMetadata:art];
 }
@@ -348,9 +359,14 @@
     vc.transitioningDelegate = self;
     vc.modalPresentationStyle = UIModalPresentationCustom;
     metadata = YES;
+    settings = NO;
     [self presentViewController:vc animated:YES completion:^{
         
     }];
+}
+
+- (void)dismissMetadata {
+    [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
 #pragma mark - Custom Transitions 
@@ -362,10 +378,15 @@
     }];
 }
 
-- (void)goToSettings {
+- (void)showSettings {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        settings = YES;
+        metadata = NO;
+        _login = NO;
         WFSettingsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Settings"];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
         [self presentViewController:nav animated:YES completion:^{
             
         }];
@@ -374,8 +395,19 @@
     }
 }
 
-- (void)showPresentations {
+- (void)showPresentations:(id)sender {
+    WFPresentationsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Presentations"];
+    vc.presentationDelegate = self;
+    vc.preferredContentSize = CGSizeMake(320, 400);
+    self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
+    self.popover.delegate = self;
+    [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void)presentationSelected:(Presentation *)presentation {
+    [self.popover dismissPopoverAnimated:YES];
     WFPresentationSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"PresentationSplitView"];
+    [vc setPresentation:presentation];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.transitioningDelegate = self;
     nav.modalPresentationStyle = UIModalPresentationCustom;
@@ -388,7 +420,11 @@
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
                                                                   presentingController:(UIViewController *)presenting
                                                                       sourceController:(UIViewController *)source {
-    if (metadata){
+    if (settings){
+        WFSettingsAnimator *animator = [WFSettingsAnimator new];
+        animator.presenting = YES;
+        return animator;
+    } else if (metadata){
         WFArtMetadataAnimator *animator = [WFArtMetadataAnimator new];
         animator.presenting = YES;
         return animator;
@@ -405,7 +441,10 @@
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
     
-    if (metadata){
+    if (settings){
+        WFSettingsAnimator *animator = [WFSettingsAnimator new];
+        return animator;
+    } else if (metadata){
         WFArtMetadataAnimator *animator = [WFArtMetadataAnimator new];
         return animator;
     } else if (_login) {

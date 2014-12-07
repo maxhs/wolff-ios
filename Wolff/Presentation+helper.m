@@ -18,6 +18,9 @@
     if ([dict objectForKey:@"title"] && [dict objectForKey:@"title"] != [NSNull null]){
         self.title = [dict objectForKey:@"title"];
     }
+    if ([dict objectForKey:@"description"] && [dict objectForKey:@"description"] != [NSNull null]){
+        self.presentationDescription = [dict objectForKey:@"description"];
+    }
     if ([dict objectForKey:@"slides"] && [dict objectForKey:@"slides"] != [NSNull null]){
         NSMutableOrderedSet *slides = [NSMutableOrderedSet orderedSet];
         for (NSDictionary *artDict in [dict objectForKey:@"slides"]){
@@ -36,5 +39,11 @@
         }
         self.slides = slides;
     }
+}
+
+- (void)addSlide:(Slide *)slide {
+    NSMutableOrderedSet *slideSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slides];
+    [slideSet addObject:slide];
+    self.slides = slideSet;
 }
 @end

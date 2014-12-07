@@ -10,4 +10,5 @@
 
 @interface User (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
+- (NSString *)fullName;
 @end

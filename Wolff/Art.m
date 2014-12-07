@@ -15,10 +15,18 @@
 @dynamic title;
 @dynamic caption;
 @dynamic iconography;
-@dynamic artist;
+@dynamic artists;
 @dynamic groups;
 @dynamic photos;
 @dynamic user;
 @dynamic createdDate;
+@dynamic uploadedDate;
+@dynamic favorites;
+@dynamic media;
+@dynamic locations;
+@dynamic institutions;
+@dynamic credit;
+@dynamic inscriptions;
+@dynamic movements;
 
 @end

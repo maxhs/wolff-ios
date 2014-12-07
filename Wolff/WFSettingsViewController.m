@@ -11,6 +11,7 @@
 #import "WFSettingsCell.h"
 #import "Institution+helper.h"
 #import "UIFontDescriptor+Lato.h"
+#import "WFInstitutionSearchViewController.h"
 
 @interface WFSettingsViewController () <UITextFieldDelegate> {
     WFAppDelegate *delegate;
@@ -19,6 +20,7 @@
     UIBarButtonItem *dismissButton;
     UIBarButtonItem *saveButton;
     UITextField *emailTextField;
+    UITextField *institutionTextField;
 }
 
 @end
@@ -27,23 +29,18 @@
 
 @synthesize currentUser = _currentUser;
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
     self.title = @"Settings";
     
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    _currentUser = delegate.currentUser;
-    
-    self.tableView.rowHeight = 60.f;
-    
+    _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
     [self loadUserDetails];
     
+    self.tableView.rowHeight = 60.f;
     [self registerForKeyboardNotifications];
     [self setUpNavigationButtons];
-    
-    
 }
 
 - (void)setUpNavigationButtons {
@@ -53,12 +50,16 @@
     saveButton = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.rightBarButtonItem = saveButton;
     
-    UIButton *logoutButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoutButton setTitle:@"Log out" forState:UIControlStateNormal];
-    [logoutButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-    [logoutButton addTarget:self action:@selector(logout) forControlEvents:UIControlEventTouchUpInside];
-    [logoutButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLatoBold] size:0]];
-    self.tableView.tableFooterView = logoutButton;
+    [_logoutButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [_logoutButton addTarget:self action:@selector(logout) forControlEvents:UIControlEventTouchUpInside];
+    [_logoutButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLatoBold] size:0]];
+    
+    [_versionLabel setText:[NSString stringWithFormat:@"Version: %@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]]];
+    [_versionLabel setTextColor:[UIColor lightGrayColor]];
+    [_versionLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody
+                                                                                              forFont:kLato] size:0]];
+    
+    self.tableView.tableFooterView = _footerContainerView;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView estimatedHeightForFooterInSection:(NSInteger)section {
@@ -85,12 +86,22 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 1;
+    return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return 5;
+    switch (section) {
+        case 0:
+            return 5;
+            break;
+        case 1:
+            return 3;
+            break;
+        default:
+            return 0;
+            break;
+    }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -98,35 +109,100 @@
     WFSettingsCell *cell = (WFSettingsCell *)[tableView dequeueReusableCellWithIdentifier:@"SettingsCell"];
     [cell.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
     
-    switch (indexPath.row) {
+    if (indexPath.section == 0){
+        [cell.settingsSwitch setHidden:YES];
+        [cell.textField setHidden:NO];
+        switch (indexPath.row) {
+            case 0:
+                [cell.textField setText:_currentUser.firstName];
+                [cell.textField setPlaceholder:@"First name"];
+                break;
+            case 1:
+                [cell.textField setText:_currentUser.lastName];
+                [cell.textField setPlaceholder:@"Last name"];
+                break;
+            case 2:
+                [cell.textField setText:_currentUser.email];
+                [cell.textField setPlaceholder:@"Email"];
+                break;
+            case 3:
+                [cell.textField setText:_currentUser.phone];
+                [cell.textField setPlaceholder:@"Phone number"];
+                break;
+            case 4:
+                [cell.textField setText:_currentUser.institution.name];
+                [cell.textField setPlaceholder:@"Affiliated institution (if any)"];
+                institutionTextField = cell.textField;
+                break;
+                
+            default:
+                break;
+        }
+        cell.accessoryView = nil;
+        
+    } else if (indexPath.section == 1) {
+        [cell.settingsSwitch setHidden:NO];
+        [cell.textField setHidden:YES];
+        switch (indexPath.row) {
+            case 0:
+                //email
+                [cell.textLabel setText:@"Email notifications"];
+                [cell.settingsSwitch setOn:_currentUser.emailPermission.boolValue];
+                break;
+            case 1:
+                //push
+                [cell.textLabel setText:@"Push notifications"];
+                [cell.settingsSwitch setOn:_currentUser.pushPermission.boolValue];
+                break;
+            case 2:
+                //text
+                [cell.textLabel setText:@"Wolff texts"];
+                [cell.settingsSwitch setOn:_currentUser.textPermission.boolValue];
+                break;
+            default:
+                break;
+        }
+        [cell.settingsSwitch setTag:indexPath.row];
+        [cell.settingsSwitch addTarget:self action:@selector(switchSwitched:) forControlEvents:UIControlEventValueChanged];
+        cell.accessoryView = cell.settingsSwitch;
+    }
+    return cell;
+}
+
+- (void)switchSwitched:(UISwitch*)s {
+    switch (s.tag) {
         case 0:
-            [cell.textField setText:_currentUser.firstName];
-            [cell.textField setPlaceholder:@"First name"];
+            //email
+            [_currentUser setEmailPermission:[NSNumber numberWithBool:s.isOn]];
             break;
         case 1:
-            [cell.textField setText:_currentUser.lastName];
-            [cell.textField setPlaceholder:@"Last name"];
+            //push
+            [_currentUser setPushPermission:[NSNumber numberWithBool:s.isOn]];
             break;
         case 2:
-            [cell.textField setText:_currentUser.email];
-            [cell.textField setPlaceholder:@"Email"];
-            break;
-        case 3:
-            [cell.textField setText:_currentUser.phone];
-            [cell.textField setPlaceholder:@"Phone number"];
-            break;
-        case 4:
-            [cell.textField setText:_currentUser.institution.name];
-            [cell.textField setPlaceholder:@"Affiliated institution (if any)"];
+            //text
+            [_currentUser setTextPermission:[NSNumber numberWithBool:s.isOn]];
             break;
             
         default:
             break;
     }
-    return cell;
+}
+
+- (void)showInstitutionSearch {
+    WFInstitutionSearchViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"InstitutionSearch"];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
+    if (textField == institutionTextField){
+        [textField resignFirstResponder];
+        [self showInstitutionSearch];
+        return;
+    }
     if (!doneEditingButton) {
         doneEditingButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneEditing)];
     }
@@ -218,10 +294,8 @@
     [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
-- (void)didReceiveMemoryWarning
-{
+- (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end

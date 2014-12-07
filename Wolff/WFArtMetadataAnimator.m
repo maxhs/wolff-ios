@@ -8,6 +8,8 @@
 
 #import "WFArtMetadataAnimator.h"
 #import "Constants.h"
+#import "WFMainViewController.h"
+#import "WFArtMetadataViewController.h"
 
 @interface WFArtMetadataAnimator () {
     
@@ -39,30 +41,41 @@
     }
     
     if (self.presenting) {
+        UIButton *darkBackground = [UIButton buttonWithType:UIButtonTypeCustom];
+        [darkBackground setBackgroundColor:[UIColor colorWithWhite:.1 alpha:.5]];
+        [darkBackground setAlpha:0.0];
+        [darkBackground setFrame:[UIScreen mainScreen].bounds];
+        [darkBackground setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+        [darkBackground setTag:kDarkBackgroundConstant];
+        [darkBackground addTarget:(WFArtMetadataViewController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+        [transitionContext.containerView addSubview:darkBackground];
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:toView];
         
-        CGRect metadataStartFrame = CGRectMake((screenWidth()/2-300)-screenWidth(), screenHeight()/2-300, 600, 600);
+        CGRect metadataStartFrame = CGRectMake((screenWidth()/2-300)-screenWidth(), screenHeight()/2-350, 600, 700);
         toViewController.view.frame = metadataStartFrame;
-        CGRect metadataFrame = CGRectMake(screenWidth()/2-300, screenHeight()/2-300, 600, 600);
+        CGRect metadataFrame = CGRectMake(screenWidth()/2-300, screenHeight()/2-350, 600, 700);
     
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            [fromViewController.view setAlpha:.3f];
             toViewController.view.frame = metadataFrame;
+            [darkBackground setAlpha:1.0];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
     } else {
+        UIButton *darkBackground = (UIButton*)[transitionContext.containerView viewWithTag:kDarkBackgroundConstant];
+        
         toViewController.view.userInteractionEnabled = YES;
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
-        CGRect metadataEndFrame = CGRectMake((screenWidth()/2-300)-screenWidth(), screenHeight()/2-300, 600, 600);
+        CGRect metadataEndFrame = CGRectMake((screenWidth()/2-300)-screenWidth(), screenHeight()/2-350, 600, 700);
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             fromViewController.view.frame = metadataEndFrame;
-            [toViewController.view setAlpha:1.f];
+            [darkBackground setAlpha:0.0];
             toViewController.view.frame = [UIScreen mainScreen].bounds;
         } completion:^(BOOL finished) {
+            [darkBackground removeFromSuperview];
             [transitionContext completeTransition:YES];
         }];
     }

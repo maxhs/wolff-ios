@@ -8,8 +8,11 @@
 
 #import "Art.h"
 #import "Photo+helper.h"
+#import "Artist+helper.h"
 
 @interface Art (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
 - (Photo*)photo;
+- (Artist*)primaryArtist;
+- (NSString*)mediaToSentence;
 @end

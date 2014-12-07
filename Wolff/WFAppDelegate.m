@@ -29,27 +29,25 @@
     [self customizeAppearance];
 
     // automatically log the user in if they
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsEmail] && [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsPassword]){
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken]){
         NSLog(@"app did finish launching and we should be automatically logging in");
-        [self connectWithEmail:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsEmail] andPassword:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsPassword]];
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken] forKey:@"mobile_token"];
+        [self connectWithParameters:parameters];
     }
     
     return YES;
 }
 
-- (void)connectWithEmail:(NSString*)email andPassword:(NSString*)password {
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+- (void)connectWithParameters:(NSMutableDictionary *)parameters {
+    
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken] forKey:@"device_token"];
     }
     
-    [parameters setObject:email forKey:@"email"];
-    [parameters setObject:password forKey:@"password"];
-    
     [ProgressHUD show:@"Logging in..."];
     
     [_manager POST:[NSString stringWithFormat:@"%@/sessions",kApiBaseUrl] parameters:@{@"user":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success connecting: %@",responseObject);
+        NSLog(@"Success connecting: %@",responseObject);
         if ([responseObject objectForKey:@"user"]){
             NSDictionary *userDict = [responseObject objectForKey:@"user"];
             _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[userDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -57,9 +55,6 @@
                 _currentUser = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [_currentUser populateFromDictionary:userDict];
-            [[NSUserDefaults standardUserDefaults] setObject:email forKey:kUserDefaultsEmail];
-            [[NSUserDefaults standardUserDefaults] setObject:password forKey:kUserDefaultsPassword];
-            [[NSUserDefaults standardUserDefaults] synchronize];
             [self setUserDefaults];
             
             if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(loginSuccessful)]) {
@@ -73,6 +68,7 @@
         [ProgressHUD dismiss];
     
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        [ProgressHUD dismiss];
         if ([operation.responseString isEqualToString:kNoEmail]){
             if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(incorrectEmail)]) {
                 [self.loginDelegate incorrectEmail];
@@ -92,6 +88,7 @@
 - (void)setUserDefaults {
     [[NSUserDefaults standardUserDefaults] setObject:_currentUser.identifier forKey:kUserDefaultsId];
     [[NSUserDefaults standardUserDefaults] setObject:_currentUser.email forKey:kUserDefaultsEmail];
+    [[NSUserDefaults standardUserDefaults] setObject:_currentUser.mobileToken forKey:kUserDefaultsMobileToken];
     [[NSUserDefaults standardUserDefaults] setObject:_currentUser.firstName forKey:kUserDefaultsFirstName];
     [[NSUserDefaults standardUserDefaults] setObject:_currentUser.lastName forKey:kUserDefaultsLastName];
     [[NSUserDefaults standardUserDefaults] synchronize];

@@ -15,12 +15,20 @@
 
 @property (nonatomic, retain) NSNumber * identifier;
 @property (nonatomic, retain) NSDate * createdDate;
+@property (nonatomic, retain) NSDate * uploadedDate;
+@property (nonatomic, retain) NSString * credit;
 @property (nonatomic, retain) NSString * title;
 @property (nonatomic, retain) NSString * caption;
 @property (nonatomic, retain) NSString * iconography;
-@property (nonatomic, retain) NSManagedObject *artist;
+@property (nonatomic, retain) NSOrderedSet *artists;
 @property (nonatomic, retain) NSOrderedSet *groups;
 @property (nonatomic, retain) NSOrderedSet *photos;
+@property (nonatomic, retain) NSOrderedSet *favorites;
+@property (nonatomic, retain) NSOrderedSet *media;
+@property (nonatomic, retain) NSOrderedSet *locations;
+@property (nonatomic, retain) NSOrderedSet *inscriptions;
+@property (nonatomic, retain) NSOrderedSet *institutions;
+@property (nonatomic, retain) NSOrderedSet *movements;
 @property (nonatomic, retain) User *user;
 @end
 

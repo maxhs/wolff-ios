@@ -15,15 +15,24 @@
 
 @property (nonatomic, retain) NSDate * createdDate;
 @property (nonatomic, retain) NSString * email;
+@property (nonatomic, retain) NSString * mobileToken;
 @property (nonatomic, retain) NSString * firstName;
 @property (nonatomic, retain) NSNumber * identifier;
 @property (nonatomic, retain) NSNumber * admin;
+@property (nonatomic, retain) NSNumber * emailPermission;
+@property (nonatomic, retain) NSNumber * textPermission;
+@property (nonatomic, retain) NSNumber * pushPermission;
 @property (nonatomic, retain) NSString * lastName;
 @property (nonatomic, retain) NSString * phone;
 @property (nonatomic, retain) NSString * bio;
+@property (nonatomic, retain) NSString * avatarSmall;
+@property (nonatomic, retain) NSString * avatarMedium;
+@property (nonatomic, retain) NSString * avatarLarge;
 @property (nonatomic, retain) Institution *institution;
 @property (nonatomic, retain) NSOrderedSet *groups;
 @property (nonatomic, retain) NSOrderedSet *arts;
+@property (nonatomic, retain) NSOrderedSet *favorites;
+@property (nonatomic, retain) NSOrderedSet *presentations;
 @end
 
 @interface User (CoreDataGeneratedAccessors)

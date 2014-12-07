@@ -10,7 +10,9 @@
 
 @interface WFMainViewController : UIViewController
 
+@property (strong, nonatomic) UIPopoverController *popover;
 @property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
 @property BOOL login;
 
+- (void)dismissMetadata;
 @end

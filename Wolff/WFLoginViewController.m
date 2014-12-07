@@ -81,23 +81,24 @@
 }
 
 - (void)connect {
-    NSString *email, *password;
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    
     if (_emailTextField.text.length){
-        email = _emailTextField.text;
+        [parameters setObject:_emailTextField.text forKey:@"email"];
     } else {
         [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Please include a valid email / username before logging in." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
         return;
     }
     
     if (_passwordTextField.text.length) {
-        password = _passwordTextField.text;
+        [parameters setObject:_passwordTextField.text forKey:@"password"];
     } else {
         [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Please add a password before logging in." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
         return;
     }
     
     //login from the delegate
-    [delegate connectWithEmail:email andPassword:password];
+    [delegate connectWithParameters:parameters];
     [self doneEditing];
 }
 
@@ -121,7 +122,13 @@
                     [[[UIAlertView alloc] initWithTitle:@"No such luck." message:@"We couldn't find that email address in our system." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
                 }
             } else {
-                [[Mixpanel sharedInstance] track:@"iPad: Password reset"];
+                
+                #ifndef DEBUG
+                                
+                #else
+                [[Mixpanel sharedInstance] track:@"Password reset"];
+                #endif
+                
             }
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed with password reset: %@",error.description);

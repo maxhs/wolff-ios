@@ -14,6 +14,15 @@
     if ([dict objectForKey:@"id"] && [dict objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dict objectForKey:@"id"];
     }
+    if ([dict objectForKey:@"name"] && [dict objectForKey:@"name"] != [NSNull null]){
+        self.name = [dict objectForKey:@"name"];
+    }
+    if ([dict objectForKey:@"in_situ"] && [dict objectForKey:@"in_situ"] != [NSNull null]){
+        self.inSitu = [dict objectForKey:@"in_situ"];
+    }
+    if ([dict objectForKey:@"original"] && [dict objectForKey:@"original"] != [NSNull null]){
+        self.original = [dict objectForKey:@"original"];
+    }
 }
 
 @end

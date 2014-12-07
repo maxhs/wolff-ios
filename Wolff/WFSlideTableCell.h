@@ -7,10 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Slide+helper.h"
 
 @interface WFSlideTableCell : UITableViewCell
 
 @property (weak, nonatomic) IBOutlet UILabel *slideNumberLabel;
 @property (weak, nonatomic) IBOutlet UIView *slideContainerView;
+
+- (void)configureForSlide:(Slide*)slide;
 
 @end

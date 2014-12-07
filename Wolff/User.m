@@ -13,6 +13,7 @@
 
 @dynamic createdDate;
 @dynamic email;
+@dynamic mobileToken;
 @dynamic firstName;
 @dynamic identifier;
 @dynamic lastName;
@@ -22,5 +23,13 @@
 @dynamic groups;
 @dynamic admin;
 @dynamic arts;
+@dynamic avatarSmall;
+@dynamic avatarMedium;
+@dynamic avatarLarge;
+@dynamic pushPermission;
+@dynamic emailPermission;
+@dynamic textPermission;
+@dynamic favorites;
+@dynamic presentations;
 
 @end
