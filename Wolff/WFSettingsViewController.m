@@ -50,14 +50,18 @@
     saveButton = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.rightBarButtonItem = saveButton;
     
+    [_logoutButton setTitle:@"LOG OUT" forState:UIControlStateNormal];
     [_logoutButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [_logoutButton addTarget:self action:@selector(logout) forControlEvents:UIControlEventTouchUpInside];
-    [_logoutButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLatoBold] size:0]];
+    [_logoutButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
+    _logoutButton.layer.borderColor = [UIColor colorWithWhite:.77 alpha:1].CGColor;
+    _logoutButton.layer.cornerRadius = 14.f;
+    _logoutButton.layer.borderWidth = .5f;
     
     [_versionLabel setText:[NSString stringWithFormat:@"Version: %@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]]];
     [_versionLabel setTextColor:[UIColor lightGrayColor]];
     [_versionLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody
-                                                                                              forFont:kLato] size:0]];
+                                                                                              forFont:kLatoLight] size:0]];
     
     self.tableView.tableFooterView = _footerContainerView;
 }
@@ -108,6 +112,7 @@
 {
     WFSettingsCell *cell = (WFSettingsCell *)[tableView dequeueReusableCellWithIdentifier:@"SettingsCell"];
     [cell.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
+    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
     
     if (indexPath.section == 0){
         [cell.settingsSwitch setHidden:YES];

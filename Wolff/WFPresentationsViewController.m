@@ -75,6 +75,7 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PresentationCell" forIndexPath:indexPath];
     Presentation *presentation = _currentUser.presentations[indexPath.row];
     [cell.textLabel setText:presentation.title];
+    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
     return cell;
 }
 

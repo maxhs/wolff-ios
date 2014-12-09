@@ -246,17 +246,6 @@
     return cell;
 }
 
-/*- (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath{
-    if (kind == UICollectionElementKindSectionHeader){
-        UICollectionReusableView *headerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"Header" forIndexPath:indexPath];
-        [headerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-        return headerView;
-    } else {
-        UICollectionReusableView *footerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:@"Footer" forIndexPath:indexPath];
-        return footerView;
-    }
-}*/
-
 - (IBAction)longPressed:(UILongPressGestureRecognizer*)sender {
     CGPoint loc = [sender locationInView:self.collectionView];
     CGFloat heightInScreen = fmodf((loc.y-self.collectionView.contentOffset.y), CGRectGetHeight(self.collectionView.frame));
@@ -287,6 +276,7 @@
     }
     
     if (sender.state == UIGestureRecognizerStateEnded) {
+        NSLog(@"ended loc: %f, %f",loc.x,loc.y);
         if (self.draggingView) {
             self.moveToIndexPath = [self.collectionView indexPathForItemAtPoint:loc];
             if (self.moveToIndexPath) {
@@ -303,9 +293,7 @@
                 [UIView animateWithDuration:.23f animations:^{
                     self.draggingView.transform = CGAffineTransformIdentity;
                 } completion:^(BOOL finished) {
-                    
-                    
-                    
+    
                     //change items
                     __weak typeof(self) weakSelf = self;
                     [self.collectionView performBatchUpdates:^{
@@ -318,7 +306,6 @@
                     } completion:^(BOOL finished) {
                         WFArtCell *movedCell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.moveToIndexPath];
                         [movedCell.contentView setAlpha:1.f];
-                        
                         WFArtCell *oldIndexCell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
                         [oldIndexCell.contentView setAlpha:1.f];
                     }];
@@ -412,6 +399,8 @@
     nav.transitioningDelegate = self;
     nav.modalPresentationStyle = UIModalPresentationCustom;
     metadata = NO;
+    settings = NO;
+    _login = NO;
     [self presentViewController:nav animated:YES completion:^{
         
     }];
@@ -487,20 +476,17 @@
     }
 }
 
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     [super prepareForSegue:segue sender:sender];
     if ([segue.identifier isEqualToString:@"Art"]){
         Art *art = (Art*)sender;
-        NSLog(@"should be segueing to art with name: %@",art.title);
         WFArtViewController *vc = [segue destinationViewController];
         [vc setArt:art];
     }
 }
 
 
-- (void)didReceiveMemoryWarning
-{
+- (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
