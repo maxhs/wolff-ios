@@ -8,7 +8,7 @@
 
 #import "WFArtMetadataAnimator.h"
 #import "Constants.h"
-#import "WFMainViewController.h"
+#import "WFCatalogViewController.h"
 #import "WFArtMetadataViewController.h"
 
 @interface WFArtMetadataAnimator () {

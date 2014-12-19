@@ -45,7 +45,9 @@
     [_backButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
 
     [self textFieldTreatment:_emailTextField];
+    [_emailTextField setPlaceholder:@"albrecht@durer.com"];
     [self textFieldTreatment:_passwordTextField];
+    [_passwordTextField setPlaceholder:@"password"];
     
     login = YES;
     [self setUpLoginButton];

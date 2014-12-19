@@ -23,6 +23,7 @@
     if ([dict objectForKey:@"original"] && [dict objectForKey:@"original"] != [NSNull null]){
         self.original = [dict objectForKey:@"original"];
     }
+    
 }
 
 @end

@@ -36,4 +36,8 @@
 - (void)configureForArt:(Art*)art {
     [_artLabel setText:art.title];
 }
+
+- (void)configureForTable:(Table *)table {
+    [_artLabel setText:table.name];
+}
 @end

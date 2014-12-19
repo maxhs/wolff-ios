@@ -6,8 +6,6 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
-#define MIXPANEL_TOKEN @"b091c81f24a93b828683bb5c3c260278"
-
 #import "WFAppDelegate.h"
 #import <Mixpanel/Mixpanel.h>
 
@@ -20,7 +18,7 @@
     [MagicalRecord setupAutoMigratingCoreDataStack];
     [Mixpanel sharedInstanceWithToken:MIXPANEL_TOKEN];
     Mixpanel *mixpanel = [Mixpanel sharedInstance];
-    [mixpanel track:@"iPad: Launch"];
+    [mixpanel track:@"Launch"];
     
     _manager = [[AFHTTPRequestOperationManager manager] initWithBaseURL:[NSURL URLWithString:kApiBaseUrl]];
     [_manager.requestSerializer setAuthorizationHeaderFieldWithUsername:@"wolff_mobile" password:@"e065c6aaebbdaec80f53e1a9c7c1eeb8"];
@@ -95,11 +93,11 @@
 }
 
 - (void)customizeAppearance {
-    /*for (NSString* family in [UIFont familyNames]){
+    for (NSString* family in [UIFont familyNames]){
         NSLog(@"%@", family);
         for (NSString* name in [UIFont fontNamesForFamilyName: family])
             NSLog(@"  %@", name);
-    }*/
+    }
     [[UINavigationBar appearance] setBarStyle:UIBarStyleBlackTranslucent];
     [[UIBarButtonItem appearance] setTintColor:[UIColor whiteColor]];
     [[UINavigationBar appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kLato size:21]}];

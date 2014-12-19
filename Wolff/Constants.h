@@ -26,6 +26,8 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kBaseUrl @"http://wolffapp.com"
 #define kTestFlightToken @"a37d3f4a-b21b-4f38-ac66-83c68b65a8a1"
 
+#define MIXPANEL_TOKEN @"b091c81f24a93b828683bb5c3c260278"
+
 #define kDarkBackgroundConstant 5298
 #define kBlurredBackgroundConstant 5299
 
@@ -39,16 +41,21 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kUserDefaultsAdmin @"admin"
 #define kUserDefaultsMobileToken @"mobileToken"
 
-#define kMyriadLight @"MyriadPro-Light"
-#define kMontserrat @"Montserrat-Regular"
+#define kMuseoSansLight @"MuseoSans-100"
+#define kMuseoSansLightItalic @"MuseoSans-100Italic"
 #define kLato @"Lato-Regular"
-#define kLatoLight @"Lato-Light"
 #define kLatoItalic @"Lato-Italic"
+#define kLatoLight @"Lato-Light"
 #define kLatoLightItalic @"Lato-LightItalic"
+#define kLatoHairline @"Lato-Hairline"
+#define kLatoHairlineItalic @"Lato-HairlineItalic"
+#define kLatoBlack @"Lato-Black"
+#define kLatoBlackItalic @"Lato-BlackItalic"
 #define kLatoBold @"Lato-Bold"
 #define kLatoBoldItalic @"Lato-BoldItalic"
 
 #define kIncorrectPassword @"Incorrect password"
 #define kNoEmail @"No email"
+#define kUserAlreadyExists @"User already exists"
 
 #endif

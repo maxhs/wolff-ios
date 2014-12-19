@@ -9,11 +9,12 @@
 #import "Art+helper.h"
 #import "Photo+helper.h"
 #import "Artist+helper.h"
-#import "Medium+helper.h"
-#import "Group+helper.h"
-#import "Inscription+helper.h"
+#import "Material+helper.h"
+#import "Table+helper.h"
+#import "Citation+helper.h"
 #import "Location+helper.h"
 #import "Movement+helper.h"
+#import "Interval+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 #import "NSArray+ToSentence.h"
 
@@ -24,6 +25,9 @@
     }
     if ([dictionary objectForKey:@"title"] && [dictionary objectForKey:@"title"] != [NSNull null]){
         self.title = [dictionary objectForKey:@"title"];
+    }
+    if ([dictionary objectForKey:@"not_extant"] && [dictionary objectForKey:@"not_extant"] != [NSNull null]){
+        self.notExtant = [dictionary objectForKey:@"not_extant"];
     }
     if ([dictionary objectForKey:@"uploaded_epoch_time"] && [dictionary objectForKey:@"uploaded_epoch_time"] != [NSNull null]) {
         NSTimeInterval _interval = [[dictionary objectForKey:@"uploaded_epoch_time"] doubleValue];
@@ -42,6 +46,16 @@
         }
         self.photos = set;
     }
+    if ([dictionary objectForKey:@"interval"] && [dictionary objectForKey:@"interval"] != [NSNull null]){
+        NSDictionary *dict = [dictionary objectForKey:@"interval"];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+        Interval *interval = [Interval MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!interval){
+            interval = [Interval MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        [interval populateFromDictionary:dict];
+        self.interval = interval;
+    }
     if ([dictionary objectForKey:@"artists"] && [dictionary objectForKey:@"artists"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"artists"]){
@@ -55,19 +69,19 @@
         }
         self.artists = set;
     }
-    if ([dictionary objectForKey:@"mediums"] && [dictionary objectForKey:@"mediums"] != [NSNull null]){
+    if ([dictionary objectForKey:@"materials"] && [dictionary objectForKey:@"materials"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dict in [dictionary objectForKey:@"mediums"]){
+        for (id dict in [dictionary objectForKey:@"materials"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Medium *medium = [Medium MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!medium){
-                medium = [Medium MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            Material *material = [Material MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!material){
+                material = [Material MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [medium populateFromDictionary:dict];
-            NSLog(@"Adding medium with name: %@",medium.name);
-            [set addObject:medium];
+            [material populateFromDictionary:dict];
+            NSLog(@"Adding medium with name: %@",material.name);
+            [set addObject:material];
         }
-        self.media = set;
+        self.materials = set;
     }
     if ([dictionary objectForKey:@"movements"] && [dictionary objectForKey:@"movements"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
@@ -82,18 +96,18 @@
         }
         self.movements = set;
     }
-    if ([dictionary objectForKey:@"inscriptions"] && [dictionary objectForKey:@"inscriptions"] != [NSNull null]){
+    if ([dictionary objectForKey:@"citations"] && [dictionary objectForKey:@"citations"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dict in [dictionary objectForKey:@"inscriptions"]){
+        for (id dict in [dictionary objectForKey:@"citations"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Inscription *inscription = [Inscription MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!inscription){
-                inscription = [Inscription MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            Citation *citation = [Citation MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!citation){
+                citation = [Citation MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [inscription populateFromDictionary:dict];
-            [set addObject:inscription];
+            [citation populateFromDictionary:dict];
+            [set addObject:citation];
         }
-        self.inscriptions = set;
+        self.citations = set;
     }
     if ([dictionary objectForKey:@"locations"] && [dictionary objectForKey:@"locations"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
@@ -132,9 +146,9 @@
 }
 
 - (NSString *)mediaToSentence {
-    NSMutableArray *names = [NSMutableArray arrayWithCapacity:self.media.count];
-    [self.media enumerateObjectsUsingBlock:^(Medium *medium, NSUInteger idx, BOOL *stop) {
-        [names addObject:medium.name];
+    NSMutableArray *names = [NSMutableArray arrayWithCapacity:self.materials.count];
+    [self.materials enumerateObjectsUsingBlock:^(Material *material, NSUInteger idx, BOOL *stop) {
+        [names addObject:material.name];
     }];
     return [names toSentence];
 }

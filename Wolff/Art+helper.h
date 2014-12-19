@@ -9,6 +9,7 @@
 #import "Art.h"
 #import "Photo+helper.h"
 #import "Artist+helper.h"
+#import "Interval+helper.h"
 
 @interface Art (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;

@@ -8,11 +8,13 @@
 
 #import <UIKit/UIKit.h>
 #import "Art+helper.h"
+#import "Table+helper.h"
 
 @interface WFMainTableCell : UITableViewCell
 
 @property (weak, nonatomic) IBOutlet UILabel *artLabel;
 
 - (void)configureForArt:(Art*)art;
+- (void)configureForTable:(Table*)table;
 
 @end

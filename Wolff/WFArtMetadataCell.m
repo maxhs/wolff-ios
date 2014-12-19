@@ -24,11 +24,11 @@
 - (void)awakeFromNib
 {
     // Initialization code
-    [_label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLatoBold] size:0]];
+    [_label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLatoLight] size:0]];
     [_label setTextColor:[UIColor blackColor]];
     
     [_value setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
-    [_value setTextColor:[UIColor lightGrayColor]];
+    [_value setTextColor:[UIColor blackColor]];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated

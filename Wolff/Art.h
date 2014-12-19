@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class User;
+@class User, Interval;
 
 @interface Art : NSManagedObject
 
@@ -20,16 +20,18 @@
 @property (nonatomic, retain) NSString * title;
 @property (nonatomic, retain) NSString * caption;
 @property (nonatomic, retain) NSString * iconography;
+@property (nonatomic, retain) NSNumber * notExtant;
 @property (nonatomic, retain) NSOrderedSet *artists;
-@property (nonatomic, retain) NSOrderedSet *groups;
+@property (nonatomic, retain) NSOrderedSet *tables;
 @property (nonatomic, retain) NSOrderedSet *photos;
 @property (nonatomic, retain) NSOrderedSet *favorites;
-@property (nonatomic, retain) NSOrderedSet *media;
+@property (nonatomic, retain) NSOrderedSet *materials;
 @property (nonatomic, retain) NSOrderedSet *locations;
-@property (nonatomic, retain) NSOrderedSet *inscriptions;
+@property (nonatomic, retain) NSOrderedSet *citations;
 @property (nonatomic, retain) NSOrderedSet *institutions;
 @property (nonatomic, retain) NSOrderedSet *movements;
 @property (nonatomic, retain) User *user;
+@property (nonatomic, retain) Interval *interval;
 @end
 
 @interface Art (CoreDataGeneratedAccessors)

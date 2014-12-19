@@ -199,7 +199,7 @@
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="7fm-yC-GcF">
                                 <rect key="frame" x="10" y="30" width="54" height="54"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" image="blackX.png">
+                                <state key="normal" image="blackRemove.png">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                             </button>
@@ -259,10 +259,10 @@
             </objects>
             <point key="canvasLocation" x="799" y="-3939"/>
         </scene>
-        <!--Main View Controller-->
+        <!--Catalog View Controller-->
         <scene sceneID="yGG-At-jkc">
             <objects>
-                <viewController storyboardIdentifier="Main" id="O6y-Gd-vKT" customClass="WFMainViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Catalog" id="O6y-Gd-vKT" customClass="WFCatalogViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="M1g-sw-6B9">
                         <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -397,7 +397,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="Aql-dP-3vf">
-                                                    <rect key="frame" x="0.0" y="0.0" width="2048" height="174"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="3072" height="262"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <connections>
                                                         <outlet property="delegate" destination="mF4-Xe-ff1" id="al6-EO-MKX"/>
@@ -530,7 +530,7 @@
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="I68-MF-Apn" userLabel="Dismiss Button">
                                         <rect key="frame" x="553" y="3" width="44" height="44"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <state key="normal" image="blackX.png">
+                                        <state key="normal" image="blackRemove.png">
                                             <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
                                     </button>
@@ -740,6 +740,55 @@
             </objects>
             <point key="canvasLocation" x="4164" y="-2090"/>
         </scene>
+        <!--Tables View Controller-->
+        <scene sceneID="qFU-mw-5Jk">
+            <objects>
+                <viewController storyboardIdentifier="Tables" id="Y51-Ss-H0d" customClass="WFTablesViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="7pz-Fx-CTi">
+                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="SPD-01-BAD">
+                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <prototypes>
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="LightTableCell" id="Mm7-63-YYj" customClass="WFTableCell">
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Mm7-63-YYj" id="OxV-03-kNV">
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="0kM-dv-0AR">
+                                                    <rect key="frame" x="18" y="11" width="384" height="21"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="tableLabel" destination="0kM-dv-0AR" id="rGa-JB-UiR"/>
+                                        </connections>
+                                    </tableViewCell>
+                                </prototypes>
+                                <connections>
+                                    <outlet property="dataSource" destination="Y51-Ss-H0d" id="tQ6-nI-6ke"/>
+                                    <outlet property="delegate" destination="Y51-Ss-H0d" id="BVi-X4-JsE"/>
+                                </connections>
+                            </tableView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <connections>
+                        <outlet property="tableView" destination="SPD-01-BAD" id="jLp-bv-kkS"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ZLr-aT-dSp" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-444" y="-3939"/>
+        </scene>
         <!--Navigation Controller-->
         <scene sceneID="lBQ-Oc-6ae">
             <objects>
@@ -761,7 +810,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="blackX.png" width="22" height="22"/>
+        <image name="blackRemove.png" width="25" height="25"/>
         <image name="icon-180.png" width="180" height="180"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

@@ -9,8 +9,7 @@
 #import "WFAppDelegate.h"
 #import "WFArtMetadataViewController.h"
 #import "WFArtMetadataCell.h"
-#import "WFMainViewController.h"
-#import "WFArtsViewController.h"
+#import "WFCatalogViewController.h"
 #import "Institution+helper.h"
 #import "Location+helper.h"
 #import <SDWebImage/UIButton+WebCache.h>
@@ -41,7 +40,6 @@
 - (void)setupDateFormatter {
     dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateStyle:NSDateFormatterLongStyle];
-    [dateFormatter setTimeStyle:NSDateFormatterLongStyle];
 }
 
 - (void)setupHeader {
@@ -59,7 +57,9 @@
     [_backButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
     
     [_flagButton addTarget:self action:@selector(flag) forControlEvents:UIControlEventTouchUpInside];
+    [_flagButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
     [_favoriteButton addTarget:self action:@selector(favorite) forControlEvents:UIControlEventTouchUpInside];
+    [_favoriteButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -94,31 +94,35 @@
     
     switch (indexPath.row) {
         case 0:
-            [cell.label setText:@"Title"];
+            [cell.label setText:@"TITLE"];
             [cell.value setText:_art.title];
             break;
         case 1:
-            [cell.label setText:@"Artist"];
+            [cell.label setText:@"ARTIST"];
             [cell.value setText:_art.primaryArtist.name];
             break;
         case 2:
-            [cell.label setText:@"Date"];
-            [cell.value setText:[dateFormatter stringFromDate:_art.createdDate]];
+            [cell.label setText:@"DATE"];
+            if (_art.interval.exactDate){
+                [cell.value setText:[dateFormatter stringFromDate:_art.interval.exactDate]];
+            } else {
+                
+            }
             break;
         case 3:
-            [cell.label setText:@"Medium"];
+            [cell.label setText:@"MEDIUM"];
             [cell.value setText:[_art mediaToSentence]];
             break;
         case 4:
-            [cell.label setText:@"Location"];
+            [cell.label setText:@"LOCATION"];
             [cell.value setText:[_art.locations.firstObject name]];
             break;
         case 5:
-            [cell.label setText:@"Institution"];
+            [cell.label setText:@"INSTITUTION"];
             [cell.value setText:@"institution name"];
             break;
         case 6:
-            [cell.label setText:@"License"];
+            [cell.label setText:@"LICENSE"];
             [cell.value setText:@"Public Domain"];
             break;
             

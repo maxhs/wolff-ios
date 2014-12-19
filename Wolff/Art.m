@@ -16,17 +16,19 @@
 @dynamic caption;
 @dynamic iconography;
 @dynamic artists;
-@dynamic groups;
+@dynamic tables;
 @dynamic photos;
 @dynamic user;
 @dynamic createdDate;
 @dynamic uploadedDate;
 @dynamic favorites;
-@dynamic media;
+@dynamic materials;
 @dynamic locations;
 @dynamic institutions;
 @dynamic credit;
-@dynamic inscriptions;
+@dynamic notExtant;
+@dynamic citations;
 @dynamic movements;
+@dynamic interval;
 
 @end
