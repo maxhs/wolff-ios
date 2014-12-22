@@ -13,7 +13,7 @@
 NSString *const ANUIFontTextStyleCaption3 = @"ANUIFontTextStyleCaption3";
 NSString *const ANUIFontTextStyleCaption4 = @"ANUIFontTextStyleCaption4";
 
-+ (UIFontDescriptor *)preferredLatoFontForTextStyle:(NSString *)textStyle forFont:(NSString*)font {
++ (UIFontDescriptor *)preferredCustomFontForTextStyle:(NSString *)textStyle forFont:(NSString*)font {
     
     static dispatch_once_t onceToken;
     static NSDictionary *fontSizeTable;

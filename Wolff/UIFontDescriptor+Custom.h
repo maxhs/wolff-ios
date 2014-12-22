@@ -10,6 +10,6 @@
 
 @interface UIFontDescriptor (Custom)
 
-+ (UIFontDescriptor *)preferredLatoFontForTextStyle:(NSString *)textStyle forFont:(NSString *)font;
++ (UIFontDescriptor *)preferredCustomFontForTextStyle:(NSString *)textStyle forFont:(NSString *)font;
 
 @end

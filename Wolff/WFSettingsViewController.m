@@ -10,7 +10,7 @@
 #import "WFSettingsViewController.h"
 #import "WFSettingsCell.h"
 #import "Institution+helper.h"
-#import "UIFontDescriptor+Lato.h"
+#import "UIFontDescriptor+Custom.h"
 #import "WFInstitutionSearchViewController.h"
 
 @interface WFSettingsViewController () <UITextFieldDelegate> {
@@ -53,14 +53,14 @@
     [_logoutButton setTitle:@"LOG OUT" forState:UIControlStateNormal];
     [_logoutButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [_logoutButton addTarget:self action:@selector(logout) forControlEvents:UIControlEventTouchUpInside];
-    [_logoutButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
+    [_logoutButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
     _logoutButton.layer.borderColor = [UIColor colorWithWhite:.77 alpha:1].CGColor;
     _logoutButton.layer.cornerRadius = 14.f;
     _logoutButton.layer.borderWidth = .5f;
     
     [_versionLabel setText:[NSString stringWithFormat:@"Version: %@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]]];
     [_versionLabel setTextColor:[UIColor lightGrayColor]];
-    [_versionLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody
+    [_versionLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody
                                                                                               forFont:kLatoLight] size:0]];
     
     self.tableView.tableFooterView = _footerContainerView;
@@ -111,8 +111,8 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     WFSettingsCell *cell = (WFSettingsCell *)[tableView dequeueReusableCellWithIdentifier:@"SettingsCell"];
-    [cell.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
-    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
+    [cell.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
+    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
     
     if (indexPath.section == 0){
         [cell.settingsSwitch setHidden:YES];

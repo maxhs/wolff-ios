@@ -7,7 +7,6 @@
 
 #import "Constants.h"
 #import "ProgressHUD.h"
-#import "UIFontDescriptor+Lato.h"
 
 @implementation ProgressHUD
 
@@ -104,7 +103,7 @@
 	if (label == nil)
 	{
 		label = [[UILabel alloc] initWithFrame:CGRectZero];
-        label.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleSubheadline forFont:kMyriadLight] size:0];
+        label.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0];
         label.shadowColor = [UIColor clearColor];
 		label.textColor = [UIColor blackColor];
 		label.backgroundColor = [UIColor clearColor];

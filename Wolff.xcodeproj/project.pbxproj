@@ -44,6 +44,16 @@
 		5026DF741A3D1F63000CD26F /* remove@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6E1A3D1F62000CD26F /* remove@2x.png */; };
 		5026DF751A3D1F63000CD26F /* remove@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6F1A3D1F62000CD26F /* remove@3x.png */; };
 		50952E7B1A478EA100485831 /* WFMenuViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50952E7A1A478EA100485831 /* WFMenuViewController.m */; };
+		50952E851A47F70E00485831 /* MuseoSans-100.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E7C1A47F70E00485831 /* MuseoSans-100.ttf */; };
+		50952E861A47F70E00485831 /* MuseoSans-100italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E7D1A47F70E00485831 /* MuseoSans-100italic.ttf */; };
+		50952E871A47F70E00485831 /* MuseoSans-300.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E7E1A47F70E00485831 /* MuseoSans-300.ttf */; };
+		50952E881A47F70E00485831 /* MuseoSans-300italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E7F1A47F70E00485831 /* MuseoSans-300italic.ttf */; };
+		50952E891A47F70E00485831 /* MuseoSans-500italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E801A47F70E00485831 /* MuseoSans-500italic.ttf */; };
+		50952E8A1A47F70E00485831 /* MuseoSans-700.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E811A47F70E00485831 /* MuseoSans-700.ttf */; };
+		50952E8B1A47F70E00485831 /* MuseoSans-700italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E821A47F70E00485831 /* MuseoSans-700italic.ttf */; };
+		50952E8C1A47F70E00485831 /* MuseoSans-900.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E831A47F70E00485831 /* MuseoSans-900.ttf */; };
+		50952E8D1A47F70E00485831 /* MuseoSans-900italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E841A47F70E00485831 /* MuseoSans-900italic.ttf */; };
+		50952E8F1A47F99400485831 /* MuseoSans-500.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E8E1A47F99400485831 /* MuseoSans-500.ttf */; };
 		50FB5F781A3F2AA8004D6062 /* download.png in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5F721A3F2AA7004D6062 /* download.png */; };
 		50FB5F791A3F2AA8004D6062 /* download@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5F731A3F2AA8004D6062 /* download@2x.png */; };
 		50FB5F7A1A3F2AA8004D6062 /* download@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5F741A3F2AA8004D6062 /* download@3x.png */; };
@@ -56,8 +66,6 @@
 		50FB5FEA1A40E6CC004D6062 /* Lato-Hai.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5FE51A40E6CC004D6062 /* Lato-Hai.ttf */; };
 		50FB5FEB1A40E6CC004D6062 /* Lato-HaiIta.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5FE61A40E6CC004D6062 /* Lato-HaiIta.ttf */; };
 		50FB5FEC1A40E6CC004D6062 /* Lato-LigIta.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5FE71A40E6CC004D6062 /* Lato-LigIta.ttf */; };
-		50FB5FEF1A40E709004D6062 /* MuseoSans-100.otf in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5FED1A40E709004D6062 /* MuseoSans-100.otf */; };
-		50FB5FF01A40E709004D6062 /* MuseoSans-100Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5FEE1A40E709004D6062 /* MuseoSans-100Italic.otf */; };
 		89A305D0012E4E388F5AA7E8 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 278A29F5F94F48DE9193F246 /* libPods.a */; };
 		F20A3EB719EB1A29008E0D4C /* UIFontDescriptor+Custom.m in Sources */ = {isa = PBXBuildFile; fileRef = F20A3EB619EB1A29008E0D4C /* UIFontDescriptor+Custom.m */; };
 		F20A3EBA19EB1AFD008E0D4C /* Location.m in Sources */ = {isa = PBXBuildFile; fileRef = F20A3EB919EB1AFD008E0D4C /* Location.m */; };
@@ -214,6 +222,16 @@
 		5026DF6F1A3D1F62000CD26F /* remove@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "remove@3x.png"; sourceTree = "<group>"; };
 		50952E791A478EA100485831 /* WFMenuViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMenuViewController.h; sourceTree = "<group>"; };
 		50952E7A1A478EA100485831 /* WFMenuViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFMenuViewController.m; sourceTree = "<group>"; };
+		50952E7C1A47F70E00485831 /* MuseoSans-100.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-100.ttf"; sourceTree = "<group>"; };
+		50952E7D1A47F70E00485831 /* MuseoSans-100italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-100italic.ttf"; sourceTree = "<group>"; };
+		50952E7E1A47F70E00485831 /* MuseoSans-300.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-300.ttf"; sourceTree = "<group>"; };
+		50952E7F1A47F70E00485831 /* MuseoSans-300italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-300italic.ttf"; sourceTree = "<group>"; };
+		50952E801A47F70E00485831 /* MuseoSans-500italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-500italic.ttf"; sourceTree = "<group>"; };
+		50952E811A47F70E00485831 /* MuseoSans-700.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-700.ttf"; sourceTree = "<group>"; };
+		50952E821A47F70E00485831 /* MuseoSans-700italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-700italic.ttf"; sourceTree = "<group>"; };
+		50952E831A47F70E00485831 /* MuseoSans-900.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-900.ttf"; sourceTree = "<group>"; };
+		50952E841A47F70E00485831 /* MuseoSans-900italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-900italic.ttf"; sourceTree = "<group>"; };
+		50952E8E1A47F99400485831 /* MuseoSans-500.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-500.ttf"; sourceTree = "<group>"; };
 		50FB5F721A3F2AA7004D6062 /* download.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = download.png; sourceTree = "<group>"; };
 		50FB5F731A3F2AA8004D6062 /* download@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "download@2x.png"; sourceTree = "<group>"; };
 		50FB5F741A3F2AA8004D6062 /* download@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "download@3x.png"; sourceTree = "<group>"; };
@@ -227,8 +245,6 @@
 		50FB5FE51A40E6CC004D6062 /* Lato-Hai.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-Hai.ttf"; sourceTree = "<group>"; };
 		50FB5FE61A40E6CC004D6062 /* Lato-HaiIta.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-HaiIta.ttf"; sourceTree = "<group>"; };
 		50FB5FE71A40E6CC004D6062 /* Lato-LigIta.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-LigIta.ttf"; sourceTree = "<group>"; };
-		50FB5FED1A40E709004D6062 /* MuseoSans-100.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-100.otf"; sourceTree = "<group>"; };
-		50FB5FEE1A40E709004D6062 /* MuseoSans-100Italic.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-100Italic.otf"; sourceTree = "<group>"; };
 		7317AE0722CA214E63ADDDD9 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		F20A3EB519EB1A29008E0D4C /* UIFontDescriptor+Custom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIFontDescriptor+Custom.h"; sourceTree = "<group>"; };
 		F20A3EB619EB1A29008E0D4C /* UIFontDescriptor+Custom.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIFontDescriptor+Custom.m"; sourceTree = "<group>"; };
@@ -599,8 +615,16 @@
 				F20D2E9C19EB095F00CA54C0 /* Lato-Lig.ttf */,
 				F20D2E9D19EB095F00CA54C0 /* Lato-BolIta.ttf */,
 				F20D2E9E19EB095F00CA54C0 /* Lato-Bol.ttf */,
-				50FB5FED1A40E709004D6062 /* MuseoSans-100.otf */,
-				50FB5FEE1A40E709004D6062 /* MuseoSans-100Italic.otf */,
+				50952E7C1A47F70E00485831 /* MuseoSans-100.ttf */,
+				50952E7D1A47F70E00485831 /* MuseoSans-100italic.ttf */,
+				50952E7E1A47F70E00485831 /* MuseoSans-300.ttf */,
+				50952E7F1A47F70E00485831 /* MuseoSans-300italic.ttf */,
+				50952E8E1A47F99400485831 /* MuseoSans-500.ttf */,
+				50952E801A47F70E00485831 /* MuseoSans-500italic.ttf */,
+				50952E811A47F70E00485831 /* MuseoSans-700.ttf */,
+				50952E821A47F70E00485831 /* MuseoSans-700italic.ttf */,
+				50952E831A47F70E00485831 /* MuseoSans-900.ttf */,
+				50952E841A47F70E00485831 /* MuseoSans-900italic.ttf */,
 			);
 			name = Fonts;
 			sourceTree = "<group>";
@@ -851,21 +875,26 @@
 				F2A957FF19E220F100A3B471 /* icon-72.png in Resources */,
 				501473F31A3EA136000422B8 /* image.png in Resources */,
 				50FB5FE81A40E6CC004D6062 /* Lato-Bla.ttf in Resources */,
+				50952E861A47F70E00485831 /* MuseoSans-100italic.ttf in Resources */,
+				50952E871A47F70E00485831 /* MuseoSans-300.ttf in Resources */,
 				F2A9580319E220F100A3B471 /* icon-120.png in Resources */,
 				F2A957FB19E220F100A3B471 /* icon-40.png in Resources */,
 				5014740A1A3EA886000422B8 /* logout@3x.png in Resources */,
 				F2A9580219E220F100A3B471 /* icon-114.png in Resources */,
 				5026DF691A3CD15B000CD26F /* settings@3x.png in Resources */,
+				50952E8D1A47F70E00485831 /* MuseoSans-900italic.ttf in Resources */,
 				501473F91A3EA136000422B8 /* lock.png in Resources */,
 				5026DF721A3D1F63000CD26F /* blackRemove@3x.png in Resources */,
 				501473FB1A3EA136000422B8 /* lock@3x.png in Resources */,
 				501474081A3EA886000422B8 /* logout.png in Resources */,
 				F2A9580019E220F100A3B471 /* icon-76.png in Resources */,
 				5026DF741A3D1F63000CD26F /* remove@2x.png in Resources */,
+				50952E851A47F70E00485831 /* MuseoSans-100.ttf in Resources */,
+				50952E8A1A47F70E00485831 /* MuseoSans-700.ttf in Resources */,
+				50952E881A47F70E00485831 /* MuseoSans-300italic.ttf in Resources */,
 				F20D2EA019EB095F00CA54C0 /* Lato-RegIta.ttf in Resources */,
 				50FB5F7C1A3F2AA8004D6062 /* table@2x.png in Resources */,
 				5026DF731A3D1F63000CD26F /* remove.png in Resources */,
-				50FB5FF01A40E709004D6062 /* MuseoSans-100Italic.otf in Resources */,
 				5026DF751A3D1F63000CD26F /* remove@3x.png in Resources */,
 				F2A957FE19E220F100A3B471 /* icon-58.png in Resources */,
 				50FB5FEA1A40E6CC004D6062 /* Lato-Hai.ttf in Resources */,
@@ -873,6 +902,8 @@
 				50FB5F781A3F2AA8004D6062 /* download.png in Resources */,
 				50FB5F7D1A3F2AA8004D6062 /* table@3x in Resources */,
 				501473F11A3EA136000422B8 /* favorite@2x.png in Resources */,
+				50952E891A47F70E00485831 /* MuseoSans-500italic.ttf in Resources */,
+				50952E8C1A47F70E00485831 /* MuseoSans-900.ttf in Resources */,
 				F2A9580C19E222FC00A3B471 /* icon-180.png in Resources */,
 				F20D2EA319EB095F00CA54C0 /* Lato-Bol.ttf in Resources */,
 				F28C780718E1E4950088B4C9 /* Images.xcassets in Resources */,
@@ -885,6 +916,7 @@
 				501474051A3EA886000422B8 /* login.png in Resources */,
 				501473F71A3EA136000422B8 /* lightbulb@2x.png in Resources */,
 				501473F51A3EA136000422B8 /* image@3x.png in Resources */,
+				50952E8F1A47F99400485831 /* MuseoSans-500.ttf in Resources */,
 				F2A9580419E220F100A3B471 /* icon-144.png in Resources */,
 				501473FC1A3EA136000422B8 /* trash.png in Resources */,
 				50FB5F7B1A3F2AA8004D6062 /* table.png in Resources */,
@@ -898,12 +930,12 @@
 				F2A9580519E220F100A3B471 /* icon-152.png in Resources */,
 				F2A9581019E2245F00A3B471 /* Default_iPad_landscape@2x.png in Resources */,
 				50FB5F791A3F2AA8004D6062 /* download@2x.png in Resources */,
-				50FB5FEF1A40E709004D6062 /* MuseoSans-100.otf in Resources */,
 				5026DF701A3D1F62000CD26F /* blackRemove.png in Resources */,
 				501473F61A3EA136000422B8 /* lightbulb.png in Resources */,
 				50FB5F7A1A3F2AA8004D6062 /* download@3x.png in Resources */,
 				F20D2EA119EB095F00CA54C0 /* Lato-Lig.ttf in Resources */,
 				501473F01A3EA136000422B8 /* favorite.png in Resources */,
+				50952E8B1A47F70E00485831 /* MuseoSans-700italic.ttf in Resources */,
 				501473FD1A3EA136000422B8 /* trash@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -298,7 +298,7 @@
     _loginButton.layer.cornerRadius = 19.f;
     _loginButton.layer.borderColor = [UIColor colorWithWhite:.825 alpha:0].CGColor;
     [_loginButton addTarget:self action:@selector(connect) forControlEvents:UIControlEventTouchUpInside];
-    [_loginButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredLatoFontForTextStyle:UIFontTextStyleSubheadline forFont:kLato] size:0]];
+    [_loginButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kLato] size:0]];
 }
 
 - (void)textFieldTreatment:(UITextField*)textField {
@@ -306,7 +306,7 @@
     textField.layer.borderWidth = .5f;
     textField.layer.cornerRadius = 3.f;
     textField.clipsToBounds = YES;
-    [textField setFont:[UIFont fontWithName:kMyriadLight size:17]];
+    [textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
     UIView *paddingView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 5, 20)];
     textField.leftView = paddingView;
     textField.leftViewMode = UITextFieldViewModeAlways;

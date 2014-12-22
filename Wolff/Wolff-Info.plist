@@ -30,7 +30,7 @@
 	<true/>
 	<key>UIAppFonts</key>
 	<array>
-		<string>MuseoSans-100.otf</string>
+		<string>MuseoSans-100.ttf</string>
 		<string>Lato-HaiIta.ttf</string>
 		<string>Lato-Hai.ttf</string>
 		<string>Lato-Reg.ttf</string>
@@ -39,9 +39,17 @@
 		<string>Lato-BolIta.ttf</string>
 		<string>Lato-Bol.ttf</string>
 		<string>Lato-LigIta.ttf</string>
-		<string>MuseoSans-100Italic.otf</string>
+		<string>MuseoSans-100Italic.ttf</string>
 		<string>Lato-Bla.ttf</string>
 		<string>Lato-BlaIta.ttf</string>
+		<string>MuseoSans-300.ttf</string>
+		<string>MuseoSans-300italic.ttf</string>
+		<string>MuseoSans-500.ttf</string>
+		<string>MuseoSans-500italic.ttf</string>
+		<string>MuseoSans-700.ttf</string>
+		<string>MuseoSans-700italic.ttf</string>
+		<string>MuseoSans-900.ttf</string>
+		<string>MuseoSans-900italic.ttf</string>
 	</array>
 	<key>UIMainStoryboardFile</key>
 	<string>Main_iPhone</string>

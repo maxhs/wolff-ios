@@ -93,15 +93,15 @@
 }
 
 - (void)customizeAppearance {
-    for (NSString* family in [UIFont familyNames]){
+    /*for (NSString* family in [UIFont familyNames]){
         NSLog(@"%@", family);
         for (NSString* name in [UIFont fontNamesForFamilyName: family])
             NSLog(@"  %@", name);
-    }
+    }*/
     [[UINavigationBar appearance] setBarStyle:UIBarStyleBlackTranslucent];
     [[UIBarButtonItem appearance] setTintColor:[UIColor whiteColor]];
-    [[UINavigationBar appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kLato size:21]}];
-    [[UIBarButtonItem appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kLato size:18]} forState:UIControlStateNormal];
+    [[UINavigationBar appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kMuseoSansLight size:21]}];
+    [[UIBarButtonItem appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kMuseoSansLight size:18]} forState:UIControlStateNormal];
     
     [self.window setBackgroundColor:[UIColor blackColor]];
     [self.window setTintColor:[UIColor blackColor]];

@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "UIFontDescriptor+Lato.h"
+#import "UIFontDescriptor+Custom.h"
 
 #ifndef Wolff_Constants_h
 #define Wolff_Constants_h
@@ -41,8 +41,16 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kUserDefaultsAdmin @"admin"
 #define kUserDefaultsMobileToken @"mobileToken"
 
-#define kMuseoSansLight @"MuseoSans-100"
-#define kMuseoSansLightItalic @"MuseoSans-100Italic"
+#define kMuseoSansThin @"MuseoSans-100"
+#define kMuseoSansThinItalic @"MuseoSans-100Italic"
+#define kMuseoSansLight @"MuseoSans-300"
+#define kMuseoSansLightItalic @"MuseoSans-300Italic"
+#define kMuseoSans @"MuseoSans-500"
+#define kMuseoSansItalic @"MuseoSans-500Italic"
+#define kMuseoSansSemibold @"MuseoSans-700"
+#define kMuseoSansSemiboldItalic @"MuseoSans-700Italic"
+#define kMuseoSansBold @"MuseoSans-900"
+#define kMuseoSansBoldItalic @"MuseoSans-900Italic"
 #define kLato @"Lato-Regular"
 #define kLatoItalic @"Lato-Italic"
 #define kLatoLight @"Lato-Light"
