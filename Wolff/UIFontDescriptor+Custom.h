@@ -1,5 +1,5 @@
 //
-//  UIFontDescriptor+Lato.h
+//  UIFontDescriptor+Custom.h
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 10/12/14.
@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface UIFontDescriptor (Lato)
+@interface UIFontDescriptor (Custom)
 
 + (UIFontDescriptor *)preferredLatoFontForTextStyle:(NSString *)textStyle forFont:(NSString *)font;
 

@@ -1,14 +1,14 @@
 //
-//  UIFontDescriptor+Lato.m
+//  UIFontDescriptor+Custom.m
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 10/12/14.
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
-#import "UIFontDescriptor+Lato.h"
+#import "UIFontDescriptor+Custom.h"
 
-@implementation UIFontDescriptor (Lato)
+@implementation UIFontDescriptor (Custom)
 
 NSString *const ANUIFontTextStyleCaption3 = @"ANUIFontTextStyleCaption3";
 NSString *const ANUIFontTextStyleCaption4 = @"ANUIFontTextStyleCaption4";

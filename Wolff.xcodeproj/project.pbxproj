@@ -59,7 +59,7 @@
 		50FB5FEF1A40E709004D6062 /* MuseoSans-100.otf in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5FED1A40E709004D6062 /* MuseoSans-100.otf */; };
 		50FB5FF01A40E709004D6062 /* MuseoSans-100Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5FEE1A40E709004D6062 /* MuseoSans-100Italic.otf */; };
 		89A305D0012E4E388F5AA7E8 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 278A29F5F94F48DE9193F246 /* libPods.a */; };
-		F20A3EB719EB1A29008E0D4C /* UIFontDescriptor+Lato.m in Sources */ = {isa = PBXBuildFile; fileRef = F20A3EB619EB1A29008E0D4C /* UIFontDescriptor+Lato.m */; };
+		F20A3EB719EB1A29008E0D4C /* UIFontDescriptor+Custom.m in Sources */ = {isa = PBXBuildFile; fileRef = F20A3EB619EB1A29008E0D4C /* UIFontDescriptor+Custom.m */; };
 		F20A3EBA19EB1AFD008E0D4C /* Location.m in Sources */ = {isa = PBXBuildFile; fileRef = F20A3EB919EB1AFD008E0D4C /* Location.m */; };
 		F20A3EBD19EB1AFE008E0D4C /* Institution.m in Sources */ = {isa = PBXBuildFile; fileRef = F20A3EBC19EB1AFE008E0D4C /* Institution.m */; };
 		F20A3EC019EB1B17008E0D4C /* Institution+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F20A3EBF19EB1B17008E0D4C /* Institution+helper.m */; };
@@ -230,8 +230,8 @@
 		50FB5FED1A40E709004D6062 /* MuseoSans-100.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-100.otf"; sourceTree = "<group>"; };
 		50FB5FEE1A40E709004D6062 /* MuseoSans-100Italic.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-100Italic.otf"; sourceTree = "<group>"; };
 		7317AE0722CA214E63ADDDD9 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
-		F20A3EB519EB1A29008E0D4C /* UIFontDescriptor+Lato.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIFontDescriptor+Lato.h"; sourceTree = "<group>"; };
-		F20A3EB619EB1A29008E0D4C /* UIFontDescriptor+Lato.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIFontDescriptor+Lato.m"; sourceTree = "<group>"; };
+		F20A3EB519EB1A29008E0D4C /* UIFontDescriptor+Custom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIFontDescriptor+Custom.h"; sourceTree = "<group>"; };
+		F20A3EB619EB1A29008E0D4C /* UIFontDescriptor+Custom.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIFontDescriptor+Custom.m"; sourceTree = "<group>"; };
 		F20A3EB819EB1AFD008E0D4C /* Location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Location.h; sourceTree = "<group>"; };
 		F20A3EB919EB1AFD008E0D4C /* Location.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Location.m; sourceTree = "<group>"; };
 		F20A3EBB19EB1AFE008E0D4C /* Institution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Institution.h; sourceTree = "<group>"; };
@@ -421,6 +421,8 @@
 		F2139D82193A56C200EE5C96 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				F20A3EB519EB1A29008E0D4C /* UIFontDescriptor+Custom.h */,
+				F20A3EB619EB1A29008E0D4C /* UIFontDescriptor+Custom.m */,
 				F2139D7C193A56BE00EE5C96 /* UIImage+ImageEffects.h */,
 				F2139D7D193A56BE00EE5C96 /* UIImage+ImageEffects.m */,
 				F2139D7E193A56BE00EE5C96 /* ProgressHUD.h */,
@@ -465,6 +467,7 @@
 		F28C77EB18E1E4950088B4C9 /* Wolff */ = {
 			isa = PBXGroup;
 			children = (
+				F2139D82193A56C200EE5C96 /* Libraries */,
 				F28C77F418E1E4950088B4C9 /* WFAppDelegate.h */,
 				F28C77F518E1E4950088B4C9 /* WFAppDelegate.m */,
 				F28C77FA18E1E4950088B4C9 /* Main_iPad.storyboard */,
@@ -500,7 +503,6 @@
 				50952E791A478EA100485831 /* WFMenuViewController.h */,
 				50952E7A1A478EA100485831 /* WFMenuViewController.m */,
 				F2A9581119E2293800A3B471 /* Transitions / Animators */,
-				F2139D82193A56C200EE5C96 /* Libraries */,
 				F2CE055E198E76450061DB94 /* Images */,
 				F2CE0548198E6C5E0061DB94 /* Fonts */,
 				F28C77EC18E1E4950088B4C9 /* Supporting Files */,
@@ -587,8 +589,6 @@
 		F2CE0548198E6C5E0061DB94 /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
-				F20A3EB519EB1A29008E0D4C /* UIFontDescriptor+Lato.h */,
-				F20A3EB619EB1A29008E0D4C /* UIFontDescriptor+Lato.m */,
 				50FB5FE31A40E6CC004D6062 /* Lato-Bla.ttf */,
 				50FB5FE41A40E6CC004D6062 /* Lato-BlaIta.ttf */,
 				50FB5FE51A40E6CC004D6062 /* Lato-Hai.ttf */,
@@ -958,7 +958,7 @@
 			files = (
 				F2CE0579198E91910061DB94 /* Art.m in Sources */,
 				F28C67111A34150500B82FD8 /* WFInstitutionSearchCell.m in Sources */,
-				F20A3EB719EB1A29008E0D4C /* UIFontDescriptor+Lato.m in Sources */,
+				F20A3EB719EB1A29008E0D4C /* UIFontDescriptor+Custom.m in Sources */,
 				F20FB3011A24E0850007C905 /* NSArray+ToSentence.m in Sources */,
 				F20FB2FE1A24DF620007C905 /* Table+helper.m in Sources */,
 				F20A3EBD19EB1AFE008E0D4C /* Institution.m in Sources */,
