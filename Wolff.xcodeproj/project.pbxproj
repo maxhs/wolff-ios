@@ -43,6 +43,7 @@
 		5026DF731A3D1F63000CD26F /* remove.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6D1A3D1F62000CD26F /* remove.png */; };
 		5026DF741A3D1F63000CD26F /* remove@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6E1A3D1F62000CD26F /* remove@2x.png */; };
 		5026DF751A3D1F63000CD26F /* remove@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6F1A3D1F62000CD26F /* remove@3x.png */; };
+		50952E7B1A478EA100485831 /* WFMenuViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50952E7A1A478EA100485831 /* WFMenuViewController.m */; };
 		50FB5F781A3F2AA8004D6062 /* download.png in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5F721A3F2AA7004D6062 /* download.png */; };
 		50FB5F791A3F2AA8004D6062 /* download@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5F731A3F2AA8004D6062 /* download@2x.png */; };
 		50FB5F7A1A3F2AA8004D6062 /* download@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5F741A3F2AA8004D6062 /* download@3x.png */; };
@@ -211,6 +212,8 @@
 		5026DF6D1A3D1F62000CD26F /* remove.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = remove.png; sourceTree = "<group>"; };
 		5026DF6E1A3D1F62000CD26F /* remove@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "remove@2x.png"; sourceTree = "<group>"; };
 		5026DF6F1A3D1F62000CD26F /* remove@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "remove@3x.png"; sourceTree = "<group>"; };
+		50952E791A478EA100485831 /* WFMenuViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMenuViewController.h; sourceTree = "<group>"; };
+		50952E7A1A478EA100485831 /* WFMenuViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFMenuViewController.m; sourceTree = "<group>"; };
 		50FB5F721A3F2AA7004D6062 /* download.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = download.png; sourceTree = "<group>"; };
 		50FB5F731A3F2AA8004D6062 /* download@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "download@2x.png"; sourceTree = "<group>"; };
 		50FB5F741A3F2AA8004D6062 /* download@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "download@3x.png"; sourceTree = "<group>"; };
@@ -494,6 +497,8 @@
 				F28C670D1A34139600B82FD8 /* WFInstitutionSearchViewController.m */,
 				5026DF5B1A3CC0C0000CD26F /* WFTablesViewController.h */,
 				5026DF5C1A3CC0C0000CD26F /* WFTablesViewController.m */,
+				50952E791A478EA100485831 /* WFMenuViewController.h */,
+				50952E7A1A478EA100485831 /* WFMenuViewController.m */,
 				F2A9581119E2293800A3B471 /* Transitions / Animators */,
 				F2139D82193A56C200EE5C96 /* Libraries */,
 				F2CE055E198E76450061DB94 /* Images */,
@@ -1003,6 +1008,7 @@
 				F28C67141A34176D00B82FD8 /* WFSettingsAnimator.m in Sources */,
 				F28C77F618E1E4950088B4C9 /* WFAppDelegate.m in Sources */,
 				F2CE0595198EAB280061DB94 /* WFSettingsViewController.m in Sources */,
+				50952E7B1A478EA100485831 /* WFMenuViewController.m in Sources */,
 				F2CE05B219911A9A0061DB94 /* Presentation+helper.m in Sources */,
 				F2CE0576198E85DA0061DB94 /* Art+helper.m in Sources */,
 				F2CE0573198E85850061DB94 /* WFArtCell.m in Sources */,

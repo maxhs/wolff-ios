@@ -64,13 +64,13 @@
     <entity name="Interval" representedClassName="Interval" syncable="YES">
         <attribute name="beginRange" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="beginSuffix" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="circa" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="circa" optional="YES" attributeType="Boolean" defaultValueString="0" syncable="YES"/>
         <attribute name="createdAt" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="endRange" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="endSuffix" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="epochString" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="exactDate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="single" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="suffix" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="art" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Art" inverseName="interval" inverseEntity="Art" syncable="YES"/>
     </entity>
     <entity name="Location" representedClassName="Location" syncable="YES">
@@ -165,10 +165,11 @@
     <elements>
         <element name="Art" positionX="270" positionY="252" width="128" height="373"/>
         <element name="Artist" positionX="306" positionY="279" width="128" height="178"/>
+        <element name="Citation" positionX="288" positionY="342" width="128" height="88"/>
         <element name="Favorite" positionX="279" positionY="324" width="128" height="118"/>
         <element name="Icon" positionX="315" positionY="378" width="128" height="103"/>
         <element name="Institution" positionX="261" positionY="234" width="128" height="133"/>
-        <element name="Interval" positionX="288" positionY="342" width="128" height="193"/>
+        <element name="Interval" positionX="288" positionY="342" width="128" height="195"/>
         <element name="Location" positionX="279" positionY="261" width="128" height="253"/>
         <element name="Material" positionX="288" positionY="342" width="128" height="120"/>
         <element name="Movement" positionX="324" positionY="387" width="128" height="88"/>
@@ -177,6 +178,5 @@
         <element name="Slide" positionX="297" positionY="315" width="128" height="118"/>
         <element name="Table" positionX="288" positionY="270" width="128" height="163"/>
         <element name="User" positionX="261" positionY="189" width="128" height="343"/>
-        <element name="Citation" positionX="288" positionY="342" width="128" height="88"/>
     </elements>
 </model>

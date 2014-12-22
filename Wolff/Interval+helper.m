@@ -15,22 +15,27 @@
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }
-    if ([dictionary objectForKey:@"begin_date_range"] && [dictionary objectForKey:@"begin_date_range"] != [NSNull null]){
-        self.beginRange = [dictionary objectForKey:@"begin_date_range"];
+    if ([dictionary objectForKey:@"begin_range"] && [dictionary objectForKey:@"begin_range"] != [NSNull null]){
+        self.beginRange = [dictionary objectForKey:@"begin_range"];
     }
-    if ([dictionary objectForKey:@"end_date_range"] && [dictionary objectForKey:@"end_date_range"] != [NSNull null]){
-        self.endRange = [dictionary objectForKey:@"end_date_range"];
+    if ([dictionary objectForKey:@"end_range"] && [dictionary objectForKey:@"end_range"] != [NSNull null]){
+        self.endRange = [dictionary objectForKey:@"end_range"];
     }
-    if ([dictionary objectForKey:@"exact"] && [dictionary objectForKey:@"exact"] != [NSNull null]){
-        //self.exactDate = [dictionary objectForKey:@"exact"];
+    if ([dictionary objectForKey:@"circa"] && [dictionary objectForKey:@"circa"] != [NSNull null]){
+        self.circa = [dictionary objectForKey:@"circa"];
+    }
+    if ([dictionary objectForKey:@"suffix"] && [dictionary objectForKey:@"suffix"] != [NSNull null]){
+        self.suffix = [dictionary objectForKey:@"suffix"];
+    }
+    if ([dictionary objectForKey:@"single"] && [dictionary objectForKey:@"single"] != [NSNull null]){
         NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
         [dateFormat setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSSZ"];
         NSDate *date;
         NSError *error;
-        if (![dateFormat getObjectValue:&date forString:[dictionary objectForKey:@"exact"] range:nil error:&error]) {
-            NSLog(@"Date '%@' could not be parsed: %@", [dictionary objectForKey:@"exact"], error);
+        if (![dateFormat getObjectValue:&date forString:[dictionary objectForKey:@"single"] range:nil error:&error]) {
+            NSLog(@"Date '%@' could not be parsed: %@", [dictionary objectForKey:@"single"], error);
         }
-        self.exactDate = date;
+        self.single = date;
     }
 }
 @end

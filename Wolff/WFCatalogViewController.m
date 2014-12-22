@@ -81,7 +81,7 @@
     gestureRecognizer.edges = UIRectEdgeLeft;
     [self.view addGestureRecognizer:gestureRecognizer];*/
     
-    _dragForComparisonLabel.font = [UIFont fontWithName:kMyriadLight size:20];
+    _dragForComparisonLabel.font = [UIFont fontWithName:kMuseoSansLight size:20];
     [self setUpNavBar];
     
     mainRefresh = [[UIRefreshControl alloc] init];

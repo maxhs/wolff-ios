@@ -222,6 +222,33 @@
             </objects>
             <point key="canvasLocation" x="-527" y="-2080"/>
         </scene>
+        <!--Menu View Controller-->
+        <scene sceneID="Wut-3p-0aq">
+            <objects>
+                <tableViewController storyboardIdentifier="Menu" id="755-YI-1Hk" customClass="WFMenuViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="4si-z2-I0y">
+                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <prototypes>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="6Ly-iS-6qL">
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="6Ly-iS-6qL" id="jnP-SZ-EqW">
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="755-YI-1Hk" id="xmO-82-8vS"/>
+                            <outlet property="delegate" destination="755-YI-1Hk" id="bP1-X2-Q3B"/>
+                        </connections>
+                    </tableView>
+                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="NwG-NG-9BI" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-766" y="-1050"/>
+        </scene>
         <!--Presentations View Controller-->
         <scene sceneID="vxT-jk-ZRL">
             <objects>
@@ -397,7 +424,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="Aql-dP-3vf">
-                                                    <rect key="frame" x="0.0" y="0.0" width="3072" height="262"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="4096" height="349"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <connections>
                                                         <outlet property="delegate" destination="mF4-Xe-ff1" id="al6-EO-MKX"/>

@@ -19,8 +19,8 @@
 @dynamic beginSuffix;
 @dynamic endSuffix;
 @dynamic circa;
-@dynamic exactDate;
-@dynamic epochString;
+@dynamic single;
+@dynamic suffix;
 @dynamic art;
 
 @end

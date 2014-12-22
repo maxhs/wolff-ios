@@ -103,8 +103,8 @@
             break;
         case 2:
             [cell.label setText:@"DATE"];
-            if (_art.interval.exactDate){
-                [cell.value setText:[dateFormatter stringFromDate:_art.interval.exactDate]];
+            if (_art.interval.single){
+                [cell.value setText:[dateFormatter stringFromDate:_art.interval.single]];
             } else {
                 
             }

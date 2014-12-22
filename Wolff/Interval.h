@@ -20,8 +20,8 @@
 @property (nonatomic, retain) NSString * beginSuffix;
 @property (nonatomic, retain) NSString * endSuffix;
 @property (nonatomic, retain) NSNumber * circa;
-@property (nonatomic, retain) NSDate * exactDate;
-@property (nonatomic, retain) NSString * epochString;
+@property (nonatomic, retain) NSDate * single;
+@property (nonatomic, retain) NSString * suffix;
 @property (nonatomic, retain) Art *art;
 
 @end
