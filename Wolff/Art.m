@@ -30,5 +30,7 @@
 @dynamic citations;
 @dynamic movements;
 @dynamic interval;
+@dynamic discussions;
+@dynamic notifications;
 
 @end

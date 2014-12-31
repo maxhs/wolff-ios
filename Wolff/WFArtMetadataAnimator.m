@@ -68,10 +68,11 @@
         toViewController.view.userInteractionEnabled = YES;
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
-        CGRect metadataEndFrame = CGRectMake((screenWidth()/2-300)-screenWidth(), screenHeight()/2-350, 600, 700);
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            fromViewController.view.frame = metadataEndFrame;
+        NSTimeInterval outDuration = [self transitionDuration:transitionContext]*.7;
+        [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.8 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            fromViewController.view.transform = CGAffineTransformMakeScale(.87, .87);
+            [fromViewController.view setAlpha:0.0];
             [darkBackground setAlpha:0.0];
             toViewController.view.frame = [UIScreen mainScreen].bounds;
         } completion:^(BOOL finished) {

@@ -16,6 +16,7 @@
 @property (nonatomic, retain) NSString * title;
 @property (nonatomic, retain) NSString * presentationDescription;
 @property (nonatomic, retain) NSOrderedSet *slides;
+@property (nonatomic, retain) NSOrderedSet *discussions;
 @end
 
 @interface Presentation (CoreDataGeneratedAccessors)

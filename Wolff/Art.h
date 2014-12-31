@@ -30,6 +30,8 @@
 @property (nonatomic, retain) NSOrderedSet *citations;
 @property (nonatomic, retain) NSOrderedSet *institutions;
 @property (nonatomic, retain) NSOrderedSet *movements;
+@property (nonatomic, retain) NSOrderedSet *discussions;
+@property (nonatomic, retain) NSOrderedSet *notifications;
 @property (nonatomic, retain) User *user;
 @property (nonatomic, retain) Interval *interval;
 @end

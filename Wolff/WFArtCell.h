@@ -7,8 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Art+helper.h"
 
 @interface WFArtCell : UICollectionViewCell
+@property (weak, nonatomic) IBOutlet UIView *slideContainerView;
 @property (weak, nonatomic) IBOutlet UIImageView *artImageView;
--(UIImage *)getRasterizedImageCopy;
+
+- (UIImage *)getRasterizedImageCopy;
+- (void)configureForArt:(Art*)art;
+
 @end

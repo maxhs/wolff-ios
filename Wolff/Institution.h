@@ -18,6 +18,7 @@
 @property (nonatomic, retain) NSOrderedSet *users;
 @property (nonatomic, retain) NSOrderedSet *arts;
 @property (nonatomic, retain) NSSet *locations;
+@property (nonatomic, retain) NSOrderedSet *notifications;
 @end
 
 @interface Institution (CoreDataGeneratedAccessors)

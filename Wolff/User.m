@@ -31,5 +31,7 @@
 @dynamic textPermission;
 @dynamic favorites;
 @dynamic presentations;
+@dynamic comments;
+@dynamic notifications;
 
 @end

@@ -23,6 +23,7 @@
 #import "WFSettingsAnimator.h"
 #import "WFTablesAnimator.h"
 #import "WFTablesViewController.h"
+#import "WFNotificationsViewController.h"
 
 @interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate, UIPopoverControllerDelegate, WFPresentationDelegate> {
     WFAppDelegate *delegate;
@@ -30,6 +31,7 @@
     User *_currentUser;
     UIBarButtonItem *presentationsButton;
     UIBarButtonItem *groupsButton;
+    UIBarButtonItem *notificationsButton;
     CGFloat width;
     CGFloat height;
     NSMutableArray *arts;
@@ -43,6 +45,7 @@
     BOOL searching;
     BOOL settings;
     BOOL groupBool;
+    BOOL tableIsVisible;
     CGFloat topInset;
     UIRefreshControl *mainRefresh;
 }
@@ -74,6 +77,9 @@
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     delegate.loginDelegate = self;
     manager = delegate.manager;
+    arts = [NSMutableArray array];
+    
+    [_collectionView setBackgroundColor:[UIColor whiteColor]];
     [_comparisonContainerView setBackgroundColor:[UIColor lightGrayColor]];
     
     /*self.groupsInteractor = [[WFGroupsInteractor alloc] initWithParentViewController:self];
@@ -81,7 +87,9 @@
     gestureRecognizer.edges = UIRectEdgeLeft;
     [self.view addGestureRecognizer:gestureRecognizer];*/
     
-    _dragForComparisonLabel.font = [UIFont fontWithName:kMuseoSansLight size:20];
+    _dragForComparisonLabel.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0];
+    
+    //set up the nav buttons
     [self setUpNavBar];
     
     mainRefresh = [[UIRefreshControl alloc] init];
@@ -101,8 +109,13 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    
     _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
-    [self loadUser];
+    if (_currentUser){
+        //[self loadUser];
+    }
+    
+    [self loadArt];
 }
 
 - (void)refreshMain:(UIRefreshControl*)refreshControl {
@@ -121,15 +134,17 @@
 }
 
 - (void)setUpNavBar {
-    presentationsButton = [[UIBarButtonItem alloc] initWithTitle:@"Presentations" style:UIBarButtonItemStylePlain target:self action:@selector(showPresentations:)];
+    presentationsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"presentation"] style:UIBarButtonItemStylePlain target:self action:@selector(showPresentations:)];
     groupsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"tables"] style:UIBarButtonItemStylePlain target:self action:@selector(showTables)];
     self.navigationItem.leftBarButtonItems = @[groupsButton,presentationsButton];
     
-    addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(add)];
+    addButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"plus"] style:UIBarButtonItemStylePlain target:self action:@selector(add)];
     
     if (_currentUser){
         settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"settings"] style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
-        self.navigationItem.rightBarButtonItems = @[addButton,settingsButton];
+        notificationsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"alert"] style:UIBarButtonItemStylePlain target:self action:@selector(showNotifications)];
+        
+        self.navigationItem.rightBarButtonItems = @[addButton,notificationsButton, settingsButton];
     } else {
         loginButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"login"] style:UIBarButtonItemStylePlain target:self action:@selector(showLogin)];
         self.navigationItem.rightBarButtonItems = @[loginButton, addButton];
@@ -138,6 +153,28 @@
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     topInset = self.navigationController.navigationBar.frame.size.height + 20;
     self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+}
+
+- (void)loadArt {
+    [manager GET:[NSString stringWithFormat:@"arts"] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [arts removeAllObjects];
+        NSLog(@"load arts success: %@", responseObject);
+        for (NSDictionary *dict in [responseObject objectForKey:@"arts"]) {
+            Art *art = [Art MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"identifier"] inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (art){
+                
+            } else {
+                art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [art populateFromDictionary:dict];
+            [arts addObject:art];
+        }
+        
+        [self.collectionView reloadData];
+        [self endRefresh];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        [self endRefresh];
+    }];
 }
 
 - (void)loadUser {
@@ -254,7 +291,11 @@
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (IDIOM == IPAD){
-        return CGSizeMake((width-kMainSplitWidth)/3,(width-kMainSplitWidth)/3);
+        if (tableIsVisible){
+            return CGSizeMake((width-kMainSplitWidth)/3,(width-kMainSplitWidth)/3);
+        } else {
+            return CGSizeMake(width/4, width/4);
+        }
     } else {
         return CGSizeMake(width/3,width/3);
     }
@@ -276,19 +317,8 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFArtCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"ArtCell" forIndexPath:indexPath];
-    cell.layer.borderColor = [UIColor colorWithWhite:1 alpha:.023].CGColor;
-    cell.layer.borderWidth = 0.f;
     Art *art = arts[indexPath.item];
-    if (art.photo.largeImageUrl.length){
-        [cell.artImageView sd_setImageWithURL:[NSURL URLWithString:art.photo.largeImageUrl]  placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-            [UIView animateWithDuration:.23 animations:^{
-                [cell.artImageView setAlpha:1.0];
-            }];
-        }];
-        
-     } else {
-         [cell.artImageView setImage:nil];
-     }
+    [cell configureForArt:art];
     
     return cell;
 }
@@ -408,6 +438,14 @@
 - (void)showLogin {
     WFLoginViewController *login = [[self storyboard] instantiateViewControllerWithIdentifier:@"Login"];
     [self presentViewController:login animated:YES completion:^{
+        
+    }];
+}
+
+- (void)showNotifications {
+    WFNotificationsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Notifications"];
+    
+    [self presentViewController:vc animated:YES completion:^{
         
     }];
 }

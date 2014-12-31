@@ -22,6 +22,9 @@
 @property (nonatomic, retain) NSDate * deathDate;
 @property (nonatomic, retain) NSOrderedSet *arts;
 @property (nonatomic, retain) NSOrderedSet *favorites;
+@property (nonatomic, retain) NSOrderedSet *discussions;
+@property (nonatomic, retain) NSOrderedSet *notifications;
+
 @end
 
 @interface Artist (CoreDataGeneratedAccessors)

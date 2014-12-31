@@ -295,7 +295,7 @@
 - (void)setUpLoginButton {
     [_loginButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
     _loginButton.layer.borderWidth = 1.f;
-    _loginButton.layer.cornerRadius = 19.f;
+    _loginButton.layer.cornerRadius = 22.f;
     _loginButton.layer.borderColor = [UIColor colorWithWhite:.825 alpha:0].CGColor;
     [_loginButton addTarget:self action:@selector(connect) forControlEvents:UIControlEventTouchUpInside];
     [_loginButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kLato] size:0]];

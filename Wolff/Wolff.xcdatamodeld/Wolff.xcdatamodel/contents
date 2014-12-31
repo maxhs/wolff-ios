@@ -12,6 +12,7 @@
         <attribute name="uploadedDate" optional="YES" attributeType="Date" syncable="YES"/>
         <relationship name="artists" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Artist" inverseName="arts" inverseEntity="Artist" syncable="YES"/>
         <relationship name="citations" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Citation" inverseName="art" inverseEntity="Citation" syncable="YES"/>
+        <relationship name="discussions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Discussion" inverseName="art" inverseEntity="Discussion" syncable="YES"/>
         <relationship name="favorites" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Favorite" inverseName="art" inverseEntity="Favorite" syncable="YES"/>
         <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Table" inverseName="arts" inverseEntity="Table" syncable="YES"/>
         <relationship name="icons" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Icon" inverseName="arts" inverseEntity="Icon" syncable="YES"/>
@@ -20,6 +21,7 @@
         <relationship name="locations" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Location" inverseName="arts" inverseEntity="Location" syncable="YES"/>
         <relationship name="materials" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Material" inverseName="arts" inverseEntity="Material" syncable="YES"/>
         <relationship name="movements" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Movement" inverseName="arts" inverseEntity="Movement" syncable="YES"/>
+        <relationship name="notifications" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Notification" inverseName="art" inverseEntity="Notification" syncable="YES"/>
         <relationship name="photos" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Photo" inverseName="art" inverseEntity="Photo" syncable="YES"/>
         <relationship name="slides" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Slide" inverseName="arts" inverseEntity="Slide" syncable="YES"/>
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" ordered="YES" destinationEntity="User" inverseName="arts" inverseEntity="User" syncable="YES"/>
@@ -33,12 +35,30 @@
         <attribute name="lastName" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="arts" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Art" inverseName="artists" inverseEntity="Art" syncable="YES"/>
+        <relationship name="discussions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Discussion" inverseName="artist" inverseEntity="Discussion" syncable="YES"/>
         <relationship name="favorites" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Favorite" inverseName="artist" inverseEntity="Favorite" syncable="YES"/>
+        <relationship name="notifications" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Notification" inverseName="artist" inverseEntity="Notification" syncable="YES"/>
     </entity>
     <entity name="Citation" representedClassName="Citation" syncable="YES">
         <attribute name="body" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <relationship name="art" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Art" inverseName="citations" inverseEntity="Art" syncable="YES"/>
+    </entity>
+    <entity name="Comment" representedClassName="Comment" syncable="YES">
+        <attribute name="body" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <relationship name="discussion" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Discussion" inverseName="comments" inverseEntity="Discussion" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="comments" inverseEntity="User" syncable="YES"/>
+    </entity>
+    <entity name="Discussion" representedClassName="Discussion" syncable="YES">
+        <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="art" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Art" inverseName="discussions" inverseEntity="Art" syncable="YES"/>
+        <relationship name="artist" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Artist" inverseName="discussions" inverseEntity="Artist" syncable="YES"/>
+        <relationship name="comments" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Comment" inverseName="discussion" inverseEntity="Comment" syncable="YES"/>
+        <relationship name="notifications" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Notification" inverseName="discussion" inverseEntity="Notification" syncable="YES"/>
+        <relationship name="presentation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Presentation" inverseName="discussions" inverseEntity="Presentation" syncable="YES"/>
+        <relationship name="table" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Table" inverseName="discussions" inverseEntity="Table" syncable="YES"/>
     </entity>
     <entity name="Favorite" representedClassName="Favorite" syncable="YES">
         <attribute name="createdDate" optional="YES" attributeType="Date" syncable="YES"/>
@@ -59,6 +79,7 @@
         <attribute name="primary" optional="YES" attributeType="Boolean" syncable="YES"/>
         <relationship name="arts" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Art" inverseName="institutions" inverseEntity="Art" syncable="YES"/>
         <relationship name="locations" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Location" inverseName="institution" inverseEntity="Location" syncable="YES"/>
+        <relationship name="notifications" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Notification" inverseName="institution" inverseEntity="Notification" syncable="YES"/>
         <relationship name="users" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="User" inverseName="institution" inverseEntity="User" syncable="YES"/>
     </entity>
     <entity name="Interval" representedClassName="Interval" syncable="YES">
@@ -101,6 +122,18 @@
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="arts" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Art" inverseName="movements" inverseEntity="Art" syncable="YES"/>
     </entity>
+    <entity name="Notification" representedClassName="Notification" syncable="YES">
+        <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="message" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="notificationType" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="read" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="sent" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <relationship name="art" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Art" inverseName="notifications" inverseEntity="Art" syncable="YES"/>
+        <relationship name="artist" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Artist" inverseName="notifications" inverseEntity="Artist" syncable="YES"/>
+        <relationship name="discussion" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Discussion" inverseName="notifications" inverseEntity="Discussion" syncable="YES"/>
+        <relationship name="institution" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Institution" inverseName="notifications" inverseEntity="Institution" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="notifications" inverseEntity="User" syncable="YES"/>
+    </entity>
     <entity name="Photo" representedClassName="Photo" syncable="YES">
         <attribute name="createdDate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
@@ -116,6 +149,7 @@
         <attribute name="identifier" optional="YES" attributeType="Integer 32" defaultValueString="0.0" syncable="YES"/>
         <attribute name="presentationDescription" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="discussions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Discussion" inverseName="presentation" inverseEntity="Discussion" syncable="YES"/>
         <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Table" inverseName="presentations" inverseEntity="Table" syncable="YES"/>
         <relationship name="slides" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Slide" inverseName="presentation" inverseEntity="Slide" syncable="YES"/>
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="presentations" inverseEntity="User" syncable="YES"/>
@@ -134,6 +168,7 @@
         <attribute name="tableDescription" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="visible" optional="YES" attributeType="Boolean" syncable="YES"/>
         <relationship name="arts" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Art" inverseName="groups" inverseEntity="Art" syncable="YES"/>
+        <relationship name="discussions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Discussion" inverseName="table" inverseEntity="Discussion" syncable="YES"/>
         <relationship name="presentations" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Presentation" inverseName="groups" inverseEntity="Presentation" syncable="YES"/>
         <relationship name="users" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="groups" inverseEntity="User" syncable="YES"/>
     </entity>
@@ -156,27 +191,32 @@
         <attribute name="pushPermission" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="textPermission" optional="YES" attributeType="Boolean" syncable="YES"/>
         <relationship name="arts" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Art" inverseName="user" inverseEntity="Art" syncable="YES"/>
+        <relationship name="comments" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Comment" inverseName="user" inverseEntity="Comment" syncable="YES"/>
         <relationship name="favorites" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Favorite" inverseName="user" inverseEntity="Favorite" syncable="YES"/>
         <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Table" inverseName="users" inverseEntity="Table" syncable="YES"/>
         <relationship name="institution" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Institution" inverseName="users" inverseEntity="Institution" syncable="YES"/>
+        <relationship name="notifications" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Notification" inverseName="user" inverseEntity="Notification" syncable="YES"/>
         <relationship name="presentations" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Presentation" inverseName="user" inverseEntity="Presentation" syncable="YES"/>
         <userInfo/>
     </entity>
     <elements>
-        <element name="Art" positionX="270" positionY="252" width="128" height="373"/>
-        <element name="Artist" positionX="306" positionY="279" width="128" height="178"/>
+        <element name="Art" positionX="270" positionY="252" width="128" height="403"/>
+        <element name="Artist" positionX="306" positionY="279" width="128" height="208"/>
         <element name="Citation" positionX="288" positionY="342" width="128" height="88"/>
         <element name="Favorite" positionX="279" positionY="324" width="128" height="118"/>
         <element name="Icon" positionX="315" positionY="378" width="128" height="103"/>
-        <element name="Institution" positionX="261" positionY="234" width="128" height="133"/>
+        <element name="Institution" positionX="261" positionY="234" width="128" height="150"/>
         <element name="Interval" positionX="288" positionY="342" width="128" height="195"/>
         <element name="Location" positionX="279" positionY="261" width="128" height="253"/>
         <element name="Material" positionX="288" positionY="342" width="128" height="120"/>
         <element name="Movement" positionX="324" positionY="387" width="128" height="88"/>
         <element name="Photo" positionX="279" positionY="324" width="128" height="180"/>
-        <element name="Presentation" positionX="288" positionY="306" width="128" height="133"/>
+        <element name="Presentation" positionX="288" positionY="306" width="128" height="150"/>
         <element name="Slide" positionX="297" positionY="315" width="128" height="118"/>
-        <element name="Table" positionX="288" positionY="270" width="128" height="163"/>
-        <element name="User" positionX="261" positionY="189" width="128" height="343"/>
+        <element name="Table" positionX="288" positionY="270" width="128" height="178"/>
+        <element name="User" positionX="261" positionY="189" width="128" height="375"/>
+        <element name="Notification" positionX="288" positionY="342" width="128" height="193"/>
+        <element name="Comment" positionX="297" positionY="351" width="128" height="103"/>
+        <element name="Discussion" positionX="306" positionY="360" width="128" height="163"/>
     </elements>
 </model>

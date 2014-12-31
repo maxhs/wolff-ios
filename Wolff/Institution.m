@@ -18,5 +18,6 @@
 @dynamic users;
 @dynamic arts;
 @dynamic locations;
+@dynamic notifications;
 
 @end

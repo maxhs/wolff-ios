@@ -20,5 +20,6 @@
 @dynamic privateTable;
 @dynamic name;
 @dynamic tableDescription;
+@dynamic discussions;
 
 @end

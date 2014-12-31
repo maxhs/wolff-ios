@@ -22,5 +22,7 @@
 @dynamic deathDate;
 @dynamic arts;
 @dynamic favorites;
+@dynamic discussions;
+@dynamic notifications;
 
 @end

@@ -1,27 +1,31 @@
 //
-//  WFMenuViewController.m
+//  WFNotificationsViewController.m
 //  Wolff
 //
-//  Created by Max Haines-Stiles on 12/21/14.
+//  Created by Max Haines-Stiles on 12/30/14.
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
-#import "WFMenuViewController.h"
-#import "WFMenuCell.h"
+#import "WFNotificationsViewController.h"
+#import "WFAppDelegate.h"
+#import "WFNotificationCell.h"
+#import "Notification.h"
 
-@interface WFMenuViewController ()
+@interface WFNotificationsViewController () {
+    WFAppDelegate *delegate;
+    AFHTTPRequestOperationManager *manager;
+}
 
 @end
 
-@implementation WFMenuViewController
+@implementation WFNotificationsViewController
+
+@synthesize notifications = _notifications;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
+    manager = delegate.manager;
 }
 
 #pragma mark - Table view data source
@@ -31,14 +35,12 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 0;
+    return _notifications.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    WFMenuCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MenuCell" forIndexPath:indexPath];
-    
-    // Configure the cell...
-    
+    WFNotificationCell *cell = [tableView dequeueReusableCellWithIdentifier:@"NotificationCell" forIndexPath:indexPath];
+    [cell configureForNotificaiton:_notifications[indexPath.row]];
     return cell;
 }
 
@@ -85,5 +87,10 @@
     // Pass the selected object to the new view controller.
 }
 */
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
 
 @end
