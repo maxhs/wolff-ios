@@ -34,6 +34,8 @@
     delegate.loginDelegate = self;
     manager = delegate.manager;
     
+    [self.view setBackgroundColor:[UIColor clearColor]];
+    
     if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation) || [[[UIDevice currentDevice] systemName] floatValue] >= 8.f){
         width = screenWidth();
         height = screenHeight();
@@ -57,10 +59,9 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
 }
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [_emailTextField becomeFirstResponder];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -275,13 +276,13 @@
 
 - (void)styleForgotPasswordButton {
     [_forgotPasswordButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
-    [_forgotPasswordButton.titleLabel setFont:[UIFont fontWithName:kLato size:14]];
+    [_forgotPasswordButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     [_forgotPasswordButton setTitle:@"Forgot password?" forState:UIControlStateNormal];
     [_forgotPasswordButton addTarget:self action:@selector(forgotPassword:) forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)styleTermsButton {
-    [_termsButton.titleLabel setFont:[UIFont fontWithName:kLato size:14]];
+    [_termsButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     [_termsButton.titleLabel setTextColor:[UIColor lightGrayColor]];
     NSMutableAttributedString *termsString = [[NSMutableAttributedString alloc] initWithString:@"By continuing, you agree to our " attributes:nil];
     NSMutableAttributedString *linkString = [[NSMutableAttributedString alloc] initWithString:@"Terms of Service" attributes:@{NSUnderlineStyleAttributeName:[NSNumber numberWithInt:NSUnderlineStyleSingle]}];
@@ -295,21 +296,30 @@
 - (void)setUpLoginButton {
     [_loginButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
     _loginButton.layer.borderWidth = 1.f;
-    _loginButton.layer.cornerRadius = 22.f;
+    _loginButton.layer.cornerRadius = 14.f;
     _loginButton.layer.borderColor = [UIColor colorWithWhite:.825 alpha:0].CGColor;
     [_loginButton addTarget:self action:@selector(connect) forControlEvents:UIControlEventTouchUpInside];
-    [_loginButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kLato] size:0]];
+    [_loginButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
 }
 
 - (void)textFieldTreatment:(UITextField*)textField {
-    textField.layer.borderColor = [UIColor colorWithWhite:.825 alpha:1].CGColor;
+    [textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.7]];
+    [textField setKeyboardAppearance:UIKeyboardAppearanceDark];
+    textField.layer.borderColor = [UIColor colorWithWhite:.9 alpha:1].CGColor;
     textField.layer.borderWidth = .5f;
-    textField.layer.cornerRadius = 3.f;
+    textField.layer.cornerRadius = 2.f;
     textField.clipsToBounds = YES;
-    [textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
-    UIView *paddingView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 5, 20)];
+    [textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    UIView *paddingView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 7, 20)];
     textField.leftView = paddingView;
     textField.leftViewMode = UITextFieldViewModeAlways;
     textField.delegate = self;
 }
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
 @end

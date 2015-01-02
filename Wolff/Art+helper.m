@@ -14,7 +14,10 @@
 #import "Citation+helper.h"
 #import "Location+helper.h"
 #import "Movement+helper.h"
+#import "Institution+helper.h"
 #import "Interval+helper.h"
+#import "Icon+helper.h"
+#import "User+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 #import "NSArray+ToSentence.h"
 
@@ -25,6 +28,9 @@
     }
     if ([dictionary objectForKey:@"title"] && [dictionary objectForKey:@"title"] != [NSNull null]){
         self.title = [dictionary objectForKey:@"title"];
+    }
+    if ([dictionary objectForKey:@"notes"] && [dictionary objectForKey:@"notes"] != [NSNull null]){
+        self.notes = [dictionary objectForKey:@"notes"];
     }
     if ([dictionary objectForKey:@"not_extant"] && [dictionary objectForKey:@"not_extant"] != [NSNull null]){
         self.notExtant = [dictionary objectForKey:@"not_extant"];
@@ -56,6 +62,16 @@
         [interval populateFromDictionary:dict];
         self.interval = interval;
     }
+    if ([dictionary objectForKey:@"user"] && [dictionary objectForKey:@"user"] != [NSNull null]){
+        NSDictionary *dict = [dictionary objectForKey:@"user"];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+        User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!user){
+            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        [user populateFromDictionary:dict];
+        self.user = user;
+    }
     if ([dictionary objectForKey:@"artists"] && [dictionary objectForKey:@"artists"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"artists"]){
@@ -78,7 +94,6 @@
                 material = [Material MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [material populateFromDictionary:dict];
-            NSLog(@"Adding medium with name: %@",material.name);
             [set addObject:material];
         }
         self.materials = set;
@@ -122,19 +137,25 @@
         }
         self.locations = set;
     }
-    if ([dictionary objectForKey:@"locations"] && [dictionary objectForKey:@"locations"] != [NSNull null]){
+    if ([dictionary objectForKey:@"icons"] && [dictionary objectForKey:@"icons"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dict in [dictionary objectForKey:@"locations"]){
+        for (id dict in [dictionary objectForKey:@"icons"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Location *location = [Location MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!location){
-                location = [Location MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            Icon *icon = [Icon MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!icon){
+                icon = [Icon MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [location populateFromDictionary:dict];
-            [set addObject:location];
+            [icon populateFromDictionary:dict];
+            [set addObject:icon];
         }
-        self.locations = set;
+        self.icons = set;
     }
+}
+
+- (void)addPhoto:(Photo *)photo {
+    NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
+    [photos addObject:photo];
+    self.photos = photos;
 }
 
 - (Photo *)photo {
@@ -145,10 +166,43 @@
     return self.artists.firstObject;
 }
 
-- (NSString *)mediaToSentence {
+- (NSString *)materialsToSentence {
     NSMutableArray *names = [NSMutableArray arrayWithCapacity:self.materials.count];
     [self.materials enumerateObjectsUsingBlock:^(Material *material, NSUInteger idx, BOOL *stop) {
         [names addObject:material.name];
+    }];
+    return [names toSentence];
+}
+
+- (NSString *)artistsToSentence {
+    NSMutableArray *names = [NSMutableArray arrayWithCapacity:self.artists.count];
+    [self.artists enumerateObjectsUsingBlock:^(Artist *artist, NSUInteger idx, BOOL *stop) {
+        [names addObject:artist.name];
+    }];
+    return [names toSentence];
+}
+
+- (NSString *)locationsToSentence {
+    NSMutableArray *names = [NSMutableArray arrayWithCapacity:self.locations.count];
+    [self.locations enumerateObjectsUsingBlock:^(Location *location, NSUInteger idx, BOOL *stop) {
+        if (location.name.length){
+            [names addObject:location.name];
+        } else if (location.city.length){
+            
+        } else if (location.state.length){
+            
+        } else if (location.country.length){
+            
+        }
+        
+    }];
+    return [names toSentence];
+}
+
+- (NSString *)iconsToSentence {
+    NSMutableArray *names = [NSMutableArray arrayWithCapacity:self.icons.count];
+    [self.icons enumerateObjectsUsingBlock:^(Icon *icon, NSUInteger idx, BOOL *stop) {
+        [names addObject:icon.name];
     }];
     return [names toSentence];
 }

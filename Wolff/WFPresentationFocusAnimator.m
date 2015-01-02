@@ -64,7 +64,7 @@
         [blurredButton setAlpha:0.0];
         [blurredButton setTag:kBlurredBackgroundConstant];
         
-        [toView setFrame:CGRectMake(100, 100, width-200, height-200)];
+        [toView setFrame:CGRectMake(23, 23, width-46, height-46)];
         toView.transform = CGAffineTransformMakeScale(.95, .95);
         [toView setAlpha:0.0];
         
@@ -88,10 +88,10 @@
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseIn animations:^{
             [blurredButton setAlpha:0.0];
             [fromView setAlpha:0.0];
-            fromView.transform = CGAffineTransformMakeTranslation(-width, 0);
+            fromView.transform = CGAffineTransformMakeScale(.9, .9);
         } completion:^(BOOL finished) {
             [blurredButton removeFromSuperview];
             [transitionContext completeTransition:YES];

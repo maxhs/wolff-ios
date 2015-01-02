@@ -13,7 +13,11 @@
 
 @interface Art (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
+- (void)addPhoto:(Photo*)photo;
 - (Photo*)photo;
 - (Artist*)primaryArtist;
-- (NSString*)mediaToSentence;
+- (NSString*)materialsToSentence;
+- (NSString*)artistsToSentence;
+- (NSString*)iconsToSentence;
+- (NSString*)locationsToSentence;
 @end

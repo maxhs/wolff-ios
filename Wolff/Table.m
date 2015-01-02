@@ -21,5 +21,6 @@
 @dynamic name;
 @dynamic tableDescription;
 @dynamic discussions;
+@dynamic presentations;
 
 @end

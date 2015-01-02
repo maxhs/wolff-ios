@@ -16,5 +16,12 @@
     if ([dict objectForKey:@"message"] && [dict objectForKey:@"message"] != [NSNull null]){
         self.message = [dict objectForKey:@"message"];
     }
+    if ([dict objectForKey:@"notification_type"] && [dict objectForKey:@"notification_type"] != [NSNull null]){
+        self.notificationType = [dict objectForKey:@"notification_type"];
+    }
+    if ([dict objectForKey:@"sent_at"] && [dict objectForKey:@"sent_at"] != [NSNull null]) {
+        NSTimeInterval _interval = [[dict objectForKey:@"sent_at"] doubleValue];
+        self.sentAt = [NSDate dateWithTimeIntervalSince1970:_interval];
+    }
 }
 @end

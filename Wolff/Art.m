@@ -13,10 +13,11 @@
 
 @dynamic identifier;
 @dynamic title;
-@dynamic caption;
-@dynamic iconography;
+@dynamic notes;
+@dynamic icons;
 @dynamic artists;
 @dynamic tables;
+@dynamic privateArt;
 @dynamic photos;
 @dynamic user;
 @dynamic createdDate;
@@ -32,5 +33,6 @@
 @dynamic interval;
 @dynamic discussions;
 @dynamic notifications;
+@dynamic presentations;
 
 @end

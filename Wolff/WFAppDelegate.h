@@ -15,7 +15,6 @@
 #import "User+helper.h"
 
 @protocol WFLoginDelegate <NSObject>
-
 @optional
 - (void)incorrectEmail;
 - (void)incorrectPassword;
@@ -32,5 +31,6 @@
 
 - (void)connectWithParameters:(NSMutableDictionary*)parameters;
 - (void)setUserDefaults;
+- (void)logout;
 
 @end

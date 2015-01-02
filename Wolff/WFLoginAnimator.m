@@ -10,7 +10,14 @@
 #import <UIKit/UIKit.h>
 #import "WFLoginAnimator.h"
 #import "Constants.h"
+#import "UIImage+ImageEffects.h"
 
+@interface WFLoginAnimator () {
+    CGFloat width;
+    CGFloat height;
+}
+
+@end
 @implementation WFLoginAnimator
 
 - (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext {
@@ -18,57 +25,86 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        width = screenWidth();
+        height = screenHeight();
+    } else {
+        width = screenHeight();
+        height = screenWidth();
+    }
     
-    UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    UIViewController *toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    // Grab the from and to view controllers from the context
+    UIViewController *fromViewController, *toViewController;
+    UIView *fromView,*toView;
+    fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f) {
+        // iOS 8 logic
+        fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
+        toView = [transitionContext viewForKey:UITransitionContextToViewKey];
+    } else {
+        // iOS 7 and below logic
+        fromView = fromViewController.view;
+        toView = toViewController.view;
+    }
     
     // Set our ending frame. We'll modify this later if we have to
-    CGRect endFrame = [UIScreen mainScreen].bounds;
+    CGRect mainScreen = [UIScreen mainScreen].bounds;
     
     if (self.presenting) {
         fromViewController.view.userInteractionEnabled = NO;
+        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
         
-        [transitionContext.containerView addSubview:fromViewController.view];
-        [transitionContext.containerView addSubview:toViewController.view];
+        UIButton *blurredButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [blurredButton setBackgroundImage:[self blurredSnapshotForWindow:[transitionContext.containerView window]]  forState:UIControlStateNormal];
+        [blurredButton setFrame:mainScreen];
+        [blurredButton setAlpha:0.0];
+        [blurredButton setTag:kBlurredBackgroundConstant];
         
-        CGRect startFrame = endFrame;
-        startFrame.origin.x -= screenWidth();
-        
-        CGRect originEndFrame = endFrame;
-        originEndFrame.origin.x += screenWidth();
-        
-        toViewController.view.frame = startFrame;
+        [transitionContext.containerView addSubview:fromView];
+        [transitionContext.containerView addSubview:toView];
+        [transitionContext.containerView insertSubview:blurredButton belowSubview:toView];
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            fromViewController.view.tintAdjustmentMode = UIViewTintAdjustmentModeDimmed;
-            toViewController.view.frame = endFrame;
-            fromViewController.view.frame = originEndFrame;
+            [blurredButton setAlpha:1.0];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
-    }
-    else {
+        
+    } else {
+        
         toViewController.view.userInteractionEnabled = YES;
+        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+        UIImageView *blurredButton = (UIImageView*)[transitionContext.containerView viewWithTag:kBlurredBackgroundConstant];
         
-        [transitionContext.containerView addSubview:toViewController.view];
-        [transitionContext.containerView addSubview:fromViewController.view];
+        [transitionContext.containerView addSubview:toView];
+        [transitionContext.containerView addSubview:fromView];
         
-        endFrame.origin.x -= screenWidth();
+        /*mainScreen.origin.x -= screenWidth();
         CGRect originStartFrame = toViewController.view.frame;
         originStartFrame.origin.x = screenWidth();
         toViewController.view.frame = originStartFrame;
         CGRect originEndFrame = toViewController.view.frame;
-        originEndFrame.origin.x = 0;
+        originEndFrame.origin.x = 0;*/
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            toViewController.view.tintAdjustmentMode = UIViewTintAdjustmentModeAutomatic;
-            fromViewController.view.frame = endFrame;
-            toViewController.view.frame = originEndFrame;
+            [fromView setAlpha:0.0];
+            [blurredButton setAlpha:0.0];
         } completion:^(BOOL finished) {
+            [blurredButton removeFromSuperview];
             [transitionContext completeTransition:YES];
         }];
     }
 }
 
+-(UIImage *)blurredSnapshotForWindow:(UIWindow*)window {
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, height), NO, window.screen.scale);
+    [window drawViewHierarchyInRect:CGRectMake(0, 0, width, height) afterScreenUpdates:NO];
+    UIImage *snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIImage *blurredSnapshotImage = [snapshotImage applyExtraLightEffect];
+    UIGraphicsEndImageContext();
+    return blurredSnapshotImage;
+}
 
 @end

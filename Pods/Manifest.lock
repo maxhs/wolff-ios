@@ -20,6 +20,7 @@ PODS:
   - AFNetworking/UIKit (2.5.0):
     - AFNetworking/NSURLConnection
     - AFNetworking/NSURLSession
+  - DateTools (1.4.3)
   - MagicalRecord (2.2):
     - MagicalRecord/Core (= 2.2)
   - MagicalRecord/Core (2.2)
@@ -39,6 +40,7 @@ PODS:
 
 DEPENDENCIES:
   - AFNetworking
+  - DateTools
   - MagicalRecord
   - Mixpanel
   - ObjectiveRecord
@@ -48,6 +50,7 @@ DEPENDENCIES:
 
 SPEC CHECKSUMS:
   AFNetworking: 0f54cb5d16ce38c1b76948faffb8d5fb705021c7
+  DateTools: 7c2d233ea2d4bda3a717d0cd5f58da926a5998d0
   MagicalRecord: 2b471584fc9e3137f3d0a56967917baa4979e224
   Mixpanel: c075cedebda3328ce1ee29a18429e265ce967cd8
   ObjectiveRecord: 173527cdf923ee956f6b0a4430916534b54583f5

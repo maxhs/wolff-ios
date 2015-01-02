@@ -15,6 +15,9 @@
 @dynamic title;
 @dynamic presentationDescription;
 @dynamic slides;
+@dynamic arts;
 @dynamic discussions;
+@dynamic table;
+@dynamic user;
 
 @end

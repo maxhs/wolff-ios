@@ -20,6 +20,7 @@
 @property (nonatomic, retain) NSString * tableDescription;
 @property (nonatomic, retain) NSOrderedSet *arts;
 @property (nonatomic, retain) NSOrderedSet *discussions;
+@property (nonatomic, retain) NSOrderedSet *presentations;
 @property (nonatomic, retain) User *users;
 @end
 

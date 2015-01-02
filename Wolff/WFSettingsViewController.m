@@ -38,7 +38,8 @@
     _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
     [self loadUserDetails];
     
-    self.tableView.rowHeight = 60.f;
+    _tableView.rowHeight = 54.f;
+    [_tableView setBackgroundColor:[UIColor darkGrayColor]];
     [self registerForKeyboardNotifications];
     [self setUpNavigationButtons];
 }
@@ -51,17 +52,17 @@
     self.navigationItem.rightBarButtonItem = saveButton;
     
     [_logoutButton setTitle:@"LOG OUT" forState:UIControlStateNormal];
-    [_logoutButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [_logoutButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
     [_logoutButton addTarget:self action:@selector(logout) forControlEvents:UIControlEventTouchUpInside];
-    [_logoutButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
-    _logoutButton.layer.borderColor = [UIColor colorWithWhite:.77 alpha:1].CGColor;
+    [_logoutButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [_logoutButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1]];
+    //_logoutButton.layer.borderColor = [UIColor colorWithWhite:.77 alpha:1].CGColor;
+    //_logoutButton.layer.borderWidth = .5f;
     _logoutButton.layer.cornerRadius = 14.f;
-    _logoutButton.layer.borderWidth = .5f;
     
     [_versionLabel setText:[NSString stringWithFormat:@"Version: %@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]]];
     [_versionLabel setTextColor:[UIColor lightGrayColor]];
-    [_versionLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody
-                                                                                              forFont:kLatoLight] size:0]];
+    [_versionLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     
     self.tableView.tableFooterView = _footerContainerView;
 }
@@ -111,8 +112,9 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     WFSettingsCell *cell = (WFSettingsCell *)[tableView dequeueReusableCellWithIdentifier:@"SettingsCell"];
-    [cell.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
-    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
+    [cell.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [cell.textField setKeyboardAppearance:UIKeyboardAppearanceDark];
+    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     
     if (indexPath.section == 0){
         [cell.settingsSwitch setHidden:YES];
@@ -128,11 +130,11 @@
                 break;
             case 2:
                 [cell.textField setText:_currentUser.email];
-                [cell.textField setPlaceholder:@"Email"];
+                [cell.textField setPlaceholder:@"albrecht@durer.com"];
                 break;
             case 3:
                 [cell.textField setText:_currentUser.phone];
-                [cell.textField setPlaceholder:@"Phone number"];
+                [cell.textField setPlaceholder:@"555-555-5555"];
                 break;
             case 4:
                 [cell.textField setText:_currentUser.institution.name];
@@ -229,28 +231,8 @@
 }
 
 - (void)logout {
-    //[self cleanAndResetDB];
-    NSLog(@"Log out!");
-    NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
-    [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
-    [NSUserDefaults resetStandardUserDefaults];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-    
-    [self dismiss];
-    
-    [ProgressHUD dismiss];
+    [delegate logout];
 }
-
-/*- (void)cleanAndResetDB {
-    NSError *error = nil;
-    NSURL *storeURL = [NSPersistentStore MR_urlForStoreName:[MagicalRecord defaultStoreName]];
-    [MagicalRecord cleanUp];
-    if([[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]){
-        [MagicalRecord setupAutoMigratingCoreDataStack];
-    } else{
-        NSLog(@"Error deleting persistent store description: %@ %@", error.description,storeURL);
-    }
-}*/
 
 - (void)registerForKeyboardNotifications
 {

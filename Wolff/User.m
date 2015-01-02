@@ -20,7 +20,7 @@
 @dynamic phone;
 @dynamic bio;
 @dynamic institution;
-@dynamic groups;
+@dynamic tables;
 @dynamic admin;
 @dynamic arts;
 @dynamic avatarSmall;

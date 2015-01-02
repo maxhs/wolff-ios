@@ -11,8 +11,7 @@
 
 @interface WFSlideCollectionCell : UICollectionViewCell
 
-@property (weak, nonatomic) IBOutlet UIView *slideBackgroundView;
-@property (weak, nonatomic) IBOutlet UILabel *captionLabel;
+@property (weak, nonatomic) IBOutlet UIView *slideContainerView;
 @property (weak, nonatomic) IBOutlet UIImageView *singleArtImageView;
 - (void)configureForSlide:(Slide*)slide;
 @end

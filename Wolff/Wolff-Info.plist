@@ -39,7 +39,7 @@
 		<string>Lato-BolIta.ttf</string>
 		<string>Lato-Bol.ttf</string>
 		<string>Lato-LigIta.ttf</string>
-		<string>MuseoSans-100Italic.ttf</string>
+		<string>MuseoSans-100italic.ttf</string>
 		<string>Lato-Bla.ttf</string>
 		<string>Lato-BlaIta.ttf</string>
 		<string>MuseoSans-300.ttf</string>
@@ -59,8 +59,12 @@
 	<array>
 		<string>armv7</string>
 	</array>
+	<key>UIStatusBarHidden</key>
+	<true/>
 	<key>UIStatusBarHidden~ipad</key>
 	<true/>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleBlackOpaque</string>
 	<key>UIStatusBarTintParameters</key>
 	<dict>
 		<key>UINavigationBar</key>
@@ -81,5 +85,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
 </dict>
 </plist>

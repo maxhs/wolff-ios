@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Art, User;
+@class Art, Artist, User;
 
 @interface Favorite : NSManagedObject
 
@@ -17,6 +17,6 @@
 @property (nonatomic, retain) NSDate * createdDate;
 @property (nonatomic, retain) User *user;
 @property (nonatomic, retain) Art *art;
-@property (nonatomic, retain) NSManagedObject *artist;
+@property (nonatomic, retain) Artist *artist;
 
 @end

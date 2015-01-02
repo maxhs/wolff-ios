@@ -27,6 +27,15 @@
     if ([dictionary objectForKey:@"suffix"] && [dictionary objectForKey:@"suffix"] != [NSNull null]){
         self.suffix = [dictionary objectForKey:@"suffix"];
     }
+    if ([dictionary objectForKey:@"year"] && [dictionary objectForKey:@"year"] != [NSNull null]){
+        self.year = [dictionary objectForKey:@"year"];
+    }
+    if ([dictionary objectForKey:@"month"] && [dictionary objectForKey:@"month"] != [NSNull null]){
+        self.month = [dictionary objectForKey:@"month"];
+    }
+    if ([dictionary objectForKey:@"day"] && [dictionary objectForKey:@"day"] != [NSNull null]){
+        self.day = [dictionary objectForKey:@"day"];
+    }
     if ([dictionary objectForKey:@"single"] && [dictionary objectForKey:@"single"] != [NSNull null]){
         NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
         [dateFormat setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSSZ"];

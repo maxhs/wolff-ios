@@ -8,12 +8,14 @@
 
 #import "WFPresentationsViewController.h"
 #import "WFAppDelegate.h"
+#import "WFPresentationCell.h"
 
 @interface WFPresentationsViewController () {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     User *_currentUser;
     UIRefreshControl *refreshControl;
+    BOOL loading;
 }
 
 @end
@@ -30,6 +32,9 @@
     refreshControl = [[UIRefreshControl alloc] init];
     [refreshControl addTarget:self action:@selector(handleRefresh) forControlEvents:UIControlEventValueChanged];
     [_tableView addSubview:refreshControl];
+    
+    [_tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.23]];
+    [_tableView setBackgroundColor:[UIColor blackColor]];
 }
 
 - (void)handleRefresh {
@@ -38,6 +43,7 @@
 }
 
 - (void)loadPresentations {
+    loading = YES;
     [manager GET:[NSString stringWithFormat:@"users/%@/presentations",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success getting presentations: %@",responseObject);
         [_currentUser populateFromDictionary:responseObject];
@@ -49,6 +55,7 @@
 }
 
 - (void)endLoading {
+    loading = NO;
     [self.tableView reloadData];
     [ProgressHUD dismiss];
     if (refreshControl.isRefreshing){
@@ -56,83 +63,86 @@
     }
 }
 
+#pragma mark - Table view data source
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 2;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    if (section == 0){
+        if (!loading && _currentUser.presentations.count == 0){
+            return 1;
+            [tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+        } else {
+            [tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
+            return _currentUser.presentations.count;
+        }
+    } else {
+        return 1;
+    }
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    WFPresentationCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PresentationCell" forIndexPath:indexPath];
+    if (indexPath.section == 0){
+        [cell.imageView setImage:nil];
+        if (!loading && _currentUser.presentations.count == 0){
+            [cell.textLabel setText:@"No Presentations"];
+            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+        } else {
+            Presentation *presentation = _currentUser.presentations[indexPath.row];
+            [cell.textLabel setText:presentation.title];
+        }
+        
+    } else {
+        [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
+        [cell.textLabel setText:@"New Presentation"];
+    }
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0){
+        if (indexPath.row < _currentUser.presentations.count){
+            if (self.presentationDelegate && [self.presentationDelegate respondsToSelector:@selector(presentationSelected:)]) {
+                Presentation *presentation = _currentUser.presentations[indexPath.row];
+                [self.presentationDelegate presentationSelected:presentation];
+            }
+        }
+    } else {
+        if (self.presentationDelegate && [self.presentationDelegate respondsToSelector:@selector(newPresentation)]) {
+            [self.presentationDelegate newPresentation];
+        }
+    }
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    if (section == 0){
+        return 34;
+    } else {
+        return 0;
+    }
+}
+
+- (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    CGFloat headerHeight = section == 0 ? 34 : 0 ;
+    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, headerHeight)];
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, tableView.frame.size.width-10, 34)];
+    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [headerLabel setTextColor:[UIColor lightGrayColor]];
+    [headerLabel setText:@"PRESENTATIONS"];
+    
+    [headerView addSubview:headerLabel];
+
+    return headerView;
+}
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
 
-#pragma mark - Table view data source
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 1;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _currentUser.presentations.count;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PresentationCell" forIndexPath:indexPath];
-    Presentation *presentation = _currentUser.presentations[indexPath.row];
-    [cell.textLabel setText:presentation.title];
-    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
-    return cell;
-}
-
-- (NSString*)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    return @"Presentations";
-}
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (self.presentationDelegate && [self.presentationDelegate respondsToSelector:@selector(presentationSelected:)]) {
-        Presentation *presentation = _currentUser.presentations[indexPath.row];
-        [self.presentationDelegate presentationSelected:presentation];
-    }
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
-}
-
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

@@ -18,9 +18,9 @@
 @property (nonatomic, retain) NSDate * uploadedDate;
 @property (nonatomic, retain) NSString * credit;
 @property (nonatomic, retain) NSString * title;
-@property (nonatomic, retain) NSString * caption;
-@property (nonatomic, retain) NSString * iconography;
+@property (nonatomic, retain) NSString * notes;
 @property (nonatomic, retain) NSNumber * notExtant;
+@property (nonatomic, retain) NSNumber * privateArt;
 @property (nonatomic, retain) NSOrderedSet *artists;
 @property (nonatomic, retain) NSOrderedSet *tables;
 @property (nonatomic, retain) NSOrderedSet *photos;
@@ -32,20 +32,9 @@
 @property (nonatomic, retain) NSOrderedSet *movements;
 @property (nonatomic, retain) NSOrderedSet *discussions;
 @property (nonatomic, retain) NSOrderedSet *notifications;
+@property (nonatomic, retain) NSOrderedSet *presentations;
+@property (nonatomic, retain) NSOrderedSet *icons;
 @property (nonatomic, retain) User *user;
 @property (nonatomic, retain) Interval *interval;
-@end
 
-@interface Art (CoreDataGeneratedAccessors)
-
-- (void)insertObject:(NSManagedObject *)value inGroupsAtIndex:(NSUInteger)idx;
-- (void)removeObjectFromGroupsAtIndex:(NSUInteger)idx;
-- (void)insertGroups:(NSArray *)value atIndexes:(NSIndexSet *)indexes;
-- (void)removeGroupsAtIndexes:(NSIndexSet *)indexes;
-- (void)replaceObjectInGroupsAtIndex:(NSUInteger)idx withObject:(NSManagedObject *)value;
-- (void)replaceGroupsAtIndexes:(NSIndexSet *)indexes withGroups:(NSArray *)values;
-- (void)addGroupsObject:(NSManagedObject *)value;
-- (void)removeGroupsObject:(NSManagedObject *)value;
-- (void)addGroups:(NSOrderedSet *)values;
-- (void)removeGroups:(NSOrderedSet *)values;
 @end

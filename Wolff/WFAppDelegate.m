@@ -20,6 +20,8 @@
     Mixpanel *mixpanel = [Mixpanel sharedInstance];
     [mixpanel track:@"Launch"];
     
+    [self hackForPreloadingKeyboard];
+    
     _manager = [[AFHTTPRequestOperationManager manager] initWithBaseURL:[NSURL URLWithString:kApiBaseUrl]];
     [_manager.requestSerializer setAuthorizationHeaderFieldWithUsername:@"wolff_mobile" password:@"0fd11d82b574e0b13fc66b6227c4925c"];
     [_manager.requestSerializer setValue:(IDIOM == IPAD) ? @"2" : @"1" forHTTPHeaderField:@"device_type"];
@@ -34,6 +36,14 @@
     }
     
     return YES;
+}
+
+- (void)hackForPreloadingKeyboard {
+    UITextField *lagFreeField = [[UITextField alloc] init];
+    [self.window addSubview:lagFreeField];
+    [lagFreeField becomeFirstResponder];
+    [lagFreeField resignFirstResponder];
+    [lagFreeField removeFromSuperview];
 }
 
 - (void)connectWithParameters:(NSMutableDictionary *)parameters {
@@ -55,12 +65,12 @@
             [_currentUser populateFromDictionary:userDict];
             [self setUserDefaults];
             
-            if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(loginSuccessful)]) {
-                [self.loginDelegate loginSuccessful];
-            }
-            
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                NSLog(@"Success logging in the user: %u",success);
+                //NSLog(@"Success logging in user: %u",success);
+                if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(loginSuccessful)]) {
+                    [self.loginDelegate loginSuccessful];
+                }
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"LoginSuccessful" object:nil];
             }];
         }
         [ProgressHUD dismiss];
@@ -129,8 +139,28 @@
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 }
 
-- (void)applicationWillTerminate:(UIApplication *)application
-{
+- (void)logout {
+    [self cleanAndResetDB];
+    NSLog(@"Log out!");
+    NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
+    [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
+    [NSUserDefaults resetStandardUserDefaults];
+    [[NSUserDefaults standardUserDefaults] synchronize];    
+    [ProgressHUD dismiss];
+}
+
+- (void)cleanAndResetDB {
+    NSError *error = nil;
+    NSURL *storeURL = [NSPersistentStore MR_urlForStoreName:[MagicalRecord defaultStoreName]];
+    [MagicalRecord cleanUp];
+    if([[NSFileManager defaultManager] removeItemAtURL:storeURL error:&error]){
+        [MagicalRecord setupAutoMigratingCoreDataStack];
+    } else{
+        NSLog(@"Error deleting persistent store description: %@ %@", error.description,storeURL);
+    }
+}
+
+- (void)applicationWillTerminate:(UIApplication *)application {
     [MagicalRecord cleanUp];
 }
 

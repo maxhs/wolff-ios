@@ -17,8 +17,9 @@
 @property (weak, nonatomic) IBOutlet UIButton *postedByButton;
 @property (weak, nonatomic) IBOutlet UIButton *creditButton;
 @property (weak, nonatomic) IBOutlet UIButton *backButton;
+@property (weak, nonatomic) IBOutlet UIButton *editButton;
+@property (weak, nonatomic) IBOutlet UIButton *dropToTableButton;
 @property (weak, nonatomic) IBOutlet UIButton *flagButton;
-@property (weak, nonatomic) IBOutlet UIButton *pinButton;
 @property (weak, nonatomic) IBOutlet UIButton *favoriteButton;
 @property (strong, nonatomic) Art *art;
 

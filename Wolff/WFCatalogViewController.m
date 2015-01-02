@@ -24,30 +24,61 @@
 #import "WFTablesAnimator.h"
 #import "WFTablesViewController.h"
 #import "WFNotificationsViewController.h"
+#import "WFMenuViewController.h"
+#import "WFNewArtAnimator.h"
+#import "WFNewArtViewController.h"
+#import "WFNewLightTableController.h"
+#import "WFSearchResultsViewController.h"
+#import "WFCatalogHeaderView.h"
+#import "Favorite+helper.h"
 
-@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate, UIPopoverControllerDelegate, WFPresentationDelegate> {
+@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate, WFMenuDelegate, UIPopoverControllerDelegate, WFPresentationDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     User *_currentUser;
-    UIBarButtonItem *presentationsButton;
-    UIBarButtonItem *groupsButton;
+    UIButton *presentationsButton;
+    UIBarButtonItem *presentationsBarButton;
+    UIButton *tablesButton;
+    UIBarButtonItem *lightTablesButton;
     UIBarButtonItem *notificationsButton;
+    UIBarButtonItem *refreshButton;
     CGFloat width;
     CGFloat height;
-    NSMutableArray *arts;
-    NSMutableArray *filteredArts;
-    NSMutableArray *tables;
-    NSMutableArray *filteredTables;
+    NSMutableArray *_arts;
+    NSMutableArray *_privateArts;
+    NSMutableArray *_favorites;
+    NSMutableArray *_filteredArts;
+    NSMutableArray *_tables;
+    NSMutableArray *_filteredTables;
     UIBarButtonItem *addButton;
     UIBarButtonItem *settingsButton;
     UIBarButtonItem *loginButton;
+    UIButton *newLightTableButton;
+    UIButton *expandLightTablesButton;
+    BOOL expanded;
     BOOL metadata;
     BOOL searching;
+    BOOL loading;
     BOOL settings;
+    BOOL newArt;
+    BOOL notificationsBool;
     BOOL groupBool;
     BOOL tableIsVisible;
+    BOOL canLoadMoreArt;
+    
+    BOOL showPrivate;
+    BOOL showFavorites;
+    BOOL showLightTable;
+    Table *_table;
     CGFloat topInset;
-    UIRefreshControl *mainRefresh;
+    UIRefreshControl *tableViewRefresh;
+    UIRefreshControl *collectionViewRefresh;
+    NSMutableOrderedSet *selectedSlides;
+    
+    UIImageView *comparison1;
+    UIImageView *comparison2;
+    
+    WFSearchResultsViewController *searchResultsVc;
 }
 @property (weak, nonatomic) IBOutlet UIView *comparisonContainerView;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
@@ -62,8 +93,7 @@
 
 @implementation WFCatalogViewController
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
     if (IDIOM == IPAD){
         if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
@@ -75,32 +105,43 @@
         }
     }
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
-    delegate.loginDelegate = self;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loginSuccessful) name:@"LoginSuccessful" object:nil];
     manager = delegate.manager;
-    arts = [NSMutableArray array];
+    _arts = [NSMutableArray array];
+    _privateArts = [NSMutableArray array];
+    _favorites = [NSMutableArray array];
     
-    [_collectionView setBackgroundColor:[UIColor whiteColor]];
-    [_comparisonContainerView setBackgroundColor:[UIColor lightGrayColor]];
+    _arts = [Art MR_findAllSortedBy:@"uploadedDate" ascending:NO inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
+    
+    //set up the nav buttons
+    [self setUpNavBar];
+    
+    //set up the light table sidebar
+    expanded = NO;
+    [self setUpTableView];
+    [_comparisonContainerView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1f]];
+    _dragForComparisonLabel.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0];
+    [_dragForComparisonLabel setTextColor:[UIColor colorWithWhite:.6f alpha:.7f]];
     
     /*self.groupsInteractor = [[WFGroupsInteractor alloc] initWithParentViewController:self];
     UIScreenEdgePanGestureRecognizer *gestureRecognizer = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self.groupsInteractor action:@selector(userDidPan:)];
     gestureRecognizer.edges = UIRectEdgeLeft;
     [self.view addGestureRecognizer:gestureRecognizer];*/
     
-    _dragForComparisonLabel.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0];
+    [_collectionView setBackgroundColor:[UIColor whiteColor]];
+    collectionViewRefresh = [[UIRefreshControl alloc] init];
+    [collectionViewRefresh addTarget:self action:@selector(refreshCollectionView:) forControlEvents:UIControlEventValueChanged];
+    [self.collectionView addSubview:collectionViewRefresh];
+    canLoadMoreArt = YES;
     
-    //set up the nav buttons
-    [self setUpNavBar];
-    
-    mainRefresh = [[UIRefreshControl alloc] init];
-    [mainRefresh addTarget:self action:@selector(refreshMain:) forControlEvents:UIControlEventValueChanged];
-    [self.tableView addSubview:mainRefresh];
     [self.searchBar setPlaceholder:@"Search catalog"];
     //reset the search bar font
     for (id subview in [self.searchBar.subviews.firstObject subviews]){
         if ([subview isKindOfClass:[UITextField class]]){
             UITextField *searchTextField = (UITextField*)subview;
-            [searchTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
+            [searchTextField setTextColor:[UIColor whiteColor]];
+            [searchTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+            searchTextField.keyboardAppearance = UIKeyboardAppearanceDark;
             break;
         }
     }
@@ -112,92 +153,150 @@
     
     _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     if (_currentUser){
-        //[self loadUser];
+        [self loadUser];
+        if (!tableViewRefresh){
+            tableViewRefresh = [[UIRefreshControl alloc] init];
+            [tableViewRefresh addTarget:self action:@selector(refreshTableView:) forControlEvents:UIControlEventValueChanged];
+        }
+        [self.tableView addSubview:tableViewRefresh];
     }
     
     [self loadArt];
 }
 
-- (void)refreshMain:(UIRefreshControl*)refreshControl {
+- (void)refreshTableView:(UIRefreshControl*)refreshControl {
     if (_currentUser){
         [ProgressHUD show:@"Refreshing..."];
         [self loadUser];
     }
 }
 
-#pragma mark - WFLoginDelegate
-- (void)loginSuccessful {
-    NSLog(@"Successful login from WFMainView");
-    [self setUpNavBar];
-    _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
-    [self loadUser];
+- (void)refreshCollectionView:(id)sender {
+    [ProgressHUD show:@"Refreshing Art..."];
+    [_arts removeAllObjects];
+    canLoadMoreArt = YES;
+    NSLog(@"handle refresh collection view");
+    [self loadArt];
+}
+
+- (void)setUpTableView {
+    [_tableView setBackgroundColor:[UIColor blackColor]];
+    [_tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    _tableView.rowHeight = 54.f;
 }
 
 - (void)setUpNavBar {
-    presentationsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"presentation"] style:UIBarButtonItemStylePlain target:self action:@selector(showPresentations:)];
-    groupsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"tables"] style:UIBarButtonItemStylePlain target:self action:@selector(showTables)];
-    self.navigationItem.leftBarButtonItems = @[groupsButton,presentationsButton];
+    presentationsButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [presentationsButton setImage:[UIImage imageNamed:@"whitePresentation"] forState:UIControlStateNormal];
+    presentationsButton.frame = CGRectMake(0.0, 0.0, 70.0, 44.0);
+    [presentationsButton addTarget:self action:@selector(showPresentations) forControlEvents:UIControlEventTouchUpInside];
+    presentationsBarButton = [[UIBarButtonItem alloc] initWithCustomView:presentationsButton];
     
+    tablesButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [tablesButton setImage:[UIImage imageNamed:@"whiteTables"] forState:UIControlStateNormal];
+    [tablesButton setImage:[UIImage imageNamed:@"blueTable"] forState:UIControlStateSelected];
+    tablesButton.frame = CGRectMake(20.0, 0.0, 50.0, 44.0);
+    [tablesButton addTarget:self action:@selector(showLightTables) forControlEvents:UIControlEventTouchUpInside];
+    lightTablesButton = [[UIBarButtonItem alloc] initWithCustomView:tablesButton];
+    
+    self.navigationItem.leftBarButtonItems = @[lightTablesButton,presentationsBarButton];
+    
+    refreshButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"refresh"] style:UIBarButtonItemStylePlain target:self action:@selector(refreshCollectionView:)];
     addButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"plus"] style:UIBarButtonItemStylePlain target:self action:@selector(add)];
     
     if (_currentUser){
-        settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"settings"] style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
-        notificationsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"alert"] style:UIBarButtonItemStylePlain target:self action:@selector(showNotifications)];
+        settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"settings"] style:UIBarButtonItemStylePlain target:self action:@selector(settingsPopover:)];
+        notificationsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"alert"] style:UIBarButtonItemStylePlain target:self action:@selector(showNotifications:)];
         
-        self.navigationItem.rightBarButtonItems = @[addButton,notificationsButton, settingsButton];
+        self.navigationItem.rightBarButtonItems = @[addButton, notificationsButton, settingsButton, refreshButton];
     } else {
         loginButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"login"] style:UIBarButtonItemStylePlain target:self action:@selector(showLogin)];
-        self.navigationItem.rightBarButtonItems = @[loginButton, addButton];
+        self.navigationItem.rightBarButtonItems = @[loginButton, addButton, refreshButton];
     }
+    
+    self.navigationItem.titleView = self.searchBar;
     
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     topInset = self.navigationController.navigationBar.frame.size.height + 20;
     self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
 }
 
+#pragma mark - WFLoginDelegate
+- (void)loginSuccessful {
+    NSLog(@"Successful login from Catalog");
+    _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
+    [self setUpNavBar];
+    [self loadUser];
+}
+
 - (void)loadArt {
-    [manager GET:[NSString stringWithFormat:@"arts"] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        [arts removeAllObjects];
-        NSLog(@"load arts success: %@", responseObject);
-        for (NSDictionary *dict in [responseObject objectForKey:@"arts"]) {
-            Art *art = [Art MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"identifier"] inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (art){
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [parameters setObject:@20 forKey:@"count"];
+    if (_arts.count) {
+        Art *lastArt = _arts.lastObject;
+        [parameters setObject:[NSNumber numberWithDouble:[lastArt.uploadedDate timeIntervalSince1970]] forKey:@"before_date"];
+    } else {
+        [ProgressHUD show:@"Loading art..."];
+    }
+    if (!loading){
+        loading = YES;
+        [manager GET:@"arts" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            //NSLog(@"load arts success: %@", responseObject);
+            NSLog(@"arts count: %d",[[responseObject objectForKey:@"arts"] count]);
+            if ([[responseObject objectForKey:@"arts"] count]){
+                canLoadMoreArt = YES;
                 
+                for (NSDictionary *dict in [responseObject objectForKey:@"arts"]) {
+                    Art *art = [Art MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+                    if (!art){
+                        art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                    }
+                    [art populateFromDictionary:dict];
+                    if (![_arts containsObject:art]){
+                        [_arts addObject:art];
+                    }
+                }
+                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                    NSLog(@"Done saving art: %u",success);
+                }];
             } else {
-                art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                canLoadMoreArt = NO;
+                NSLog(@"Can't load any more art. We got it all!");
             }
-            [art populateFromDictionary:dict];
-            [arts addObject:art];
-        }
-        
-        [self.collectionView reloadData];
-        [self endRefresh];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        [self endRefresh];
-    }];
+            [self.collectionView reloadData];
+            [self endRefresh];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            [self endRefresh];
+        }];
+    }
 }
 
 - (void)loadUser {
-    if (_currentUser){
+    if (_currentUser && !loading){
+        loading = YES;
         [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success getting user art: %@", responseObject);
             
             [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"privateArt == %@ && user.identifier == %@", @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+                _privateArts = [Art MR_findAllWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
+                
+                [_currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
+                    if (favorite.art && ![_favorites containsObject:favorite.art]) {
+                        [_favorites addObject:favorite.art];
+                    }
+                }];
+                
+                if (!_tables){
+                    _tables = [NSMutableArray arrayWithArray:_currentUser.tables.array];
+                } else {
+                    _tables = _currentUser.tables.array.mutableCopy;
+                }
+                [self.tableView reloadData];
+                [self endRefresh];
+            }];
             
-            if (!arts){
-                arts = [NSMutableArray arrayWithArray:_currentUser.arts.array];
-            } else {
-                arts = _currentUser.arts.array.mutableCopy;
-            }
-            if (!tables){
-                tables = [NSMutableArray arrayWithArray:_currentUser.groups.array];
-            } else {
-                tables = _currentUser.groups.array.mutableCopy;
-            }
-            [self.tableView reloadData];
-            [self.collectionView reloadData];
-            
-            [self endRefresh];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to get user art: %@",error.description);
             [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to load your art. Please try again soon." delegate:nil cancelButtonTitle:@"Cancel" otherButtonTitles:nil] show];
@@ -207,30 +306,52 @@
     }
 }
 - (void)endRefresh {
+    loading = NO;
     [ProgressHUD dismiss];
-    if (mainRefresh.isRefreshing){
-        [mainRefresh endRefreshing];
+    if (tableViewRefresh.isRefreshing){
+        [tableViewRefresh endRefreshing];
+    }
+    if (collectionViewRefresh.isRefreshing){
+        [collectionViewRefresh endRefreshing];
     }
 }
 
 - (void)add {
-    
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        settings = NO; metadata = NO; _login = NO; groupBool = NO;
+        newArt = YES;
+        WFNewArtViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"NewArt"];
+        //UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        vc.transitioningDelegate = self;
+        vc.modalPresentationStyle = UIModalPresentationCustom;
+        [self presentViewController:vc animated:YES completion:^{
+            
+        }];
+    } else {
+        [self showLogin];
+    }
 }
 
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 2;
+    return 3;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch (section) {
         case 0:
-            return arts.count;
+            return 2;
             break;
         case 1:
-            return tables.count;
+            if (_tables.count){
+                return _tables.count;
+            } else {
+                return 1;
+            }
+            break;
+        case 2:
+            return 1;
             break;
         default:
             return 0;
@@ -238,44 +359,56 @@
     }
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFMainTableCell *cell = (WFMainTableCell *)[tableView dequeueReusableCellWithIdentifier:@"MainCell"];
+
     if (indexPath.section == 0){
-        Art *art;
-        if (searching) {
-            art = filteredArts[indexPath.row];
+        if (indexPath.row == 0){
+            [cell.imageView setImage:[UIImage imageNamed:@"whiteLock"]];
+            [cell.textLabel setText:@"Private"];
         } else {
-            art = arts[indexPath.row];
+            [cell.imageView setImage:[UIImage imageNamed:@"whiteFavorite"]];
+            [cell.textLabel setText:@"Favorites"];
         }
-        [cell configureForArt:art];
+        
+    } else if (indexPath.section == 1){
+        if (_tables.count){
+            Table *table;
+            table = _tables[indexPath.row];
+            [cell configureForTable:table];
+            [cell.textLabel setText:@""];
+        } else {
+            [cell.textLabel setTextAlignment:NSTextAlignmentCenter];
+            [cell.textLabel setText:@"No Light Tables"];
+            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+        }
+        
     } else {
-        Table *table;
-        if (searching) {
-            table = filteredTables[indexPath.row];
-        } else {
-            table = tables[indexPath.row];
-        }
-        [cell configureForTable:table];
+        [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
+        [cell.textLabel setText:@"Light Table"];
     }
     return cell;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    return 34;
+    if (section == 1){
+        return 34;
+    } else {
+        return 0;
+    }
 }
 
 - (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 34)];
+    CGFloat headerHeight = (section == 1 ? 34.f : 0.f);
+    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, headerHeight)];
     [headerView setBackgroundColor:[UIColor clearColor]];
-    UILabel *headerLabel = [[UILabel alloc] init];
-    [headerView addSubview:headerLabel];
-    [headerLabel setFrame:CGRectMake(10, 0, width-10, 34)];
-    [headerLabel setBackgroundColor:[UIColor clearColor]];
-    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kLatoLight] size:0]];
-    if (section == 0){
-        [headerLabel setText:@"ART"];
-    } else {
+    if (section == 1){
+        UILabel *headerLabel = [[UILabel alloc] init];
+        [headerView addSubview:headerLabel];
+        [headerLabel setFrame:CGRectMake(10, 0, width-10, headerHeight)];
+        [headerLabel setBackgroundColor:[UIColor clearColor]];
+        [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
+        [headerLabel setTextColor:[UIColor colorWithWhite:1 alpha:.7]];
         [headerLabel setText:@"TABLES"];
     }
     
@@ -283,8 +416,96 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSLog(@"did select something");
+    if (indexPath.section == 0){
+        if (indexPath.row == 0){
+            [self showPrivateArt];
+        } else {
+            [self showFavorites];
+        }
+    } else if (indexPath.section == 1){
+        Table *table = _currentUser.tables[indexPath.row];
+        [self showTable:table];
+    } else if (indexPath.section == 2){
+        [self showNewLightTable];
+    } else {
+        
+    }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (void)resetArtBooleans {
+    showPrivate = NO;
+    showFavorites = NO;
+    showLightTable = NO;
+}
+
+- (void)showPrivateArt {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        if (showPrivate){
+            [self resetArtBooleans];
+        } else {
+            [self resetArtBooleans];
+            showPrivate = YES;
+        }
+        [self.collectionView reloadData];
+    } else {
+        [self showLogin];
+    }
+}
+
+- (void)showFavorites {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        if (showFavorites){
+            [self resetArtBooleans];
+        } else {
+            [self resetArtBooleans];
+            showFavorites = YES;
+        }
+        [self.collectionView reloadData];
+    } else {
+        [self showLogin];
+    }
+}
+
+- (void)showTable:(Table*)table {
+    if (showLightTable){
+        [self resetArtBooleans];
+    } else {
+        [self resetArtBooleans];
+        showLightTable = YES;
+    }
+    _table = table;
+    [self loadLightTable:_table];
+}
+
+- (void)loadLightTable:(Table*)table {
+    [ProgressHUD show:@"Loading table..."];
+    
+    if (!loading){
+        loading = YES;
+        [manager GET:[NSString stringWithFormat:@"light_tables/%@",table.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success loading light table: %@",responseObject);
+            [table populateFromDictionary:[responseObject objectForKey:@"table"]];
+            [self.collectionView reloadData];
+            [self endRefresh];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Error loading light table: %@",error.description);
+            [self endRefresh];
+            [self.collectionView reloadData];
+        }];
+    }
+}
+
+- (void) showNewLightTable {
+    WFNewLightTableController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"NewLightTable"];
+    //UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    vc.modalPresentationStyle = UIModalPresentationCustom;
+    vc.transitioningDelegate = self;
+    [self resetBooleans];
+    newArt = YES;
+    [self presentViewController:vc animated:YES completion:^{
+        
+    }];
 }
 
 #pragma mark – UICollectionViewDelegateFlowLayout
@@ -308,25 +529,92 @@
 #pragma mark - UICollectionView Datasource
 
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
-    return arts.count;
+    if (showPrivate){
+        return _privateArts.count;
+    } else if (showLightTable){
+        return _table.arts.count;
+    } else if (showFavorites){
+        return _favorites.count;
+    } else {
+        return _arts.count;
+    }
 }
 
 - (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
     return 1;
 }
 
+- (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath{
+    UICollectionReusableView *reusableview = nil;
+    if (kind == UICollectionElementKindSectionHeader) {
+        WFCatalogHeaderView *headerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"HeaderView" forIndexPath:indexPath];
+        if (showPrivate){
+            [headerView.headerLabel setText:@"My Private Art"];
+        } else if (showLightTable) {
+            [headerView.headerLabel setText:@"Light Table Art"];
+        } else if (showFavorites) {
+            [headerView.headerLabel setText:@"My Favorites"];
+        }
+        [headerView.headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+        [headerView.headerLabel setTextColor:[UIColor blackColor]];
+        reusableview = headerView;
+    }
+    
+    if (kind == UICollectionElementKindSectionFooter) {
+        UICollectionReusableView *footerview = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:@"FooterView" forIndexPath:indexPath];
+        reusableview = footerview;
+    }
+    
+    return reusableview;
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
+    if (showFavorites || showLightTable || showPrivate){
+        return CGSizeMake(collectionView.frame.size.width, 34);
+    } else {
+        return CGSizeMake(0, 0);
+    }
+}
+
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFArtCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"ArtCell" forIndexPath:indexPath];
-    Art *art = arts[indexPath.item];
+    Art *art;
+    if (showPrivate){
+        art = _privateArts[indexPath.item];
+    } else if (showLightTable){
+        art = _table.arts[indexPath.item];
+    } else if (showFavorites){
+        art = _favorites[indexPath.item];
+    } else {
+        art = _arts[indexPath.item];
+    }
     [cell configureForArt:art];
-    
+    if ([selectedSlides containsObject:art]){
+        [cell.checkmark setHidden:NO];
+    } else {
+        [cell.checkmark setHidden:YES];
+    }
     return cell;
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    if (scrollView == _collectionView){
+        float bottomEdge = scrollView.contentOffset.y + scrollView.frame.size.height;
+        if (bottomEdge >= scrollView.contentSize.height) {
+            // at the bottom of the scrollView
+            if (canLoadMoreArt){
+                [self loadArt];
+            }
+        }
+    }
 }
 
 - (IBAction)longPressed:(UILongPressGestureRecognizer*)sender {
     CGPoint loc = [sender locationInView:self.collectionView];
     CGFloat heightInScreen = fmodf((loc.y-self.collectionView.contentOffset.y), CGRectGetHeight(self.collectionView.frame));
-    CGPoint locInScreen = CGPointMake( loc.x-self.collectionView.contentOffset.x+kMainSplitWidth, heightInScreen );
+    CGFloat hoverOffset;
+    tableIsVisible ? (hoverOffset = kMainSplitWidth) : (hoverOffset = 0);
+    CGPoint locInScreen = CGPointMake( loc.x-self.collectionView.contentOffset.x+hoverOffset, heightInScreen );
     
     if (sender.state == UIGestureRecognizerStateBegan) {
         self.startIndex = [self.collectionView indexPathForItemAtPoint:loc];
@@ -335,7 +623,7 @@
             WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
             self.draggingView = [[UIImageView alloc] initWithImage:[cell getRasterizedImageCopy]];
             
-            [cell.contentView setAlpha:0.f];
+            [cell.contentView setAlpha:0.1f];
             [self.view addSubview:self.draggingView];
             self.draggingView.center = locInScreen;
             self.dragViewStartLocation = self.draggingView.center;
@@ -353,18 +641,36 @@
     }
     
     if (sender.state == UIGestureRecognizerStateEnded) {
-        NSLog(@"ended loc: %f, %f",loc.x,loc.y);
-        if (self.draggingView) {
+        
+        // comparison mode
+        // 128 is half the width of an art slide, since the point we're grabbing is a center point, not the origin
+        if (loc.x < (kMainSplitWidth - 128) && loc.y > (_comparisonContainerView.frame.origin.y - 128)){
+            NSLog(@"comparison height? %f",_comparisonContainerView.frame.size.height);
+            if (comparison1){
+                comparison2 = [[UIImageView alloc] initWithImage:self.draggingView.image];
+                comparison2.clipsToBounds = NO;
+                [_comparisonContainerView addSubview:comparison2];
+                [comparison2 setFrame:CGRectMake(_comparisonContainerView.frame.size.width/2+10, 20, 160, 160)];
+                
+            } else {
+                comparison1 = [[UIImageView alloc] initWithImage:self.draggingView.image];
+                comparison1.clipsToBounds = NO;
+                [_comparisonContainerView addSubview:comparison1];
+                [comparison1 setFrame:CGRectMake(20, 20, 160, 160)];
+            }
+            [self resetComparisonLabel];
+            [self resetDraggingView];
+        } else if (self.draggingView) {
             self.moveToIndexPath = [self.collectionView indexPathForItemAtPoint:loc];
             if (self.moveToIndexPath) {
-                //update date source
-                NSNumber *thisNumber = [arts objectAtIndex:self.startIndex.row];
-                [arts removeObjectAtIndex:self.startIndex.row];
+                
+                NSNumber *thisNumber = [_arts objectAtIndex:self.startIndex.row];
+                [_arts removeObjectAtIndex:self.startIndex.row];
                 
                 if (self.moveToIndexPath.row < self.startIndex.row) {
-                    [arts insertObject:thisNumber atIndex:self.moveToIndexPath.row];
+                    [_arts insertObject:thisNumber atIndex:self.moveToIndexPath.row];
                 } else {
-                    [arts insertObject:thisNumber atIndex:self.moveToIndexPath.row];
+                    [_arts insertObject:thisNumber atIndex:self.moveToIndexPath.row];
                 }
                 
                 [UIView animateWithDuration:.23f animations:^{
@@ -394,16 +700,7 @@
                 }];
                 
             } else {
-                [UIView animateWithDuration:.23f animations:^{
-                    self.draggingView.transform = CGAffineTransformIdentity;
-                } completion:^(BOOL finished) {
-                    WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
-                    [cell.contentView setAlpha:1.f];
-                    
-                    [self.draggingView removeFromSuperview];
-                    self.draggingView = nil;
-                    self.startIndex = nil;
-                }];
+                [self resetDraggingView];
             }
             
             loc = CGPointZero;
@@ -411,10 +708,51 @@
     }
 }
 
+- (void)resetComparisonLabel {
+    if (comparison2 || comparison1){
+        [_dragForComparisonLabel setHidden:YES];
+    } else {
+        [_dragForComparisonLabel setHidden:NO];
+    }
+}
+
+- (void)resetDraggingView {
+    [UIView animateWithDuration:.23f animations:^{
+        self.draggingView.transform = CGAffineTransformIdentity;
+    } completion:^(BOOL finished) {
+        WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
+        [cell.contentView setAlpha:1.f];
+        
+        [self.draggingView removeFromSuperview];
+        self.draggingView = nil;
+        self.startIndex = nil;
+    }];
+}
+
 #pragma mark - UICollectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    Art *art = arts[indexPath.item];
-    [self showMetadata:art];
+    Art *art;
+    if (showPrivate){
+        art = _privateArts[indexPath.item];
+    } else if (showLightTable){
+        art = _table.arts[indexPath.item];
+    } else if (showFavorites){
+        art = _favorites[indexPath.item];
+    } else {
+        art = _arts[indexPath.item];
+    }
+    
+    if (searching && tableIsVisible){
+        //WFArtCell *selectedCell = (WFArtCell*)[collectionView cellForItemAtIndexPath:indexPath];
+        if ([selectedSlides containsObject:art]){
+            [selectedSlides removeObject:art];
+        } else {
+            [selectedSlides addObject:art];
+        }
+        [collectionView reloadItemsAtIndexPaths:@[indexPath]];
+    } else {
+        [self showMetadata:art];
+    }
 }
 
 - (void)showMetadata:(Art*)art{
@@ -422,8 +760,9 @@
     [vc setArt:art];
     vc.transitioningDelegate = self;
     vc.modalPresentationStyle = UIModalPresentationCustom;
+    [self resetBooleans];
     metadata = YES;
-    settings = NO;
+    
     [self presentViewController:vc animated:YES completion:^{
         
     }];
@@ -437,25 +776,58 @@
 
 - (void)showLogin {
     WFLoginViewController *login = [[self storyboard] instantiateViewControllerWithIdentifier:@"Login"];
+    delegate.loginDelegate = self;
+    login.modalPresentationStyle = UIModalPresentationCustom;
+    login.transitioningDelegate = self;
+    [self resetBooleans];
+    _login = YES;
+    
     [self presentViewController:login animated:YES completion:^{
         
     }];
 }
 
-- (void)showNotifications {
+- (void)showNotifications:(id)sender {
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
     WFNotificationsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Notifications"];
-    
-    [self presentViewController:vc animated:YES completion:^{
-        
-    }];
+    //vc.notificationsDelegate = self;
+    vc.preferredContentSize = CGSizeMake(430, 500);
+    self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
+    self.popover.delegate = self;
+    //[self.popover setBackgroundColor:[UIColor clearColor]];
+    [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+}
+
+- (void)settingsPopover:(id)sender {
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
+    WFMenuViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Menu"];
+    vc.menuDelegate = self;
+    vc.preferredContentSize = CGSizeMake(230, 216);
+    self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
+    self.popover.delegate = self;
+    [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+}
+
+- (void)resetBooleans {
+    settings = NO;
+    newArt = NO;
+    metadata = NO;
+    _login = NO;
+    notificationsBool = NO;
+    groupBool = NO;
 }
 
 - (void)showSettings {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        if (self.popover){
+            [self.popover dismissPopoverAnimated:YES];
+        }
+        [self resetBooleans];
         settings = YES;
-        metadata = NO;
-        _login = NO;
-        groupBool = NO;
         WFSettingsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Settings"];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         nav.transitioningDelegate = self;
@@ -468,24 +840,43 @@
     }
 }
 
-- (void)showPresentations:(id)sender {
-    WFPresentationsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Presentations"];
-    vc.presentationDelegate = self;
-    vc.preferredContentSize = CGSizeMake(320, 400);
-    self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
-    self.popover.delegate = self;
-    [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+- (void)logout {
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
+    _currentUser = nil;
+    [self setUpNavBar];
+    [self loadArt];
 }
 
-- (void)showTables {
-    WFTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Groups"];
-    groupBool = YES;
-    settings = NO;
-    metadata = NO;
-    _login = NO;
-    vc.transitioningDelegate = self;
-    vc.modalPresentationStyle = UIModalPresentationCustom;
-    [self presentViewController:vc animated:YES completion:^{
+- (void)showPresentations {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        WFPresentationsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Presentations"];
+        vc.presentationDelegate = self;
+        vc.preferredContentSize = CGSizeMake(320, 400);
+        self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
+        self.popover.delegate = self;
+        [self.popover setBackgroundColor:[UIColor blackColor]];
+        
+        [self.popover presentPopoverFromBarButtonItem:presentationsBarButton permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    } else {
+        [self showLogin];
+    }
+}
+
+- (void)newPresentation {
+    [self.popover dismissPopoverAnimated:YES];
+    WFPresentationSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"PresentationSplitView"];
+    Presentation *presentation = [Presentation MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    if (_currentUser){
+        presentation.user = _currentUser;
+    }
+    [vc setPresentation:presentation];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self resetBooleans];
+    [self presentViewController:nav animated:YES completion:^{
         
     }];
 }
@@ -497,13 +888,70 @@
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.transitioningDelegate = self;
     nav.modalPresentationStyle = UIModalPresentationCustom;
-    metadata = NO;
-    settings = NO;
-    _login = NO;
-    groupBool = NO;
+    [self resetBooleans];
     [self presentViewController:nav animated:YES completion:^{
         
     }];
+}
+
+
+- (void)showLightTables {
+    if (tableIsVisible){
+        //hide the light table sidebar
+        CGRect collectionFrame = _collectionView.frame;
+        collectionFrame.origin.x = 0;
+        collectionFrame.size.width += 310;
+        tableIsVisible = NO;
+        tablesButton.selected = NO;
+        
+        [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.000001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            _tableView.transform = CGAffineTransformIdentity;
+            _comparisonContainerView.transform = CGAffineTransformIdentity;
+            
+            [_collectionView setFrame:collectionFrame];
+            
+            [_collectionView performBatchUpdates:^{
+                [_collectionView reloadData];
+            } completion:^(BOOL finished) { }];
+            
+        } completion:^(BOOL finished) {
+            
+            
+        }];
+    } else {
+        //show the light table sidebar
+        CGRect collectionFrame = _collectionView.frame;
+        collectionFrame.origin.x = 310;
+        collectionFrame.size.width -= 310;
+        tableIsVisible = YES;
+        tablesButton.selected = YES;
+        
+        if (!selectedSlides) selectedSlides = [NSMutableOrderedSet orderedSet];
+        
+        [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            _tableView.transform = CGAffineTransformMakeTranslation(310, 0);
+            _comparisonContainerView.transform = CGAffineTransformMakeTranslation(310, 0);
+            
+            [_collectionView setFrame:collectionFrame];
+            
+            [_collectionView performBatchUpdates:^{
+                [_collectionView reloadData];
+            } completion:^(BOOL finished) { }];
+            
+        } completion:^(BOOL finished) {
+            
+        }];
+    }
+    
+    /*WFTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Groups"];
+    settings = NO; newArt = NO; metadata = NO; _login = NO;
+    groupBool = YES;
+    
+    vc.transitioningDelegate = self;
+    vc.modalPresentationStyle = UIModalPresentationCustom;
+    [self presentViewController:vc animated:YES completion:^{
+        
+    }];*/
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
@@ -519,6 +967,10 @@
         return animator;
     } else if (metadata){
         WFArtMetadataAnimator *animator = [WFArtMetadataAnimator new];
+        animator.presenting = YES;
+        return animator;
+    } else if (newArt) {
+        WFNewArtAnimator *animator = [WFNewArtAnimator new];
         animator.presenting = YES;
         return animator;
     } else if (_login) {
@@ -543,6 +995,9 @@
     } else if (metadata){
         WFArtMetadataAnimator *animator = [WFArtMetadataAnimator new];
         return animator;
+    } else if (newArt) {
+        WFNewArtAnimator *animator = [WFNewArtAnimator new];
+        return animator;
     } else if (_login) {
         WFLoginAnimator *animator = [WFLoginAnimator new];
         return animator;
@@ -552,6 +1007,11 @@
     }
 }
 
+- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController {
+    [self.searchBar endEditing:YES];
+    searching = NO;
+}
+
 - (void)dismiss {
     [self dismissViewControllerAnimated:YES completion:^{
        
@@ -559,26 +1019,36 @@
 }
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
-    NSLog(@"Search bar is editing");
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
     searching = YES;
+    searchResultsVc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SearchResults"];
+    searchResultsVc.preferredContentSize = CGSizeMake(self.searchBar.frame.size.width-40, 400);
+    self.popover = [[UIPopoverController alloc] initWithContentViewController:searchResultsVc];
+    self.popover.delegate = self;
+    [self.popover presentPopoverFromRect:self.navigationItem.titleView.frame inView:self.view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
     NSLog(@"Search text did change: %@",searchText);
-    [self filterContentForSearchText:searchText scope:nil];
+    if (searchResultsVc){
+        [searchResultsVc filterContentForSearchText:searchText scope:nil];
+    }
+    //[self filterContentForSearchText:searchText scope:nil];
 }
 
 - (void)filterContentForSearchText:(NSString*)searchText scope:(NSString*)scope {
-    if (!filteredArts){
-        filteredArts = [NSMutableArray array];
+    if (!_filteredArts){
+        _filteredArts = [NSMutableArray array];
     } else {
-        [filteredArts removeAllObjects];
+        [_filteredArts removeAllObjects];
     }
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF contains[cd] %@", searchText];
     
-    for (Art *art in arts){
+    for (Art *art in _arts){
         if([predicate evaluateWithObject:art.title]) {
-            [filteredArts addObject:art];
+            [_filteredArts addObject:art];
         }
     }
 }

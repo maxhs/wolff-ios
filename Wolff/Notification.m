@@ -19,6 +19,7 @@
 @dynamic identifier;
 @dynamic notificationType;
 @dynamic message;
+@dynamic sentAt;
 @dynamic read;
 @dynamic sent;
 @dynamic art;

@@ -8,8 +8,11 @@
 
 #import "WFMenuViewController.h"
 #import "WFMenuCell.h"
+#import "WFAppDelegate.h"
 
-@interface WFMenuViewController ()
+@interface WFMenuViewController () {
+    WFAppDelegate *delegate;
+}
 
 @end
 
@@ -17,6 +20,74 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
+    [self.view setBackgroundColor:[UIColor blackColor]];
+    [self.tableView setBackgroundColor:[UIColor clearColor]];
+    [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    self.tableView.rowHeight = 54.f;
+}
+
+#pragma mark - Table view data source
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 4;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    WFMenuCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MenuCell" forIndexPath:indexPath];
+    
+    switch (indexPath.row) {
+        case 0:
+            [cell.imageView setImage:[UIImage imageNamed:@"cloudDownload"]];
+            [cell.textLabel setText:@" Local Backup"];
+            break;
+        case 1:
+            [cell.imageView setImage:[UIImage imageNamed:@"blackSettings"]];
+            [cell.textLabel setText:@" Account"];
+            break;
+        case 2:
+            [cell.imageView setImage:[UIImage imageNamed:@"profile"]];
+            [cell.textLabel setText:@" Profile"];
+            break;
+        case 3:
+            [cell.imageView setImage:[UIImage imageNamed:@"logout"]];
+            [cell.textLabel setText:@" Log Out"];
+            break;
+            
+        default:
+            break;
+    }
+    
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    switch (indexPath.row) {
+        case 0:
+            
+            break;
+        case 1:
+            if (self.menuDelegate && [self.menuDelegate respondsToSelector:@selector(showSettings)]) {
+                [self.menuDelegate showSettings];
+            }
+            break;
+        case 2:
+            
+            break;
+        case 3:
+            [delegate logout];
+            if (self.menuDelegate && [self.menuDelegate respondsToSelector:@selector(logout)]) {
+                [self.menuDelegate logout];
+            }
+            break;
+            
+        default:
+            break;
+    }
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -24,66 +95,5 @@
     // Dispose of any resources that can be recreated.
 }
 
-#pragma mark - Table view data source
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 1;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 0;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    WFMenuCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MenuCell" forIndexPath:indexPath];
-    
-    // Configure the cell...
-    
-    return cell;
-}
-
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

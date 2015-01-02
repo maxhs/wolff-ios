@@ -12,6 +12,7 @@
 @protocol WFPresentationDelegate <NSObject>
 
 @required
+- (void)newPresentation;
 - (void)presentationSelected:(Presentation*)presentation;
 @end
 

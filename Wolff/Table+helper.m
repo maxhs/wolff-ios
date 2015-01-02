@@ -7,6 +7,10 @@
 //
 
 #import "Table+helper.h"
+#import "Presentation+helper.h"
+#import "Art+helper.h"
+#import "Discussion+helper.h"
+#import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Table (helper)
 
@@ -25,6 +29,45 @@
     }
     if ([dict objectForKey:@"private"] && [dict objectForKey:@"private"] != [NSNull null]){
         self.privateTable = [dict objectForKey:@"private"];
+    }
+    if ([dict objectForKey:@"presentations"] && [dict objectForKey:@"presentations"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dictionary in [dict objectForKey:@"presentations"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"id"]];
+            Presentation *presentation = [Presentation MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!presentation){
+                presentation = [Presentation MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [presentation populateFromDictionary:dictionary];
+            [set addObject:presentation];
+        }
+        self.presentations = set;
+    }
+    if ([dict objectForKey:@"arts"] && [dict objectForKey:@"arts"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dictionary in [dict objectForKey:@"arts"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"id"]];
+            Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!art){
+                art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [art populateFromDictionary:dictionary];
+            [set addObject:art];
+        }
+        self.arts = set;
+    }
+    if ([dict objectForKey:@"discussions"] && [dict objectForKey:@"discussions"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dictionary in [dict objectForKey:@"discussions"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"id"]];
+            Discussion *discussion = [Discussion MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!discussion){
+                discussion = [Discussion MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [discussion populateFromDictionary:dictionary];
+            [set addObject:discussion];
+        }
+        self.discussions = set;
     }
 }
 

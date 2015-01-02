@@ -13,7 +13,9 @@
 
 @property (weak, nonatomic) IBOutlet UILabel *slideNumberLabel;
 @property (weak, nonatomic) IBOutlet UIView *slideContainerView;
+@property (weak, nonatomic) IBOutlet UIImageView *artImageView1;
+@property (weak, nonatomic) IBOutlet UIImageView *artImageView2;
 
-- (void)configureForSlide:(Slide*)slide;
+- (void)configureForSlide:(Slide*)slide withSlideNumber:(NSInteger)number;
 
 @end

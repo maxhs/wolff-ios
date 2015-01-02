@@ -14,5 +14,7 @@
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
+@property (weak, nonatomic) IBOutlet UILabel *lightBoxPlaceholderLabel;
+@property (strong, nonatomic) UIPopoverController *popover;
 @property (strong, nonatomic) Presentation *presentation;
 @end

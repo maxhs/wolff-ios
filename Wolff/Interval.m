@@ -22,5 +22,8 @@
 @dynamic single;
 @dynamic suffix;
 @dynamic art;
+@dynamic year;
+@dynamic month;
+@dynamic day;
 
 @end

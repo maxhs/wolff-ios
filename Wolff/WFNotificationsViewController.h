@@ -10,6 +10,4 @@
 
 @interface WFNotificationsViewController : UITableViewController
 
-@property (strong, nonatomic) NSMutableArray *notifications;
-
 @end

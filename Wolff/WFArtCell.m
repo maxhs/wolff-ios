@@ -37,7 +37,7 @@
 
 - (UIImage *)getRasterizedImageCopy {
     UIGraphicsBeginImageContextWithOptions(self.bounds.size, self.isOpaque, 0.0f);
-    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
+    [self.artImageView.layer renderInContext:UIGraphicsGetCurrentContext()];
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return image;

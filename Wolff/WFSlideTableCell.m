@@ -7,22 +7,23 @@
 //
 
 #import "WFSlideTableCell.h"
+#import "Constants.h"
 
 @implementation WFSlideTableCell
 
 - (void)awakeFromNib {
-    [_slideContainerView setBackgroundColor:[UIColor blackColor]];
+    [self setBackgroundColor:[UIColor blackColor]];
+    [_slideContainerView setBackgroundColor:[UIColor colorWithWhite:.23 alpha:1]];
+    [_slideNumberLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:.23 alpha:1]];
 }
 
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated
-{
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
-
-    // Configure the view for the selected state
 }
 
-- (void)configureForSlide:(Slide *)slide {
-    
+- (void)configureForSlide:(Slide *)slide withSlideNumber:(NSInteger)number {
+    [_slideNumberLabel setText:[NSString stringWithFormat:@"%ld",(long)number]];
 }
 
 @end

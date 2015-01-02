@@ -1,5 +1,5 @@
 //
-//  Medium+helper.h
+//  Material+helper.h
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 11/25/14.

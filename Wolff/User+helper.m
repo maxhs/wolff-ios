@@ -7,9 +7,9 @@
 //
 
 #import "User+helper.h"
-#import "Art+helper.h"
 #import "Institution+helper.h"
 #import "Presentation+helper.h"
+#import "Table+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation User (helper)
@@ -67,6 +67,21 @@
         self.arts = set;
     }
     
+    if ([dictionary objectForKey:@"private_arts"] && [dictionary objectForKey:@"private_arts"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"private_arts"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!art){
+                art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [art populateFromDictionary:dict];
+            art.privateArt = @YES;
+            [set addObject:art];
+        }
+        self.arts = set;
+    }
+    
     if ([dictionary objectForKey:@"presentations"] && [dictionary objectForKey:@"presentations"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"presentations"]){
@@ -81,6 +96,20 @@
         self.presentations = set;
     }
     
+    if ([dictionary objectForKey:@"light_tables"] && [dictionary objectForKey:@"light_tables"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"light_tables"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Table *table = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!table){
+                table = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [table populateFromDictionary:dict];
+            [set addObject:table];
+        }
+        self.tables = set;
+    }
+    
     if ([dictionary objectForKey:@"institution"] && [dictionary objectForKey:@"institution"] != [NSNull null]){
     
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"institution"] objectForKey:@"id"]];
@@ -90,6 +119,20 @@
         }
         [institution populateFromDictionary:[dictionary objectForKey:@"institution"]];
         self.institution = institution;
+    }
+    
+    if ([dictionary objectForKey:@"favorites"] && [dictionary objectForKey:@"favorites"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"favorites"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Favorite *favorite = [Favorite MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!favorite){
+                favorite = [Favorite MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [favorite populateFromDictionary:dict];
+            [set addObject:favorite];
+        }
+        self.favorites = set;
     }
 }
 
@@ -105,6 +148,17 @@
     } else {
         return @"";
     }
+}
+
+- (Favorite *)getFavorite:(Art *)art {
+    __block Favorite *favorite = nil;
+    [self.favorites enumerateObjectsUsingBlock:^(Favorite *fav, NSUInteger idx, BOOL *stop) {
+        if (fav.art && [fav.art.identifier isEqualToNumber:art.identifier]){
+            favorite = fav;
+            *stop = YES;
+        }
+    }];
+    return favorite;
 }
 
 @end

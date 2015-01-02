@@ -11,5 +11,7 @@
 @interface WFArtMetadataCell : UITableViewCell
 
 @property (weak, nonatomic) IBOutlet UILabel *label;
-@property (weak, nonatomic) IBOutlet UILabel *value;
+@property (weak, nonatomic) IBOutlet UITextField *textField;
+@property (weak, nonatomic) IBOutlet UITextView *textView;
+- (void)setDefaultStyle:(BOOL)editMode;
 @end

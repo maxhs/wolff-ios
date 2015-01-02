@@ -22,16 +22,20 @@
 }
 
 - (void)awakeFromNib {
-    _slideBackgroundView.layer.cornerRadius = 13.f;
-    _slideBackgroundView.clipsToBounds = YES;
-    [_slideBackgroundView setBackgroundColor:[UIColor whiteColor]];
+    [_slideContainerView setBackgroundColor:[UIColor colorWithWhite:.95 alpha:1]];
+    _slideContainerView.layer.cornerRadius = 14.f;
+    _slideContainerView.layer.shouldRasterize = YES;
     
-    _slideBackgroundView.layer.borderColor = [UIColor colorWithWhite:.77 alpha:1].CGColor;
-    _slideBackgroundView.layer.borderWidth = .5f;
+    _slideContainerView.layer.backgroundColor = [UIColor colorWithWhite:.95 alpha:1].CGColor;
+    _slideContainerView.layer.shadowColor = [UIColor colorWithWhite:.5 alpha:1].CGColor;
+    _slideContainerView.layer.shadowOpacity = .4f;
+    _slideContainerView.layer.shadowOffset = CGSizeMake(1.3f, 1.7f);
+    _slideContainerView.layer.shadowRadius = 1.3f;
+    
+    _slideContainerView.clipsToBounds = NO;
 }
 
 - (void)configureForSlide:(Slide *)slide {
-    [_captionLabel setText:slide.caption];
     if (slide.arts.count == 1){
         Art *art = slide.arts.firstObject;
         [_singleArtImageView sd_setImageWithURL:[NSURL URLWithString:art.photo.mediumImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {

@@ -21,6 +21,7 @@
 @property (nonatomic, retain) NSString * mediumImageUrl;
 @property (nonatomic, retain) NSString * originalImageUrl;
 @property (nonatomic, retain) NSDate * createdDate;
+@property (nonatomic, retain) id image;
 @property (nonatomic, retain) Art *art;
 
 @end

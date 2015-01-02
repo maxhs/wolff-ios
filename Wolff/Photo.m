@@ -20,6 +20,7 @@
 @dynamic mediumImageUrl;
 @dynamic originalImageUrl;
 @dynamic createdDate;
+@dynamic image;
 @dynamic art;
 
 @end

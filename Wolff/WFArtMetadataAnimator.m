@@ -69,9 +69,9 @@
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
         
-        NSTimeInterval outDuration = [self transitionDuration:transitionContext]*.7;
-        [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.8 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            fromViewController.view.transform = CGAffineTransformMakeScale(.87, .87);
+        NSTimeInterval outDuration = [self transitionDuration:transitionContext]*.6;
+        [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            fromViewController.view.transform = CGAffineTransformMakeScale(.923, .923);
             [fromViewController.view setAlpha:0.0];
             [darkBackground setAlpha:0.0];
             toViewController.view.frame = [UIScreen mainScreen].bounds;

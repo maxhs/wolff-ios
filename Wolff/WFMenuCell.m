@@ -7,11 +7,14 @@
 //
 
 #import "WFMenuCell.h"
+#import "Constants.h"
 
 @implementation WFMenuCell
 
 - (void)awakeFromNib {
-    // Initialization code
+    [self.textLabel setTextColor:[UIColor blackColor]];
+    [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+    self.backgroundColor = [UIColor clearColor];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

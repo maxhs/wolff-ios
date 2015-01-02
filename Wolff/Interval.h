@@ -15,6 +15,9 @@
 
 @property (nonatomic, retain) NSNumber * identifier;
 @property (nonatomic, retain) NSDate * createdAt;
+@property (nonatomic, retain) NSNumber * year;
+@property (nonatomic, retain) NSNumber * month;
+@property (nonatomic, retain) NSNumber * day;
 @property (nonatomic, retain) NSNumber * beginRange;
 @property (nonatomic, retain) NSNumber * endRange;
 @property (nonatomic, retain) NSString * beginSuffix;

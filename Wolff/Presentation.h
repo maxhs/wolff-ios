@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
+@class Table, User;
 
 @interface Presentation : NSManagedObject
 
@@ -16,7 +17,10 @@
 @property (nonatomic, retain) NSString * title;
 @property (nonatomic, retain) NSString * presentationDescription;
 @property (nonatomic, retain) NSOrderedSet *slides;
+@property (nonatomic, retain) NSOrderedSet *arts;
 @property (nonatomic, retain) NSOrderedSet *discussions;
+@property (nonatomic, retain) Table * table;
+@property (nonatomic, retain) User * user;
 @end
 
 @interface Presentation (CoreDataGeneratedAccessors)

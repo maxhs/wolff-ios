@@ -16,6 +16,7 @@
 @property (nonatomic, retain) NSNumber * identifier;
 @property (nonatomic, retain) NSString * notificationType;
 @property (nonatomic, retain) NSString * message;
+@property (nonatomic, retain) NSDate * sentAt;
 @property (nonatomic, retain) NSNumber * read;
 @property (nonatomic, retain) NSNumber * sent;
 @property (nonatomic, retain) Art *art;
