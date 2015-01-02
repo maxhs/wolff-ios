@@ -44,10 +44,12 @@
 }
 
 - (void)configureForArt:(Art *)art {
-    if (art.photo.largeImageUrl.length){
-        [self.artImageView sd_setImageWithURL:[NSURL URLWithString:art.photo.largeImageUrl]  placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+    if (art.photo.mediumImageUrl.length){
+        [self.artImageView sd_setImageWithURL:[NSURL URLWithString:art.photo.mediumImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.23 animations:^{
                 [self.artImageView setAlpha:1.0];
+            } completion:^(BOOL finished) {
+                [self.artImageView.layer setShouldRasterize:YES];
             }];
         }];
         

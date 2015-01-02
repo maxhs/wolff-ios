@@ -18,6 +18,9 @@
     if ([dict objectForKey:@"title"] && [dict objectForKey:@"title"] != [NSNull null]){
         self.title = [dict objectForKey:@"title"];
     }
+    if ([dict objectForKey:@"index"] && [dict objectForKey:@"caption"] != [NSNull null]){
+        self.caption = [dict objectForKey:@"caption"];
+    }
     if ([dict objectForKey:@"caption"] && [dict objectForKey:@"caption"] != [NSNull null]){
         self.caption = [dict objectForKey:@"caption"];
     }
@@ -34,4 +37,23 @@
         self.arts = arts;
     }
 }
+
+- (void)addArt:(Art *)art {
+    NSMutableOrderedSet *arts = [NSMutableOrderedSet orderedSetWithOrderedSet:self.arts];
+    if (![self.arts containsObject:art]){
+        [arts addObject:art];
+        NSLog(@"adding art to slide");
+    } else {
+        NSLog(@"slide already contains art");
+    }
+    
+    self.arts = arts;
+}
+
+- (void)removeArt:(Art*)art {
+    NSMutableOrderedSet *arts = [NSMutableOrderedSet orderedSetWithOrderedSet:self.arts];
+    [arts removeObject:art];
+    self.arts = arts;
+}
+
 @end

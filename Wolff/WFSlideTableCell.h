@@ -15,7 +15,9 @@
 @property (weak, nonatomic) IBOutlet UIView *slideContainerView;
 @property (weak, nonatomic) IBOutlet UIImageView *artImageView1;
 @property (weak, nonatomic) IBOutlet UIImageView *artImageView2;
+@property (weak, nonatomic) IBOutlet UIImageView *artImageView3;
 
 - (void)configureForSlide:(Slide*)slide withSlideNumber:(NSInteger)number;
+- (UIImage *)getRasterizedImageCopy;
 
 @end

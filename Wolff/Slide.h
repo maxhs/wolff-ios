@@ -16,6 +16,7 @@
 @property (nonatomic, retain) NSString * title;
 @property (nonatomic, retain) NSString * caption;
 @property (nonatomic, retain) NSNumber * identifier;
+@property (nonatomic, retain) NSNumber * index;
 @property (nonatomic, retain) Presentation *presentation;
 @property (nonatomic, retain) NSOrderedSet *arts;
 @end

@@ -24,25 +24,25 @@
     CGFloat height;
     UIBarButtonItem *dismissButton;
     UIBarButtonItem *playButton;
-    UIBarButtonItem *newSlideButton;
-    UIBarButtonItem *refreshButton;
     UIBarButtonItem *searchButton;
     UIBarButtonItem *cloudDownloadButton;
     UIBarButtonItem *saveButton;
+    UIBarButtonItem *shareButton;
     CGFloat topInset;
     BOOL showPresentation;
     UITextField *titleTextField;
     NSTimeInterval duration;
     UIViewAnimationOptions animationCurve;
     CGFloat keyboardHeight;
-    
-    UILongPressGestureRecognizer *longPressRecognizer;
+    Art *selectedArt;
+    Slide *selectedSlide;
 }
 
 @property (nonatomic) UIImageView *draggingView;
 @property (nonatomic) CGPoint dragViewStartLocation;
 @property (nonatomic) NSIndexPath *startIndex;
 @property (nonatomic) NSIndexPath *moveToIndexPath;
+@property (weak, nonatomic) IBOutlet UILongPressGestureRecognizer *longPressRecognizer;
 
 @end
 
@@ -67,47 +67,52 @@
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     [self.navigationController.navigationBar setTranslucent:YES];
     
-    [self.tableView setBackgroundColor:[UIColor colorWithWhite:.1 alpha:1]];
+    [self.tableView setBackgroundColor:[UIColor colorWithWhite:.1 alpha:23]];
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.1]];
     self.tableView.rowHeight = 200.f;
     [self setUpNavButtons];
     [self setUpTitleView];
     
-    //manually set the collectionView's top inset
-    topInset = self.navigationController.navigationBar.frame.size.height + 20;
-    NSLog(@"top inset? %f",topInset);
-    self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
-    self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
     [self redrawPresentation];
     [self registerKeyboardNotifications];
     
-    longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
+    [_longPressRecognizer addTarget:self action:@selector(longPressed:)];
+}
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    // manually set the top inset
+    topInset = self.navigationController.navigationBar.frame.size.height;
+    self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    [titleTextField becomeFirstResponder];
+    
+    // only have the title textField become first responder if the presentation title is still blank
+    if (!_presentation.title.length){
+        [titleTextField becomeFirstResponder];
+    }
 }
 
 #pragma mark - View Setup
 - (void)setUpNavButtons {
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
-    newSlideButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"plus"] style:UIBarButtonItemStylePlain target:self action:@selector(newSlide)];
-    self.navigationItem.leftBarButtonItems = @[dismissButton, newSlideButton];
+    self.navigationItem.leftBarButtonItems = @[dismissButton];
     self.navigationController.navigationBar.tintColor = [UIColor whiteColor];
     
-    refreshButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"refresh"] style:UIBarButtonItemStylePlain target:self action:@selector(refresh)];
+    shareButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"people"] style:UIBarButtonItemStylePlain target:self action:@selector(share)];
     searchButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"search"] style:UIBarButtonItemStylePlain target:self action:@selector(startSearch)];
     cloudDownloadButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"cloudDownload"] style:UIBarButtonItemStylePlain target:self action:@selector(cloudDownload)];
     saveButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"cloudUpload"] style:UIBarButtonItemStylePlain target:self action:@selector(save)];
     
     playButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(playPresentation)];
-    self.navigationItem.rightBarButtonItems = @[playButton, refreshButton, searchButton, cloudDownloadButton, saveButton];
+    self.navigationItem.rightBarButtonItems = @[playButton, searchButton, cloudDownloadButton, saveButton, shareButton];
 }
 
 - (void)setUpTitleView {
     titleTextField = [[UITextField alloc] initWithFrame:CGRectMake(0, 26, width, 32)];
     [titleTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
+    [titleTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
     titleTextField.returnKeyType = UIReturnKeyDone;
     titleTextField.delegate = self;
     titleTextField.layer.cornerRadius = 4.f;
@@ -171,7 +176,11 @@
 
 // Override to support rearranging the table view.
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-    
+    Slide *slide = _presentation.slides[fromIndexPath.row];
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:_presentation.slides];
+    [tempSet removeObject:slide];
+    [tempSet insertObject:slide atIndex:toIndexPath.row];
+    _presentation.slides = tempSet;
 }
 
 - (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -207,12 +216,13 @@
 }
 
 - (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
+    [self redrawPresentation];
     return 1;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFArtCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"ArtCell" forIndexPath:indexPath];
-    Art *art = _presentation.arts[indexPath.row];
+    Art *art = _presentation.arts[indexPath.item];
     [cell configureForArt:art];
     
     return cell;
@@ -230,10 +240,9 @@
 }
 
 #pragma mark - UICollectionViewDelegate
-- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
-{
-    Slide *slide = _presentation.slides[indexPath.item];
-    [self showSlideDetail:slide];
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    Art *art = _presentation.arts[indexPath.item];
+    NSLog(@"Presentation did select: %@",art.title);
 }
 
 - (void)showSlideDetail:(Slide*)slide {
@@ -251,28 +260,49 @@
 - (void)longPressed:(UILongPressGestureRecognizer*)sender {
     CGPoint loc = [sender locationInView:self.collectionView];
     CGFloat heightInScreen = fmodf((loc.y-self.collectionView.contentOffset.y), CGRectGetHeight(self.collectionView.frame));
-    CGFloat hoverOffset;
-    //tableIsVisible ? (hoverOffset = kMainSplitWidth) : (hoverOffset = 0);
+    CGFloat hoverOffset = kPresentationSplitWidth;
     CGPoint locInScreen = CGPointMake( loc.x-self.collectionView.contentOffset.x+hoverOffset, heightInScreen );
     
     if (sender.state == UIGestureRecognizerStateBegan) {
-        self.startIndex = [self.collectionView indexPathForItemAtPoint:loc];
-        
-        if (self.startIndex) {
-            WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
-            self.draggingView = [[UIImageView alloc] initWithImage:[cell getRasterizedImageCopy]];
-            
-            [cell.contentView setAlpha:0.1f];
-            [self.view addSubview:self.draggingView];
-            self.draggingView.center = locInScreen;
-            self.dragViewStartLocation = self.draggingView.center;
-            [self.view bringSubviewToFront:self.draggingView];
-            
-            [UIView animateWithDuration:.23f animations:^{
-                CGAffineTransform transform = CGAffineTransformMakeScale(1.1f, 1.1f);
-                self.draggingView.transform = transform;
-            }];
-        }
+        NSLog(@"loc start: x %f and y: %f",loc.x, loc.y);
+        /*if (loc.x < kPresentationSplitWidth){
+            NSLog(@"we've selected a slide, not an art piece");
+            self.startIndex = [self.tableView indexPathForRowAtPoint:loc];
+            if (self.startIndex) {
+                WFSlideTableCell *cell = (WFSlideTableCell*)[self.tableView cellForRowAtIndexPath:self.startIndex];
+                selectedSlide = _presentation.slides[self.startIndex.row];
+                self.draggingView = [[UIImageView alloc] initWithImage:[cell getRasterizedImageCopy]];
+                
+                [cell.contentView setAlpha:0.1f];
+                [self.view addSubview:self.draggingView];
+                self.draggingView.center = locInScreen;
+                self.dragViewStartLocation = self.draggingView.center;
+                [self.view bringSubviewToFront:self.draggingView];
+                
+                [UIView animateWithDuration:.23f animations:^{
+                    CGAffineTransform transform = CGAffineTransformMakeScale(1.1f, 1.1f);
+                    self.draggingView.transform = transform;
+                }];
+            }
+        } else {*/
+            self.startIndex = [self.collectionView indexPathForItemAtPoint:loc];
+            if (self.startIndex) {
+                WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
+                selectedArt = _presentation.arts[self.startIndex.item];
+                self.draggingView = [[UIImageView alloc] initWithImage:[cell getRasterizedImageCopy]];
+                
+                [cell.contentView setAlpha:0.1f];
+                [self.view addSubview:self.draggingView];
+                self.draggingView.center = locInScreen;
+                self.dragViewStartLocation = self.draggingView.center;
+                [self.view bringSubviewToFront:self.draggingView];
+                
+                [UIView animateWithDuration:.23f animations:^{
+                    CGAffineTransform transform = CGAffineTransformMakeScale(1.1f, 1.1f);
+                    self.draggingView.transform = transform;
+                }];
+            }
+        //}
     }
     
     if (sender.state == UIGestureRecognizerStateChanged) {
@@ -280,7 +310,46 @@
     }
     
     if (sender.state == UIGestureRecognizerStateEnded) {
-        NSLog(@"ended loc: %f, %f",loc.x,loc.y);
+        //NSLog(@"ended loc: %f, %f",loc.x,loc.y);
+        if (selectedArt){
+            NSArray *visibleCells = self.tableView.visibleCells;
+            if (visibleCells.count){
+                [visibleCells enumerateObjectsUsingBlock:^(WFSlideTableCell *cell, NSUInteger idx, BOOL *stop) {
+                    CGFloat lowerBounds = cell.frame.origin.y;
+                    CGFloat upperBounds = cell.frame.origin.y + cell.frame.size.height;
+                    CGFloat bottomOfSlides = cell.frame.size.height * _presentation.slides.count;
+                    NSLog(@"bottom of slides: %f", bottomOfSlides);
+                    if (loc.y > bottomOfSlides){
+                        // this means we should add a new slide
+                        Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                        [slide addArt:selectedArt];
+                        [slide setIndex:[NSNumber numberWithInteger:_presentation.slides.count]];
+                        [_presentation addSlide:slide];
+                        [self.tableView reloadData];
+                    } else if (loc.y < upperBounds && loc.y > lowerBounds){
+                        NSLog(@"slide origin %f, y %f, and width %f",cell.frame.origin.x,cell.frame.origin.y, cell.frame.size.width);
+                        Slide *slide = [_presentation.slides objectAtIndex:idx];
+                        if (selectedArt)[slide addArt:selectedArt];
+                        [self.tableView reloadData];
+                        *stop = YES;
+                        [self endPressAnimation];
+                        return;
+                    }
+                }];
+            } else {
+                Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                if (selectedArt)[slide addArt:selectedArt];
+                [slide setIndex:[NSNumber numberWithInteger:_presentation.slides.count]];
+                [_presentation addSlide:slide];
+                [self.tableView reloadData];
+                
+                [self endPressAnimation];
+            }
+        } else if (selectedSlide) {
+            
+        }
+        
+        
         if (self.draggingView) {
             self.moveToIndexPath = [self.collectionView indexPathForItemAtPoint:loc];
             if (self.moveToIndexPath) {
@@ -323,16 +392,7 @@
                 }];
                 
             } else {
-                [UIView animateWithDuration:.23f animations:^{
-                    self.draggingView.transform = CGAffineTransformIdentity;
-                } completion:^(BOOL finished) {
-                    WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
-                    [cell.contentView setAlpha:1.f];
-                    
-                    [self.draggingView removeFromSuperview];
-                    self.draggingView = nil;
-                    self.startIndex = nil;
-                }];
+                [self endPressAnimation];
             }
             
             loc = CGPointZero;
@@ -340,9 +400,24 @@
     }
 }
 
+- (void)endPressAnimation {
+    [UIView animateWithDuration:.23f animations:^{
+        self.draggingView.transform = CGAffineTransformIdentity;
+    } completion:^(BOOL finished) {
+        WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
+        [cell.contentView setAlpha:1.f];
+        
+        [self.draggingView removeFromSuperview];
+        self.draggingView = nil;
+        self.startIndex = nil;
+        selectedSlide = nil;
+        selectedArt = nil;
+    }];
+}
 
 - (void)newSlide {
     Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    [slide setIndex:[NSNumber numberWithInteger:_presentation.slides.count]];
     [_presentation addSlide:slide];
     [self.tableView reloadData];
 }
@@ -363,15 +438,47 @@
 - (void)post {
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    if (_presentation.title.length){
+        [parameters setObject:_presentation.title forKey:@"title"];
+    }
+    if (_presentation.presentationDescription.length){
+        [parameters setObject:_presentation.presentationDescription forKey:@"description"];
+    }
+    
+    NSMutableArray *presentationArts = [NSMutableArray array];
+    for (Art *art in _presentation.arts){
+        [presentationArts addObject:art.identifier];
+    }
+    if (presentationArts.count){
+        NSLog(@"presentation arts: %@",presentationArts);
+        [parameters setObject:[presentationArts componentsJoinedByString:@","] forKey:@"art_ids"];
+    }
+    
+    NSMutableArray *slides = [NSMutableArray array];
+    for (Slide *slide in _presentation.slides){
+        if (slide && ![slide.identifier isEqualToNumber:@0]){
+            [slides addObject:@{@"slide_id":slide.identifier}];
+        }
+        NSMutableArray *artIds = [NSMutableArray arrayWithCapacity:slide.arts.count];
+        [slide.arts enumerateObjectsUsingBlock:^(Art *art, NSUInteger idx, BOOL *stop) {
+            [artIds addObject:art.identifier];
+        }];
+        [slides addObject:@{@"art_ids":artIds}];
+        [slides addObject:@{@"index":slide.index}];
+    }
+    if (slides.count){
+        NSLog(@"slides: %@",slides);
+        [parameters setObject:slides forKey:@"slides"];
+    }
     
     if ([_presentation.identifier isEqualToNumber:@0]){
-        [manager POST:[NSString stringWithFormat:@"presentations"] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [manager POST:[NSString stringWithFormat:@"presentations"] parameters:@{@"presentation":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success creating a presentation: %@",responseObject);
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to create a presentation: %@",error.description);
         }];
     } else {
-        [manager PATCH:[NSString stringWithFormat:@"presentations"] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [manager PATCH:[NSString stringWithFormat:@"presentations/%@",_presentation.identifier] parameters:@{@"presentation":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success saving a presentation: %@",responseObject);
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to save a presentation: %@",error.description);
@@ -387,8 +494,8 @@
     NSLog(@"Should be downloading");
 }
 
-- (void)refresh {
-    NSLog(@"Should be refreshing");
+- (void)share {
+    NSLog(@"Should be sharing");
 }
 
 - (void)startSearch {
@@ -406,7 +513,15 @@
 }
 
 - (void)searchDidSelectArt:(Art *)art {
-    NSLog(@"did select: %@",art.title);
+    if ([_presentation.arts containsObject:art]){
+        [_presentation removeArt:art];
+    } else {
+        [_presentation addArt:art];
+    }
+    
+    [[NSManagedObjectContext MR_defaultContext] MR_saveOnlySelfWithCompletion:^(BOOL success, NSError *error) {
+        [_collectionView reloadData];
+    }];
 }
 
 - (void)endSearch {
@@ -458,6 +573,9 @@
 - (void)textFieldDidEndEditing:(UITextField *)textField {
     if (textField == titleTextField) {
         if (titleTextField.text.length){
+            [_presentation setTitle:titleTextField.text];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            }];
             [textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:0]];
         } else {
             [textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.06]];
@@ -487,8 +605,8 @@
                           delay:0
                         options:(animationCurve << 16)
                      animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight+27, 0);
-                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, keyboardHeight+27, 0);
+                         self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight+44, 0);
+                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, keyboardHeight+44, 0);
                      }
                      completion:NULL];
 }
@@ -500,8 +618,8 @@
                           delay:0
                         options:(animationCurve << 16)
                      animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsZero;
-                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsZero;
+                         self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, 0, 0);
                      }
                      completion:NULL];
 }

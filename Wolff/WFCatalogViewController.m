@@ -555,8 +555,8 @@
         } else if (showFavorites) {
             [headerView.headerLabel setText:@"My Favorites"];
         }
-        [headerView.headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-        [headerView.headerLabel setTextColor:[UIColor blackColor]];
+        [headerView.headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]];
+        [headerView.headerLabel setTextColor:[UIColor darkGrayColor]];
         reusableview = headerView;
     }
     

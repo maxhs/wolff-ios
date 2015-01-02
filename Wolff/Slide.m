@@ -18,5 +18,6 @@
 @dynamic presentation;
 @dynamic arts;
 @dynamic caption;
+@dynamic index;
 
 @end

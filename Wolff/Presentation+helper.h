@@ -7,9 +7,13 @@
 //
 
 #import "Presentation.h"
+#import "Art+helper.h"
 #import "Slide+helper.h"
 
 @interface Presentation (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
 - (void)addSlide:(Slide*)slide;
+- (void)removeSlide:(Slide*)slide;
+- (void)addArt:(Art*)art;
+- (void)removeArt:(Art*)art;
 @end

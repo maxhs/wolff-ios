@@ -25,6 +25,7 @@
     BOOL editMode;
     CGFloat keyboardHeight;
     UITextView *titleTextView;
+    CGRect originalViewFrame;
 }
 
 @end
@@ -47,6 +48,12 @@
     [self registerForKeyboardNotifications];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    originalViewFrame = self.view.frame;
+    NSLog(@"frame? %f, %f",originalViewFrame.size.width, originalViewFrame.origin.x);
+}
+
 - (void)setupDateFormatter {
     dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateStyle:NSDateFormatterLongStyle];
@@ -54,8 +61,8 @@
 
 - (void)setupHeader {
     self.tableView.tableHeaderView = _topImageContainerView;
-    [_topImageView sd_setImageWithURL:[NSURL URLWithString:_art.photo.largeImageUrl] placeholderImage:[UIImage imageNamed:@"icon-180"] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-        
+    [_topImageView sd_setImageWithURL:[NSURL URLWithString:_art.photo.largeImageUrl] placeholderImage:[UIImage imageNamed:@"transparentIcon"] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        [_topImageView.layer setShouldRasterize:YES];
     }];
     
 //    [_creditButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
@@ -113,9 +120,31 @@
     editMode = editMode ? NO : YES;
     [self.tableView reloadData];
     if (editMode){
+        CGRect newViewFrame = originalViewFrame;
+        newViewFrame.origin.y = 10;
+        newViewFrame.origin.x -= 100;
+        newViewFrame.size.width += 200;
+        [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            
+            [self.view setFrame:newViewFrame];
+        } completion:^(BOOL finished) {
+            
+        }];
+        
+        
         [self.view endEditing:YES];
-        NSLog(@"should become first responder: %@",titleTextView);
-        [titleTextView becomeFirstResponder];
+        double delayInSeconds = .23;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [titleTextView becomeFirstResponder];
+        });
+    } else {
+        [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            [self.view setFrame:originalViewFrame];
+        } completion:^(BOOL finished) {
+            
+        }];
+        
     }
 }
 
@@ -238,6 +267,9 @@
         case 7:
             [cell.label setText:@"NOTES"];
             [cell.textView setText:@""];
+            CGRect notesRect = cell.textView.frame;
+            notesRect.size.height = cell.frame.size.height-14;
+            [cell.textView setFrame:notesRect];
             [cell.textView setText:_art.notes];
             break;
             
@@ -357,7 +389,7 @@
 
 - (void)textViewDidBeginEditing:(UITextView *)textView {
     if (textView == titleTextView){
-        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
+        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:YES];
     }
 }
 
@@ -368,7 +400,7 @@
 - (void)dismiss {
     if (editMode){
         [self.view endEditing:YES];
-        editMode = NO;
+        [self edit];
     } else {
         [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
             

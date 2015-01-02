@@ -7,7 +7,10 @@
 //
 
 #import "Slide.h"
+#import "Art+helper.h"
 
 @interface Slide (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
+- (void)addArt:(Art*)art;
+- (void)removeArt:(Art*)art;
 @end

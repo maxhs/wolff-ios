@@ -74,7 +74,7 @@
                 UITextField *searchTextField = (UITextField*)subview;
                 [searchTextField setTextColor:[UIColor whiteColor]];
                 [searchTextField setTintColor:[UIColor whiteColor]];
-                [searchTextField setBackgroundColor:[UIColor colorWithWhite:0 alpha:.23]];
+                [searchTextField setBackgroundColor:[UIColor colorWithWhite:0 alpha:.5]];
                 [searchTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
                 searchTextField.keyboardAppearance = UIKeyboardAppearanceDark;
                 break;
@@ -172,7 +172,6 @@
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     Art *art = _filteredArts[indexPath.row];
-    NSLog(@"search collection selected: %@",art.title);
     
     if ([selectedArt containsObject:art]){
         [selectedArt removeObject:art];
@@ -180,6 +179,9 @@
         [selectedArt addObject:art];
     }
     [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectArt:)]) {
+        [self.searchDelegate searchDidSelectArt:art];
+    }
 }
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
