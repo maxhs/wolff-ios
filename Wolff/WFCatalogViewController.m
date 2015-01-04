@@ -35,7 +35,7 @@
 #import "WFComparisonViewController.h"
 #import "WFSlideshowFocusAnimator.h"
 
-@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate, WFMenuDelegate, UIPopoverControllerDelegate, WFSlideshowDelegate> {
+@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate, WFMenuDelegate, UIPopoverControllerDelegate, WFSlideshowDelegate, WFImageViewDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     User *_currentUser;
@@ -422,7 +422,7 @@
         [headerLabel setFrame:CGRectMake(10, 0, width-10, headerHeight)];
         [headerLabel setBackgroundColor:[UIColor clearColor]];
         [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
-        [headerLabel setTextColor:[UIColor colorWithWhite:1 alpha:.7]];
+        [headerLabel setTextColor:[UIColor colorWithWhite:1 alpha:.27]];
         [headerLabel setText:@"TABLES"];
     }
     
@@ -672,15 +672,19 @@
         if (loc.x < (kSidebarWidth - 128) && loc.y > (_comparisonContainerView.frame.origin.y - 128)){
             if (comparison1){
                 comparison2 = [[WFInteractiveImageView alloc] initWithFrame:CGRectMake(comparison1.frame.size.width+comparison1.frame.origin.x+10, 10, 125, 130) andArt:self.draggingView.art];
+                comparison2.imageViewDelegate = self;
                 NSLog(@"what is comparison 2? %@",comparison2.art.title);
                 [comparison2 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.art.photo.mediumImageUrl]];
-                comparison2.clipsToBounds = NO;
+                comparison2.layer.cornerRadius = 3.f;
+                comparison2.clipsToBounds = YES;
                 [_comparisonContainerView addSubview:comparison2];
                 
             } else {
                 comparison1 = [[WFInteractiveImageView alloc] initWithFrame:CGRectMake(10, 10, 125, 130) andArt:self.draggingView.art];
+                comparison1.imageViewDelegate = self;
                 [comparison1 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.art.photo.mediumImageUrl]];
-                comparison1.clipsToBounds = NO;
+                comparison1.layer.cornerRadius = 3.f;
+                comparison1.clipsToBounds = YES;
                 [_comparisonContainerView addSubview:comparison1];
             }
             [self resetComparisonLabel];
@@ -702,7 +706,7 @@
                     [_arts insertObject:thisNumber atIndex:self.moveToIndexPath.row];
                 }
                 
-                [UIView animateWithDuration:.23f animations:^{
+                [UIView animateWithDuration:.27f animations:^{
                     self.draggingView.center = moveToPoint;
                     [self.draggingView setAlpha:0.0];
                     [oldIndexCell.contentView setAlpha:1.f];
@@ -734,11 +738,10 @@
 }
 
 - (void)shouldCompare {
-    if (comparison1 && comparison2){
+    if (comparison1 && comparison1.art && comparison2 && comparison2.art){
         [self resetTransitionBooleans];
         comparison = YES;
-        
-        NSLog(@"should be comparing: %@ and %@",comparison1.art.title, comparison2.art.title);
+    
         WFComparisonViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Comparison"];
         vc.arts = [NSMutableOrderedSet orderedSetWithArray:@[comparison1.art, comparison2.art]];
         
@@ -751,6 +754,16 @@
     }
 }
 
+- (void)longPressGesture:(id)imageView {
+    NSLog(@"long press from catalog view");
+    if (imageView == comparison1){
+        [comparison1 removeFromSuperview];
+    } else if (imageView == comparison2) {
+        [comparison2 removeFromSuperview];
+    }
+    [self resetComparisonLabel];
+}
+
 - (void)resetComparisonLabel {
     if (comparison2 || comparison1){
         [_dragForComparisonLabel setHidden:YES];
@@ -761,7 +774,7 @@
 
 - (void)resetDraggingView {
     WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
-    [UIView animateWithDuration:.23f animations:^{
+    [UIView animateWithDuration:.27f animations:^{
         [self.draggingView setAlpha:0.0];
         [cell.contentView setAlpha:1.f];
     } completion:^(BOOL finished) {

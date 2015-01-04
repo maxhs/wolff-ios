@@ -52,15 +52,15 @@
 
 - (void)longPress:(UILongPressGestureRecognizer*)sender {
     if (sender.state == UIGestureRecognizerStateBegan){
-        self.timer = [NSTimer scheduledTimerWithTimeInterval:.23f target:self selector:@selector(oneSecTimer) userInfo:nil repeats:NO];
+        self.timer = [NSTimer scheduledTimerWithTimeInterval:.01f target:self selector:@selector(removalTimer) userInfo:nil repeats:NO];
     } else if (sender.state == UIGestureRecognizerStateEnded) {
         if (self.timer)[self.timer invalidate];
     }
 }
 
--(void)oneSecTimer {
+-(void)removalTimer {
     if (self.imageViewDelegate && [self.imageViewDelegate respondsToSelector:@selector(longPressGesture:)]){
-        [self.imageViewDelegate longPressGesture:self];
+        [self.imageViewDelegate longPressGesture:longPressGesture];
     }
     [self.timer invalidate];
 }

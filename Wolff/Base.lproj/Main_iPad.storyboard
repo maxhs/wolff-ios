@@ -170,7 +170,7 @@
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="ArtCell" id="7e2-dQ-3cc" customClass="WFArtCell">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="SlideshowArtCell" id="7e2-dQ-3cc" customClass="WFArtCell">
                                         <rect key="frame" x="0.0" y="0.0" width="260" height="260"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
@@ -182,7 +182,11 @@
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                                 </view>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="y2D-nT-NKf">
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="qvs-zK-srf" userLabel="Portrait">
+                                                    <rect key="frame" x="59" y="29" width="130" height="190"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                </imageView>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="y2D-nT-NKf" userLabel="Landscape">
                                                     <rect key="frame" x="29" y="59" width="190" height="130"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </imageView>
@@ -191,14 +195,15 @@
                                         </view>
                                         <gestureRecognizers/>
                                         <connections>
-                                            <outlet property="artImageView" destination="y2D-nT-NKf" id="d21-WV-xTE"/>
-                                            <outlet property="slideContainerView" destination="J4W-Xl-5lL" id="wAl-5j-fZs"/>
+                                            <outlet property="landscapeArtImageView" destination="y2D-nT-NKf" id="Wlf-ky-cy6"/>
+                                            <outlet property="portraitArtImageView" destination="qvs-zK-srf" id="Pyz-tB-3dF"/>
+                                            <outlet property="slideContainerView" destination="J4W-Xl-5lL" id="SW3-rL-zwH"/>
                                         </connections>
                                     </collectionViewCell>
                                 </cells>
                                 <connections>
-                                    <outlet property="dataSource" destination="HZk-Qb-Za2" id="0e3-rI-pmD"/>
-                                    <outlet property="delegate" destination="HZk-Qb-Za2" id="aGL-ip-J6g"/>
+                                    <outlet property="dataSource" destination="HZk-Qb-Za2" id="0qE-Ea-iwQ"/>
+                                    <outlet property="delegate" destination="HZk-Qb-Za2" id="eTy-sO-AgR"/>
                                     <outletCollection property="gestureRecognizers" destination="TGd-pt-tKG" appends="YES" id="Vc8-ej-Hm0"/>
                                 </connections>
                             </collectionView>
@@ -227,7 +232,7 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <view contentMode="scaleToFill" id="0FX-1B-7j6">
-                                                    <rect key="frame" x="35" y="10" width="230" height="160"/>
+                                                    <rect key="frame" x="40" y="10" width="220" height="160"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                                 </view>
@@ -273,7 +278,7 @@
                     </view>
                     <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
                     <connections>
-                        <outlet property="collectionView" destination="3sd-Bv-39w" id="8OW-wv-SpY"/>
+                        <outlet property="collectionView" destination="3sd-Bv-39w" id="zya-Gm-jb7"/>
                         <outlet property="lightBoxPlaceholderLabel" destination="ByW-u9-HbD" id="qcd-mI-bKr"/>
                         <outlet property="longPressRecognizer" destination="TGd-pt-tKG" id="EF8-85-e0a"/>
                         <outlet property="tableView" destination="faH-Kb-keJ" id="1Jj-YW-pHf"/>
@@ -540,14 +545,30 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="5QU-7D-EFK" userLabel="artImageView1">
-                                                    <rect key="frame" x="112" y="84" width="800" height="600"/>
+                                                    <rect key="frame" x="112" y="74" width="800" height="620"/>
                                                 </imageView>
-                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="In9-pe-odM" userLabel="artImageView2">
-                                                    <rect key="frame" x="52" y="84" width="440" height="600"/>
-                                                </imageView>
-                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="jHm-Of-W8V" userLabel="artImageView3">
-                                                    <rect key="frame" x="532" y="84" width="440" height="600"/>
-                                                </imageView>
+                                                <view clipsSubviews="YES" contentMode="scaleToFill" id="nez-hy-3Nc" userLabel="containerView2">
+                                                    <rect key="frame" x="0.0" y="0.0" width="511" height="768"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <subviews>
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="In9-pe-odM" userLabel="artImageView2">
+                                                            <rect key="frame" x="25" y="54" width="480" height="660"/>
+                                                            <autoresizingMask key="autoresizingMask"/>
+                                                        </imageView>
+                                                    </subviews>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                </view>
+                                                <view clipsSubviews="YES" contentMode="scaleToFill" id="kqr-rf-yCQ" userLabel="containerView3">
+                                                    <rect key="frame" x="513" y="0.0" width="511" height="768"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <subviews>
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="jHm-Of-W8V" userLabel="artImageView3">
+                                                            <rect key="frame" x="5" y="54" width="480" height="660"/>
+                                                            <autoresizingMask key="autoresizingMask"/>
+                                                        </imageView>
+                                                    </subviews>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                </view>
                                             </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         </view>
@@ -555,6 +576,8 @@
                                             <outlet property="artImageView1" destination="5QU-7D-EFK" id="xVX-lR-3Bc"/>
                                             <outlet property="artImageView2" destination="In9-pe-odM" id="0i7-di-sit"/>
                                             <outlet property="artImageView3" destination="jHm-Of-W8V" id="VD4-28-8wR"/>
+                                            <outlet property="containerView2" destination="nez-hy-3Nc" id="09a-UB-AWs"/>
+                                            <outlet property="containerView3" destination="kqr-rf-yCQ" id="7Lq-wt-YdP"/>
                                         </connections>
                                     </collectionViewCell>
                                 </cells>
@@ -574,6 +597,43 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="nau-aY-kJR" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="799" y="-4868"/>
+        </scene>
+        <!--Slide Metadata View Controller-->
+        <scene sceneID="37J-Ha-UTp">
+            <objects>
+                <viewController storyboardIdentifier="SlideMetadata" id="2Aq-if-Unr" customClass="WFSlideMetadataViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Jqr-JT-lTF">
+                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="CVB-Ei-aOt">
+                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <prototypes>
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="SlideMetadataCell" id="pdo-og-LFE">
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="pdo-og-LFE" id="7JM-zV-DWU">
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </prototypes>
+                                <connections>
+                                    <outlet property="dataSource" destination="2Aq-if-Unr" id="gSQ-1G-aDl"/>
+                                    <outlet property="delegate" destination="2Aq-if-Unr" id="oLm-Ua-0Uv"/>
+                                </connections>
+                            </tableView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <connections>
+                        <outlet property="tableView" destination="CVB-Ei-aOt" id="Osd-mg-OyI"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="h2O-rD-pc8" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1911" y="-4868"/>
         </scene>
         <!--Slideshows View Controller-->
         <scene sceneID="vxT-jk-ZRL">
@@ -718,7 +778,6 @@
                                     </collectionViewCell>
                                 </cells>
                                 <collectionReusableView key="sectionHeaderView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="HeaderView" id="Zll-Fd-3DH" customClass="WFCatalogHeaderView">
-                                    <rect key="frame" x="0.0" y="0.0" width="1024" height="50"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="qLt-tO-AVp" userLabel="headerLabel">
@@ -1063,19 +1122,37 @@
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="h7Y-hc-I6N" userLabel="artImageView1">
                                                     <rect key="frame" x="112" y="86" width="800" height="600"/>
                                                 </imageView>
-                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="f9f-li-EkW" userLabel="artImageView2">
-                                                    <rect key="frame" x="52" y="86" width="440" height="600"/>
-                                                </imageView>
-                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="lgx-Q8-cw7" userLabel="artImageView3">
-                                                    <rect key="frame" x="532" y="86" width="440" height="600"/>
-                                                </imageView>
+                                                <view clipsSubviews="YES" contentMode="scaleToFill" id="zh7-xj-5Qw" userLabel="containerView2">
+                                                    <rect key="frame" x="0.0" y="0.0" width="511" height="768"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <subviews>
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="OcO-Fu-04W" userLabel="artImageView2">
+                                                            <rect key="frame" x="36" y="84" width="440" height="600"/>
+                                                            <autoresizingMask key="autoresizingMask"/>
+                                                        </imageView>
+                                                    </subviews>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                </view>
+                                                <view clipsSubviews="YES" contentMode="scaleToFill" id="zIf-4j-y4v" userLabel="containerView3">
+                                                    <rect key="frame" x="513" y="0.0" width="511" height="768"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <subviews>
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="dUi-v2-ztU" userLabel="artImageView3">
+                                                            <rect key="frame" x="36" y="84" width="440" height="600"/>
+                                                            <autoresizingMask key="autoresizingMask"/>
+                                                        </imageView>
+                                                    </subviews>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                </view>
                                             </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         </view>
                                         <connections>
                                             <outlet property="artImageView1" destination="h7Y-hc-I6N" id="cwW-G5-72v"/>
-                                            <outlet property="artImageView2" destination="f9f-li-EkW" id="iMN-fy-Xha"/>
-                                            <outlet property="artImageView3" destination="lgx-Q8-cw7" id="MMr-gd-uES"/>
+                                            <outlet property="artImageView2" destination="OcO-Fu-04W" id="nPy-Mc-by8"/>
+                                            <outlet property="artImageView3" destination="dUi-v2-ztU" id="rmz-3e-2yf"/>
+                                            <outlet property="containerView2" destination="zh7-xj-5Qw" id="Khp-ec-PeC"/>
+                                            <outlet property="containerView3" destination="zIf-4j-y4v" id="NJL-I0-Zs9"/>
                                         </connections>
                                     </collectionViewCell>
                                 </cells>

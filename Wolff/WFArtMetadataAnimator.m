@@ -61,7 +61,10 @@
         [transitionContext.containerView addSubview:toView];
         
         CGFloat offset = screenHeight()/2-350;
-        [[(WFArtMetadataViewController*)toViewController tableView] setContentInset:UIEdgeInsetsMake(offset, 0, offset, 0)];
+        UITableView *metadataTableView = [(WFArtMetadataViewController*)toViewController tableView];
+        [metadataTableView setContentInset:UIEdgeInsetsMake(offset, 0, offset, 0)];
+        [metadataTableView setContentOffset:CGPointMake(0, -offset)];
+        
         CGRect metadataStartFrame = CGRectMake((width/2-300)-width, 0, 600, height);
         toViewController.view.frame = metadataStartFrame;
         CGRect metadataFrame = CGRectMake(width/2-300, 0, 600, height);

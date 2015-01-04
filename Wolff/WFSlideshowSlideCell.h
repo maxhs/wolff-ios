@@ -12,7 +12,9 @@
 @interface WFSlideshowSlideCell : UICollectionViewCell
 
 @property (weak, nonatomic) IBOutlet UIImageView *artImageView1;
+@property (weak, nonatomic) IBOutlet UIView *containerView2;
 @property (weak, nonatomic) IBOutlet UIImageView *artImageView2;
+@property (weak, nonatomic) IBOutlet UIView *containerView3;
 @property (weak, nonatomic) IBOutlet UIImageView *artImageView3;
 - (void)configureForSlide:(Slide*)slide inView:(UIView*)parentView;
 - (void)configureForArts:(NSMutableOrderedSet*)arts inView:(UIView*)parentView;

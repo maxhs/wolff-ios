@@ -37,7 +37,6 @@
             Art *art = (Art*)[slide.arts firstObject];
             [_artImageView1 sd_setImageWithURL:[NSURL URLWithString:art.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
                 [_artImageView1 setArt:art];
-                NSLog(@"art image view art? %@",_artImageView1.art);
             }];
         } else if (slide.arts.count > 1) {
             [_artImageView1 setHidden:YES];
@@ -48,7 +47,7 @@
             [_artImageView2 sd_setImageWithURL:[NSURL URLWithString:art2.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
                 [_artImageView2 setArt:art2];
             }];
-            Art *art3 = (Art*)[slide.arts firstObject];
+            Art *art3 = (Art*)[slide.arts[1] firstObject];
             [_artImageView3 sd_setImageWithURL:[NSURL URLWithString:art3.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
                 [_artImageView3 setArt:art3];
             }];
@@ -61,9 +60,9 @@
     } else {
         // no slide, this means this is a new slide prompt cell
         [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
-        [_addPrompt setFont:[UIFont fontWithName:kLatoHairline size:60]];
+        [_addPrompt setFont:[UIFont fontWithName:kLatoHairline size:50]];
         [_addPrompt setHidden:NO];
-        [_addPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.27]];
+        [_addPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.4]];
         [_addPrompt setNumberOfLines:0];
         [_slideNumberLabel setText:@""];
     }

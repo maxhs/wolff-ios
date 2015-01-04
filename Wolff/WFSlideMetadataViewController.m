@@ -1,26 +1,26 @@
 //
-//  WFSaveMenuViewController.m
+//  WFSlideMetadataViewController.m
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 1/3/15.
 //  Copyright (c) 2015 Wolff. All rights reserved.
 //
 
-#import "WFSaveMenuViewController.h"
-#import "WFSaveMenuCell.h"
+#import "WFSlideMetadataViewController.h"
+#import "WFAppDelegate.h"
+#import "WFArtMetadataCell.h"
 
-@interface WFSaveMenuViewController ()
+@interface WFSlideMetadataViewController () <UITableViewDataSource, UITableViewDelegate> {
+    WFAppDelegate *delegate;
+    AFHTTPRequestOperationManager *manager;
+}
 
 @end
 
-@implementation WFSaveMenuViewController
+@implementation WFSlideMetadataViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self.view setBackgroundColor:[UIColor blackColor]];
-    [self.tableView setBackgroundColor:[UIColor clearColor]];
-    self.tableView.rowHeight = 54.f;
-    [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.1]];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -31,35 +31,18 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 1;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return 2;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    WFSaveMenuCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SaveMenuCell" forIndexPath:indexPath];
-    
-    if (indexPath.row == 0){
-        [cell.imageView setImage:[UIImage imageNamed:@"cloudUpload"]];
-        [cell.textLabel setText:@"Save here"];
-    } else {
-        [cell.imageView setImage:[UIImage imageNamed:@"cloudDownload"]];
-        [cell.textLabel setText:@"Save THERE"];
-    }
-    
-    return cell;
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 1;
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.row == 0){
-        if (self.saveDelegate && [self.saveDelegate respondsToSelector:@selector(post)]){
-            [self.saveDelegate post];
-        }
-    } else {
-        
-    }
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
+    
+    
+    return cell;
 }
 
 /*

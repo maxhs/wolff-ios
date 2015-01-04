@@ -42,9 +42,6 @@
     NSMutableOrderedSet *arts = [NSMutableOrderedSet orderedSetWithOrderedSet:self.arts];
     if (![self.arts containsObject:art]){
         [arts addObject:art];
-        NSLog(@"adding art to slide");
-    } else {
-        NSLog(@"slide already contains art");
     }
     
     self.arts = arts;

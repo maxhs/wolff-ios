@@ -45,7 +45,7 @@
 - (void)loadSlideshows {
     loading = YES;
     [manager GET:[NSString stringWithFormat:@"users/%@/presentations",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success getting presentations: %@",responseObject);
+        //NSLog(@"Success getting presentations: %@",responseObject);
         [_currentUser populateFromDictionary:responseObject];
         [self endLoading];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -88,7 +88,7 @@
     if (indexPath.section == 0){
         [cell.imageView setImage:nil];
         if (!loading && _currentUser.presentations.count == 0){
-            [cell.textLabel setText:@"No Presentations"];
+            [cell.textLabel setText:@"No Slideshows"];
             [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
         } else {
             Presentation *presentation = _currentUser.presentations[indexPath.row];
@@ -97,7 +97,7 @@
         
     } else {
         [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
-        [cell.textLabel setText:@"New Presentation"];
+        [cell.textLabel setText:@"New Slideshow"];
     }
     return cell;
 }
@@ -132,7 +132,7 @@
     UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, tableView.frame.size.width-10, 34)];
     [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [headerLabel setTextColor:[UIColor lightGrayColor]];
-    [headerLabel setText:@"PRESENTATIONS"];
+    [headerLabel setText:@"SLIDESHOWS"];
     
     [headerView addSubview:headerLabel];
 

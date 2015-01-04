@@ -43,6 +43,13 @@
 		5026DF731A3D1F63000CD26F /* remove.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6D1A3D1F62000CD26F /* remove.png */; };
 		5026DF741A3D1F63000CD26F /* remove@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6E1A3D1F62000CD26F /* remove@2x.png */; };
 		5026DF751A3D1F63000CD26F /* remove@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6F1A3D1F62000CD26F /* remove@3x.png */; };
+		504926241A58DFB9000C6FD9 /* infoCircle.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926211A58DFB9000C6FD9 /* infoCircle.png */; };
+		504926251A58DFB9000C6FD9 /* infoCircle@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926221A58DFB9000C6FD9 /* infoCircle@2x.png */; };
+		504926261A58DFB9000C6FD9 /* infoCircle@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926231A58DFB9000C6FD9 /* infoCircle@3x.png */; };
+		504926291A58E101000C6FD9 /* WFSlideMetadataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 504926281A58E101000C6FD9 /* WFSlideMetadataViewController.m */; };
+		504926331A58E7DA000C6FD9 /* info.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926301A58E7DA000C6FD9 /* info.png */; };
+		504926341A58E7DA000C6FD9 /* info@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926311A58E7DA000C6FD9 /* info@2x.png */; };
+		504926351A58E7DA000C6FD9 /* info@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926321A58E7DA000C6FD9 /* info@3x.png */; };
 		50952E7B1A478EA100485831 /* WFMenuViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50952E7A1A478EA100485831 /* WFMenuViewController.m */; };
 		50952E851A47F70E00485831 /* MuseoSans-100.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E7C1A47F70E00485831 /* MuseoSans-100.ttf */; };
 		50952E861A47F70E00485831 /* MuseoSans-100italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E7D1A47F70E00485831 /* MuseoSans-100italic.ttf */; };
@@ -340,6 +347,14 @@
 		5026DF6D1A3D1F62000CD26F /* remove.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = remove.png; sourceTree = "<group>"; };
 		5026DF6E1A3D1F62000CD26F /* remove@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "remove@2x.png"; sourceTree = "<group>"; };
 		5026DF6F1A3D1F62000CD26F /* remove@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "remove@3x.png"; sourceTree = "<group>"; };
+		504926211A58DFB9000C6FD9 /* infoCircle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = infoCircle.png; sourceTree = "<group>"; };
+		504926221A58DFB9000C6FD9 /* infoCircle@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "infoCircle@2x.png"; sourceTree = "<group>"; };
+		504926231A58DFB9000C6FD9 /* infoCircle@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "infoCircle@3x.png"; sourceTree = "<group>"; };
+		504926271A58E101000C6FD9 /* WFSlideMetadataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideMetadataViewController.h; sourceTree = "<group>"; };
+		504926281A58E101000C6FD9 /* WFSlideMetadataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideMetadataViewController.m; sourceTree = "<group>"; };
+		504926301A58E7DA000C6FD9 /* info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = info.png; sourceTree = "<group>"; };
+		504926311A58E7DA000C6FD9 /* info@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info@2x.png"; sourceTree = "<group>"; };
+		504926321A58E7DA000C6FD9 /* info@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info@3x.png"; sourceTree = "<group>"; };
 		50952E791A478EA100485831 /* WFMenuViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMenuViewController.h; sourceTree = "<group>"; };
 		50952E7A1A478EA100485831 /* WFMenuViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFMenuViewController.m; sourceTree = "<group>"; };
 		50952E7C1A47F70E00485831 /* MuseoSans-100.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-100.ttf"; sourceTree = "<group>"; };
@@ -813,6 +828,8 @@
 				50DB44831A58773E00856174 /* WFSlideshowShareTableViewController.m */,
 				F28C67001A33F2D400B82FD8 /* WFSlideDetailViewController.h */,
 				F28C67011A33F2D500B82FD8 /* WFSlideDetailViewController.m */,
+				504926271A58E101000C6FD9 /* WFSlideMetadataViewController.h */,
+				504926281A58E101000C6FD9 /* WFSlideMetadataViewController.m */,
 				F28C670C1A34139600B82FD8 /* WFInstitutionSearchViewController.h */,
 				F28C670D1A34139600B82FD8 /* WFInstitutionSearchViewController.m */,
 				50DB449A1A58C82700856174 /* WFComparisonViewController.h */,
@@ -1025,6 +1042,12 @@
 			isa = PBXGroup;
 			children = (
 				F28C780618E1E4950088B4C9 /* Images.xcassets */,
+				504926301A58E7DA000C6FD9 /* info.png */,
+				504926311A58E7DA000C6FD9 /* info@2x.png */,
+				504926321A58E7DA000C6FD9 /* info@3x.png */,
+				504926211A58DFB9000C6FD9 /* infoCircle.png */,
+				504926221A58DFB9000C6FD9 /* infoCircle@2x.png */,
+				504926231A58DFB9000C6FD9 /* infoCircle@3x.png */,
 				50DB44941A58C40200856174 /* transparentIconWhite.png */,
 				50DB44951A58C40200856174 /* transparentIconWhite@2x.png */,
 				50DB44961A58C40200856174 /* transparentIconWhite@3x.png */,
@@ -1330,6 +1353,7 @@
 				50952E861A47F70E00485831 /* MuseoSans-100italic.ttf in Resources */,
 				50952E951A47FAAC00485831 /* alert@3x.png in Resources */,
 				50DB442E1A54CC3E00856174 /* blueTable@3x.png in Resources */,
+				504926251A58DFB9000C6FD9 /* infoCircle@2x.png in Resources */,
 				50952EA41A47FE3300485831 /* edit@3x.png in Resources */,
 				50952E871A47F70E00485831 /* MuseoSans-300.ttf in Resources */,
 				50DB44971A58C40200856174 /* transparentIconWhite.png in Resources */,
@@ -1339,6 +1363,7 @@
 				50DB442C1A54CC3E00856174 /* blueTable.png in Resources */,
 				F2A957FB19E220F100A3B471 /* icon-40.png in Resources */,
 				50DB44451A56211D00856174 /* transparentIcon@2x.png in Resources */,
+				504926261A58DFB9000C6FD9 /* infoCircle@3x.png in Resources */,
 				50DB446F1A5867C100856174 /* wrench@3x.png in Resources */,
 				5014740A1A3EA886000422B8 /* logout@3x.png in Resources */,
 				F2A9580219E220F100A3B471 /* icon-114.png in Resources */,
@@ -1351,6 +1376,7 @@
 				50952E941A47FAAC00485831 /* alert@2x.png in Resources */,
 				50952E991A47FD8100485831 /* flag.png in Resources */,
 				50DB44721A5867C100856174 /* cloud@3x.png in Resources */,
+				504926351A58E7DA000C6FD9 /* info@3x.png in Resources */,
 				50DB44901A588A2D00856174 /* left@3x.png in Resources */,
 				50DB448D1A588A2D00856174 /* right@3x.png in Resources */,
 				50DB44551A57054500856174 /* people@3x.png in Resources */,
@@ -1364,8 +1390,10 @@
 				501474081A3EA886000422B8 /* logout.png in Resources */,
 				50952EA51A47FE3300485831 /* share.png in Resources */,
 				50DB43C51A5368B600856174 /* plus@2x.png in Resources */,
+				504926241A58DFB9000C6FD9 /* infoCircle.png in Resources */,
 				F2A9580019E220F100A3B471 /* icon-76.png in Resources */,
 				50DB43E11A53872200856174 /* cloudDownload@3x.png in Resources */,
+				504926331A58E7DA000C6FD9 /* info.png in Resources */,
 				5026DF741A3D1F63000CD26F /* remove@2x.png in Resources */,
 				50DB44761A58682800856174 /* shareArrow.png in Resources */,
 				50952E851A47F70E00485831 /* MuseoSans-100.ttf in Resources */,
@@ -1456,6 +1484,7 @@
 				F20D2EA119EB095F00CA54C0 /* Lato-Lig.ttf in Resources */,
 				501473F01A3EA136000422B8 /* favorite.png in Resources */,
 				50DB44111A54705B00856174 /* whiteLock.png in Resources */,
+				504926341A58E7DA000C6FD9 /* info@2x.png in Resources */,
 				50DB43DB1A53868C00856174 /* profile@3x.png in Resources */,
 				50DB43F01A53C18A00856174 /* whitePlus@3x.png in Resources */,
 				50952E8B1A47F70E00485831 /* MuseoSans-700italic.ttf in Resources */,
@@ -1594,6 +1623,7 @@
 				50DB43AE1A5363C300856174 /* Notification.m in Sources */,
 				50DB43F91A53C99800856174 /* WFNewLightTableViewController.m in Sources */,
 				F2CE0576198E85DA0061DB94 /* Art+helper.m in Sources */,
+				504926291A58E101000C6FD9 /* WFSlideMetadataViewController.m in Sources */,
 				F2CE0573198E85850061DB94 /* WFArtCell.m in Sources */,
 				5026DF601A3CC4D1000CD26F /* WFTableCell.m in Sources */,
 				5026DF5A1A3CBE80000CD26F /* WFGroupsInteractor.m in Sources */,

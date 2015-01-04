@@ -9,11 +9,13 @@
 #import "WFAlert.h"
 #import "Constants.h"
 #import "UIImage+ImageEffects.h"
+#import "WFAppDelegate.h"
 
 @interface WFAlert () {
     CGFloat dismissTime;
     CGFloat width;
     CGFloat height;
+    UITapGestureRecognizer *dismissGesture;
 }
 @end
 
@@ -56,6 +58,19 @@
     else window = [[UIApplication sharedApplication] keyWindow];
     background = nil; label = nil;
     self.alpha = 0;
+    
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        width = screenWidth();
+        height = screenHeight();
+    } else {
+        width = screenHeight();
+        height = screenWidth();
+    }
+    
+    dismissGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hideAlert)];
+    dismissGesture.numberOfTapsRequired = 1;
+    [self addGestureRecognizer:dismissGesture];
+    
     return self;
 }
 
@@ -70,7 +85,8 @@
 
 - (void)create {
     if (background == nil) {
-        background = [[UIImageView alloc] initWithImage:[self blurredSnapshot]];
+        
+        background = [[UIImageView alloc] initWithImage:[self blurredSnapshotForWindow]];
         [background setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
         [background setFrame:self.window.frame];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(rotate:) name:UIDeviceOrientationDidChangeNotification object:nil];
@@ -80,7 +96,7 @@
     if (label == nil) {
         label = [[UILabel alloc] initWithFrame:CGRectZero];
         label.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0];
-        [label setTextColor:[UIColor blackColor]];
+        [label setTextColor:[UIColor whiteColor]];
         label.backgroundColor = [UIColor clearColor];
         label.textAlignment = NSTextAlignmentCenter;
         label.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
@@ -90,22 +106,11 @@
     }
 }
 
--(UIImage *)blurredSnapshot {
-    
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f || UIInterfaceOrientationIsPortrait([[UIApplication sharedApplication] statusBarOrientation])){
-        width = screenWidth();
-        height = screenHeight();
-    } else {
-        width = screenHeight();
-        height = screenWidth();
-    }
-    
-    UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, height), NO, self.window.screen.scale);
-    [self.window drawViewHierarchyInRect:CGRectMake(0, 0, width, height) afterScreenUpdates:NO];
-    
+-(UIImage *)blurredSnapshotForWindow {
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, height), NO, [UIScreen mainScreen].scale);
+    [window drawViewHierarchyInRect:CGRectMake(0, 0, width, height) afterScreenUpdates:NO];
     UIImage *snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIImage *blurredSnapshotImage;
-    blurredSnapshotImage = [snapshotImage applyLightEffect];
+    UIImage *blurredSnapshotImage = [snapshotImage applyDarkEffect];
     UIGraphicsEndImageContext();
     return blurredSnapshotImage;
 }
@@ -115,16 +120,24 @@
 }
 
 - (void)orient {
-    CGFloat rotate = 0.f;
-    
-    UIInterfaceOrientation orient = [[UIApplication sharedApplication] statusBarOrientation];
-    
-    if (orient == UIInterfaceOrientationPortrait)			rotate = 0.0;
-    if (orient == UIInterfaceOrientationPortraitUpsideDown)	rotate = M_PI;
-    if (orient == UIInterfaceOrientationLandscapeLeft)		rotate = - M_PI_2;
-    if (orient == UIInterfaceOrientationLandscapeRight)		rotate = + M_PI_2;
-    
-    background.transform = CGAffineTransformMakeRotation(rotate);
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        
+    } else {
+        CGFloat rotate;
+        UIInterfaceOrientation orient;
+        
+        if (IDIOM == IPAD){
+            orient = self.window.rootViewController.interfaceOrientation;
+        } else {
+            orient = [[UIApplication sharedApplication] statusBarOrientation];
+        }
+        if (orient == UIInterfaceOrientationPortrait)                   rotate = 0.0;
+        else if (orient == UIInterfaceOrientationPortraitUpsideDown)	rotate = M_PI;
+        else if (orient == UIInterfaceOrientationLandscapeLeft)         rotate = - M_PI_2;
+        else if (orient == UIInterfaceOrientationLandscapeRight)		rotate = + M_PI_2;
+        else rotate = 0.0;
+        background.transform = CGAffineTransformMakeRotation(rotate);
+    }
 }
 
 - (void)showAlert {

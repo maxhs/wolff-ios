@@ -11,8 +11,6 @@
 
 @interface WFSlideshowSlideCell () {
     UIView *_parentView;
-    UIPanGestureRecognizer *_panGesture;
-    UIPinchGestureRecognizer *_pinchGesture;
 }
 
 @end
@@ -23,16 +21,19 @@
     [_artImageView1 setAlpha:0.f];
     [_artImageView2 setAlpha:0.f];
     [_artImageView3 setAlpha:0.f];
+    [_artImageView1 setUserInteractionEnabled:YES];
+    [_artImageView2 setUserInteractionEnabled:YES];
+    [_artImageView3 setUserInteractionEnabled:YES];
+}
+
+- (void)prepareForReuse {
+    [_artImageView1 setAlpha:0.f];
+    [_artImageView2 setAlpha:0.f];
+    [_artImageView3 setAlpha:0.f];
 }
 
 - (void)configureForSlide:(Slide *)slide inView:(UIView*)parentView {
     _parentView = parentView;
-    if (!_panGesture) {
-        _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    }
-    if (!_pinchGesture) {
-        _pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-    }
     
     if (slide.arts.count == 1){
         [_artImageView1 setHidden:NO];
@@ -70,18 +71,12 @@
 
 - (void)configureForArts:(NSMutableOrderedSet *)arts inView:(UIView*)parentView {
     _parentView = parentView;
-    if (!_panGesture) {
-        _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    }
-    if (!_pinchGesture) {
-        _pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-    }
     
     if (arts.count == 1){
         [_artImageView1 setHidden:NO];
         [_artImageView2 setHidden:YES];
         [_artImageView3 setHidden:YES];
-        [_artImageView1 sd_setImageWithURL:[NSURL URLWithString:[[(Art*)[arts firstObject] photo] largeImageUrl]] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        [_artImageView1 sd_setImageWithURL:[NSURL URLWithString:[[(Art*)[arts firstObject] photo] originalImageUrl]] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.27 animations:^{
                 [_artImageView1 setAlpha:1.0];
             }];
@@ -91,30 +86,20 @@
         [_artImageView2 setHidden:NO];
         [_artImageView3 setHidden:NO];
         
-        [_artImageView2 sd_setImageWithURL:[NSURL URLWithString:[[(Art*)[arts firstObject] photo] largeImageUrl]] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        [_artImageView2 sd_setImageWithURL:[NSURL URLWithString:[[(Art*)[arts firstObject] photo] originalImageUrl]] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.27 animations:^{
                 [_artImageView2 setAlpha:1.0];
             }];
             
         }];
         
-        [_artImageView3 sd_setImageWithURL:[NSURL URLWithString:[[(Art*)arts[1] photo] largeImageUrl]] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        [_artImageView3 sd_setImageWithURL:[NSURL URLWithString:[[(Art*)arts[1] photo] originalImageUrl]] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.27 animations:^{
                 [_artImageView3 setAlpha:1.0];
             }];
         }];
         
     }
-}
-
-- (void)handlePan:(UIPanGestureRecognizer*)sender {
-    CGPoint touchLocation = [sender locationInView:_parentView];
-    sender.view.center = touchLocation;
-}
-
-- (void)handlePinch:(UIPinchGestureRecognizer*)sender {
-    sender.view.transform = CGAffineTransformScale(sender.view.transform, sender.scale, sender.scale);
-    sender.scale = 1.f;
 }
 
 @end

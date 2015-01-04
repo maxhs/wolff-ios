@@ -7,7 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+@protocol WFSaveSlideshowDelegate <NSObject>
+
+- (void)post;
+
+@end
 
 @interface WFSaveMenuViewController : UITableViewController
-
+@property (weak, nonatomic) id<WFSaveSlideshowDelegate>saveDelegate;
 @end

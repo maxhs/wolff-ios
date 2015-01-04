@@ -22,8 +22,10 @@
 #import "WFInteractiveImageView.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "WFSaveMenuViewController.h"
+#import "WFAlert.h"
+#import <QuartzCore/QuartzCore.h>
 
-@interface WFSlideshowSplitViewController () <UIViewControllerTransitioningDelegate, WFSearchDelegate,WFSlideshowSettingsDelegate, UIPopoverControllerDelegate,  UITextFieldDelegate, UIAlertViewDelegate, WFImageViewDelegate> {
+@interface WFSlideshowSplitViewController () <UIViewControllerTransitioningDelegate, WFSearchDelegate,WFSlideshowSettingsDelegate, UIPopoverControllerDelegate,  UITextFieldDelegate, UIAlertViewDelegate, WFImageViewDelegate, WFSaveSlideshowDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     CGFloat width;
@@ -90,6 +92,8 @@
     [self registerKeyboardNotifications];
     
     [_longPressRecognizer addTarget:self action:@selector(longPressed:)];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didHideEditMenu:) name:UIMenuControllerDidHideMenuNotification object:nil];
 }
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
@@ -194,8 +198,9 @@
     }
 }
 
-- (void)longPressGesture:(WFInteractiveImageView*)imageView {
+- (void)longPressGesture:(UILongPressGestureRecognizer*)gestureRecognizer {
     
+    WFInteractiveImageView *imageView = (WFInteractiveImageView*)gestureRecognizer.view;
     __block WFSlideTableCell *slideTableCell;
     [self.tableView.visibleCells enumerateObjectsUsingBlock:^(WFSlideTableCell *cell, NSUInteger idx, BOOL *stop) {
         if (cell.artImageView1 == imageView) {
@@ -210,48 +215,50 @@
         }
     }];
     if (slideTableCell) {
+        
+        [self becomeFirstResponder];
         activeIndexPath = [self.tableView indexPathForCell:slideTableCell];
         activeImageView = imageView;
         activeSlide = _presentation.slides[activeIndexPath.row];
-        artImageViewPrompt = [[UIAlertView alloc] initWithTitle:@"Confirmation Needed" message:@"Do you want to remove this art?" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Remove", nil];
-        [artImageViewPrompt show];
+        
+        NSString *menuItemTitle = NSLocalizedString(@"Remove from slide", @"Remove art from slide");
+        UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeArt:)];
+        
+        UIMenuController *menuController = [UIMenuController sharedMenuController];
+        [menuController setMenuItems:@[resetMenuItem]];
+        
+        CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
+        CGRect menuLocation = CGRectMake(location.x, location.y, 0, 0);
+        [menuController setTargetRect:menuLocation inView:[gestureRecognizer view]];
+        
+        [menuController setMenuVisible:YES animated:YES];
     }
 }
 
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if (alertView == artImageViewPrompt && [[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Remove"]){
-        [self removeArtFromSlide];
-    } else {
-        activeSlide = nil;
-        activeImageView = nil;
-        activeIndexPath = nil;
-    }
-}
-
-- (void)alertView:(UIAlertView *)alertView willDismissWithButtonIndex:(NSInteger)buttonIndex {
-    activeSlide = nil;
-    activeImageView = nil;
-    activeIndexPath = nil;
-}
-
-- (void)removeArtFromSlide {
+- (void)removeArt:(UIMenuController*)menuController {
+    
     [activeSlide removeArt:activeImageView.art];
     if (activeSlide.arts.count){
-        [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else {
-        [self.tableView beginUpdates];
-        [_presentation removeSlide:activeSlide];
-        [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-        [self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-        [self.tableView endUpdates];
-        
-        activeSlide = nil;
-        activeImageView = nil;
-        activeIndexPath = nil;
-    }
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        
-    }];
+     [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+     } else {
+     [self.tableView beginUpdates];
+     [_presentation removeSlide:activeSlide];
+     [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+     [self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+     [self.tableView endUpdates];
+     
+     activeSlide = nil;
+     activeImageView = nil;
+     activeIndexPath = nil;
+     }
+     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+     
+     }];
+}
+
+// UIMenuController requires that we can become first responder or it won't display
+- (BOOL)canBecomeFirstResponder {
+    return YES;
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -313,7 +320,7 @@
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    WFArtCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"ArtCell" forIndexPath:indexPath];
+    WFArtCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SlideshowArtCell" forIndexPath:indexPath];
     Art *art = _presentation.arts[indexPath.item];
     [cell configureForArt:art];
     return cell;
@@ -406,41 +413,28 @@
         if (selectedArt){
             if (loc.x < 0){
                 //cell was dropped in the left sidebar
-                
                 NSArray *visibleCells = self.tableView.visibleCells;
-                //if (visibleCells.count){
-                    [visibleCells enumerateObjectsUsingBlock:^(WFSlideTableCell *cell, NSUInteger idx, BOOL *stop) {
-                        CGFloat lowerBounds = cell.frame.origin.y;
-                        CGFloat upperBounds = cell.frame.origin.y + cell.frame.size.height;
-                        CGFloat bottomOfSlides = cell.frame.size.height * _presentation.slides.count;
-                        
-                        if (loc.y > bottomOfSlides){
-                            // this means we should add a new slide
-                            Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-                            [slide addArt:selectedArt];
-                            [slide setIndex:[NSNumber numberWithInteger:_presentation.slides.count]];
-                            [_presentation addSlide:slide];
-                            [self.tableView reloadData];
-                        } else if (loc.y < upperBounds && loc.y > lowerBounds){
-                            NSLog(@"slide origin %f, y %f, and width %f",cell.frame.origin.x,cell.frame.origin.y, cell.frame.size.width);
-                            Slide *slide = [_presentation.slides objectAtIndex:idx];
-                            if (selectedArt)[slide addArt:selectedArt];
-                            [self.tableView reloadData];
-                            *stop = YES;
-                            [self endPressAnimation];
-                            return;
-                        }
-                    }];
-                /*} else {
-                    //
-                    Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-                    if (selectedArt)[slide addArt:selectedArt];
-                    [slide setIndex:[NSNumber numberWithInteger:_presentation.slides.count]];
-                    [_presentation addSlide:slide];
-                    [self.tableView reloadData];
+                [visibleCells enumerateObjectsUsingBlock:^(WFSlideTableCell *cell, NSUInteger idx, BOOL *stop) {
+                    CGFloat lowerBounds = cell.frame.origin.y;
+                    CGFloat upperBounds = cell.frame.origin.y + cell.frame.size.height;
+                    CGFloat bottomOfSlides = cell.frame.size.height * _presentation.slides.count;
                     
-                    [self endPressAnimation];
-                }*/
+                    if (loc.y > bottomOfSlides){
+                        // this means we should add a new slide
+                        Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                        [slide addArt:selectedArt];
+                        [slide setIndex:[NSNumber numberWithInteger:_presentation.slides.count]];
+                        [_presentation addSlide:slide];
+                        [self.tableView reloadData];
+                    } else if (loc.y < upperBounds && loc.y > lowerBounds){
+                        Slide *slide = [_presentation.slides objectAtIndex:idx];
+                        if (selectedArt)[slide addArt:selectedArt];
+                        [self.tableView reloadData];
+                        *stop = YES;
+                        [self endPressAnimation];
+                        return;
+                    }
+                }];
             } else {
                 NSLog(@"Art slide was not dropped on the left sidebar");
             }
@@ -525,6 +519,7 @@
         [self.popover dismissPopoverAnimated:YES];
     }
     WFSaveMenuViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SaveMenu"];
+    vc.saveDelegate = self;
     vc.preferredContentSize = CGSizeMake(230, 108);
     self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
     self.popover.delegate = self;
@@ -544,6 +539,9 @@
 }
 
 - (void)post {
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     if (_presentation.title.length){
@@ -558,7 +556,6 @@
         [presentationArts addObject:art.identifier];
     }
     
-    NSLog(@"presentation arts: %@",presentationArts);
     [parameters setObject:[presentationArts componentsJoinedByString:@","] forKey:@"art_ids"];
     
     NSMutableArray *slides = [NSMutableArray array];
@@ -582,7 +579,7 @@
             NSLog(@"Success creating a presentation: %@",responseObject);
             [_presentation populateFromDictionary:[responseObject objectForKey:@"presentation"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [ProgressHUD showSuccess:@"Saved"];
+                [WFAlert show:@"Slideshow saved!" withTime:2.3f];
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to create a presentation: %@",error.description);
@@ -592,7 +589,7 @@
             NSLog(@"Success saving a presentation: %@",responseObject);
             [_presentation populateFromDictionary:[responseObject objectForKey:@"presentation"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [ProgressHUD showSuccess:@"Saved"];
+                [WFAlert show:@"Slideshow saved!" withTime:2.3f];
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to save a presentation: %@",error.description);
@@ -629,14 +626,24 @@
 }
 
 - (void)searchDidSelectArt:(Art *)art {
+    BOOL add; NSIndexPath *indexPathToReload;
+    
     if ([_presentation.arts containsObject:art]){
+        indexPathToReload = [NSIndexPath indexPathForItem:[_presentation.arts indexOfObject:art] inSection:0];
         [_presentation removeArt:art];
+        add = NO;
     } else {
         [_presentation addArt:art];
+        add = YES;
+        indexPathToReload = [NSIndexPath indexPathForItem:_presentation.arts.count-1 inSection:0];
     }
     
     [[NSManagedObjectContext MR_defaultContext] MR_saveOnlySelfWithCompletion:^(BOOL success, NSError *error) {
-        [_collectionView reloadData];
+        if (add){
+            [_collectionView insertItemsAtIndexPaths:@[indexPathToReload]];
+        } else {
+            [_collectionView deleteItemsAtIndexPaths:@[indexPathToReload]];
+        }
     }];
 }
 
@@ -808,6 +815,14 @@
         [ProgressHUD dismiss];
         [self dismiss];
     }];
+}
+
+- (void)willHideEditMenu:(id)sender {
+    
+}
+
+- (void)didHideEditMenu:(id)sender {
+    [self resignFirstResponder];
 }
 
 - (void)dismiss {
