@@ -25,8 +25,8 @@
 
 - (void)configureForArt:(Art *)art {
     //NSLog(@"configure search cell for %@, %@",art.title, art.photo.smallImageUrl);
-    if (art.photo.smallImageUrl.length){
-        [self.imageView sd_setImageWithURL:[NSURL URLWithString:art.photo.smallImageUrl]  placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+    if (art.photo.thumbImageUrl.length){
+        [self.imageView sd_setImageWithURL:[NSURL URLWithString:art.photo.thumbImageUrl]  placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             
             [UIView animateWithDuration:.23 animations:^{
                 [self.imageView setAlpha:1.0];

@@ -40,10 +40,10 @@
 }
 
 - (void)setupSlideContainer {
-    [_slideContainerView setBackgroundColor:[UIColor colorWithWhite:.95 alpha:1]];
+    [_slideContainerView setBackgroundColor:kSlideBackgroundColor];
     _slideContainerView.layer.cornerRadius = 14.f;
     
-    _slideContainerView.layer.backgroundColor = [UIColor colorWithWhite:.95 alpha:1].CGColor;
+    _slideContainerView.layer.backgroundColor = kSlideBackgroundColor.CGColor;
     _slideContainerView.layer.shadowColor = [UIColor colorWithWhite:.5 alpha:1].CGColor;
     _slideContainerView.layer.shadowOpacity = .4f;
     _slideContainerView.layer.shadowOffset = CGSizeMake(1.3f, 1.7f);

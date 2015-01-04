@@ -10,13 +10,14 @@
 #import "Art+helper.h"
 #import "Constants.h"
 #import <SDWebImage/UIImageView+WebCache.h>
+#import <SDWebImage/UIButton+WebCache.h>
 
 @implementation WFSlideTableCell
 
 - (void)awakeFromNib {
-    [self setBackgroundColor:[UIColor blackColor]];
-    [_slideContainerView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1]];
-    [_slideNumberLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    [self setBackgroundColor:[UIColor colorWithWhite:1 alpha:.17]];
+    [_slideContainerView setBackgroundColor:[UIColor blackColor]];
+    [_slideNumberLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:.5 alpha:1]];
     [self setSelectionStyle:UITableViewCellSelectionStyleNone];
 }
@@ -27,30 +28,44 @@
 
 - (void)configureForSlide:(Slide *)slide withSlideNumber:(NSInteger)number {
     [_slideNumberLabel setText:[NSString stringWithFormat:@"%ld",(long)number]];
-    if (slide.arts.count == 1){
-        [_artImageView1 setHidden:NO];
-        [_artImageView2 setHidden:YES];
-        [_artImageView3 setHidden:YES];
-        [_artImageView1 sd_setImageWithURL:[NSURL URLWithString:[[(Art*)[slide.arts firstObject] photo] mediumImageUrl]] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-        
-        }];
-    } else if (slide.arts.count > 1) {
-        [_artImageView1 setHidden:YES];
-        [_artImageView2 setHidden:NO];
-        [_artImageView3 setHidden:NO];
-        NSLog(@"slide arts: %@",slide.arts);
-        [_artImageView2 sd_setImageWithURL:[NSURL URLWithString:[[(Art*)[slide.arts firstObject] photo] mediumImageUrl]] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+    if (slide){
+        [_addPrompt setHidden:YES];
+        if (slide.arts.count == 1){
+            [_artImageView1 setHidden:NO];
+            [_artImageView2 setHidden:YES];
+            [_artImageView3 setHidden:YES];
+            Art *art = (Art*)[slide.arts firstObject];
+            [_artImageView1 sd_setImageWithURL:[NSURL URLWithString:art.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                [_artImageView1 setArt:art];
+                NSLog(@"art image view art? %@",_artImageView1.art);
+            }];
+        } else if (slide.arts.count > 1) {
+            [_artImageView1 setHidden:YES];
+            [_artImageView2 setHidden:NO];
+            [_artImageView3 setHidden:NO];
             
-        }];
-        
-        [_artImageView3 sd_setImageWithURL:[NSURL URLWithString:[[(Art*)slide.arts[1] photo] mediumImageUrl]] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+            Art *art2 = (Art*)[slide.arts firstObject];
+            [_artImageView2 sd_setImageWithURL:[NSURL URLWithString:art2.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                [_artImageView2 setArt:art2];
+            }];
+            Art *art3 = (Art*)[slide.arts firstObject];
+            [_artImageView3 sd_setImageWithURL:[NSURL URLWithString:art3.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                [_artImageView3 setArt:art3];
+            }];
             
-        }];
-        
+        } else {
+            [_artImageView1 setImage:nil];
+            [_artImageView2 setImage:nil];
+            [_artImageView3 setImage:nil];
+        }
     } else {
-        [_artImageView1 setImage:nil];
-        [_artImageView2 setImage:nil];
-        [_artImageView3 setImage:nil];
+        // no slide, this means this is a new slide prompt cell
+        [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
+        [_addPrompt setFont:[UIFont fontWithName:kLatoHairline size:60]];
+        [_addPrompt setHidden:NO];
+        [_addPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.27]];
+        [_addPrompt setNumberOfLines:0];
+        [_slideNumberLabel setText:@""];
     }
 }
 

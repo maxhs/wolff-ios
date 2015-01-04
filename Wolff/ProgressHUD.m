@@ -148,10 +148,9 @@
     }
 }
 
-- (void)hudSize
-{
+- (void)hudSize {
 	CGRect labelRect = CGRectZero;
-	CGFloat hudWidth = 140, hudHeight = 140;
+	CGFloat hudWidth = 230, hudHeight = 230;
 	if (label.text != nil)
 	{
 		NSDictionary *attributes = @{NSFontAttributeName:label.font};
@@ -164,8 +163,7 @@
 		hudWidth = labelRect.size.width + 64;
 		hudHeight = labelRect.size.height + 120;
 
-		if (hudWidth < 100)
-		{
+		if (hudWidth < 100) {
 			hudWidth = 100;
 			labelRect.origin.x = 0;
 			labelRect.size.width = 100;

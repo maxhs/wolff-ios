@@ -16,11 +16,14 @@
 @dynamic visible;
 @dynamic largeImageUrl;
 @dynamic thumbImageUrl;
-@dynamic smallImageUrl;
+@dynamic slideImageUrl;
 @dynamic mediumImageUrl;
 @dynamic originalImageUrl;
 @dynamic createdDate;
 @dynamic image;
 @dynamic art;
+@dynamic width;
+@dynamic height;
+@dynamic orientation;
 
 @end

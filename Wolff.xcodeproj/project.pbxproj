@@ -146,6 +146,36 @@
 		50DB44531A57054500856174 /* people.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44501A57054500856174 /* people.png */; };
 		50DB44541A57054500856174 /* people@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44511A57054500856174 /* people@2x.png */; };
 		50DB44551A57054500856174 /* people@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44521A57054500856174 /* people@3x.png */; };
+		50DB44581A57456C00856174 /* WFSlideshowSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB44571A57456C00856174 /* WFSlideshowSettingsViewController.m */; };
+		50DB445B1A5745B300856174 /* WFSlideshowSettingsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB445A1A5745B300856174 /* WFSlideshowSettingsCell.m */; };
+		50DB44611A5756D600856174 /* whiteTrash.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB445E1A5756D600856174 /* whiteTrash.png */; };
+		50DB44621A5756D600856174 /* whiteTrash@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB445F1A5756D600856174 /* whiteTrash@2x.png */; };
+		50DB44631A5756D600856174 /* whiteTrash@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44601A5756D600856174 /* whiteTrash@3x.png */; };
+		50DB44661A57901800856174 /* WFInteractiveImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB44651A57901800856174 /* WFInteractiveImageView.m */; };
+		50DB446D1A5867C100856174 /* wrench.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44671A5867C100856174 /* wrench.png */; };
+		50DB446E1A5867C100856174 /* wrench@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44681A5867C100856174 /* wrench@2x.png */; };
+		50DB446F1A5867C100856174 /* wrench@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44691A5867C100856174 /* wrench@3x.png */; };
+		50DB44701A5867C100856174 /* cloud.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB446A1A5867C100856174 /* cloud.png */; };
+		50DB44711A5867C100856174 /* cloud@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB446B1A5867C100856174 /* cloud@2x.png */; };
+		50DB44721A5867C100856174 /* cloud@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB446C1A5867C100856174 /* cloud@3x.png */; };
+		50DB44761A58682800856174 /* shareArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44731A58682800856174 /* shareArrow.png */; };
+		50DB44771A58682800856174 /* shareArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44741A58682800856174 /* shareArrow@2x.png */; };
+		50DB44781A58682800856174 /* shareArrow@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44751A58682800856174 /* shareArrow@3x.png */; };
+		50DB447B1A586A3A00856174 /* WFSaveMenuViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB447A1A586A3A00856174 /* WFSaveMenuViewController.m */; };
+		50DB447E1A586B8F00856174 /* WFSaveMenuCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB447D1A586B8F00856174 /* WFSaveMenuCell.m */; };
+		50DB44811A58772800856174 /* WFTableShareCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB44801A58772800856174 /* WFTableShareCell.m */; };
+		50DB44841A58773E00856174 /* WFSlideshowShareTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB44831A58773E00856174 /* WFSlideshowShareTableViewController.m */; };
+		50DB448B1A588A2D00856174 /* right.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44851A588A2D00856174 /* right.png */; };
+		50DB448C1A588A2D00856174 /* right@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44861A588A2D00856174 /* right@2x.png */; };
+		50DB448D1A588A2D00856174 /* right@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44871A588A2D00856174 /* right@3x.png */; };
+		50DB448E1A588A2D00856174 /* left.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44881A588A2D00856174 /* left.png */; };
+		50DB448F1A588A2D00856174 /* left@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44891A588A2D00856174 /* left@2x.png */; };
+		50DB44901A588A2D00856174 /* left@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB448A1A588A2D00856174 /* left@3x.png */; };
+		50DB44931A588AA500856174 /* WFAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB44921A588AA500856174 /* WFAlert.m */; };
+		50DB44971A58C40200856174 /* transparentIconWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44941A58C40200856174 /* transparentIconWhite.png */; };
+		50DB44981A58C40200856174 /* transparentIconWhite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44951A58C40200856174 /* transparentIconWhite@2x.png */; };
+		50DB44991A58C40200856174 /* transparentIconWhite@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44961A58C40200856174 /* transparentIconWhite@3x.png */; };
+		50DB449C1A58C82700856174 /* WFComparisonViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB449B1A58C82700856174 /* WFComparisonViewController.m */; };
 		50FB5F781A3F2AA8004D6062 /* download.png in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5F721A3F2AA7004D6062 /* download.png */; };
 		50FB5F791A3F2AA8004D6062 /* download@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5F731A3F2AA8004D6062 /* download@2x.png */; };
 		50FB5F7A1A3F2AA8004D6062 /* download@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5F741A3F2AA8004D6062 /* download@3x.png */; };
@@ -189,12 +219,12 @@
 		F20FB30D1A24F09B0007C905 /* Movement+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB30C1A24F09B0007C905 /* Movement+helper.m */; };
 		F2139D80193A56BE00EE5C96 /* UIImage+ImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = F2139D7D193A56BE00EE5C96 /* UIImage+ImageEffects.m */; };
 		F2139D81193A56BE00EE5C96 /* ProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = F2139D7F193A56BE00EE5C96 /* ProgressHUD.m */; };
-		F28C66FC1A33DA0000B82FD8 /* WFPresentationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C66FB1A33DA0000B82FD8 /* WFPresentationsViewController.m */; };
+		F28C66FC1A33DA0000B82FD8 /* WFSlideshowsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C66FB1A33DA0000B82FD8 /* WFSlideshowsViewController.m */; };
 		F28C66FF1A33F27500B82FD8 /* WFSlideAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C66FE1A33F27500B82FD8 /* WFSlideAnimator.m */; };
 		F28C67021A33F2D500B82FD8 /* WFSlideDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C67011A33F2D500B82FD8 /* WFSlideDetailViewController.m */; };
-		F28C67051A33F4BE00B82FD8 /* WFPresentationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C67041A33F4BE00B82FD8 /* WFPresentationViewController.m */; };
-		F28C67081A33F4D900B82FD8 /* WFPresentationSlideCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C67071A33F4D900B82FD8 /* WFPresentationSlideCell.m */; };
-		F28C670B1A34086500B82FD8 /* WFPresentationFocusAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C670A1A34086500B82FD8 /* WFPresentationFocusAnimator.m */; };
+		F28C67051A33F4BE00B82FD8 /* WFSlideshowViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C67041A33F4BE00B82FD8 /* WFSlideshowViewController.m */; };
+		F28C67081A33F4D900B82FD8 /* WFSlideshowSlideCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C67071A33F4D900B82FD8 /* WFSlideshowSlideCell.m */; };
+		F28C670B1A34086500B82FD8 /* WFSlideshowFocusAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C670A1A34086500B82FD8 /* WFSlideshowFocusAnimator.m */; };
 		F28C670E1A34139600B82FD8 /* WFInstitutionSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C670D1A34139600B82FD8 /* WFInstitutionSearchViewController.m */; };
 		F28C67111A34150500B82FD8 /* WFInstitutionSearchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C67101A34150500B82FD8 /* WFInstitutionSearchCell.m */; };
 		F28C67141A34176D00B82FD8 /* WFSettingsAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C67131A34176D00B82FD8 /* WFSettingsAnimator.m */; };
@@ -230,7 +260,6 @@
 		F2A9580C19E222FC00A3B471 /* icon-180.png in Resources */ = {isa = PBXBuildFile; fileRef = F2A9580B19E222FC00A3B471 /* icon-180.png */; };
 		F2A9580F19E2245F00A3B471 /* Default_iPad_landscape.png in Resources */ = {isa = PBXBuildFile; fileRef = F2A9580D19E2245F00A3B471 /* Default_iPad_landscape.png */; };
 		F2A9581019E2245F00A3B471 /* Default_iPad_landscape@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F2A9580E19E2245F00A3B471 /* Default_iPad_landscape@2x.png */; };
-		F2A9581419E22FA700A3B471 /* WFMetadataPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2A9581319E22FA700A3B471 /* WFMetadataPresentationController.m */; };
 		F2CE054B198E72AC0061DB94 /* User.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE054A198E72AC0061DB94 /* User.m */; };
 		F2CE0552198E72CC0061DB94 /* User+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE0551198E72CC0061DB94 /* User+helper.m */; };
 		F2CE0555198E73940061DB94 /* WFWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE0554198E73940061DB94 /* WFWebViewController.m */; };
@@ -245,8 +274,8 @@
 		F2CE058D198EAA730061DB94 /* WFSlideTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE058C198EAA730061DB94 /* WFSlideTableCell.m */; };
 		F2CE0595198EAB280061DB94 /* WFSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE0594198EAB280061DB94 /* WFSettingsViewController.m */; };
 		F2CE0598198EAB7A0061DB94 /* WFSettingsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE0597198EAB7A0061DB94 /* WFSettingsCell.m */; };
-		F2CE05A3198FCD180061DB94 /* WFPresentationAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE05A2198FCD180061DB94 /* WFPresentationAnimator.m */; };
-		F2CE05A91991167F0061DB94 /* WFPresentationSplitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE05A81991167F0061DB94 /* WFPresentationSplitViewController.m */; };
+		F2CE05A3198FCD180061DB94 /* WFSlideshowAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE05A2198FCD180061DB94 /* WFSlideshowAnimator.m */; };
+		F2CE05A91991167F0061DB94 /* WFSlideshowSplitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE05A81991167F0061DB94 /* WFSlideshowSplitViewController.m */; };
 		F2CE05AC199117990061DB94 /* Presentation.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE05AB199117990061DB94 /* Presentation.m */; };
 		F2CE05AF199117990061DB94 /* Slide.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE05AE199117990061DB94 /* Slide.m */; };
 		F2CE05B219911A9A0061DB94 /* Presentation+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE05B119911A9A0061DB94 /* Presentation+helper.m */; };
@@ -437,6 +466,45 @@
 		50DB44501A57054500856174 /* people.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = people.png; sourceTree = "<group>"; };
 		50DB44511A57054500856174 /* people@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "people@2x.png"; sourceTree = "<group>"; };
 		50DB44521A57054500856174 /* people@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "people@3x.png"; sourceTree = "<group>"; };
+		50DB44561A57456C00856174 /* WFSlideshowSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideshowSettingsViewController.h; sourceTree = "<group>"; };
+		50DB44571A57456C00856174 /* WFSlideshowSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideshowSettingsViewController.m; sourceTree = "<group>"; };
+		50DB44591A5745B300856174 /* WFSlideshowSettingsCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideshowSettingsCell.h; sourceTree = "<group>"; };
+		50DB445A1A5745B300856174 /* WFSlideshowSettingsCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideshowSettingsCell.m; sourceTree = "<group>"; };
+		50DB445E1A5756D600856174 /* whiteTrash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteTrash.png; sourceTree = "<group>"; };
+		50DB445F1A5756D600856174 /* whiteTrash@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "whiteTrash@2x.png"; sourceTree = "<group>"; };
+		50DB44601A5756D600856174 /* whiteTrash@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "whiteTrash@3x.png"; sourceTree = "<group>"; };
+		50DB44641A57901800856174 /* WFInteractiveImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFInteractiveImageView.h; sourceTree = "<group>"; };
+		50DB44651A57901800856174 /* WFInteractiveImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFInteractiveImageView.m; sourceTree = "<group>"; };
+		50DB44671A5867C100856174 /* wrench.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = wrench.png; sourceTree = "<group>"; };
+		50DB44681A5867C100856174 /* wrench@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wrench@2x.png"; sourceTree = "<group>"; };
+		50DB44691A5867C100856174 /* wrench@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "wrench@3x.png"; sourceTree = "<group>"; };
+		50DB446A1A5867C100856174 /* cloud.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cloud.png; sourceTree = "<group>"; };
+		50DB446B1A5867C100856174 /* cloud@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cloud@2x.png"; sourceTree = "<group>"; };
+		50DB446C1A5867C100856174 /* cloud@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cloud@3x.png"; sourceTree = "<group>"; };
+		50DB44731A58682800856174 /* shareArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = shareArrow.png; sourceTree = "<group>"; };
+		50DB44741A58682800856174 /* shareArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "shareArrow@2x.png"; sourceTree = "<group>"; };
+		50DB44751A58682800856174 /* shareArrow@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "shareArrow@3x.png"; sourceTree = "<group>"; };
+		50DB44791A586A3A00856174 /* WFSaveMenuViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSaveMenuViewController.h; sourceTree = "<group>"; };
+		50DB447A1A586A3A00856174 /* WFSaveMenuViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSaveMenuViewController.m; sourceTree = "<group>"; };
+		50DB447C1A586B8F00856174 /* WFSaveMenuCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSaveMenuCell.h; sourceTree = "<group>"; };
+		50DB447D1A586B8F00856174 /* WFSaveMenuCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSaveMenuCell.m; sourceTree = "<group>"; };
+		50DB447F1A58772800856174 /* WFTableShareCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFTableShareCell.h; sourceTree = "<group>"; };
+		50DB44801A58772800856174 /* WFTableShareCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFTableShareCell.m; sourceTree = "<group>"; };
+		50DB44821A58773E00856174 /* WFSlideshowShareTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideshowShareTableViewController.h; sourceTree = "<group>"; };
+		50DB44831A58773E00856174 /* WFSlideshowShareTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideshowShareTableViewController.m; sourceTree = "<group>"; };
+		50DB44851A588A2D00856174 /* right.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = right.png; sourceTree = "<group>"; };
+		50DB44861A588A2D00856174 /* right@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "right@2x.png"; sourceTree = "<group>"; };
+		50DB44871A588A2D00856174 /* right@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "right@3x.png"; sourceTree = "<group>"; };
+		50DB44881A588A2D00856174 /* left.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = left.png; sourceTree = "<group>"; };
+		50DB44891A588A2D00856174 /* left@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "left@2x.png"; sourceTree = "<group>"; };
+		50DB448A1A588A2D00856174 /* left@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "left@3x.png"; sourceTree = "<group>"; };
+		50DB44911A588AA500856174 /* WFAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFAlert.h; sourceTree = "<group>"; };
+		50DB44921A588AA500856174 /* WFAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFAlert.m; sourceTree = "<group>"; };
+		50DB44941A58C40200856174 /* transparentIconWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = transparentIconWhite.png; sourceTree = "<group>"; };
+		50DB44951A58C40200856174 /* transparentIconWhite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "transparentIconWhite@2x.png"; sourceTree = "<group>"; };
+		50DB44961A58C40200856174 /* transparentIconWhite@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "transparentIconWhite@3x.png"; sourceTree = "<group>"; };
+		50DB449A1A58C82700856174 /* WFComparisonViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFComparisonViewController.h; sourceTree = "<group>"; };
+		50DB449B1A58C82700856174 /* WFComparisonViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFComparisonViewController.m; sourceTree = "<group>"; };
 		50FB5F721A3F2AA7004D6062 /* download.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = download.png; sourceTree = "<group>"; };
 		50FB5F731A3F2AA8004D6062 /* download@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "download@2x.png"; sourceTree = "<group>"; };
 		50FB5F741A3F2AA8004D6062 /* download@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "download@3x.png"; sourceTree = "<group>"; };
@@ -507,18 +575,18 @@
 		F2139D7D193A56BE00EE5C96 /* UIImage+ImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+ImageEffects.m"; sourceTree = "<group>"; };
 		F2139D7E193A56BE00EE5C96 /* ProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProgressHUD.h; sourceTree = "<group>"; };
 		F2139D7F193A56BE00EE5C96 /* ProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProgressHUD.m; sourceTree = "<group>"; };
-		F28C66FA1A33DA0000B82FD8 /* WFPresentationsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFPresentationsViewController.h; sourceTree = "<group>"; };
-		F28C66FB1A33DA0000B82FD8 /* WFPresentationsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFPresentationsViewController.m; sourceTree = "<group>"; };
+		F28C66FA1A33DA0000B82FD8 /* WFSlideshowsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideshowsViewController.h; sourceTree = "<group>"; };
+		F28C66FB1A33DA0000B82FD8 /* WFSlideshowsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideshowsViewController.m; sourceTree = "<group>"; };
 		F28C66FD1A33F27500B82FD8 /* WFSlideAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideAnimator.h; sourceTree = "<group>"; };
 		F28C66FE1A33F27500B82FD8 /* WFSlideAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideAnimator.m; sourceTree = "<group>"; };
 		F28C67001A33F2D400B82FD8 /* WFSlideDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideDetailViewController.h; sourceTree = "<group>"; };
 		F28C67011A33F2D500B82FD8 /* WFSlideDetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideDetailViewController.m; sourceTree = "<group>"; };
-		F28C67031A33F4BE00B82FD8 /* WFPresentationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFPresentationViewController.h; sourceTree = "<group>"; };
-		F28C67041A33F4BE00B82FD8 /* WFPresentationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFPresentationViewController.m; sourceTree = "<group>"; };
-		F28C67061A33F4D900B82FD8 /* WFPresentationSlideCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFPresentationSlideCell.h; sourceTree = "<group>"; };
-		F28C67071A33F4D900B82FD8 /* WFPresentationSlideCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFPresentationSlideCell.m; sourceTree = "<group>"; };
-		F28C67091A34086500B82FD8 /* WFPresentationFocusAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFPresentationFocusAnimator.h; sourceTree = "<group>"; };
-		F28C670A1A34086500B82FD8 /* WFPresentationFocusAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFPresentationFocusAnimator.m; sourceTree = "<group>"; };
+		F28C67031A33F4BE00B82FD8 /* WFSlideshowViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideshowViewController.h; sourceTree = "<group>"; };
+		F28C67041A33F4BE00B82FD8 /* WFSlideshowViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideshowViewController.m; sourceTree = "<group>"; };
+		F28C67061A33F4D900B82FD8 /* WFSlideshowSlideCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideshowSlideCell.h; sourceTree = "<group>"; };
+		F28C67071A33F4D900B82FD8 /* WFSlideshowSlideCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideshowSlideCell.m; sourceTree = "<group>"; };
+		F28C67091A34086500B82FD8 /* WFSlideshowFocusAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideshowFocusAnimator.h; sourceTree = "<group>"; };
+		F28C670A1A34086500B82FD8 /* WFSlideshowFocusAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideshowFocusAnimator.m; sourceTree = "<group>"; };
 		F28C670C1A34139600B82FD8 /* WFInstitutionSearchViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFInstitutionSearchViewController.h; sourceTree = "<group>"; };
 		F28C670D1A34139600B82FD8 /* WFInstitutionSearchViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFInstitutionSearchViewController.m; sourceTree = "<group>"; };
 		F28C670F1A34150500B82FD8 /* WFInstitutionSearchCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFInstitutionSearchCell.h; sourceTree = "<group>"; };
@@ -560,8 +628,6 @@
 		F2A9580B19E222FC00A3B471 /* icon-180.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-180.png"; sourceTree = "<group>"; };
 		F2A9580D19E2245F00A3B471 /* Default_iPad_landscape.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default_iPad_landscape.png; sourceTree = "<group>"; };
 		F2A9580E19E2245F00A3B471 /* Default_iPad_landscape@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default_iPad_landscape@2x.png"; sourceTree = "<group>"; };
-		F2A9581219E22FA700A3B471 /* WFMetadataPresentationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMetadataPresentationController.h; sourceTree = "<group>"; };
-		F2A9581319E22FA700A3B471 /* WFMetadataPresentationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFMetadataPresentationController.m; sourceTree = "<group>"; };
 		F2CE0549198E72AC0061DB94 /* User.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = User.h; sourceTree = "<group>"; };
 		F2CE054A198E72AC0061DB94 /* User.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = User.m; sourceTree = "<group>"; };
 		F2CE0550198E72CC0061DB94 /* User+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "User+helper.h"; sourceTree = "<group>"; };
@@ -590,10 +656,10 @@
 		F2CE0594198EAB280061DB94 /* WFSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSettingsViewController.m; sourceTree = "<group>"; };
 		F2CE0596198EAB7A0061DB94 /* WFSettingsCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSettingsCell.h; sourceTree = "<group>"; };
 		F2CE0597198EAB7A0061DB94 /* WFSettingsCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSettingsCell.m; sourceTree = "<group>"; };
-		F2CE05A1198FCD180061DB94 /* WFPresentationAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFPresentationAnimator.h; sourceTree = "<group>"; };
-		F2CE05A2198FCD180061DB94 /* WFPresentationAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFPresentationAnimator.m; sourceTree = "<group>"; };
-		F2CE05A71991167F0061DB94 /* WFPresentationSplitViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFPresentationSplitViewController.h; sourceTree = "<group>"; };
-		F2CE05A81991167F0061DB94 /* WFPresentationSplitViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFPresentationSplitViewController.m; sourceTree = "<group>"; };
+		F2CE05A1198FCD180061DB94 /* WFSlideshowAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideshowAnimator.h; sourceTree = "<group>"; };
+		F2CE05A2198FCD180061DB94 /* WFSlideshowAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideshowAnimator.m; sourceTree = "<group>"; };
+		F2CE05A71991167F0061DB94 /* WFSlideshowSplitViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideshowSplitViewController.h; sourceTree = "<group>"; };
+		F2CE05A81991167F0061DB94 /* WFSlideshowSplitViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideshowSplitViewController.m; sourceTree = "<group>"; };
 		F2CE05AA199117990061DB94 /* Presentation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Presentation.h; sourceTree = "<group>"; };
 		F2CE05AB199117990061DB94 /* Presentation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Presentation.m; sourceTree = "<group>"; };
 		F2CE05AD199117990061DB94 /* Slide.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Slide.h; sourceTree = "<group>"; };
@@ -638,6 +704,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		50DB445C1A57476E00856174 /* User */ = {
+			isa = PBXGroup;
+			children = (
+				50DB44471A564A2900856174 /* WFProfileViewController.h */,
+				50DB44481A564A2900856174 /* WFProfileViewController.m */,
+				F2CE0593198EAB280061DB94 /* WFSettingsViewController.h */,
+				F2CE0594198EAB280061DB94 /* WFSettingsViewController.m */,
+				50DB43A31A53611300856174 /* WFNotificationsViewController.h */,
+				50DB43A41A53611300856174 /* WFNotificationsViewController.m */,
+			);
+			name = User;
+			sourceTree = "<group>";
+		};
+		50DB445D1A57479400856174 /* Light Tables */ = {
+			isa = PBXGroup;
+			children = (
+				50DB43F71A53C99800856174 /* WFNewLightTableViewController.h */,
+				50DB43F81A53C99800856174 /* WFNewLightTableViewController.m */,
+				5026DF5B1A3CC0C0000CD26F /* WFTablesViewController.h */,
+				5026DF5C1A3CC0C0000CD26F /* WFTablesViewController.m */,
+			);
+			name = "Light Tables";
+			sourceTree = "<group>";
+		};
 		F2139D82193A56C200EE5C96 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
@@ -695,6 +785,8 @@
 				F28C77FD18E1E4950088B4C9 /* Wolff.xcdatamodeld */,
 				F2CE054F198E72B10061DB94 /* Models */,
 				F2CE0583198E937F0061DB94 /* Cells */,
+				50DB445C1A57476E00856174 /* User */,
+				50DB445D1A57479400856174 /* Light Tables */,
 				F298A1BC19523065005B13EA /* WFLoginViewController.h */,
 				F298A1BD19523065005B13EA /* WFLoginViewController.m */,
 				F2CE05B6199127960061DB94 /* WFCatalogViewController.h */,
@@ -703,38 +795,38 @@
 				F2CE057B198E928D0061DB94 /* WFArtViewController.m */,
 				F20FB2BD1A22A0A80007C905 /* WFNewArtViewController.h */,
 				F20FB2BE1A22A0A80007C905 /* WFNewArtViewController.m */,
-				50DB43F71A53C99800856174 /* WFNewLightTableViewController.h */,
-				50DB43F81A53C99800856174 /* WFNewLightTableViewController.m */,
 				F2CE057D198E929A0061DB94 /* WFArtMetadataViewController.h */,
 				F2CE057E198E929A0061DB94 /* WFArtMetadataViewController.m */,
-				50DB44471A564A2900856174 /* WFProfileViewController.h */,
-				50DB44481A564A2900856174 /* WFProfileViewController.m */,
 				F2CE0553198E73940061DB94 /* WFWebViewController.h */,
 				F2CE0554198E73940061DB94 /* WFWebViewController.m */,
-				F28C66FA1A33DA0000B82FD8 /* WFPresentationsViewController.h */,
-				F28C66FB1A33DA0000B82FD8 /* WFPresentationsViewController.m */,
-				F2CE05A71991167F0061DB94 /* WFPresentationSplitViewController.h */,
-				F2CE05A81991167F0061DB94 /* WFPresentationSplitViewController.m */,
+				F28C66FA1A33DA0000B82FD8 /* WFSlideshowsViewController.h */,
+				F28C66FB1A33DA0000B82FD8 /* WFSlideshowsViewController.m */,
+				F2CE05A71991167F0061DB94 /* WFSlideshowSplitViewController.h */,
+				F2CE05A81991167F0061DB94 /* WFSlideshowSplitViewController.m */,
+				F28C67031A33F4BE00B82FD8 /* WFSlideshowViewController.h */,
+				F28C67041A33F4BE00B82FD8 /* WFSlideshowViewController.m */,
+				50DB44791A586A3A00856174 /* WFSaveMenuViewController.h */,
+				50DB447A1A586A3A00856174 /* WFSaveMenuViewController.m */,
+				50DB44561A57456C00856174 /* WFSlideshowSettingsViewController.h */,
+				50DB44571A57456C00856174 /* WFSlideshowSettingsViewController.m */,
+				50DB44821A58773E00856174 /* WFSlideshowShareTableViewController.h */,
+				50DB44831A58773E00856174 /* WFSlideshowShareTableViewController.m */,
 				F28C67001A33F2D400B82FD8 /* WFSlideDetailViewController.h */,
 				F28C67011A33F2D500B82FD8 /* WFSlideDetailViewController.m */,
-				F28C67031A33F4BE00B82FD8 /* WFPresentationViewController.h */,
-				F28C67041A33F4BE00B82FD8 /* WFPresentationViewController.m */,
-				F2CE0593198EAB280061DB94 /* WFSettingsViewController.h */,
-				F2CE0594198EAB280061DB94 /* WFSettingsViewController.m */,
 				F28C670C1A34139600B82FD8 /* WFInstitutionSearchViewController.h */,
 				F28C670D1A34139600B82FD8 /* WFInstitutionSearchViewController.m */,
-				5026DF5B1A3CC0C0000CD26F /* WFTablesViewController.h */,
-				5026DF5C1A3CC0C0000CD26F /* WFTablesViewController.m */,
+				50DB449A1A58C82700856174 /* WFComparisonViewController.h */,
+				50DB449B1A58C82700856174 /* WFComparisonViewController.m */,
 				50952E791A478EA100485831 /* WFMenuViewController.h */,
 				50952E7A1A478EA100485831 /* WFMenuViewController.m */,
-				50DB43A31A53611300856174 /* WFNotificationsViewController.h */,
-				50DB43A41A53611300856174 /* WFNotificationsViewController.m */,
 				50DB43FA1A53D35400856174 /* WFImagePickerController.h */,
 				50DB43FB1A53D35400856174 /* WFImagePickerController.m */,
 				50DB43FF1A545DA700856174 /* WFAssetGroupPickerController.h */,
 				50DB44001A545DA700856174 /* WFAssetGroupPickerController.m */,
 				50DB44231A54C04800856174 /* WFSearchResultsViewController.h */,
 				50DB44241A54C04800856174 /* WFSearchResultsViewController.m */,
+				50DB44641A57901800856174 /* WFInteractiveImageView.h */,
+				50DB44651A57901800856174 /* WFInteractiveImageView.m */,
 				F2A9581119E2293800A3B471 /* Transitions / Animators */,
 				F2CE055E198E76450061DB94 /* Images */,
 				F2CE0548198E6C5E0061DB94 /* Fonts */,
@@ -803,12 +895,10 @@
 				50DB43E91A53946A00856174 /* WFNewArtAnimator.m */,
 				50DB444D1A56570C00856174 /* WFNewLightTableAnimator.h */,
 				50DB444E1A56570C00856174 /* WFNewLightTableAnimator.m */,
-				F2A9581219E22FA700A3B471 /* WFMetadataPresentationController.h */,
-				F2A9581319E22FA700A3B471 /* WFMetadataPresentationController.m */,
-				F2CE05A1198FCD180061DB94 /* WFPresentationAnimator.h */,
-				F2CE05A2198FCD180061DB94 /* WFPresentationAnimator.m */,
-				F28C67091A34086500B82FD8 /* WFPresentationFocusAnimator.h */,
-				F28C670A1A34086500B82FD8 /* WFPresentationFocusAnimator.m */,
+				F2CE05A1198FCD180061DB94 /* WFSlideshowAnimator.h */,
+				F2CE05A2198FCD180061DB94 /* WFSlideshowAnimator.m */,
+				F28C67091A34086500B82FD8 /* WFSlideshowFocusAnimator.h */,
+				F28C670A1A34086500B82FD8 /* WFSlideshowFocusAnimator.m */,
 				F2CE05C0199141C40061DB94 /* WFLoginAnimator.h */,
 				F2CE05C1199141C40061DB94 /* WFLoginAnimator.m */,
 				F28C66FD1A33F27500B82FD8 /* WFSlideAnimator.h */,
@@ -819,6 +909,8 @@
 				5026DF591A3CBE80000CD26F /* WFGroupsInteractor.m */,
 				5026DF611A3CCB80000CD26F /* WFTablesAnimator.h */,
 				5026DF621A3CCB80000CD26F /* WFTablesAnimator.m */,
+				50DB44911A588AA500856174 /* WFAlert.h */,
+				50DB44921A588AA500856174 /* WFAlert.m */,
 			);
 			name = "Transitions / Animators";
 			sourceTree = "<group>";
@@ -933,6 +1025,27 @@
 			isa = PBXGroup;
 			children = (
 				F28C780618E1E4950088B4C9 /* Images.xcassets */,
+				50DB44941A58C40200856174 /* transparentIconWhite.png */,
+				50DB44951A58C40200856174 /* transparentIconWhite@2x.png */,
+				50DB44961A58C40200856174 /* transparentIconWhite@3x.png */,
+				50DB44851A588A2D00856174 /* right.png */,
+				50DB44861A588A2D00856174 /* right@2x.png */,
+				50DB44871A588A2D00856174 /* right@3x.png */,
+				50DB44881A588A2D00856174 /* left.png */,
+				50DB44891A588A2D00856174 /* left@2x.png */,
+				50DB448A1A588A2D00856174 /* left@3x.png */,
+				50DB44731A58682800856174 /* shareArrow.png */,
+				50DB44741A58682800856174 /* shareArrow@2x.png */,
+				50DB44751A58682800856174 /* shareArrow@3x.png */,
+				50DB44671A5867C100856174 /* wrench.png */,
+				50DB44681A5867C100856174 /* wrench@2x.png */,
+				50DB44691A5867C100856174 /* wrench@3x.png */,
+				50DB446A1A5867C100856174 /* cloud.png */,
+				50DB446B1A5867C100856174 /* cloud@2x.png */,
+				50DB446C1A5867C100856174 /* cloud@3x.png */,
+				50DB445E1A5756D600856174 /* whiteTrash.png */,
+				50DB445F1A5756D600856174 /* whiteTrash@2x.png */,
+				50DB44601A5756D600856174 /* whiteTrash@3x.png */,
 				50DB44501A57054500856174 /* people.png */,
 				50DB44511A57054500856174 /* people@2x.png */,
 				50DB44521A57054500856174 /* people@3x.png */,
@@ -1064,8 +1177,8 @@
 				F2CE0597198EAB7A0061DB94 /* WFSettingsCell.m */,
 				F20FB2C91A22B1A60007C905 /* WFNewArtCell.h */,
 				F20FB2CA1A22B1A60007C905 /* WFNewArtCell.m */,
-				F28C67061A33F4D900B82FD8 /* WFPresentationSlideCell.h */,
-				F28C67071A33F4D900B82FD8 /* WFPresentationSlideCell.m */,
+				F28C67061A33F4D900B82FD8 /* WFSlideshowSlideCell.h */,
+				F28C67071A33F4D900B82FD8 /* WFSlideshowSlideCell.m */,
 				F28C670F1A34150500B82FD8 /* WFInstitutionSearchCell.h */,
 				F28C67101A34150500B82FD8 /* WFInstitutionSearchCell.m */,
 				5026DF5E1A3CC4D1000CD26F /* WFTableCell.h */,
@@ -1082,8 +1195,14 @@
 				50DB44271A54CA4E00856174 /* WFSearchResultsCell.m */,
 				50DB443B1A55B73200856174 /* WFSearchCollectionCell.h */,
 				50DB443C1A55B73200856174 /* WFSearchCollectionCell.m */,
+				50DB44591A5745B300856174 /* WFSlideshowSettingsCell.h */,
+				50DB445A1A5745B300856174 /* WFSlideshowSettingsCell.m */,
 				50DB443E1A55DF4C00856174 /* WFCatalogHeaderView.h */,
 				50DB443F1A55DF4C00856174 /* WFCatalogHeaderView.m */,
+				50DB447F1A58772800856174 /* WFTableShareCell.h */,
+				50DB44801A58772800856174 /* WFTableShareCell.m */,
+				50DB447C1A586B8F00856174 /* WFSaveMenuCell.h */,
+				50DB447D1A586B8F00856174 /* WFSaveMenuCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -1190,7 +1309,9 @@
 				50DB43BF1A53682700856174 /* presentation@2x.png in Resources */,
 				5026DF711A3D1F62000CD26F /* blackRemove@2x.png in Resources */,
 				50DB44331A54D42B00856174 /* search@2x.png in Resources */,
+				50DB448E1A588A2D00856174 /* left.png in Resources */,
 				50DB43E61A5387F400856174 /* blackSettings@2x.png in Resources */,
+				50DB44991A58C40200856174 /* transparentIconWhite@3x.png in Resources */,
 				F2A957FA19E220F100A3B471 /* icon-29.png in Resources */,
 				50DB441E1A54BDD100856174 /* whiteTables@2x.png in Resources */,
 				50DB43CF1A53763B00856174 /* refresh@3x.png in Resources */,
@@ -1211,20 +1332,27 @@
 				50DB442E1A54CC3E00856174 /* blueTable@3x.png in Resources */,
 				50952EA41A47FE3300485831 /* edit@3x.png in Resources */,
 				50952E871A47F70E00485831 /* MuseoSans-300.ttf in Resources */,
+				50DB44971A58C40200856174 /* transparentIconWhite.png in Resources */,
+				50DB44711A5867C100856174 /* cloud@2x.png in Resources */,
 				50952EA31A47FE3300485831 /* edit@2x.png in Resources */,
 				F2A9580319E220F100A3B471 /* icon-120.png in Resources */,
 				50DB442C1A54CC3E00856174 /* blueTable.png in Resources */,
 				F2A957FB19E220F100A3B471 /* icon-40.png in Resources */,
 				50DB44451A56211D00856174 /* transparentIcon@2x.png in Resources */,
+				50DB446F1A5867C100856174 /* wrench@3x.png in Resources */,
 				5014740A1A3EA886000422B8 /* logout@3x.png in Resources */,
 				F2A9580219E220F100A3B471 /* icon-114.png in Resources */,
 				5026DF691A3CD15B000CD26F /* settings@3x.png in Resources */,
 				50952E8D1A47F70E00485831 /* MuseoSans-900italic.ttf in Resources */,
 				50DB44211A54BDD100856174 /* whitePresentation@2x.png in Resources */,
 				50DB443A1A5503FC00856174 /* cloudUpload@3x.png in Resources */,
+				50DB446D1A5867C100856174 /* wrench.png in Resources */,
 				50952E931A47FAAC00485831 /* alert.png in Resources */,
 				50952E941A47FAAC00485831 /* alert@2x.png in Resources */,
 				50952E991A47FD8100485831 /* flag.png in Resources */,
+				50DB44721A5867C100856174 /* cloud@3x.png in Resources */,
+				50DB44901A588A2D00856174 /* left@3x.png in Resources */,
+				50DB448D1A588A2D00856174 /* right@3x.png in Resources */,
 				50DB44551A57054500856174 /* people@3x.png in Resources */,
 				50DB43EF1A53C18A00856174 /* whitePlus@2x.png in Resources */,
 				50DB43E71A5387F400856174 /* blackSettings@3x.png in Resources */,
@@ -1239,9 +1367,11 @@
 				F2A9580019E220F100A3B471 /* icon-76.png in Resources */,
 				50DB43E11A53872200856174 /* cloudDownload@3x.png in Resources */,
 				5026DF741A3D1F63000CD26F /* remove@2x.png in Resources */,
+				50DB44761A58682800856174 /* shareArrow.png in Resources */,
 				50952E851A47F70E00485831 /* MuseoSans-100.ttf in Resources */,
 				50DB43D51A537AC500856174 /* dropToLightTable@3x.png in Resources */,
 				50DB440A1A546A8B00856174 /* blueCheck@3x.png in Resources */,
+				50DB44981A58C40200856174 /* transparentIconWhite@2x.png in Resources */,
 				50DB441F1A54BDD100856174 /* whiteTables@3x.png in Resources */,
 				50952E8A1A47F70E00485831 /* MuseoSans-700.ttf in Resources */,
 				50952E881A47F70E00485831 /* MuseoSans-300italic.ttf in Resources */,
@@ -1252,6 +1382,7 @@
 				50DB43DA1A53868C00856174 /* profile@2x.png in Resources */,
 				50952EA71A47FE3300485831 /* share@3x.png in Resources */,
 				50FB5F7C1A3F2AA8004D6062 /* tables@2x.png in Resources */,
+				50DB448B1A588A2D00856174 /* right.png in Resources */,
 				5026DF731A3D1F63000CD26F /* remove.png in Resources */,
 				5026DF751A3D1F63000CD26F /* remove@3x.png in Resources */,
 				F2A957FE19E220F100A3B471 /* icon-58.png in Resources */,
@@ -1265,25 +1396,30 @@
 				50952E8C1A47F70E00485831 /* MuseoSans-900.ttf in Resources */,
 				F2A9580C19E222FC00A3B471 /* icon-180.png in Resources */,
 				50DB44081A546A8B00856174 /* blueCheck@2x.png in Resources */,
+				50DB44631A5756D600856174 /* whiteTrash@3x.png in Resources */,
 				50DB43D91A53868C00856174 /* profile.png in Resources */,
 				F20D2EA319EB095F00CA54C0 /* Lato-Bol.ttf in Resources */,
 				50DB44531A57054500856174 /* people.png in Resources */,
 				F28C780718E1E4950088B4C9 /* Images.xcassets in Resources */,
+				50DB44781A58682800856174 /* shareArrow@3x.png in Resources */,
 				5026DF671A3CD15B000CD26F /* settings.png in Resources */,
 				50FB5FEC1A40E6CC004D6062 /* Lato-LigIta.ttf in Resources */,
 				F20D2E9F19EB095F00CA54C0 /* Lato-Reg.ttf in Resources */,
 				50DB43C41A5368B600856174 /* plus.png in Resources */,
 				F2A957FC19E220F100A3B471 /* icon-50.png in Resources */,
 				F2A9580F19E2245F00A3B471 /* Default_iPad_landscape.png in Resources */,
+				50DB44621A5756D600856174 /* whiteTrash@2x.png in Resources */,
 				50DB44541A57054500856174 /* people@2x.png in Resources */,
 				501473F21A3EA136000422B8 /* favorite@3x.png in Resources */,
 				50DB44121A54705B00856174 /* whiteLock@2x.png in Resources */,
 				50DB43BE1A53682700856174 /* presentation.png in Resources */,
+				50DB44611A5756D600856174 /* whiteTrash.png in Resources */,
 				50952EA21A47FE3300485831 /* edit.png in Resources */,
 				501474051A3EA886000422B8 /* login.png in Resources */,
 				501473F71A3EA136000422B8 /* lightbulb@2x.png in Resources */,
 				501473F51A3EA136000422B8 /* image@3x.png in Resources */,
 				50952E8F1A47F99400485831 /* MuseoSans-500.ttf in Resources */,
+				50DB446E1A5867C100856174 /* wrench@2x.png in Resources */,
 				F2A9580419E220F100A3B471 /* icon-144.png in Resources */,
 				50DB44391A5503FC00856174 /* cloudUpload@2x.png in Resources */,
 				50DB43C01A53682700856174 /* presentation@3x.png in Resources */,
@@ -1308,9 +1444,13 @@
 				50DB44161A54705B00856174 /* whiteFavorite@3x.png in Resources */,
 				F2A9580519E220F100A3B471 /* icon-152.png in Resources */,
 				F2A9581019E2245F00A3B471 /* Default_iPad_landscape@2x.png in Resources */,
+				50DB44701A5867C100856174 /* cloud.png in Resources */,
 				50FB5F791A3F2AA8004D6062 /* download@2x.png in Resources */,
+				50DB448C1A588A2D00856174 /* right@2x.png in Resources */,
 				50952EAB1A480BD000485831 /* camera.png in Resources */,
 				5026DF701A3D1F62000CD26F /* blackRemove.png in Resources */,
+				50DB448F1A588A2D00856174 /* left@2x.png in Resources */,
+				50DB44771A58682800856174 /* shareArrow@2x.png in Resources */,
 				501473F61A3EA136000422B8 /* lightbulb.png in Resources */,
 				50FB5F7A1A3F2AA8004D6062 /* download@3x.png in Resources */,
 				F20D2EA119EB095F00CA54C0 /* Lato-Lig.ttf in Resources */,
@@ -1379,22 +1519,26 @@
 				F20A3EB719EB1A29008E0D4C /* UIFontDescriptor+Custom.m in Sources */,
 				F20FB3011A24E0850007C905 /* NSArray+ToSentence.m in Sources */,
 				F20FB2FE1A24DF620007C905 /* Table+helper.m in Sources */,
+				50DB445B1A5745B300856174 /* WFSlideshowSettingsCell.m in Sources */,
 				50DB44401A55DF4C00856174 /* WFCatalogHeaderView.m in Sources */,
 				50DB43FC1A53D35400856174 /* WFImagePickerController.m in Sources */,
 				F20A3EBD19EB1AFE008E0D4C /* Institution.m in Sources */,
 				F2CE05B519911AA10061DB94 /* Slide+helper.m in Sources */,
 				F20A3EC319EB1B24008E0D4C /* Location+helper.m in Sources */,
+				50DB447E1A586B8F00856174 /* WFSaveMenuCell.m in Sources */,
 				F20FB2EC1A24DCCE0007C905 /* Material+helper.m in Sources */,
 				F20A3EC019EB1B17008E0D4C /* Institution+helper.m in Sources */,
 				F20A3ECD19EB37B1008E0D4C /* Photo+helper.m in Sources */,
 				F28C77FF18E1E4950088B4C9 /* Wolff.xcdatamodeld in Sources */,
 				F20A3EBA19EB1AFD008E0D4C /* Location.m in Sources */,
-				F28C670B1A34086500B82FD8 /* WFPresentationFocusAnimator.m in Sources */,
+				F28C670B1A34086500B82FD8 /* WFSlideshowFocusAnimator.m in Sources */,
 				F20FB3071A24E9730007C905 /* Icon+helper.m in Sources */,
 				F20FB2BF1A22A0A80007C905 /* WFNewArtViewController.m in Sources */,
 				50DB43A51A53611300856174 /* WFNotificationsViewController.m in Sources */,
+				50DB449C1A58C82700856174 /* WFComparisonViewController.m in Sources */,
 				F20FB2E61A24DBF50007C905 /* Artist+helper.m in Sources */,
 				F2CE0598198EAB7A0061DB94 /* WFSettingsCell.m in Sources */,
+				50DB44581A57456C00856174 /* WFSlideshowSettingsViewController.m in Sources */,
 				F2CE058D198EAA730061DB94 /* WFSlideTableCell.m in Sources */,
 				F20FB30A1A24F08E0007C905 /* Movement.m in Sources */,
 				F2CE0552198E72CC0061DB94 /* User+helper.m in Sources */,
@@ -1403,6 +1547,7 @@
 				F28C670E1A34139600B82FD8 /* WFInstitutionSearchViewController.m in Sources */,
 				F2CE05BB19913ECC0061DB94 /* WFMainTableCell.m in Sources */,
 				F2CE05AF199117990061DB94 /* Slide.m in Sources */,
+				50DB44811A58772800856174 /* WFTableShareCell.m in Sources */,
 				F2CE054B198E72AC0061DB94 /* User.m in Sources */,
 				F20A3ECA19EB37A4008E0D4C /* Photo.m in Sources */,
 				F20FB2C51A22AFDE0007C905 /* Favorite+helper.m in Sources */,
@@ -1419,8 +1564,9 @@
 				50DB443D1A55B73200856174 /* WFSearchCollectionCell.m in Sources */,
 				50DB43C91A53694C00856174 /* WFMenuCell.m in Sources */,
 				5026DF5D1A3CC0C0000CD26F /* WFTablesViewController.m in Sources */,
-				F2CE05A3198FCD180061DB94 /* WFPresentationAnimator.m in Sources */,
+				F2CE05A3198FCD180061DB94 /* WFSlideshowAnimator.m in Sources */,
 				F2139D81193A56BE00EE5C96 /* ProgressHUD.m in Sources */,
+				50DB44931A588AA500856174 /* WFAlert.m in Sources */,
 				F28C77F218E1E4950088B4C9 /* main.m in Sources */,
 				5026DF571A3B473E000CD26F /* Interval+helper.m in Sources */,
 				F2CE0582198E937B0061DB94 /* WFArtMetadataCell.m in Sources */,
@@ -1432,10 +1578,11 @@
 				50DB44041A5462B000856174 /* WFImagePickerCell.m in Sources */,
 				50DB43F31A53C72D00856174 /* WFPresentationCell.m in Sources */,
 				50FB5F801A3F3734004D6062 /* Citation.m in Sources */,
-				F28C67051A33F4BE00B82FD8 /* WFPresentationViewController.m in Sources */,
-				F28C66FC1A33DA0000B82FD8 /* WFPresentationsViewController.m in Sources */,
+				F28C67051A33F4BE00B82FD8 /* WFSlideshowViewController.m in Sources */,
+				F28C66FC1A33DA0000B82FD8 /* WFSlideshowsViewController.m in Sources */,
 				F28C67141A34176D00B82FD8 /* WFSettingsAnimator.m in Sources */,
 				F28C77F618E1E4950088B4C9 /* WFAppDelegate.m in Sources */,
+				50DB44841A58773E00856174 /* WFSlideshowShareTableViewController.m in Sources */,
 				50DB44491A564A2900856174 /* WFProfileViewController.m in Sources */,
 				50DB44251A54C04800856174 /* WFSearchResultsViewController.m in Sources */,
 				F2CE0595198EAB280061DB94 /* WFSettingsViewController.m in Sources */,
@@ -1451,16 +1598,17 @@
 				5026DF601A3CC4D1000CD26F /* WFTableCell.m in Sources */,
 				5026DF5A1A3CBE80000CD26F /* WFGroupsInteractor.m in Sources */,
 				50DB43BA1A5363EA00856174 /* Discussion+helper.m in Sources */,
-				F2A9581419E22FA700A3B471 /* WFMetadataPresentationController.m in Sources */,
 				F20FB2E91A24DCBE0007C905 /* Material.m in Sources */,
 				5026DF631A3CCB80000CD26F /* WFTablesAnimator.m in Sources */,
 				5026DF541A3B470A000CD26F /* Interval.m in Sources */,
 				F2CE0588198EA3A50061DB94 /* WFArtMetadataAnimator.m in Sources */,
-				F28C67081A33F4D900B82FD8 /* WFPresentationSlideCell.m in Sources */,
-				F2CE05A91991167F0061DB94 /* WFPresentationSplitViewController.m in Sources */,
+				F28C67081A33F4D900B82FD8 /* WFSlideshowSlideCell.m in Sources */,
+				F2CE05A91991167F0061DB94 /* WFSlideshowSplitViewController.m in Sources */,
 				F20FB2CB1A22B1A60007C905 /* WFNewArtCell.m in Sources */,
+				50DB44661A57901800856174 /* WFInteractiveImageView.m in Sources */,
 				F20FB2F51A24DF3A0007C905 /* Table.m in Sources */,
 				F28C67021A33F2D500B82FD8 /* WFSlideDetailViewController.m in Sources */,
+				50DB447B1A586A3A00856174 /* WFSaveMenuViewController.m in Sources */,
 				F28C66FF1A33F27500B82FD8 /* WFSlideAnimator.m in Sources */,
 				F2CE05C2199141C40061DB94 /* WFLoginAnimator.m in Sources */,
 				F298A1BE19523065005B13EA /* WFLoginViewController.m in Sources */,

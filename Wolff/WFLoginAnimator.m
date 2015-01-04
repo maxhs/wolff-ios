@@ -102,7 +102,7 @@
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, height), NO, window.screen.scale);
     [window drawViewHierarchyInRect:CGRectMake(0, 0, width, height) afterScreenUpdates:NO];
     UIImage *snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIImage *blurredSnapshotImage = [snapshotImage applyExtraLightEffect];
+    UIImage *blurredSnapshotImage = [snapshotImage applyDarkEffect];
     UIGraphicsEndImageContext();
     return blurredSnapshotImage;
 }

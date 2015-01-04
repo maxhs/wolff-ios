@@ -1,5 +1,5 @@
 //
-//  WFPresentationFocusAnimator.h
+//  WFSlideshowFocusAnimator.h
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 12/6/14.
@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
-@interface WFPresentationFocusAnimator : NSObject <UIViewControllerAnimatedTransitioning>
+@interface WFSlideshowFocusAnimator : NSObject <UIViewControllerAnimatedTransitioning>
 
 @property (nonatomic, assign, getter = isPresenting) BOOL presenting;
 

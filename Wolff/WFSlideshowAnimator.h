@@ -1,5 +1,5 @@
 //
-//  WFPresentationAnimator.h
+//  WFSlideshowAnimator.h
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 8/4/14.
@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@interface WFPresentationAnimator : NSObject <UIViewControllerAnimatedTransitioning>
+@interface WFSlideshowAnimator : NSObject <UIViewControllerAnimatedTransitioning>
 
 @property (nonatomic, assign, getter = isPresenting) BOOL presenting;
 

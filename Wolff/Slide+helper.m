@@ -11,22 +11,22 @@
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Slide (helper)
-- (void)populateFromDictionary:(NSDictionary *)dict {
-    if ([dict objectForKey:@"id"] && [dict objectForKey:@"id"] != [NSNull null]){
-        self.identifier = [dict objectForKey:@"id"];
+- (void)populateFromDictionary:(NSDictionary *)dictionary {
+    if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
+        self.identifier = [dictionary objectForKey:@"id"];
     }
-    if ([dict objectForKey:@"title"] && [dict objectForKey:@"title"] != [NSNull null]){
-        self.title = [dict objectForKey:@"title"];
+    if ([dictionary objectForKey:@"title"] && [dictionary objectForKey:@"title"] != [NSNull null]){
+        self.title = [dictionary objectForKey:@"title"];
     }
-    if ([dict objectForKey:@"index"] && [dict objectForKey:@"caption"] != [NSNull null]){
-        self.caption = [dict objectForKey:@"caption"];
+    if ([dictionary objectForKey:@"index"] && [dictionary objectForKey:@"caption"] != [NSNull null]){
+        self.caption = [dictionary objectForKey:@"caption"];
     }
-    if ([dict objectForKey:@"caption"] && [dict objectForKey:@"caption"] != [NSNull null]){
-        self.caption = [dict objectForKey:@"caption"];
+    if ([dictionary objectForKey:@"caption"] && [dictionary objectForKey:@"caption"] != [NSNull null]){
+        self.caption = [dictionary objectForKey:@"caption"];
     }
-    if ([dict objectForKey:@"arts"] && [dict objectForKey:@"arts"] != [NSNull null]){
+    if ([dictionary objectForKey:@"arts"] && [dictionary objectForKey:@"arts"] != [NSNull null]){
         NSMutableOrderedSet *arts = [NSMutableOrderedSet orderedSet];
-        for (NSDictionary *artDict in [dict objectForKey:@"arts"]){
+        for (NSDictionary *artDict in [dictionary objectForKey:@"arts"]){
             Art *art = [Art MR_findFirstByAttribute:@"identifier" withValue:[artDict objectForKey:@"id"]inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!art){
                 art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];

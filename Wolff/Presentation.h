@@ -14,6 +14,7 @@
 @interface Presentation : NSManagedObject
 
 @property (nonatomic, retain) NSNumber * identifier;
+@property (nonatomic, retain) NSNumber * visible;
 @property (nonatomic, retain) NSString * title;
 @property (nonatomic, retain) NSString * presentationDescription;
 @property (nonatomic, retain) NSOrderedSet *slides;

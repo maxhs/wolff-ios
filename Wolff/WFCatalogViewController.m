@@ -8,8 +8,8 @@
 
 #import "WFAppDelegate.h"
 #import "WFCatalogViewController.h"
-#import "WFPresentationSplitViewController.h"
-#import "WFPresentationAnimator.h"
+#import "WFSlideshowSplitViewController.h"
+#import "WFSlideshowAnimator.h"
 #import "WFArtCell.h"
 #import "WFArtMetadataAnimator.h"
 #import "WFArtMetadataViewController.h"
@@ -18,7 +18,7 @@
 #import "WFSettingsViewController.h"
 #import "WFLoginAnimator.h"
 #import "WFLoginViewController.h"
-#import "WFPresentationsViewController.h"
+#import "WFSlideshowsViewController.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "WFSettingsAnimator.h"
 #import "WFTablesAnimator.h"
@@ -31,8 +31,11 @@
 #import "WFSearchResultsViewController.h"
 #import "WFCatalogHeaderView.h"
 #import "Favorite+helper.h"
+#import "WFInteractiveImageView.h"
+#import "WFComparisonViewController.h"
+#import "WFSlideshowFocusAnimator.h"
 
-@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate, WFMenuDelegate, UIPopoverControllerDelegate, WFPresentationDelegate> {
+@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate, WFMenuDelegate, UIPopoverControllerDelegate, WFSlideshowDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     User *_currentUser;
@@ -59,6 +62,7 @@
     BOOL metadata;
     BOOL searching;
     BOOL loading;
+    BOOL comparison;
     BOOL settings;
     BOOL newArt;
     BOOL notificationsBool;
@@ -75,8 +79,10 @@
     UIRefreshControl *collectionViewRefresh;
     NSMutableOrderedSet *selectedSlides;
     
-    UIImageView *comparison1;
-    UIImageView *comparison2;
+    UITapGestureRecognizer *comparisonTap;
+    
+    WFInteractiveImageView *comparison1;
+    WFInteractiveImageView *comparison2;
     
     WFSearchResultsViewController *searchResultsVc;
 }
@@ -84,9 +90,9 @@
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UILabel *dragForComparisonLabel;
-@property (nonatomic) UIImageView *draggingView;
-@property (nonatomic) CGPoint dragViewStartLocation;
+@property (nonatomic) WFInteractiveImageView *draggingView;
 @property (nonatomic) NSIndexPath *startIndex;
+@property (nonatomic) CGPoint dragViewStartLocation;
 @property (nonatomic) NSIndexPath *moveToIndexPath;
 @property (nonatomic, strong) id<WFTablesViewControllerPanTarget> groupsInteractor;
 @end
@@ -119,6 +125,12 @@
     //set up the light table sidebar
     expanded = NO;
     [self setUpTableView];
+    
+    comparisonTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(shouldCompare)];
+    comparisonTap.numberOfTapsRequired = 1;
+    comparisonTap.numberOfTouchesRequired = 1;
+    [_comparisonContainerView addGestureRecognizer:comparisonTap];
+    
     [_comparisonContainerView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1f]];
     _dragForComparisonLabel.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0];
     [_dragForComparisonLabel setTextColor:[UIColor colorWithWhite:.6f alpha:.7f]];
@@ -377,7 +389,9 @@
             table = _tables[indexPath.row];
             [cell configureForTable:table];
             [cell.textLabel setText:@""];
+            cell.selectionStyle = UITableViewCellSelectionStyleDefault;
         } else {
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
             [cell.textLabel setTextAlignment:NSTextAlignmentCenter];
             [cell.textLabel setText:@"No Light Tables"];
             [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
@@ -422,7 +436,7 @@
         } else {
             [self showFavorites];
         }
-    } else if (indexPath.section == 1){
+    } else if (indexPath.section == 1 && _currentUser.tables.count){
         Table *table = _currentUser.tables[indexPath.row];
         [self showTable:table];
     } else if (indexPath.section == 2){
@@ -479,9 +493,8 @@
 }
 
 - (void)loadLightTable:(Table*)table {
-    [ProgressHUD show:@"Loading table..."];
-    
-    if (!loading){
+    if (!loading && table && ![table.identifier isEqualToNumber:@0]){
+        [ProgressHUD show:@"Loading table..."];
         loading = YES;
         [manager GET:[NSString stringWithFormat:@"light_tables/%@",table.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success loading light table: %@",responseObject);
@@ -497,15 +510,19 @@
 }
 
 - (void) showNewLightTable {
-    WFNewLightTableController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"NewLightTable"];
-    //UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    vc.modalPresentationStyle = UIModalPresentationCustom;
-    vc.transitioningDelegate = self;
-    [self resetBooleans];
-    newArt = YES;
-    [self presentViewController:vc animated:YES completion:^{
-        
-    }];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        WFNewLightTableController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"NewLightTable"];
+        //UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        vc.modalPresentationStyle = UIModalPresentationCustom;
+        vc.transitioningDelegate = self;
+        [self resetTransitionBooleans];
+        newArt = YES;
+        [self presentViewController:vc animated:YES completion:^{
+            
+        }];
+    } else {
+        [self showLogin];
+    }
 }
 
 #pragma mark – UICollectionViewDelegateFlowLayout
@@ -513,7 +530,7 @@
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (IDIOM == IPAD){
         if (tableIsVisible){
-            return CGSizeMake((width-kMainSplitWidth)/3,(width-kMainSplitWidth)/3);
+            return CGSizeMake((width-kSidebarWidth)/3,(width-kSidebarWidth)/3);
         } else {
             return CGSizeMake(width/4, width/4);
         }
@@ -551,12 +568,12 @@
         if (showPrivate){
             [headerView.headerLabel setText:@"My Private Art"];
         } else if (showLightTable) {
-            [headerView.headerLabel setText:@"Light Table Art"];
+            [headerView.headerLabel setText:[NSString stringWithFormat:@"\"%@\" Art",_table.name]];
         } else if (showFavorites) {
             [headerView.headerLabel setText:@"My Favorites"];
         }
-        [headerView.headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]];
-        [headerView.headerLabel setTextColor:[UIColor darkGrayColor]];
+        [headerView.headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+        [headerView.headerLabel setTextColor:[UIColor blackColor]];
         reusableview = headerView;
     }
     
@@ -613,26 +630,35 @@
     CGPoint loc = [sender locationInView:self.collectionView];
     CGFloat heightInScreen = fmodf((loc.y-self.collectionView.contentOffset.y), CGRectGetHeight(self.collectionView.frame));
     CGFloat hoverOffset;
-    tableIsVisible ? (hoverOffset = kMainSplitWidth) : (hoverOffset = 0);
-    CGPoint locInScreen = CGPointMake( loc.x-self.collectionView.contentOffset.x+hoverOffset, heightInScreen );
+    tableIsVisible ? (hoverOffset = kSidebarWidth) : (hoverOffset = 0);
+    CGPoint locInScreen = CGPointMake( loc.x - self.collectionView.contentOffset.x + hoverOffset, heightInScreen );
     
     if (sender.state == UIGestureRecognizerStateBegan) {
         self.startIndex = [self.collectionView indexPathForItemAtPoint:loc];
         
         if (self.startIndex) {
             WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
-            self.draggingView = [[UIImageView alloc] initWithImage:[cell getRasterizedImageCopy]];
+            self.dragViewStartLocation = [self.view convertPoint:cell.center fromView:nil];
             
-            [cell.contentView setAlpha:0.1f];
+            Art *art;
+            if (showPrivate){
+                art = _privateArts[self.startIndex.item];
+            } else if (showLightTable){
+                art = _table.arts[self.startIndex.item];
+            } else if (showFavorites){
+                art = _favorites[self.startIndex.item];
+            } else {
+                art = _arts[self.startIndex.item];
+            }
+            self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andArt:art];
+            [cell.contentView setAlpha:0.23f];
+            
+            CGPoint centerPoint = [self.view convertPoint:locInScreen fromView:nil];
+            NSLog(@"center point: %f, %f",centerPoint.x, centerPoint.y);
+            
             [self.view addSubview:self.draggingView];
-            self.draggingView.center = locInScreen;
-            self.dragViewStartLocation = self.draggingView.center;
             [self.view bringSubviewToFront:self.draggingView];
-            
-            [UIView animateWithDuration:.23f animations:^{
-                CGAffineTransform transform = CGAffineTransformMakeScale(1.1f, 1.1f);
-                self.draggingView.transform = transform;
-            }];
+            self.draggingView.center = centerPoint;
         }
     }
     
@@ -641,32 +667,35 @@
     }
     
     if (sender.state == UIGestureRecognizerStateEnded) {
-        
         // comparison mode
         // 128 is half the width of an art slide, since the point we're grabbing is a center point, not the origin
-        if (loc.x < (kMainSplitWidth - 128) && loc.y > (_comparisonContainerView.frame.origin.y - 128)){
-            NSLog(@"comparison height? %f",_comparisonContainerView.frame.size.height);
+        if (loc.x < (kSidebarWidth - 128) && loc.y > (_comparisonContainerView.frame.origin.y - 128)){
             if (comparison1){
-                comparison2 = [[UIImageView alloc] initWithImage:self.draggingView.image];
+                comparison2 = [[WFInteractiveImageView alloc] initWithFrame:CGRectMake(comparison1.frame.size.width+comparison1.frame.origin.x+10, 10, 125, 130) andArt:self.draggingView.art];
+                NSLog(@"what is comparison 2? %@",comparison2.art.title);
+                [comparison2 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.art.photo.mediumImageUrl]];
                 comparison2.clipsToBounds = NO;
                 [_comparisonContainerView addSubview:comparison2];
-                [comparison2 setFrame:CGRectMake(_comparisonContainerView.frame.size.width/2+10, 20, 160, 160)];
                 
             } else {
-                comparison1 = [[UIImageView alloc] initWithImage:self.draggingView.image];
+                comparison1 = [[WFInteractiveImageView alloc] initWithFrame:CGRectMake(10, 10, 125, 130) andArt:self.draggingView.art];
+                [comparison1 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.art.photo.mediumImageUrl]];
                 comparison1.clipsToBounds = NO;
                 [_comparisonContainerView addSubview:comparison1];
-                [comparison1 setFrame:CGRectMake(20, 20, 160, 160)];
             }
             [self resetComparisonLabel];
             [self resetDraggingView];
         } else if (self.draggingView) {
             self.moveToIndexPath = [self.collectionView indexPathForItemAtPoint:loc];
             if (self.moveToIndexPath) {
+        
+                WFArtCell *movedCell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.moveToIndexPath];
+                CGPoint moveToPoint = [self.view convertPoint:movedCell.center fromView:nil];
+                
+                WFArtCell *oldIndexCell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
                 
                 NSNumber *thisNumber = [_arts objectAtIndex:self.startIndex.row];
                 [_arts removeObjectAtIndex:self.startIndex.row];
-                
                 if (self.moveToIndexPath.row < self.startIndex.row) {
                     [_arts insertObject:thisNumber atIndex:self.moveToIndexPath.row];
                 } else {
@@ -674,37 +703,51 @@
                 }
                 
                 [UIView animateWithDuration:.23f animations:^{
-                    self.draggingView.transform = CGAffineTransformIdentity;
+                    self.draggingView.center = moveToPoint;
+                    [self.draggingView setAlpha:0.0];
+                    [oldIndexCell.contentView setAlpha:1.f];
+                    [movedCell.contentView setAlpha:1.f];
                 } completion:^(BOOL finished) {
-    
-                    //change items
-                    __weak typeof(self) weakSelf = self;
-                    [self.collectionView performBatchUpdates:^{
-                        __strong typeof(self) strongSelf = weakSelf;
-                        if (strongSelf) {
-                            
-                            [strongSelf.collectionView deleteItemsAtIndexPaths:@[ self.startIndex ]];
-                            [strongSelf.collectionView insertItemsAtIndexPaths:@[ strongSelf.moveToIndexPath ]];
-                        }
-                    } completion:^(BOOL finished) {
-                        WFArtCell *movedCell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.moveToIndexPath];
-                        [movedCell.contentView setAlpha:1.f];
-                        WFArtCell *oldIndexCell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
-                        [oldIndexCell.contentView setAlpha:1.f];
-                    }];
-                    
                     [self.draggingView removeFromSuperview];
                     self.draggingView = nil;
                     self.startIndex = nil;
-                    
                 }];
                 
+                //change items
+                __weak typeof(self) weakSelf = self;
+                [self.collectionView performBatchUpdates:^{
+                    __strong typeof(self) strongSelf = weakSelf;
+                    if (strongSelf) {
+                        [strongSelf.collectionView deleteItemsAtIndexPaths:@[ self.startIndex ]];
+                        [strongSelf.collectionView insertItemsAtIndexPaths:@[ strongSelf.moveToIndexPath ]];
+                    }
+                } completion:^(BOOL finished) {
+                    
+                }];
             } else {
                 [self resetDraggingView];
             }
             
             loc = CGPointZero;
         }
+    }
+}
+
+- (void)shouldCompare {
+    if (comparison1 && comparison2){
+        [self resetTransitionBooleans];
+        comparison = YES;
+        
+        NSLog(@"should be comparing: %@ and %@",comparison1.art.title, comparison2.art.title);
+        WFComparisonViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Comparison"];
+        vc.arts = [NSMutableOrderedSet orderedSetWithArray:@[comparison1.art, comparison2.art]];
+        
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        [self presentViewController:nav animated:YES completion:^{
+            
+        }];
     }
 }
 
@@ -717,12 +760,11 @@
 }
 
 - (void)resetDraggingView {
+    WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
     [UIView animateWithDuration:.23f animations:^{
-        self.draggingView.transform = CGAffineTransformIdentity;
-    } completion:^(BOOL finished) {
-        WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
+        [self.draggingView setAlpha:0.0];
         [cell.contentView setAlpha:1.f];
-        
+    } completion:^(BOOL finished) {
         [self.draggingView removeFromSuperview];
         self.draggingView = nil;
         self.startIndex = nil;
@@ -760,7 +802,7 @@
     [vc setArt:art];
     vc.transitioningDelegate = self;
     vc.modalPresentationStyle = UIModalPresentationCustom;
-    [self resetBooleans];
+    [self resetTransitionBooleans];
     metadata = YES;
     
     [self presentViewController:vc animated:YES completion:^{
@@ -779,7 +821,7 @@
     delegate.loginDelegate = self;
     login.modalPresentationStyle = UIModalPresentationCustom;
     login.transitioningDelegate = self;
-    [self resetBooleans];
+    [self resetTransitionBooleans];
     _login = YES;
     
     [self presentViewController:login animated:YES completion:^{
@@ -812,10 +854,11 @@
     [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
-- (void)resetBooleans {
+- (void)resetTransitionBooleans {
     settings = NO;
     newArt = NO;
     metadata = NO;
+    comparison = NO;
     _login = NO;
     notificationsBool = NO;
     groupBool = NO;
@@ -826,7 +869,7 @@
         if (self.popover){
             [self.popover dismissPopoverAnimated:YES];
         }
-        [self resetBooleans];
+        [self resetTransitionBooleans];
         settings = YES;
         WFSettingsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Settings"];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
@@ -851,7 +894,7 @@
 
 - (void)showPresentations {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        WFPresentationsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Presentations"];
+        WFSlideshowsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshows"];
         vc.presentationDelegate = self;
         vc.preferredContentSize = CGSizeMake(320, 400);
         self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
@@ -866,7 +909,7 @@
 
 - (void)newPresentation {
     [self.popover dismissPopoverAnimated:YES];
-    WFPresentationSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"PresentationSplitView"];
+    WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
     Presentation *presentation = [Presentation MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
     if (_currentUser){
         presentation.user = _currentUser;
@@ -875,7 +918,7 @@
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.transitioningDelegate = self;
     nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self resetBooleans];
+    [self resetTransitionBooleans];
     [self presentViewController:nav animated:YES completion:^{
         
     }];
@@ -883,12 +926,12 @@
 
 - (void)presentationSelected:(Presentation *)presentation {
     [self.popover dismissPopoverAnimated:YES];
-    WFPresentationSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"PresentationSplitView"];
+    WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
     [vc setPresentation:presentation];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.transitioningDelegate = self;
     nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self resetBooleans];
+    [self resetTransitionBooleans];
     [self presentViewController:nav animated:YES completion:^{
         
     }];
@@ -900,40 +943,35 @@
         //hide the light table sidebar
         CGRect collectionFrame = _collectionView.frame;
         collectionFrame.origin.x = 0;
-        collectionFrame.size.width += 310;
+        collectionFrame.size.width += kSidebarWidth;
         tableIsVisible = NO;
         tablesButton.selected = NO;
         
         [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.000001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             _tableView.transform = CGAffineTransformIdentity;
             _comparisonContainerView.transform = CGAffineTransformIdentity;
-            
             [_collectionView setFrame:collectionFrame];
-            
             [_collectionView performBatchUpdates:^{
                 [_collectionView reloadData];
             } completion:^(BOOL finished) { }];
             
         } completion:^(BOOL finished) {
             
-            
         }];
     } else {
         //show the light table sidebar
         CGRect collectionFrame = _collectionView.frame;
-        collectionFrame.origin.x = 310;
-        collectionFrame.size.width -= 310;
+        collectionFrame.origin.x = kSidebarWidth;
+        collectionFrame.size.width -= kSidebarWidth;
         tableIsVisible = YES;
         tablesButton.selected = YES;
         
         if (!selectedSlides) selectedSlides = [NSMutableOrderedSet orderedSet];
         
         [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            _tableView.transform = CGAffineTransformMakeTranslation(310, 0);
-            _comparisonContainerView.transform = CGAffineTransformMakeTranslation(310, 0);
-            
-            [_collectionView setFrame:collectionFrame];
-            
+            _tableView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
+            _comparisonContainerView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
+            [_collectionView setFrame:collectionFrame];            
             [_collectionView performBatchUpdates:^{
                 [_collectionView reloadData];
             } completion:^(BOOL finished) { }];
@@ -977,8 +1015,12 @@
         WFLoginAnimator *animator = [WFLoginAnimator new];
         animator.presenting = YES;
         return animator;
+    } else if (comparison) {
+        WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
+        animator.presenting = YES;
+        return animator;
     } else {
-        WFPresentationAnimator *animator = [WFPresentationAnimator new];
+        WFSlideshowAnimator *animator = [WFSlideshowAnimator new];
         animator.presenting = YES;
         return animator;
     }
@@ -1001,8 +1043,11 @@
     } else if (_login) {
         WFLoginAnimator *animator = [WFLoginAnimator new];
         return animator;
+    } else if (comparison) {
+        WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
+        return animator;
     } else {
-        WFPresentationAnimator *animator = [WFPresentationAnimator new];
+        WFSlideshowAnimator *animator = [WFSlideshowAnimator new];
         return animator;
     }
 }

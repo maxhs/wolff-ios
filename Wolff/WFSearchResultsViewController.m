@@ -62,7 +62,9 @@
     self.searchBar.delegate = self;
     searching = YES;
     if (_shouldShowSearchBar){
-        if (!_shouldShowTiles){
+        if (_shouldShowTiles){
+            // don't need to do anything, search bar is already visible for collection view
+        } else {
             [self.tableView setTableHeaderView:self.searchBar];
         }
         [self.searchBar setHidden:NO];

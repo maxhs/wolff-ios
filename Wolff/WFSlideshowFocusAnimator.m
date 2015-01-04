@@ -1,23 +1,23 @@
 //
-//  WFPresentationFocusAnimator.m
+//  WFSlideshowFocusAnimator.m
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 12/6/14.
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
-#import "WFPresentationFocusAnimator.h"
+#import "WFSlideshowFocusAnimator.h"
 #import "UIImage+ImageEffects.h"
 #import "Constants.h"
-#import "WFPresentationViewController.h"
+#import "WFSlideshowViewController.h"
 
-@interface WFPresentationFocusAnimator () {
+@interface WFSlideshowFocusAnimator () {
     CGFloat width;
     CGFloat height;
 }
 
 @end
-@implementation WFPresentationFocusAnimator
+@implementation WFSlideshowFocusAnimator
 
 - (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext {
     return .75f;
@@ -59,12 +59,12 @@
         
         //this is a little fragile, since if the view hierarchy changes, this will break
         UINavigationController *nav = (UINavigationController*)toViewController;
-        [blurredButton addTarget:(WFPresentationViewController*)nav.viewControllers.firstObject action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+        [blurredButton addTarget:(WFSlideshowViewController*)nav.viewControllers.firstObject action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         [blurredButton setFrame:mainScreen];
         [blurredButton setAlpha:0.0];
         [blurredButton setTag:kBlurredBackgroundConstant];
         
-        [toView setFrame:CGRectMake(23, 23, width-46, height-46)];
+        [toView setFrame:[UIScreen mainScreen].bounds];
         toView.transform = CGAffineTransformMakeScale(.95, .95);
         [toView setAlpha:0.0];
         
@@ -88,10 +88,10 @@
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseIn animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext]*.7 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseOut animations:^{
             [blurredButton setAlpha:0.0];
             [fromView setAlpha:0.0];
-            fromView.transform = CGAffineTransformMakeScale(.9, .9);
+            fromView.transform = CGAffineTransformMakeScale(.925, .925);
         } completion:^(BOOL finished) {
             [blurredButton removeFromSuperview];
             [transitionContext completeTransition:YES];

@@ -1,5 +1,5 @@
 //
-//  WFPresentationViewController.h
+//  WFSlideshowViewController.h
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 12/6/14.
@@ -9,10 +9,11 @@
 #import <UIKit/UIKit.h>
 #import "Presentation+helper.h"
 
-@interface WFPresentationViewController : UIViewController <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
+@interface WFSlideshowViewController : UIViewController <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (strong, nonatomic) Presentation *presentation;
+@property (weak, nonatomic) IBOutlet UIToolbar *bottomToolbar;
 
 - (void)dismiss;
 

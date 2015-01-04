@@ -137,7 +137,7 @@
             NSLog(@"Failed with password reset: %@",error.description);
         }];
     } else {
-        UIAlertView *forgotPasswordAlert = [[UIAlertView alloc] initWithTitle:@"Forgot Password" message:@"Please enter the email address associated with this account:" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Submit", nil];
+        UIAlertView *forgotPasswordAlert = [[UIAlertView alloc] initWithTitle:@"Password Reset" message:@"Please enter the email address associated with this account:" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Submit", nil];
         forgotPasswordAlert.alertViewStyle = UIAlertViewStylePlainTextInput;
         [[forgotPasswordAlert textFieldAtIndex:0] setKeyboardType:UIKeyboardTypeEmailAddress];
         [forgotPasswordAlert show];
@@ -202,10 +202,10 @@
     [UIView animateWithDuration:animationDuration.doubleValue delay:0 options:(animationCurve << 16) animations:^{
         if (IDIOM == IPAD){
             if (login){
-                _logoImageView.transform = CGAffineTransformMakeTranslation(0, -24);
-                _emailTextField.transform = CGAffineTransformMakeTranslation(0, -50);
-                _passwordTextField.transform = CGAffineTransformMakeTranslation(0, -50);
-                _loginButton.transform = CGAffineTransformMakeTranslation(0, -50);
+                _logoImageView.transform = CGAffineTransformMakeTranslation(0, -36);
+                _emailTextField.transform = CGAffineTransformMakeTranslation(0, -60);
+                _passwordTextField.transform = CGAffineTransformMakeTranslation(0, -60);
+                _loginButton.transform = CGAffineTransformMakeTranslation(0, -52);
                 _termsButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
                 _forgotPasswordButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
             } else {
@@ -277,7 +277,7 @@
 - (void)styleForgotPasswordButton {
     [_forgotPasswordButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
     [_forgotPasswordButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
-    [_forgotPasswordButton setTitle:@"Forgot password?" forState:UIControlStateNormal];
+    [_forgotPasswordButton setTitle:@"Forget your password?" forState:UIControlStateNormal];
     [_forgotPasswordButton addTarget:self action:@selector(forgotPassword:) forControlEvents:UIControlEventTouchUpInside];
 }
 
@@ -303,10 +303,10 @@
 }
 
 - (void)textFieldTreatment:(UITextField*)textField {
-    [textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.7]];
+    [textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.8]];
     [textField setKeyboardAppearance:UIKeyboardAppearanceDark];
-    textField.layer.borderColor = [UIColor colorWithWhite:.9 alpha:1].CGColor;
-    textField.layer.borderWidth = .5f;
+    //textField.layer.borderColor = [UIColor colorWithWhite:.9 alpha:1].CGColor;
+    //textField.layer.borderWidth = .5f;
     textField.layer.cornerRadius = 2.f;
     textField.clipsToBounds = YES;
     [textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];

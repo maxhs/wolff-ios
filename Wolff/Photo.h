@@ -15,9 +15,12 @@
 
 @property (nonatomic, retain) NSNumber * identifier;
 @property (nonatomic, retain) NSNumber * visible;
+@property (nonatomic, retain) NSNumber * width;
+@property (nonatomic, retain) NSNumber * height;
+@property (nonatomic, retain) NSNumber * orientation;
 @property (nonatomic, retain) NSString * largeImageUrl;
 @property (nonatomic, retain) NSString * thumbImageUrl;
-@property (nonatomic, retain) NSString * smallImageUrl;
+@property (nonatomic, retain) NSString * slideImageUrl;
 @property (nonatomic, retain) NSString * mediumImageUrl;
 @property (nonatomic, retain) NSString * originalImageUrl;
 @property (nonatomic, retain) NSDate * createdDate;

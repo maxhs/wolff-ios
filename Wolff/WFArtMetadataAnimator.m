@@ -12,7 +12,8 @@
 #import "WFArtMetadataViewController.h"
 
 @interface WFArtMetadataAnimator () {
-    
+    CGFloat width;
+    CGFloat height;
 }
 
 @end
@@ -23,6 +24,13 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        width = screenWidth();
+        height = screenHeight();
+    } else {
+        width = screenHeight();
+        height = screenWidth();
+    }
     
     // Grab the from and to view controllers from the context
     UIViewController *fromViewController, *toViewController;
@@ -52,9 +60,11 @@
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:toView];
         
-        CGRect metadataStartFrame = CGRectMake((screenWidth()/2-300)-screenWidth(), screenHeight()/2-350, 600, 700);
+        CGFloat offset = screenHeight()/2-350;
+        [[(WFArtMetadataViewController*)toViewController tableView] setContentInset:UIEdgeInsetsMake(offset, 0, offset, 0)];
+        CGRect metadataStartFrame = CGRectMake((width/2-300)-width, 0, 600, height);
         toViewController.view.frame = metadataStartFrame;
-        CGRect metadataFrame = CGRectMake(screenWidth()/2-300, screenHeight()/2-350, 600, 700);
+        CGRect metadataFrame = CGRectMake(width/2-300, 0, 600, height);
     
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             toViewController.view.frame = metadataFrame;
@@ -80,10 +90,6 @@
             [transitionContext completeTransition:YES];
         }];
     }
-}
-
-- (void)tap {
-    NSLog(@"tap!");
 }
 
 @end

@@ -11,7 +11,8 @@
 
 @interface WFArtCell : UICollectionViewCell
 @property (weak, nonatomic) IBOutlet UIView *slideContainerView;
-@property (weak, nonatomic) IBOutlet UIImageView *artImageView;
+@property (weak, nonatomic) IBOutlet UIImageView *portraitArtImageView;
+@property (weak, nonatomic) IBOutlet UIImageView *landscapeArtImageView;
 @property (weak, nonatomic) IBOutlet UIImageView *checkmark;
 
 - (UIImage *)getRasterizedImageCopy;

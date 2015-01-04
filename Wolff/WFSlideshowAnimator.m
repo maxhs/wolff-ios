@@ -6,10 +6,10 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
-#import "WFPresentationAnimator.h"
+#import "WFSlideshowAnimator.h"
 #import "Constants.h"
 
-@implementation WFPresentationAnimator
+@implementation WFSlideshowAnimator
 
 - (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext {
     return .75f;
@@ -17,7 +17,6 @@
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     CGFloat width, height;
-    //if (IDIOM == IPAD){
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
         width = screenWidth();
         height = screenHeight();
@@ -25,7 +24,6 @@
         width = screenHeight();
         height = screenWidth();
     }
-    //}
     
     // Grab the from and to view controllers from the context
     UIViewController *fromViewController, *toViewController;
@@ -60,8 +58,7 @@
         
         toViewController.view.frame = startFrame;
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            fromViewController.view.tintAdjustmentMode = UIViewTintAdjustmentModeDimmed;
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.975 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseIn animations:^{
             toViewController.view.frame = endFrame;
             fromViewController.view.frame = originEndFrame;
         } completion:^(BOOL finished) {
@@ -81,8 +78,7 @@
         CGRect originEndFrame = toViewController.view.frame;
         originEndFrame.origin.x = 0;
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            toViewController.view.tintAdjustmentMode = UIViewTintAdjustmentModeAutomatic;
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.975 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseOut animations:^{
             fromViewController.view.frame = endFrame;
             toViewController.view.frame = originEndFrame;
         } completion:^(BOOL finished) {

@@ -1,5 +1,5 @@
 //
-//  WFPresentationsViewController.h
+//  WFSlideshowsViewController.h
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 12/6/14.
@@ -9,16 +9,16 @@
 #import <UIKit/UIKit.h>
 #import "Presentation+helper.h"
 
-@protocol WFPresentationDelegate <NSObject>
+@protocol WFSlideshowDelegate <NSObject>
 
 @required
 - (void)newPresentation;
 - (void)presentationSelected:(Presentation*)presentation;
 @end
 
-@interface WFPresentationsViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+@interface WFSlideshowsViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
-@property (weak, nonatomic) id<WFPresentationDelegate> presentationDelegate;
+@property (weak, nonatomic) id<WFSlideshowDelegate> presentationDelegate;
 
 @end

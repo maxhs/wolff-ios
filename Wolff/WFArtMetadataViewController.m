@@ -25,7 +25,10 @@
     BOOL editMode;
     CGFloat keyboardHeight;
     UITextView *titleTextView;
+    UITextView *notesTextView;
     CGRect originalViewFrame;
+    UIView *saveContainerView;
+    UIButton *saveButton;
 }
 
 @end
@@ -44,14 +47,20 @@
     }
     editMode = NO;
     [self setupDateFormatter];
-    [self setupHeader];
     [self registerForKeyboardNotifications];
+    
+    [self loadArtMetadata];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self setupHeader];
+    
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     originalViewFrame = self.view.frame;
-    NSLog(@"frame? %f, %f",originalViewFrame.size.width, originalViewFrame.origin.x);
 }
 
 - (void)setupDateFormatter {
@@ -60,25 +69,40 @@
 }
 
 - (void)setupHeader {
+    [_topImageView setBackgroundColor:kSlideBackgroundColor];
+    _topImageView.layer.cornerRadius = 3.f;
+    _topImageView.layer.backgroundColor = [UIColor clearColor].CGColor;
     self.tableView.tableHeaderView = _topImageContainerView;
-    [_topImageView sd_setImageWithURL:[NSURL URLWithString:_art.photo.largeImageUrl] placeholderImage:[UIImage imageNamed:@"transparentIcon"] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-        [_topImageView.layer setShouldRasterize:YES];
+    [_topImageView setAlpha:0.0];
+    [_topImageView sd_setImageWithURL:[NSURL URLWithString:_art.photo.largeImageUrl] placeholderImage:nil/*[UIImage imageNamed:@"transparentIcon"]*/ completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        [UIView animateWithDuration:.23 animations:^{
+            [_topImageView setBackgroundColor:[UIColor whiteColor]];
+            [_topImageView setAlpha:1.0];
+        } completion:^(BOOL finished) {
+            [_topImageView.layer setShouldRasterize:YES];
+            _topImageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+        }];
+        
     }];
     
-//    [_creditButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
-//    [_creditButton setTitle:_art.user.fullName forState:UIControlStateNormal];
-    
+    [_backButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+    [self setUpButtons];
+    [self setPostedCredit];
+}
+
+- (void)setPostedCredit {
     if (_art.user){
-        [_postedByButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+        [_postedByButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
+        [_postedByButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
         [_postedByButton setTitle:[NSString stringWithFormat:@"Posted: %@",_art.user.fullName] forState:UIControlStateNormal];
         [_postedByButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
         [_postedByButton setHidden:NO];
     } else {
         [_postedByButton setHidden:YES];
     }
-    
-    [_backButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-    
+}
+
+- (void)setUpButtons {
     [_flagButton addTarget:self action:@selector(flag) forControlEvents:UIControlEventTouchUpInside];
     [_flagButton setImage:[UIImage imageNamed:@"flag"] forState:UIControlStateNormal];
     [_flagButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.023]];
@@ -95,10 +119,25 @@
         [_editButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.023]];
         [_editButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
         [_editButton setHidden:NO];
+        
+        saveContainerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.frame.size.width, 70)];
+        [saveContainerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+        [saveContainerView setBackgroundColor:[UIColor whiteColor]];
+        
+        saveButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [saveContainerView addSubview:saveButton];
+        [saveButton setFrame:CGRectMake(20, 13, saveContainerView.frame.size.width-40, 44)];
+        [saveButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+        [saveButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [saveButton addTarget:self action:@selector(saveMetadata) forControlEvents:UIControlEventTouchUpInside];
+        [saveButton setTitle:@"SAVE" forState:UIControlStateNormal];
+        saveButton.layer.cornerRadius = 7.f;
+        saveButton.layer.borderColor = [UIColor darkGrayColor].CGColor;
+        saveButton.layer.borderWidth = .5f;
+        
     } else {
         [_editButton setHidden:YES];
     }
-    
     
     [_favoriteButton setImage:[UIImage imageNamed:@"favorite"] forState:UIControlStateNormal];
     [_favoriteButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
@@ -124,13 +163,13 @@
         newViewFrame.origin.y = 10;
         newViewFrame.origin.x -= 100;
         newViewFrame.size.width += 200;
+        self.tableView.tableFooterView = saveContainerView;
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            
             [self.view setFrame:newViewFrame];
+            [saveButton setFrame:CGRectMake(20, 13, newViewFrame.size.width-40, 44)];
         } completion:^(BOOL finished) {
             
         }];
-        
         
         [self.view endEditing:YES];
         double delayInSeconds = .23;
@@ -139,10 +178,13 @@
             [titleTextView becomeFirstResponder];
         });
     } else {
+        // temporarily set the tableView background color to white so that the cell backgrounds don't get exposed
+        [self.tableView setBackgroundColor:[UIColor whiteColor]];
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self.view setFrame:originalViewFrame];
+            self.tableView.tableFooterView = nil;
         } completion:^(BOOL finished) {
-            
+            [self.tableView setBackgroundColor:[UIColor clearColor]];
         }];
         
     }
@@ -152,18 +194,40 @@
     NSLog(@"Should be showing profile");
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [self loadArtMetadata];
-}
-
 - (void)loadArtMetadata {
     [manager GET:[NSString stringWithFormat:@"arts/%@",_art.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success fetching metadata: %@",responseObject);
         [_art populateFromDictionary:[responseObject objectForKey:@"art"]];
-        [self.tableView reloadData];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [self setupHeader];
+            [self.tableView reloadData];
+        }];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error fetching art metadata: %@",error.description);
+    }];
+}
+
+- (void)saveMetadata {
+    _art.notes = notesTextView.text;
+    _art.title = titleTextView.text;
+    [ProgressHUD show:@"Saving..."];
+    [self.view endEditing:YES];
+    
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [parameters setObject:_art.title forKey:@"title"];
+    [parameters setObject:_art.notes forKey:@"notes"];
+    [manager PATCH:[NSString stringWithFormat:@"arts/%@",_art.identifier] parameters:@{@"art":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success saving metadata: %@",responseObject);
+        [_art populateFromDictionary:[responseObject objectForKey:@"art"]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [ProgressHUD dismiss];
+        }];
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Error saving metadata: %@",error.description);
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [ProgressHUD dismiss];
+        }];
     }];
 }
 
@@ -193,7 +257,7 @@
         {
             [cell.label setText:@"ARTIST(S)"];
             NSString *artists = [_art artistsToSentence];
-            if (artists.length){
+            if (artists.length > 1){
                 [cell.textView setText:artists];
             } else {
                 [cell.textView setText:@"No artists listed"];
@@ -204,7 +268,7 @@
             break;
         case 2:
             [cell.label setText:@"DATE"];
-            NSLog(@"art interval: %@",_art.interval);
+            //NSLog(@"art interval: %@",_art.interval);
             if (_art.interval.single){
                 [cell.textView setText:[dateFormatter stringFromDate:_art.interval.single]];
             } else if (![_art.interval.beginRange isEqualToNumber:@0] && ![_art.interval.endRange isEqualToNumber:@0]) {
@@ -267,8 +331,11 @@
         case 7:
             [cell.label setText:@"NOTES"];
             [cell.textView setText:@""];
+            notesTextView = cell.textView;
             CGRect notesRect = cell.textView.frame;
-            notesRect.size.height = cell.frame.size.height-14;
+            CGFloat cellHeight = cell.frame.size.height;
+            CGFloat minHeight = cellHeight-14 > 86 ? cellHeight-14 : 86;
+            notesRect.size.height = minHeight;
             [cell.textView setFrame:notesRect];
             [cell.textView setText:_art.notes];
             break;
@@ -292,7 +359,7 @@
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         [manager POST:[NSString stringWithFormat:@"arts/%@/favorite",_art.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success posting favorite: %@",responseObject);
+            //NSLog(@"Success posting favorite: %@",responseObject);
             _favorite = [Favorite MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             [_favorite populateFromDictionary:[responseObject objectForKey:@"favorite"]];
             
@@ -306,7 +373,7 @@
             NSLog(@"Failed to favorite %@: %@",_art.title,error.description);
         }];
     } else {
-        
+        [self showLogin];
     }
 }
 
@@ -329,8 +396,12 @@
             NSLog(@"Failed to unfavorite %@: %@",_art.title,error.description);
         }];
     } else {
-        
+        [self showLogin];
     }
+}
+
+- (void)showLogin {
+    
 }
 
 - (void)flag {
@@ -367,8 +438,9 @@
                           delay:0
                         options:curve | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
-                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
+                         // offset by keyboard height plus part of the height of the save button
+                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight+34, 0);
+                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, keyboardHeight+34, 0);
                      }
                      completion:nil];
 }

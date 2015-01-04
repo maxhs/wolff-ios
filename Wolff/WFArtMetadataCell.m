@@ -24,6 +24,7 @@
 - (void)awakeFromNib {
     // set edit mode to NO by default
     [self setDefaultStyle:NO];
+    [self setBackgroundColor:[UIColor whiteColor]];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

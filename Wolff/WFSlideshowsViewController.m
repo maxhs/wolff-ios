@@ -1,16 +1,16 @@
 //
-//  WFPresentationsViewController.m
+//  WFSlideshowsViewController.m
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 12/6/14.
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
-#import "WFPresentationsViewController.h"
+#import "WFSlideshowsViewController.h"
 #import "WFAppDelegate.h"
 #import "WFPresentationCell.h"
 
-@interface WFPresentationsViewController () {
+@interface WFSlideshowsViewController () {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     User *_currentUser;
@@ -20,29 +20,29 @@
 
 @end
 
-@implementation WFPresentationsViewController
+@implementation WFSlideshowsViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
-    [self loadPresentations];
+    [self loadSlideshows];
     
     refreshControl = [[UIRefreshControl alloc] init];
     [refreshControl addTarget:self action:@selector(handleRefresh) forControlEvents:UIControlEventValueChanged];
     [_tableView addSubview:refreshControl];
     
-    [_tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.23]];
+    [_tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.1]];
     [_tableView setBackgroundColor:[UIColor blackColor]];
 }
 
 - (void)handleRefresh {
     [ProgressHUD show:@"Refreshing..."];
-    [self loadPresentations];
+    [self loadSlideshows];
 }
 
-- (void)loadPresentations {
+- (void)loadSlideshows {
     loading = YES;
     [manager GET:[NSString stringWithFormat:@"users/%@/presentations",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success getting presentations: %@",responseObject);

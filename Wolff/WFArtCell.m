@@ -7,8 +7,15 @@
 //
 
 #import "WFArtCell.h"
+#import "Constants.h"
 #import <SDWebImage/UIButton+WebCache.h>
 #import <SDWebImage/UIImageView+WebCache.h>
+
+@interface WFArtCell () {
+    
+}
+
+@end
 
 @implementation WFArtCell
 
@@ -22,39 +29,56 @@
 }
 
 - (void)awakeFromNib {
-    [_slideContainerView setBackgroundColor:[UIColor colorWithWhite:.95 alpha:1]];
+    [super awakeFromNib];
+    _slideContainerView.backgroundColor = kSlideBackgroundColor;
     _slideContainerView.layer.cornerRadius = 14.f;
-    _slideContainerView.layer.shouldRasterize = YES;
-    
-    _slideContainerView.layer.backgroundColor = [UIColor colorWithWhite:.95 alpha:1].CGColor;
-    _slideContainerView.layer.shadowColor = [UIColor colorWithWhite:.5 alpha:1].CGColor;
+    _slideContainerView.layer.backgroundColor = kSlideBackgroundColor.CGColor;
+    _slideContainerView.layer.shadowColor = kSlideShadowColor.CGColor;
     _slideContainerView.layer.shadowOpacity = .4f;
     _slideContainerView.layer.shadowOffset = CGSizeMake(1.3f, 1.7f);
     _slideContainerView.layer.shadowRadius = 1.3f;
-    
     _slideContainerView.clipsToBounds = NO;
+    _slideContainerView.layer.shouldRasterize = YES;
+}
+
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    [self.landscapeArtImageView setAlpha:0.f];
+    [self.portraitArtImageView setAlpha:0.f];
 }
 
 - (UIImage *)getRasterizedImageCopy {
-    UIGraphicsBeginImageContextWithOptions(self.bounds.size, self.isOpaque, 0.0f);
-    [self.artImageView.layer renderInContext:UIGraphicsGetCurrentContext()];
+    CGSize size = self.frame.size; size.width+=10; size.height+=10;
+    UIGraphicsBeginImageContextWithOptions(size, self.isOpaque, 0.0);
+    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return image;
 }
 
 - (void)configureForArt:(Art *)art {
-    if (art.photo.mediumImageUrl.length){
-        [self.artImageView sd_setImageWithURL:[NSURL URLWithString:art.photo.mediumImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+    if (art.photo.isLandscape){
+        [self.portraitArtImageView setHidden:YES];
+        [self.landscapeArtImageView setHidden:NO];
+        [self.landscapeArtImageView sd_setImageWithURL:[NSURL URLWithString:art.photo.slideImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.23 animations:^{
-                [self.artImageView setAlpha:1.0];
+                [self.landscapeArtImageView setAlpha:1.0];
             } completion:^(BOOL finished) {
-                [self.artImageView.layer setShouldRasterize:YES];
+                [self.landscapeArtImageView.layer setShouldRasterize:YES];
+                self.landscapeArtImageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
             }];
         }];
-        
     } else {
-        [self.artImageView setImage:nil];
+        [self.portraitArtImageView setHidden:NO];
+        [self.landscapeArtImageView setHidden:YES];
+        [self.portraitArtImageView sd_setImageWithURL:[NSURL URLWithString:art.photo.slideImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+            [UIView animateWithDuration:.23 animations:^{
+                [self.portraitArtImageView setAlpha:1.0];
+            } completion:^(BOOL finished) {
+                [self.portraitArtImageView.layer setShouldRasterize:YES];
+                self.portraitArtImageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+            }];
+        }];
     }
 }
 

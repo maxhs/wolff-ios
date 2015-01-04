@@ -154,20 +154,24 @@
     </entity>
     <entity name="Photo" representedClassName="Photo" syncable="YES">
         <attribute name="createdDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="height" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="image" optional="YES" attributeType="Transformable" syncable="YES"/>
         <attribute name="largeImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="mediumImageUrl" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="orientation" optional="YES" attributeType="Integer 16" defaultValueString="1" syncable="YES"/>
         <attribute name="originalImageUrl" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="smallImageUrl" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="slideImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="thumbImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="visible" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="width" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <relationship name="art" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Art" inverseName="photos" inverseEntity="Art" syncable="YES"/>
     </entity>
     <entity name="Presentation" representedClassName="Presentation" syncable="YES">
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0.0" syncable="YES"/>
         <attribute name="presentationDescription" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="visible" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
         <relationship name="arts" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Art" inverseName="presentations" inverseEntity="Art" syncable="YES"/>
         <relationship name="discussions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Discussion" inverseName="presentation" inverseEntity="Discussion" syncable="YES"/>
         <relationship name="notifications" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Notification" inverseName="presentation" inverseEntity="Notification" syncable="YES"/>
@@ -233,8 +237,8 @@
         <element name="Location" positionX="279" positionY="261" width="128" height="418"/>
         <element name="Material" positionX="288" positionY="342" width="128" height="120"/>
         <element name="Movement" positionX="324" positionY="387" width="128" height="88"/>
-        <element name="Photo" positionX="279" positionY="324" width="128" height="195"/>
-        <element name="Presentation" positionX="288" positionY="306" width="128" height="178"/>
+        <element name="Photo" positionX="279" positionY="324" width="128" height="238"/>
+        <element name="Presentation" positionX="288" positionY="306" width="128" height="193"/>
         <element name="Slide" positionX="297" positionY="315" width="128" height="135"/>
         <element name="Table" positionX="288" positionY="270" width="128" height="193"/>
         <element name="User" positionX="261" positionY="189" width="128" height="373"/>

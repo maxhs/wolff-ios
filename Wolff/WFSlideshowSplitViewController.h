@@ -1,5 +1,5 @@
 //
-//  WFPresentationSplitViewController.h
+//  WFSlideshowSplitViewController.h
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 8/5/14.
@@ -10,11 +10,14 @@
 #import "Presentation+helper.h"
 #import "Slide+helper.h"
 
-@interface WFPresentationSplitViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
+@interface WFSlideshowSplitViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UILabel *lightBoxPlaceholderLabel;
+
 @property (strong, nonatomic) UIPopoverController *popover;
 @property (strong, nonatomic) Presentation *presentation;
+
+- (void)dismissMetadata;
 @end

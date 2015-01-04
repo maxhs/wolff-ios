@@ -1,27 +1,40 @@
 //
-//  WFPresentationViewController.m
+//  WFComparisonViewController.m
 //  Wolff
 //
-//  Created by Max Haines-Stiles on 12/6/14.
-//  Copyright (c) 2014 Wolff. All rights reserved.
+//  Created by Max Haines-Stiles on 1/3/15.
+//  Copyright (c) 2015 Wolff. All rights reserved.
 //
 
-#import "WFPresentationViewController.h"
-#import "WFPresentationSlideCell.h"
+#import "WFComparisonViewController.h"
+#import "Constants.h"
+#import "WFAppDelegate.h"
+#import "WFSlideshowSlideCell.h"
 
-@interface WFPresentationViewController () {
-    
+@interface WFComparisonViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout> {
+    UIBarButtonItem *dismissButton;
 }
 
 @end
 
-@implementation WFPresentationViewController
+@implementation WFComparisonViewController
 
-@synthesize presentation = _presentation;
+@synthesize arts = _arts;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    self.navigationItem.leftBarButtonItem = dismissButton;
     
+    if ([[UIDevice currentDevice] systemVersion].floatValue >= 8.f){
+        self.navigationController.hidesBarsOnTap = YES;
+    }
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self.collectionView reloadData];
+    NSLog(@"collection view width: %f",self.collectionView.frame.size.width);
 }
 
 #pragma mark <UICollectionViewDataSource>
@@ -32,19 +45,26 @@
 
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return _presentation.slides.count;
+    return 1;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    WFPresentationSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
-    
-    // Configure the cell
+    WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"ComparisonCell" forIndexPath:indexPath];
+    [cell configureForArts:_arts inView:self.view];
     
     return cell;
 }
 
 #pragma mark <UICollectionViewDelegate>
 
+#pragma mark – UICollectionViewDelegateFlowLayout
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    return CGSizeMake(collectionView.frame.size.width,collectionView.frame.size.height);
+}
+
+- (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
+    return UIEdgeInsetsMake(0, 0, 0, 0);
+}
 /*
 // Uncomment this method to specify if the specified item should be highlighted during tracking
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath {

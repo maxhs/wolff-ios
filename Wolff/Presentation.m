@@ -12,6 +12,7 @@
 @implementation Presentation
 
 @dynamic identifier;
+@dynamic visible;
 @dynamic title;
 @dynamic presentationDescription;
 @dynamic slides;

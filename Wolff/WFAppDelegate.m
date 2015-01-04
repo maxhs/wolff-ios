@@ -113,6 +113,8 @@
     [[UIBarButtonItem appearance] setTintColor:[UIColor whiteColor]];
     [[UINavigationBar appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kMuseoSansLight size:21]}];
     [[UIBarButtonItem appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kMuseoSansLight size:18]} forState:UIControlStateNormal];
+    [[UISwitch appearance] setTintColor:kSaffronColor];
+    [[UISwitch appearance] setOnTintColor:kSaffronColor];
     
     [self.window setBackgroundColor:[UIColor blackColor]];
     [self.window setTintColor:[UIColor blackColor]];
@@ -141,7 +143,7 @@
 }
 
 - (void)logout {
-    [self cleanAndResetDB];
+    //[self cleanAndResetDB];
     NSLog(@"Log out!");
     NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
     [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];

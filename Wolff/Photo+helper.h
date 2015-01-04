@@ -10,4 +10,5 @@
 
 @interface Photo (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
+- (BOOL)isLandscape;
 @end
