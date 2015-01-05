@@ -133,8 +133,8 @@
     [self setUpGestureRecognizers];
     
     [_comparisonContainerView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1f]];
-    _dragForComparisonLabel.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0];
-    [_dragForComparisonLabel setTextColor:[UIColor colorWithWhite:.6f alpha:.7f]];
+    _dragForComparisonLabel.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansThin] size:0];
+    [_dragForComparisonLabel setTextColor:[UIColor colorWithWhite:.7f alpha:.6f]];
     
     /*self.groupsInteractor = [[WFGroupsInteractor alloc] initWithParentViewController:self];
     UIScreenEdgePanGestureRecognizer *gestureRecognizer = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self.groupsInteractor action:@selector(userDidPan:)];
