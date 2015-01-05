@@ -35,7 +35,7 @@
 #import "WFComparisonViewController.h"
 #import "WFSlideshowFocusAnimator.h"
 
-@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate, WFMenuDelegate, UIPopoverControllerDelegate, WFSlideshowDelegate, WFImageViewDelegate> {
+@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate, WFMenuDelegate, UIPopoverControllerDelegate, WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, UIGestureRecognizerDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     User *_currentUser;
@@ -79,8 +79,13 @@
     UIRefreshControl *collectionViewRefresh;
     NSMutableOrderedSet *selectedSlides;
     
+    UILongPressGestureRecognizer *comparison1LongPress;
+    UILongPressGestureRecognizer *comparison2LongPress;
+    UILongPressGestureRecognizer *catalogLongPress;
     UITapGestureRecognizer *comparisonTap;
     
+    NSIndexPath *indexPathForFavoriteToRemove;
+    NSIndexPath *indexPathForLightTableArtToRemove;
     WFInteractiveImageView *comparison1;
     WFInteractiveImageView *comparison2;
     
@@ -125,11 +130,7 @@
     //set up the light table sidebar
     expanded = NO;
     [self setUpTableView];
-    
-    comparisonTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(shouldCompare)];
-    comparisonTap.numberOfTapsRequired = 1;
-    comparisonTap.numberOfTouchesRequired = 1;
-    [_comparisonContainerView addGestureRecognizer:comparisonTap];
+    [self setUpGestureRecognizers];
     
     [_comparisonContainerView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1f]];
     _dragForComparisonLabel.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0];
@@ -140,6 +141,7 @@
     gestureRecognizer.edges = UIRectEdgeLeft;
     [self.view addGestureRecognizer:gestureRecognizer];*/
     
+    _collectionView.delaysContentTouches = NO;
     [_collectionView setBackgroundColor:[UIColor whiteColor]];
     collectionViewRefresh = [[UIRefreshControl alloc] init];
     [collectionViewRefresh addTarget:self action:@selector(refreshCollectionView:) forControlEvents:UIControlEventValueChanged];
@@ -158,6 +160,19 @@
         }
     }
     [self.searchBar setSearchBarStyle:UISearchBarStyleMinimal];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didHideEditMenu:) name:UIMenuControllerDidHideMenuNotification object:nil];
+}
+
+- (void)setUpGestureRecognizers {
+    catalogLongPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
+    catalogLongPress.minimumPressDuration = .23f;
+    [_collectionView addGestureRecognizer:catalogLongPress];
+    
+    comparisonTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(shouldCompare)];
+    comparisonTap.numberOfTapsRequired = 1;
+    [_comparisonContainerView addGestureRecognizer:comparisonTap];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -269,7 +284,7 @@
                     }
                 }
                 [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                    NSLog(@"Done saving art: %u",success);
+                    //NSLog(@"Done saving art: %u",success);
                 }];
             } else {
                 canLoadMoreArt = NO;
@@ -287,7 +302,7 @@
     if (_currentUser && !loading){
         loading = YES;
         [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success getting user art: %@", responseObject);
+            //NSLog(@"Success getting user art: %@", responseObject);
             
             [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -512,12 +527,12 @@
 - (void) showNewLightTable {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         WFNewLightTableController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"NewLightTable"];
-        //UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-        vc.modalPresentationStyle = UIModalPresentationCustom;
-        vc.transitioningDelegate = self;
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        nav.transitioningDelegate = self;
         [self resetTransitionBooleans];
         newArt = YES;
-        [self presentViewController:vc animated:YES completion:^{
+        [self presentViewController:nav animated:YES completion:^{
             
         }];
     } else {
@@ -626,14 +641,97 @@
     }
 }
 
-- (IBAction)longPressed:(UILongPressGestureRecognizer*)sender {
-    CGPoint loc = [sender locationInView:self.collectionView];
+- (void)adjustAnchorPointForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
+        UIView *piece = gestureRecognizer.view;
+        CGPoint locationInView = [gestureRecognizer locationInView:piece];
+        CGPoint locationInSuperview = [gestureRecognizer locationInView:piece.superview.superview];
+        piece.layer.anchorPoint = CGPointMake(locationInView.x / piece.bounds.size.width, locationInView.y / piece.bounds.size.height);
+        piece.center = locationInSuperview;
+    }
+}
+
+- (void)removeFavorite:(UIMenuController*)menuController {
+    Art *art = _favorites[indexPathForFavoriteToRemove.item];
+    [_favorites removeObject:art];
+    [_collectionView deleteItemsAtIndexPaths:@[indexPathForFavoriteToRemove]];
+}
+
+- (void)removeLightTableArt:(UIMenuController*)menuController {
+    Art *art = _table.arts[indexPathForLightTableArtToRemove.item];
+    [_table removeArt:art];
+    
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        [_collectionView deleteItemsAtIndexPaths:@[indexPathForLightTableArtToRemove]];
+    }];
+    
+    [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove_art",_table.identifier] parameters:@{@"art_id":art.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"success removing art from light table: %@",responseObject);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"failed to remove art from light table: %@",error.description);
+    }];
+}
+
+- (void)addArtToLightTable:(Art*)art {
+    NSIndexPath *newArtIndexPath = [NSIndexPath indexPathForItem:_table.arts.count inSection:0];
+    [_table addArt:art];
+    [_collectionView insertItemsAtIndexPaths:@[newArtIndexPath]];
+    
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        
+    }];
+    [manager POST:[NSString stringWithFormat:@"light_tables/%@/add_art",_table.identifier] parameters:@{@"art_id":art.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"success adding art from light table: %@",responseObject);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"failed to add art from light table: %@",error.description);
+    }];
+}
+
+- (void)longPressed:(UILongPressGestureRecognizer*)gestureRecognizer {
+    CGPoint loc = [gestureRecognizer locationInView:self.collectionView];
+    
+    if (showFavorites){
+        //trying to interact with a favorite
+        if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
+            [self becomeFirstResponder];
+            
+            indexPathForFavoriteToRemove = [_collectionView indexPathForItemAtPoint:loc];
+            NSString *menuItemTitle = NSLocalizedString(@"Remove", @"Remove this art from your favorites.");
+            UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeFavorite:)];
+            UIMenuController *menuController = [UIMenuController sharedMenuController];
+            [menuController setMenuItems:@[resetMenuItem]];
+            CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
+            CGRect menuLocation = CGRectMake(location.x, location.y, 0, 0);
+            [menuController setTargetRect:menuLocation inView:[gestureRecognizer view]];
+            [menuController setMenuVisible:YES animated:YES];
+        }
+        return;
+    } else if (showLightTable){
+        //trying to interact with a light table piece
+        if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
+            [self becomeFirstResponder];
+            
+            indexPathForLightTableArtToRemove = [_collectionView indexPathForItemAtPoint:loc];
+            NSString *menuItemTitle = NSLocalizedString(@"Remove", @"Remove this art from your favorites.");
+            UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeLightTableArt:)];
+            UIMenuController *menuController = [UIMenuController sharedMenuController];
+            [menuController setMenuItems:@[resetMenuItem]];
+            CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
+            CGRect menuLocation = CGRectMake(location.x, location.y, 0, 0);
+            [menuController setTargetRect:menuLocation inView:[gestureRecognizer view]];
+            [menuController setMenuVisible:YES animated:YES];
+        }
+        return;
+    }
+    
     CGFloat heightInScreen = fmodf((loc.y-self.collectionView.contentOffset.y), CGRectGetHeight(self.collectionView.frame));
     CGFloat hoverOffset;
     tableIsVisible ? (hoverOffset = kSidebarWidth) : (hoverOffset = 0);
     CGPoint locInScreen = CGPointMake( loc.x - self.collectionView.contentOffset.x + hoverOffset, heightInScreen );
     
-    if (sender.state == UIGestureRecognizerStateBegan) {
+    //[self adjustAnchorPointForGestureRecognizer:gestureRecognizer];
+    
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
         self.startIndex = [self.collectionView indexPathForItemAtPoint:loc];
         
         if (self.startIndex) {
@@ -652,32 +750,40 @@
             }
             self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andArt:art];
             [cell.contentView setAlpha:0.23f];
-            
-            CGPoint centerPoint = [self.view convertPoint:locInScreen fromView:nil];
-            NSLog(@"center point: %f, %f",centerPoint.x, centerPoint.y);
-            
+        
             [self.view addSubview:self.draggingView];
-            [self.view bringSubviewToFront:self.draggingView];
-            self.draggingView.center = centerPoint;
+            UIView *piece = gestureRecognizer.view;
+            CGPoint locationInView = [gestureRecognizer locationInView:piece];
+            CGPoint locationInSuperview = [gestureRecognizer locationInView:piece.superview];
+            
+            self.draggingView.center = CGPointMake(locationInView.x / piece.bounds.size.width, locationInView.y / piece.bounds.size.height);
+            self.draggingView.center = locationInSuperview;
+            
         }
     }
     
-    if (sender.state == UIGestureRecognizerStateChanged) {
+    if (gestureRecognizer.state == UIGestureRecognizerStateChanged) {
         self.draggingView.center = locInScreen;
     }
     
-    if (sender.state == UIGestureRecognizerStateEnded) {
+    if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
         // comparison mode
         // 128 is half the width of an art slide, since the point we're grabbing is a center point, not the origin
         if (loc.x < (kSidebarWidth - 128) && loc.y > (_comparisonContainerView.frame.origin.y - 128)){
             if (comparison1){
                 comparison2 = [[WFInteractiveImageView alloc] initWithFrame:CGRectMake(comparison1.frame.size.width+comparison1.frame.origin.x+10, 10, 125, 130) andArt:self.draggingView.art];
                 comparison2.imageViewDelegate = self;
-                NSLog(@"what is comparison 2? %@",comparison2.art.title);
                 [comparison2 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.art.photo.mediumImageUrl]];
                 comparison2.layer.cornerRadius = 3.f;
                 comparison2.clipsToBounds = YES;
+                
+                comparison2LongPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(comparisonTap:)];
+                comparison2LongPress.minimumPressDuration = .23f;
+                [comparison2 addGestureRecognizer:comparison2LongPress];
+                [comparison2 setUserInteractionEnabled:YES];
+                
                 [_comparisonContainerView addSubview:comparison2];
+                [comparisonTap requireGestureRecognizerToFail:comparison2LongPress];
                 
             } else {
                 comparison1 = [[WFInteractiveImageView alloc] initWithFrame:CGRectMake(10, 10, 125, 130) andArt:self.draggingView.art];
@@ -685,7 +791,13 @@
                 [comparison1 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.art.photo.mediumImageUrl]];
                 comparison1.layer.cornerRadius = 3.f;
                 comparison1.clipsToBounds = YES;
+                
+                comparison1LongPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(comparisonTap:)];
+                comparison1LongPress.minimumPressDuration = .23f;
+                [comparison1 addGestureRecognizer:comparison1LongPress];
+                [comparison1 setUserInteractionEnabled:YES];
                 [_comparisonContainerView addSubview:comparison1];
+                [comparisonTap requireGestureRecognizerToFail:comparison1LongPress];
             }
             [self resetComparisonLabel];
             [self resetDraggingView];
@@ -694,8 +806,6 @@
             if (self.moveToIndexPath) {
         
                 WFArtCell *movedCell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.moveToIndexPath];
-                CGPoint moveToPoint = [self.view convertPoint:movedCell.center fromView:nil];
-                
                 WFArtCell *oldIndexCell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
                 
                 NSNumber *thisNumber = [_arts objectAtIndex:self.startIndex.row];
@@ -706,7 +816,10 @@
                     [_arts insertObject:thisNumber atIndex:self.moveToIndexPath.row];
                 }
                 
+                CGPoint moveToPoint = [self.view convertPoint:movedCell.center fromView:nil];
                 [UIView animateWithDuration:.27f animations:^{
+
+                    self.draggingView.layer.anchorPoint = moveToPoint;
                     self.draggingView.center = moveToPoint;
                     [self.draggingView setAlpha:0.0];
                     [oldIndexCell.contentView setAlpha:1.f];
@@ -737,11 +850,13 @@
     }
 }
 
+#pragma mark - Comparison Seciton
+
 - (void)shouldCompare {
     if (comparison1 && comparison1.art && comparison2 && comparison2.art){
         [self resetTransitionBooleans];
         comparison = YES;
-    
+        
         WFComparisonViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Comparison"];
         vc.arts = [NSMutableOrderedSet orderedSetWithArray:@[comparison1.art, comparison2.art]];
         
@@ -754,16 +869,6 @@
     }
 }
 
-- (void)longPressGesture:(id)imageView {
-    NSLog(@"long press from catalog view");
-    if (imageView == comparison1){
-        [comparison1 removeFromSuperview];
-    } else if (imageView == comparison2) {
-        [comparison2 removeFromSuperview];
-    }
-    [self resetComparisonLabel];
-}
-
 - (void)resetComparisonLabel {
     if (comparison2 || comparison1){
         [_dragForComparisonLabel setHidden:YES];
@@ -772,7 +877,53 @@
     }
 }
 
+- (void)comparisonTap:(UILongPressGestureRecognizer*)gestureRecognizer {
+    if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
+        [self becomeFirstResponder];
+        
+        NSString *menuItemTitle = NSLocalizedString(@"Remove", @"Remove art from comparison section");
+        UIMenuItem *resetMenuItem;
+        if (gestureRecognizer.view == comparison1){
+            resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeComparison1:)];
+        } else if (gestureRecognizer.view == comparison2){
+            resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeComparison2:)];
+        }
+        
+        UIMenuController *menuController = [UIMenuController sharedMenuController];
+        [menuController setMenuItems:@[resetMenuItem]];
+        CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
+        CGRect menuLocation = CGRectMake(location.x, location.y, 0, 0);
+        [menuController setTargetRect:menuLocation inView:[gestureRecognizer view]];
+        [menuController setMenuVisible:YES animated:YES];
+    }
+}
+
+- (void)removeComparison1:(UIMenuController*)menuController {
+    [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        comparison1.transform = CGAffineTransformMakeScale(.9, .9);
+        comparison1.alpha = 0.f;
+    } completion:^(BOOL finished) {
+        [comparison1 removeFromSuperview];
+        comparison1 = nil;
+    }];
+}
+
+- (void)removeComparison2:(UIMenuController*)menuController {
+    [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        comparison2.transform = CGAffineTransformMakeScale(.9, .9);
+        comparison2.alpha = 0.f;
+    } completion:^(BOOL finished) {
+        [comparison2 removeFromSuperview];
+        comparison2 = nil;
+    }];
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return YES;
+}
+
 - (void)resetDraggingView {
+    NSLog(@"reset dragging view");
     WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
     [UIView animateWithDuration:.27f animations:^{
         [self.draggingView setAlpha:0.0];
@@ -993,18 +1144,9 @@
             
         }];
     }
-    
-    /*WFTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Groups"];
-    settings = NO; newArt = NO; metadata = NO; _login = NO;
-    groupBool = YES;
-    
-    vc.transitioningDelegate = self;
-    vc.modalPresentationStyle = UIModalPresentationCustom;
-    [self presentViewController:vc animated:YES completion:^{
-        
-    }];*/
 }
 
+#pragma mark Dismiss & Transition Methods
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
                                                                   presentingController:(UIViewController *)presenting
                                                                       sourceController:(UIViewController *)source {
@@ -1076,6 +1218,7 @@
     }];
 }
 
+#pragma mark - Search Methods
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
@@ -1083,31 +1226,20 @@
     searching = YES;
     searchResultsVc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SearchResults"];
     searchResultsVc.preferredContentSize = CGSizeMake(self.searchBar.frame.size.width-40, 400);
+    searchResultsVc.searchDelegate = self;
     self.popover = [[UIPopoverController alloc] initWithContentViewController:searchResultsVc];
     self.popover.delegate = self;
     [self.popover presentPopoverFromRect:self.navigationItem.titleView.frame inView:self.view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
-- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
-    NSLog(@"Search text did change: %@",searchText);
-    if (searchResultsVc){
-        [searchResultsVc filterContentForSearchText:searchText scope:nil];
-    }
-    //[self filterContentForSearchText:searchText scope:nil];
+- (void)searchDidSelectArt:(Art *)art {
+    NSLog(@"search did select art: %@",art.title);
 }
 
-- (void)filterContentForSearchText:(NSString*)searchText scope:(NSString*)scope {
-    if (!_filteredArts){
-        _filteredArts = [NSMutableArray array];
-    } else {
-        [_filteredArts removeAllObjects];
-    }
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF contains[cd] %@", searchText];
-    
-    for (Art *art in _arts){
-        if([predicate evaluateWithObject:art.title]) {
-            [_filteredArts addObject:art];
-        }
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
+    //NSLog(@"Search text did change: %@",searchText);
+    if (searchResultsVc){
+        [searchResultsVc filterContentForSearchText:searchText scope:nil];
     }
 }
 
@@ -1118,6 +1250,22 @@
         WFArtViewController *vc = [segue destinationViewController];
         [vc setArt:art];
     }
+}
+
+#pragma mark - UIMenuController Methods
+- (void)willHideEditMenu:(id)sender {
+    
+}
+
+- (void)didHideEditMenu:(id)sender {
+    [self resignFirstResponder];
+    indexPathForFavoriteToRemove = nil;
+    indexPathForLightTableArtToRemove = nil;
+}
+
+// UIMenuController requires that we can become first responder or it won't display
+- (BOOL)canBecomeFirstResponder {
+    return YES;
 }
 
 

@@ -10,6 +10,7 @@
 @protocol WFSaveSlideshowDelegate <NSObject>
 
 - (void)post;
+- (void)enableOfflineMode;
 
 @end
 

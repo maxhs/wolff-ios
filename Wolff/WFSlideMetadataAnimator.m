@@ -1,23 +1,23 @@
 //
-//  WFSettingsAnimator.m
+//  WFSlideMetadataAnimator.m
 //  Wolff
 //
-//  Created by Max Haines-Stiles on 12/6/14.
-//  Copyright (c) 2014 Wolff. All rights reserved.
+//  Created by Max Haines-Stiles on 1/4/15.
+//  Copyright (c) 2015 Wolff. All rights reserved.
 //
 
-#import "WFSettingsAnimator.h"
+#import "WFSlideMetadataAnimator.h"
 #import "UIImage+ImageEffects.h"
 #import "Constants.h"
-#import "WFSettingsViewController.h"
+#import "WFSlideMetadataViewController.h"
 
-@interface WFSettingsAnimator () {
+@interface WFSlideMetadataAnimator () {
     CGFloat width;
     CGFloat height;
 }
 @end
 
-@implementation WFSettingsAnimator
+@implementation WFSlideMetadataAnimator
 
 - (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext {
     return kDefaultAnimationDuration;
@@ -58,16 +58,17 @@
         
         //this is a little fragile, since if the view hierarchy changes, this will break
         UINavigationController *nav = (UINavigationController*)toViewController;
-        [blurredButton addTarget:(WFSettingsViewController*)nav.viewControllers.firstObject action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+        [blurredButton addTarget:(WFSlideMetadataViewController*)nav.viewControllers.firstObject action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         [blurredButton setFrame:mainScreen];
         [blurredButton setAlpha:0.0];
         [blurredButton setTag:kBlurredBackgroundConstant];
         
-        [toView setFrame:CGRectMake(width, 0, width-(width/2), height)];
-        [toViewController setPreferredContentSize:CGSizeMake((width/2), height)];
+        CGFloat differential = width/3;
+        [toView setFrame:CGRectMake(width, 0, (differential), height)];
+        [toViewController setPreferredContentSize:CGSizeMake((differential), height)];
         CGRect toEndFrame = toView.frame;
-        toEndFrame.origin.x -= width/2;
-
+        toEndFrame.origin.x -= differential;
+        
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:toView];
         
@@ -104,8 +105,9 @@
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, height), NO, window.screen.scale);
     [window drawViewHierarchyInRect:CGRectMake(0, 0, width, height) afterScreenUpdates:NO];
     UIImage *snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIImage *blurredSnapshotImage = _dark ? [snapshotImage applyDarkEffect] : [snapshotImage applyLightEffect];
+    UIImage *blurredSnapshotImage = [snapshotImage applyDarkEffect];
     UIGraphicsEndImageContext();
     return blurredSnapshotImage;
 }
+
 @end

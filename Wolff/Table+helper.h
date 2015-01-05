@@ -7,7 +7,10 @@
 //
 
 #import "Table.h"
+#import "Art+helper.h"
 
 @interface Table (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
+- (void)addArt:(Art*)art;
+- (void)removeArt:(Art*)art;
 @end

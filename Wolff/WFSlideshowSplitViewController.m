@@ -221,7 +221,7 @@
         activeImageView = imageView;
         activeSlide = _presentation.slides[activeIndexPath.row];
         
-        NSString *menuItemTitle = NSLocalizedString(@"Remove from slide", @"Remove art from slide");
+        NSString *menuItemTitle = NSLocalizedString(@"Remove", @"Remove art from slide");
         UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeArt:)];
         
         UIMenuController *menuController = [UIMenuController sharedMenuController];
@@ -423,9 +423,14 @@
                         // this means we should add a new slide
                         Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
                         [slide addArt:selectedArt];
-                        [slide setIndex:[NSNumber numberWithInteger:_presentation.slides.count]];
+                        [slide setIndex:@(_presentation.slides.count)];
+                        NSLog(@"new slide index: %@",slide.index);
                         [_presentation addSlide:slide];
-                        [self.tableView reloadData];
+                        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                            
+                            [self.tableView reloadData];
+                        }];
+                        
                     } else if (loc.y < upperBounds && loc.y > lowerBounds){
                         Slide *slide = [_presentation.slides objectAtIndex:idx];
                         if (selectedArt)[slide addArt:selectedArt];
@@ -507,13 +512,6 @@
     }];
 }
 
-- (void)newSlide {
-    Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-    [slide setIndex:[NSNumber numberWithInteger:_presentation.slides.count]];
-    [_presentation addSlide:slide];
-    [self.tableView reloadData];
-}
-
 - (void)showSaveMenu {
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
@@ -524,6 +522,10 @@
     self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
     self.popover.delegate = self;
     [self.popover presentPopoverFromBarButtonItem:saveButton permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+}
+
+- (void)enableOfflineMode {
+    NSLog(@"Should enable offline mode");
 }
 
 - (void)save {
@@ -555,24 +557,27 @@
     for (Art *art in _presentation.arts){
         [presentationArts addObject:art.identifier];
     }
-    
+    NSLog(@"presentation arts: %@",presentationArts);
     [parameters setObject:[presentationArts componentsJoinedByString:@","] forKey:@"art_ids"];
     
     NSMutableArray *slides = [NSMutableArray array];
     for (Slide *slide in _presentation.slides){
+        NSMutableDictionary *slideObject = [NSMutableDictionary dictionary];
         if (slide && ![slide.identifier isEqualToNumber:@0]){
-            [slides addObject:@{@"slide_id":slide.identifier}];
+            [slideObject setObject:slide.identifier forKey:@"slide_id"];
         }
+        
+        NSLog(@"art count %d for slide index %@",slide.arts.count, slide.index);
         NSMutableArray *artIds = [NSMutableArray arrayWithCapacity:slide.arts.count];
         [slide.arts enumerateObjectsUsingBlock:^(Art *art, NSUInteger idx, BOOL *stop) {
             [artIds addObject:art.identifier];
         }];
-        [slides addObject:@{@"art_ids":artIds}];
-        [slides addObject:@{@"index":slide.index}];
+        [slideObject setObject:artIds forKey:@"art_ids"];
+        //[slideObject setObject:slide.index forKey:@"index"];
+        [slides addObject:slideObject];
     }
-    if (slides.count){
-        [parameters setObject:slides forKey:@"slides"];
-    }
+    NSLog(@"slides: %@",slides);
+    [parameters setObject:slides forKey:@"slides"];
     
     if ([_presentation.identifier isEqualToNumber:@0]){
         [manager POST:[NSString stringWithFormat:@"presentations"] parameters:@{@"presentation":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {

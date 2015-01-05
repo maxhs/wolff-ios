@@ -7,9 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Slide+helper.h"
+#import "Presentation+helper.h"
 
 @interface WFSlideMetadataViewController : UIViewController
 
+@property (strong, nonatomic) NSOrderedSet *arts;
+@property (strong, nonatomic) Slide *slide;
+@property (strong, nonatomic) Presentation *presentation;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
+- (void)dismiss;
 
 @end

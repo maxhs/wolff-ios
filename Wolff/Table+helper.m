@@ -71,5 +71,16 @@
     }
 }
 
+- (void)addArt:(Art *)art {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.arts];
+    [tempSet addObject:art];
+    self.arts = tempSet;
+}
+
+- (void)removeArt:(Art *)art {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.arts];
+    [tempSet removeObject:art];
+    self.arts = tempSet;
+}
 
 @end

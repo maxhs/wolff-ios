@@ -11,8 +11,10 @@
 #import "WFAppDelegate.h"
 #import "WFSlideshowSlideCell.h"
 #import "WFInteractiveImageView.h"
+#import "WFSlideMetadataAnimator.h"
+#import "WFSlideMetadataViewController.h"
 
-@interface WFComparisonViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UIGestureRecognizerDelegate> {
+@interface WFComparisonViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UIGestureRecognizerDelegate, UIViewControllerTransitioningDelegate> {
     UIBarButtonItem *dismissButton;
     UIBarButtonItem *metadataButton;
     UIImageView *artImageView2;
@@ -21,6 +23,8 @@
     UIView *containerView3;
     UIPanGestureRecognizer *_panGesture2;
     UIPanGestureRecognizer *_panGesture3;
+    UIRotationGestureRecognizer *_rotationGesture2;
+    UIRotationGestureRecognizer *_rotationGesture3;
     UIPinchGestureRecognizer *_pinchGesture2;
     UIPinchGestureRecognizer *_pinchGesture3;
     UITapGestureRecognizer *_doubleTapGesture1;
@@ -46,6 +50,7 @@
     self.navigationItem.leftBarButtonItem = dismissButton;
     
     metadataButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"info"] style:UIBarButtonItemStylePlain target:self action:@selector(showMetadata)];
+    
     self.navigationItem.rightBarButtonItem = metadataButton;
     
     if ([[UIDevice currentDevice] systemVersion].floatValue >= 8.f){
@@ -54,6 +59,11 @@
     if (!_panGesture2) {
         _panGesture2 = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
         _panGesture3 = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+    }
+    
+    if (!_rotationGesture2) {
+        _rotationGesture2 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
+        _rotationGesture3 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
     }
     
     if (!_pinchGesture2) {
@@ -81,27 +91,32 @@
 }
 
 - (void)showMetadata {
-    
+    WFSlideMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideMetadata"];
+    [vc setArts:_arts];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
 }
-//
-//- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-//    return YES;
-//}
 
-- (void)handlePan:(UIPanGestureRecognizer*)sender {
+#pragma mark - Handle Gestures
+
+- (void)handlePan:(UIPanGestureRecognizer*)gestureRecognizer {
     UIView *viewInQuestion;
-    if (sender == _panGesture2){
+    if (gestureRecognizer == _panGesture2){
         viewInQuestion = containerView2;
-    } else if (sender == _panGesture3) {
+    } else if (gestureRecognizer == _panGesture3) {
         viewInQuestion = containerView3;
     }
     
-    CGPoint translation = [sender translationInView:self.view];
-    CGPoint newPoint = CGPointMake(sender.view.center.x + translation.x, sender.view.center.y + translation.y);
+    CGPoint translation = [gestureRecognizer translationInView:self.view];
+    CGPoint newPoint = CGPointMake(gestureRecognizer.view.center.x + translation.x, gestureRecognizer.view.center.y + translation.y);
     if (newPoint.x > 0){
-        sender.view.center = newPoint;
+        gestureRecognizer.view.center = newPoint;
     }
-    [sender setTranslation:CGPointMake(0, 0) inView:self.view];
+    [gestureRecognizer setTranslation:CGPointMake(0, 0) inView:self.view];
     
 }
 
@@ -116,21 +131,25 @@
     }
 }
 
-- (void)handlePinch:(UIPinchGestureRecognizer*)gestureRecognizer {
-    
+
+- (void)handleRotation:(UIRotationGestureRecognizer*)gestureRecognizer {
     [self adjustAnchorPointForGestureRecognizer:gestureRecognizer];
     
+    if ([gestureRecognizer state] == UIGestureRecognizerStateBegan || [gestureRecognizer state] == UIGestureRecognizerStateChanged) {
+        [gestureRecognizer view].transform = CGAffineTransformRotate([[gestureRecognizer view] transform], [gestureRecognizer rotation]);
+        [gestureRecognizer setRotation:0];
+    }
+}
+
+- (void)handlePinch:(UIPinchGestureRecognizer*)gestureRecognizer {
+    [self adjustAnchorPointForGestureRecognizer:gestureRecognizer];
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
-        // Reset the last scale, necessary if there are multiple objects with different scales
         lastScale = gestureRecognizer.scale;
     }
     
     const CGFloat kMaxScale = CGFLOAT_MAX;
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan || gestureRecognizer.state == UIGestureRecognizerStateChanged) {
-        
         CGFloat currentScale = [[gestureRecognizer.view.layer valueForKeyPath:@"transform.scale"] floatValue];
-        
-        // Constants to adjust the max/min values of zoom
         const CGFloat kMinScale = .5;
         CGFloat newScale = 1 -  (lastScale - gestureRecognizer.scale);
         newScale = MIN(newScale, kMaxScale / currentScale);
@@ -156,14 +175,14 @@
     }
 }
 
-- (void)handleTap:(UITapGestureRecognizer*)sender {
+- (void)handleTap:(UITapGestureRecognizer*)gestureRecognizer {
     
     [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        sender.view.transform = CGAffineTransformIdentity;
-        if (sender == _doubleTapGesture2){
-            [sender.view setFrame:originalFrame2];
+        gestureRecognizer.view.transform = CGAffineTransformIdentity;
+        if (gestureRecognizer == _doubleTapGesture2){
+            [gestureRecognizer.view setFrame:originalFrame2];
         } else {
-            [sender.view setFrame:originalFrame3];
+            [gestureRecognizer.view setFrame:originalFrame3];
         }
         
     } completion:^(BOOL finished) {
@@ -194,19 +213,20 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"ComparisonCell" forIndexPath:indexPath];
-    [cell configureForArts:_arts inView:self.view];
+    [cell configureForArts:_arts inSlide:nil];
     artImageView2 = cell.artImageView2;
     containerView2 = cell.containerView2;
     [cell.artImageView2 addGestureRecognizer:_panGesture2];
     [cell.artImageView2 addGestureRecognizer:_pinchGesture2];
     [cell.artImageView2 addGestureRecognizer:_doubleTapGesture2];
+    [cell.artImageView2 addGestureRecognizer:_rotationGesture2];
     
     artImageView3 = cell.artImageView3;
     containerView3 = cell.containerView3;
     [cell.artImageView3 addGestureRecognizer:_panGesture3];
     [cell.artImageView3 addGestureRecognizer:_pinchGesture3];
     [cell.artImageView3 addGestureRecognizer:_doubleTapGesture3];
-    
+    [cell.artImageView3 addGestureRecognizer:_rotationGesture3];
     
     originalFrame2 = cell.artImageView2.frame;
     originalFrame3 = cell.artImageView3.frame;
@@ -224,38 +244,25 @@
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
     return UIEdgeInsetsMake(0, 0, 0, 0);
 }
-/*
-// Uncomment this method to specify if the specified item should be highlighted during tracking
-- (BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
-	return YES;
-}
-*/
 
-/*
-// Uncomment this method to specify if the specified item should be selected
-- (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    return YES;
-}
-*/
-
-/*
-// Uncomment these methods to specify if an action menu should be displayed for the specified item, and react to actions performed on the item
-- (BOOL)collectionView:(UICollectionView *)collectionView shouldShowMenuForItemAtIndexPath:(NSIndexPath *)indexPath {
-	return NO;
+#pragma mark Dismiss & Transition Methods
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
+                                                                  presentingController:(UIViewController *)presenting
+                                                                      sourceController:(UIViewController *)source {
+    WFSlideMetadataAnimator *animator = [WFSlideMetadataAnimator new];
+    animator.presenting = YES;
+    return animator;
 }
 
-- (BOOL)collectionView:(UICollectionView *)collectionView canPerformAction:(SEL)action forItemAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
-	return NO;
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
+    
+    
+    WFSlideMetadataAnimator *animator = [WFSlideMetadataAnimator new];
+    return animator;
 }
-
-- (void)collectionView:(UICollectionView *)collectionView performAction:(SEL)action forItemAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
-	
-}
-*/
 
 - (void)dismiss {
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
     }];
 }
 

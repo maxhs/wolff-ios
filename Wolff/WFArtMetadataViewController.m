@@ -29,6 +29,7 @@
     CGRect originalViewFrame;
     UIView *saveContainerView;
     UIButton *saveButton;
+    UIImageView *navBarShadowView;
 }
 
 @end
@@ -196,7 +197,7 @@
 
 - (void)loadArtMetadata {
     [manager GET:[NSString stringWithFormat:@"arts/%@",_art.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success fetching metadata: %@",responseObject);
+        //NSLog(@"Success fetching metadata: %@",responseObject);
         [_art populateFromDictionary:[responseObject objectForKey:@"art"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [self setupHeader];
@@ -260,7 +261,7 @@
             if (artists.length > 1){
                 [cell.textView setText:artists];
             } else {
-                [cell.textView setText:@"No artists listed"];
+                [cell.textView setText:@"Artist(s) unknown..."];
                 [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
                 [cell.textView setTextColor:[UIColor lightGrayColor]];
             }

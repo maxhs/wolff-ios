@@ -49,7 +49,7 @@
     _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
     
     tables = [Table MR_findAll].mutableCopy;
-    //[self loadGroups];
+
     [self.tableView reloadData];
 }
 

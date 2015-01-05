@@ -26,7 +26,7 @@
     [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansSemibold] size:0]];
     [self.textLabel setTextColor:[UIColor whiteColor]];
     [self.textLabel setText:@""];
-    [_artLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [_artLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
     [_artLabel setTextColor:[UIColor whiteColor]];
 }
 

@@ -43,13 +43,20 @@
 		5026DF731A3D1F63000CD26F /* remove.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6D1A3D1F62000CD26F /* remove.png */; };
 		5026DF741A3D1F63000CD26F /* remove@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6E1A3D1F62000CD26F /* remove@2x.png */; };
 		5026DF751A3D1F63000CD26F /* remove@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6F1A3D1F62000CD26F /* remove@3x.png */; };
+		50305BD01A5A0D0C00D2CAD1 /* info.png in Resources */ = {isa = PBXBuildFile; fileRef = 50305BCD1A5A0D0C00D2CAD1 /* info.png */; };
+		50305BD11A5A0D0C00D2CAD1 /* info@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50305BCE1A5A0D0C00D2CAD1 /* info@2x.png */; };
+		50305BD21A5A0D0C00D2CAD1 /* info@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50305BCF1A5A0D0C00D2CAD1 /* info@3x.png */; };
 		504926241A58DFB9000C6FD9 /* infoCircle.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926211A58DFB9000C6FD9 /* infoCircle.png */; };
 		504926251A58DFB9000C6FD9 /* infoCircle@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926221A58DFB9000C6FD9 /* infoCircle@2x.png */; };
 		504926261A58DFB9000C6FD9 /* infoCircle@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926231A58DFB9000C6FD9 /* infoCircle@3x.png */; };
 		504926291A58E101000C6FD9 /* WFSlideMetadataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 504926281A58E101000C6FD9 /* WFSlideMetadataViewController.m */; };
-		504926331A58E7DA000C6FD9 /* info.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926301A58E7DA000C6FD9 /* info.png */; };
-		504926341A58E7DA000C6FD9 /* info@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926311A58E7DA000C6FD9 /* info@2x.png */; };
-		504926351A58E7DA000C6FD9 /* info@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926321A58E7DA000C6FD9 /* info@3x.png */; };
+		504926391A592C28000C6FD9 /* mobile.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926361A592C28000C6FD9 /* mobile.png */; };
+		5049263A1A592C28000C6FD9 /* mobile@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926371A592C28000C6FD9 /* mobile@2x.png */; };
+		5049263B1A592C28000C6FD9 /* mobile@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926381A592C28000C6FD9 /* mobile@3x.png */; };
+		5049263E1A593262000C6FD9 /* WFSlideMetadataCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 5049263D1A593262000C6FD9 /* WFSlideMetadataCell.m */; };
+		504926411A59342A000C6FD9 /* WFSlideMetadataAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = 504926401A59342A000C6FD9 /* WFSlideMetadataAnimator.m */; };
+		504926431A59A204000C6FD9 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 504926421A59A204000C6FD9 /* ImageIO.framework */; };
+		504926521A59CB6F000C6FD9 /* WFGesturableCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 504926511A59CB6F000C6FD9 /* WFGesturableCollectionView.m */; };
 		50952E7B1A478EA100485831 /* WFMenuViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50952E7A1A478EA100485831 /* WFMenuViewController.m */; };
 		50952E851A47F70E00485831 /* MuseoSans-100.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E7C1A47F70E00485831 /* MuseoSans-100.ttf */; };
 		50952E861A47F70E00485831 /* MuseoSans-100italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50952E7D1A47F70E00485831 /* MuseoSans-100italic.ttf */; };
@@ -76,6 +83,7 @@
 		50952EAB1A480BD000485831 /* camera.png in Resources */ = {isa = PBXBuildFile; fileRef = 50952EA81A480BD000485831 /* camera.png */; };
 		50952EAC1A480BD000485831 /* camera@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50952EA91A480BD000485831 /* camera@2x.png */; };
 		50952EAD1A480BD000485831 /* camera@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50952EAA1A480BD000485831 /* camera@3x.png */; };
+		50DB02231A5A6FDE005A4E2F /* WFUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB02221A5A6FDE005A4E2F /* WFUtilities.m */; };
 		50DB43A51A53611300856174 /* WFNotificationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB43A41A53611300856174 /* WFNotificationsViewController.m */; };
 		50DB43A81A53619400856174 /* WFNotificationCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB43A71A53619400856174 /* WFNotificationCell.m */; };
 		50DB43AB1A5363C200856174 /* Discussion.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB43AA1A5363C200856174 /* Discussion.m */; };
@@ -347,14 +355,24 @@
 		5026DF6D1A3D1F62000CD26F /* remove.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = remove.png; sourceTree = "<group>"; };
 		5026DF6E1A3D1F62000CD26F /* remove@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "remove@2x.png"; sourceTree = "<group>"; };
 		5026DF6F1A3D1F62000CD26F /* remove@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "remove@3x.png"; sourceTree = "<group>"; };
+		50305BCD1A5A0D0C00D2CAD1 /* info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = info.png; sourceTree = "<group>"; };
+		50305BCE1A5A0D0C00D2CAD1 /* info@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info@2x.png"; sourceTree = "<group>"; };
+		50305BCF1A5A0D0C00D2CAD1 /* info@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info@3x.png"; sourceTree = "<group>"; };
 		504926211A58DFB9000C6FD9 /* infoCircle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = infoCircle.png; sourceTree = "<group>"; };
 		504926221A58DFB9000C6FD9 /* infoCircle@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "infoCircle@2x.png"; sourceTree = "<group>"; };
 		504926231A58DFB9000C6FD9 /* infoCircle@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "infoCircle@3x.png"; sourceTree = "<group>"; };
 		504926271A58E101000C6FD9 /* WFSlideMetadataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideMetadataViewController.h; sourceTree = "<group>"; };
 		504926281A58E101000C6FD9 /* WFSlideMetadataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideMetadataViewController.m; sourceTree = "<group>"; };
-		504926301A58E7DA000C6FD9 /* info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = info.png; sourceTree = "<group>"; };
-		504926311A58E7DA000C6FD9 /* info@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info@2x.png"; sourceTree = "<group>"; };
-		504926321A58E7DA000C6FD9 /* info@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info@3x.png"; sourceTree = "<group>"; };
+		504926361A592C28000C6FD9 /* mobile.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mobile.png; sourceTree = "<group>"; };
+		504926371A592C28000C6FD9 /* mobile@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "mobile@2x.png"; sourceTree = "<group>"; };
+		504926381A592C28000C6FD9 /* mobile@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "mobile@3x.png"; sourceTree = "<group>"; };
+		5049263C1A593262000C6FD9 /* WFSlideMetadataCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideMetadataCell.h; sourceTree = "<group>"; };
+		5049263D1A593262000C6FD9 /* WFSlideMetadataCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideMetadataCell.m; sourceTree = "<group>"; };
+		5049263F1A59342A000C6FD9 /* WFSlideMetadataAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideMetadataAnimator.h; sourceTree = "<group>"; };
+		504926401A59342A000C6FD9 /* WFSlideMetadataAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideMetadataAnimator.m; sourceTree = "<group>"; };
+		504926421A59A204000C6FD9 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		504926501A59CB6F000C6FD9 /* WFGesturableCollectionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFGesturableCollectionView.h; sourceTree = "<group>"; };
+		504926511A59CB6F000C6FD9 /* WFGesturableCollectionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFGesturableCollectionView.m; sourceTree = "<group>"; };
 		50952E791A478EA100485831 /* WFMenuViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMenuViewController.h; sourceTree = "<group>"; };
 		50952E7A1A478EA100485831 /* WFMenuViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFMenuViewController.m; sourceTree = "<group>"; };
 		50952E7C1A47F70E00485831 /* MuseoSans-100.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MuseoSans-100.ttf"; sourceTree = "<group>"; };
@@ -382,6 +400,8 @@
 		50952EA81A480BD000485831 /* camera.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = camera.png; sourceTree = "<group>"; };
 		50952EA91A480BD000485831 /* camera@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "camera@2x.png"; sourceTree = "<group>"; };
 		50952EAA1A480BD000485831 /* camera@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "camera@3x.png"; sourceTree = "<group>"; };
+		50DB02211A5A6FDE005A4E2F /* WFUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFUtilities.h; sourceTree = "<group>"; };
+		50DB02221A5A6FDE005A4E2F /* WFUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFUtilities.m; sourceTree = "<group>"; };
 		50DB43A31A53611300856174 /* WFNotificationsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNotificationsViewController.h; sourceTree = "<group>"; };
 		50DB43A41A53611300856174 /* WFNotificationsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFNotificationsViewController.m; sourceTree = "<group>"; };
 		50DB43A61A53619400856174 /* WFNotificationCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNotificationCell.h; sourceTree = "<group>"; };
@@ -696,6 +716,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				504926431A59A204000C6FD9 /* ImageIO.framework in Frameworks */,
 				50DB43FE1A53D45100856174 /* AssetsLibrary.framework in Frameworks */,
 				F28C77E618E1E4950088B4C9 /* CoreGraphics.framework in Frameworks */,
 				F28C77EA18E1E4950088B4C9 /* CoreData.framework in Frameworks */,
@@ -779,6 +800,7 @@
 		F28C77E218E1E4950088B4C9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				504926421A59A204000C6FD9 /* ImageIO.framework */,
 				50DB43FD1A53D45100856174 /* AssetsLibrary.framework */,
 				F28C77E318E1E4950088B4C9 /* Foundation.framework */,
 				F28C77E518E1E4950088B4C9 /* CoreGraphics.framework */,
@@ -820,6 +842,8 @@
 				F2CE05A81991167F0061DB94 /* WFSlideshowSplitViewController.m */,
 				F28C67031A33F4BE00B82FD8 /* WFSlideshowViewController.h */,
 				F28C67041A33F4BE00B82FD8 /* WFSlideshowViewController.m */,
+				504926501A59CB6F000C6FD9 /* WFGesturableCollectionView.h */,
+				504926511A59CB6F000C6FD9 /* WFGesturableCollectionView.m */,
 				50DB44791A586A3A00856174 /* WFSaveMenuViewController.h */,
 				50DB447A1A586A3A00856174 /* WFSaveMenuViewController.m */,
 				50DB44561A57456C00856174 /* WFSlideshowSettingsViewController.h */,
@@ -908,6 +932,8 @@
 			children = (
 				F2CE0586198EA3A50061DB94 /* WFArtMetadataAnimator.h */,
 				F2CE0587198EA3A50061DB94 /* WFArtMetadataAnimator.m */,
+				5049263F1A59342A000C6FD9 /* WFSlideMetadataAnimator.h */,
+				504926401A59342A000C6FD9 /* WFSlideMetadataAnimator.m */,
 				50DB43E81A53946A00856174 /* WFNewArtAnimator.h */,
 				50DB43E91A53946A00856174 /* WFNewArtAnimator.m */,
 				50DB444D1A56570C00856174 /* WFNewLightTableAnimator.h */,
@@ -928,6 +954,8 @@
 				5026DF621A3CCB80000CD26F /* WFTablesAnimator.m */,
 				50DB44911A588AA500856174 /* WFAlert.h */,
 				50DB44921A588AA500856174 /* WFAlert.m */,
+				50DB02211A5A6FDE005A4E2F /* WFUtilities.h */,
+				50DB02221A5A6FDE005A4E2F /* WFUtilities.m */,
 			);
 			name = "Transitions / Animators";
 			sourceTree = "<group>";
@@ -1042,9 +1070,12 @@
 			isa = PBXGroup;
 			children = (
 				F28C780618E1E4950088B4C9 /* Images.xcassets */,
-				504926301A58E7DA000C6FD9 /* info.png */,
-				504926311A58E7DA000C6FD9 /* info@2x.png */,
-				504926321A58E7DA000C6FD9 /* info@3x.png */,
+				50305BCD1A5A0D0C00D2CAD1 /* info.png */,
+				50305BCE1A5A0D0C00D2CAD1 /* info@2x.png */,
+				50305BCF1A5A0D0C00D2CAD1 /* info@3x.png */,
+				504926361A592C28000C6FD9 /* mobile.png */,
+				504926371A592C28000C6FD9 /* mobile@2x.png */,
+				504926381A592C28000C6FD9 /* mobile@3x.png */,
 				504926211A58DFB9000C6FD9 /* infoCircle.png */,
 				504926221A58DFB9000C6FD9 /* infoCircle@2x.png */,
 				504926231A58DFB9000C6FD9 /* infoCircle@3x.png */,
@@ -1192,6 +1223,8 @@
 				F2CE056F198E85740061DB94 /* WFSlideCollectionCell.m */,
 				F2CE0580198E937B0061DB94 /* WFArtMetadataCell.h */,
 				F2CE0581198E937B0061DB94 /* WFArtMetadataCell.m */,
+				5049263C1A593262000C6FD9 /* WFSlideMetadataCell.h */,
+				5049263D1A593262000C6FD9 /* WFSlideMetadataCell.m */,
 				50DB444A1A564EB600856174 /* WFProfileCell.h */,
 				50DB444B1A564EB600856174 /* WFProfileCell.m */,
 				F2CE058B198EAA730061DB94 /* WFSlideTableCell.h */,
@@ -1344,6 +1377,7 @@
 				501473F31A3EA136000422B8 /* image.png in Resources */,
 				50DB43CE1A53763B00856174 /* refresh@2x.png in Resources */,
 				50DB44441A56211D00856174 /* transparentIcon.png in Resources */,
+				5049263B1A592C28000C6FD9 /* mobile@3x.png in Resources */,
 				50952EAC1A480BD000485831 /* camera@2x.png in Resources */,
 				50DB43CD1A53763B00856174 /* refresh.png in Resources */,
 				50DB44221A54BDD100856174 /* whitePresentation@3x.png in Resources */,
@@ -1363,6 +1397,7 @@
 				50DB442C1A54CC3E00856174 /* blueTable.png in Resources */,
 				F2A957FB19E220F100A3B471 /* icon-40.png in Resources */,
 				50DB44451A56211D00856174 /* transparentIcon@2x.png in Resources */,
+				5049263A1A592C28000C6FD9 /* mobile@2x.png in Resources */,
 				504926261A58DFB9000C6FD9 /* infoCircle@3x.png in Resources */,
 				50DB446F1A5867C100856174 /* wrench@3x.png in Resources */,
 				5014740A1A3EA886000422B8 /* logout@3x.png in Resources */,
@@ -1376,7 +1411,6 @@
 				50952E941A47FAAC00485831 /* alert@2x.png in Resources */,
 				50952E991A47FD8100485831 /* flag.png in Resources */,
 				50DB44721A5867C100856174 /* cloud@3x.png in Resources */,
-				504926351A58E7DA000C6FD9 /* info@3x.png in Resources */,
 				50DB44901A588A2D00856174 /* left@3x.png in Resources */,
 				50DB448D1A588A2D00856174 /* right@3x.png in Resources */,
 				50DB44551A57054500856174 /* people@3x.png in Resources */,
@@ -1393,7 +1427,6 @@
 				504926241A58DFB9000C6FD9 /* infoCircle.png in Resources */,
 				F2A9580019E220F100A3B471 /* icon-76.png in Resources */,
 				50DB43E11A53872200856174 /* cloudDownload@3x.png in Resources */,
-				504926331A58E7DA000C6FD9 /* info.png in Resources */,
 				5026DF741A3D1F63000CD26F /* remove@2x.png in Resources */,
 				50DB44761A58682800856174 /* shareArrow.png in Resources */,
 				50952E851A47F70E00485831 /* MuseoSans-100.ttf in Resources */,
@@ -1402,10 +1435,12 @@
 				50DB44981A58C40200856174 /* transparentIconWhite@2x.png in Resources */,
 				50DB441F1A54BDD100856174 /* whiteTables@3x.png in Resources */,
 				50952E8A1A47F70E00485831 /* MuseoSans-700.ttf in Resources */,
+				504926391A592C28000C6FD9 /* mobile.png in Resources */,
 				50952E881A47F70E00485831 /* MuseoSans-300italic.ttf in Resources */,
 				50DB43D31A537AC500856174 /* dropToLightTable.png in Resources */,
 				F20D2EA019EB095F00CA54C0 /* Lato-RegIta.ttf in Resources */,
 				50952E9B1A47FD8100485831 /* flag@3x.png in Resources */,
+				50305BD21A5A0D0C00D2CAD1 /* info@3x.png in Resources */,
 				50DB43DF1A53872200856174 /* cloudDownload.png in Resources */,
 				50DB43DA1A53868C00856174 /* profile@2x.png in Resources */,
 				50952EA71A47FE3300485831 /* share@3x.png in Resources */,
@@ -1484,7 +1519,8 @@
 				F20D2EA119EB095F00CA54C0 /* Lato-Lig.ttf in Resources */,
 				501473F01A3EA136000422B8 /* favorite.png in Resources */,
 				50DB44111A54705B00856174 /* whiteLock.png in Resources */,
-				504926341A58E7DA000C6FD9 /* info@2x.png in Resources */,
+				50305BD11A5A0D0C00D2CAD1 /* info@2x.png in Resources */,
+				50305BD01A5A0D0C00D2CAD1 /* info.png in Resources */,
 				50DB43DB1A53868C00856174 /* profile@3x.png in Resources */,
 				50DB43F01A53C18A00856174 /* whitePlus@3x.png in Resources */,
 				50952E8B1A47F70E00485831 /* MuseoSans-700italic.ttf in Resources */,
@@ -1549,7 +1585,9 @@
 				F20FB3011A24E0850007C905 /* NSArray+ToSentence.m in Sources */,
 				F20FB2FE1A24DF620007C905 /* Table+helper.m in Sources */,
 				50DB445B1A5745B300856174 /* WFSlideshowSettingsCell.m in Sources */,
+				5049263E1A593262000C6FD9 /* WFSlideMetadataCell.m in Sources */,
 				50DB44401A55DF4C00856174 /* WFCatalogHeaderView.m in Sources */,
+				504926521A59CB6F000C6FD9 /* WFGesturableCollectionView.m in Sources */,
 				50DB43FC1A53D35400856174 /* WFImagePickerController.m in Sources */,
 				F20A3EBD19EB1AFE008E0D4C /* Institution.m in Sources */,
 				F2CE05B519911AA10061DB94 /* Slide+helper.m in Sources */,
@@ -1557,6 +1595,7 @@
 				50DB447E1A586B8F00856174 /* WFSaveMenuCell.m in Sources */,
 				F20FB2EC1A24DCCE0007C905 /* Material+helper.m in Sources */,
 				F20A3EC019EB1B17008E0D4C /* Institution+helper.m in Sources */,
+				504926411A59342A000C6FD9 /* WFSlideMetadataAnimator.m in Sources */,
 				F20A3ECD19EB37B1008E0D4C /* Photo+helper.m in Sources */,
 				F28C77FF18E1E4950088B4C9 /* Wolff.xcdatamodeld in Sources */,
 				F20A3EBA19EB1AFD008E0D4C /* Location.m in Sources */,
@@ -1623,6 +1662,7 @@
 				50DB43AE1A5363C300856174 /* Notification.m in Sources */,
 				50DB43F91A53C99800856174 /* WFNewLightTableViewController.m in Sources */,
 				F2CE0576198E85DA0061DB94 /* Art+helper.m in Sources */,
+				50DB02231A5A6FDE005A4E2F /* WFUtilities.m in Sources */,
 				504926291A58E101000C6FD9 /* WFSlideMetadataViewController.m in Sources */,
 				F2CE0573198E85850061DB94 /* WFArtCell.m in Sources */,
 				5026DF601A3CC4D1000CD26F /* WFTableCell.m in Sources */,

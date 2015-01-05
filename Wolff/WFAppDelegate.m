@@ -36,6 +36,7 @@
         [self connectWithParameters:parameters];
     }
     
+    [self.window makeKeyAndVisible];
     return YES;
 }
 

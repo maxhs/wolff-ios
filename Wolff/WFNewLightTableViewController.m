@@ -13,7 +13,7 @@
 @interface WFNewLightTableViewController () {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-
+    UIBarButtonItem *dismissButton;
 }
 
 @end
@@ -27,6 +27,9 @@
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     [_tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    
+    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    self.navigationItem.leftBarButtonItem = dismissButton;
 }
 
 #pragma mark - Table view data source

@@ -22,6 +22,7 @@
 }
 
 - (void)awakeFromNib {
+    [super awakeFromNib];
     // set edit mode to NO by default
     [self setDefaultStyle:NO];
     [self setBackgroundColor:[UIColor whiteColor]];

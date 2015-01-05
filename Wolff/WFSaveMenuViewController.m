@@ -43,10 +43,10 @@
     
     if (indexPath.row == 0){
         [cell.imageView setImage:[UIImage imageNamed:@"cloudUpload"]];
-        [cell.textLabel setText:@"Save here"];
+        [cell.textLabel setText:@"Save"];
     } else {
-        [cell.imageView setImage:[UIImage imageNamed:@"cloudDownload"]];
-        [cell.textLabel setText:@"Save THERE"];
+        [cell.imageView setImage:[UIImage imageNamed:@"mobile"]];
+        [cell.textLabel setText:@"Enable offline mode"];
     }
     
     return cell;
@@ -58,8 +58,11 @@
             [self.saveDelegate post];
         }
     } else {
-        
+        if (self.saveDelegate && [self.saveDelegate respondsToSelector:@selector(enableOfflineMode)]){
+            [self.saveDelegate enableOfflineMode];
+        }
     }
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 /*

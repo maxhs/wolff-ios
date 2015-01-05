@@ -25,17 +25,20 @@
 }
 */
 
-- (void)awakeFromNib {
+- (void)setupGestures {
     longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
     [self addGestureRecognizer:longPressGesture];
+}
+
+- (void)awakeFromNib {
+    [self setupGestures];
 }
 
 - (id)initWithFrame:(CGRect)frame andArt:(Art *)art {
     self = [super initWithFrame:frame];
     if (self) {
         _art = art;
-        longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
-        [self addGestureRecognizer:longPressGesture];
+        [self setupGestures];
     }
     return self;
 }
@@ -44,8 +47,7 @@
     self = [super initWithImage:image];
     if (self) {
         _art = art;
-        longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
-        [self addGestureRecognizer:longPressGesture];
+        [self setupGestures];
     }
     return self;
 }

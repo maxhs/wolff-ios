@@ -11,6 +11,7 @@
 
 @interface WFSettingsAnimator : NSObject <UIViewControllerAnimatedTransitioning>
 
+@property BOOL dark;
 @property (nonatomic, assign, getter = isPresenting) BOOL presenting;
 
 @end

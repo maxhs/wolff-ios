@@ -11,6 +11,7 @@
 
 @protocol WFImageViewDelegate <NSObject>
 
+@optional
 - (void)longPressGesture:(id)imageView;
 
 @end
