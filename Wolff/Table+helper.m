@@ -7,7 +7,7 @@
 //
 
 #import "Table+helper.h"
-#import "Presentation+helper.h"
+#import "Slideshow+helper.h"
 #import "Art+helper.h"
 #import "Discussion+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
@@ -30,31 +30,31 @@
     if ([dict objectForKey:@"private"] && [dict objectForKey:@"private"] != [NSNull null]){
         self.privateTable = [dict objectForKey:@"private"];
     }
-    if ([dict objectForKey:@"presentations"] && [dict objectForKey:@"presentations"] != [NSNull null]){
+    if ([dict objectForKey:@"slideshows"] && [dict objectForKey:@"slideshows"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dictionary in [dict objectForKey:@"presentations"]){
+        for (id dictionary in [dict objectForKey:@"slideshows"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"id"]];
-            Presentation *presentation = [Presentation MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!presentation){
-                presentation = [Presentation MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!slideshow){
+                slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [presentation populateFromDictionary:dictionary];
-            [set addObject:presentation];
+            [slideshow populateFromDictionary:dictionary];
+            [set addObject:slideshow];
         }
-        self.presentations = set;
+        self.slideshows = set;
     }
-    if ([dict objectForKey:@"arts"] && [dict objectForKey:@"arts"] != [NSNull null]){
+    if ([dict objectForKey:@"photos"] && [dict objectForKey:@"photos"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dictionary in [dict objectForKey:@"arts"]){
+        for (id dictionary in [dict objectForKey:@"photos"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"id"]];
-            Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!art){
-                art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!photo){
+                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [art populateFromDictionary:dictionary];
-            [set addObject:art];
+            [photo populateFromDictionary:dictionary];
+            [set addObject:photo];
         }
-        self.arts = set;
+        self.photos = set;
     }
     if ([dict objectForKey:@"discussions"] && [dict objectForKey:@"discussions"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
@@ -71,16 +71,28 @@
     }
 }
 
-- (void)addArt:(Art *)art {
-    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.arts];
-    [tempSet addObject:art];
-    self.arts = tempSet;
+- (void)addPhoto:(Photo *)photo {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
+    [tempSet addObject:photo];
+    self.photos = tempSet;
 }
 
-- (void)removeArt:(Art *)art {
-    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.arts];
-    [tempSet removeObject:art];
-    self.arts = tempSet;
+- (void)removePhoto:(Photo *)photo {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
+    [tempSet removeObject:photo];
+    self.photos = tempSet;
+}
+
+- (void)addPhotos:(NSArray *)array {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
+    [tempSet addObjectsFromArray:array];
+    self.photos = tempSet;
+}
+
+- (void)removePhotos:(NSArray *)array {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
+    [tempSet removeObjectsInArray:array];
+    self.photos = tempSet;
 }
 
 @end

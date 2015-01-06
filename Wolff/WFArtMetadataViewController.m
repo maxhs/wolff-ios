@@ -56,7 +56,6 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self setupHeader];
-    
 }
 
 - (void)viewDidAppear:(BOOL)animated {

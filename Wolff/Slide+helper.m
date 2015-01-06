@@ -24,33 +24,33 @@
     if ([dictionary objectForKey:@"caption"] && [dictionary objectForKey:@"caption"] != [NSNull null]){
         self.caption = [dictionary objectForKey:@"caption"];
     }
-    if ([dictionary objectForKey:@"arts"] && [dictionary objectForKey:@"arts"] != [NSNull null]){
-        NSMutableOrderedSet *arts = [NSMutableOrderedSet orderedSet];
-        for (NSDictionary *artDict in [dictionary objectForKey:@"arts"]){
-            Art *art = [Art MR_findFirstByAttribute:@"identifier" withValue:[artDict objectForKey:@"id"]inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!art){
-                art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    if ([dictionary objectForKey:@"photos"] && [dictionary objectForKey:@"photos"] != [NSNull null]){
+        NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSet];
+        for (NSDictionary *photoDict in [dictionary objectForKey:@"photos"]){
+            Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[photoDict objectForKey:@"id"]inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!photo){
+                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [art populateFromDictionary:artDict];
-            [arts addObject:art];
+            [photo populateFromDictionary:photoDict];
+            [photos addObject:photo];
         }
-        self.arts = arts;
+        self.photos = photos;
     }
 }
 
-- (void)addArt:(Art *)art {
-    NSMutableOrderedSet *arts = [NSMutableOrderedSet orderedSetWithOrderedSet:self.arts];
-    if (![self.arts containsObject:art]){
-        [arts addObject:art];
+- (void)addPhoto:(Photo *)photo {
+    NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
+    if (![self.photos containsObject:photo]){
+        [photos addObject:photo];
     }
     
-    self.arts = arts;
+    self.photos = photos;
 }
 
-- (void)removeArt:(Art*)art {
-    NSMutableOrderedSet *arts = [NSMutableOrderedSet orderedSetWithOrderedSet:self.arts];
-    [arts removeObject:art];
-    self.arts = arts;
+- (void)removePhoto:(Photo*)photo {
+    NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
+    [photos removeObject:photo];
+    self.photos = photos;
 }
 
 @end

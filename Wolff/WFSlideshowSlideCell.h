@@ -16,5 +16,5 @@
 @property (weak, nonatomic) IBOutlet UIImageView *artImageView2;
 @property (weak, nonatomic) IBOutlet UIView *containerView3;
 @property (weak, nonatomic) IBOutlet UIImageView *artImageView3;
-- (void)configureForArts:(NSMutableOrderedSet*)arts inSlide:(Slide*)slide;
+- (void)configureForPhotos:(NSMutableOrderedSet*)photos inSlide:(Slide*)slide;
 @end

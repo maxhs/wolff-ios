@@ -42,7 +42,7 @@
 
 @implementation WFComparisonViewController
 
-@synthesize arts = _arts;
+@synthesize photos = _photos;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -92,7 +92,7 @@
 
 - (void)showMetadata {
     WFSlideMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideMetadata"];
-    [vc setArts:_arts];
+    [vc setPhotos:_photos];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.transitioningDelegate = self;
     nav.modalPresentationStyle = UIModalPresentationCustom;
@@ -213,7 +213,7 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"ComparisonCell" forIndexPath:indexPath];
-    [cell configureForArts:_arts inSlide:nil];
+    [cell configureForPhotos:_photos inSlide:nil];
     artImageView2 = cell.artImageView2;
     containerView2 = cell.containerView2;
     [cell.artImageView2 addGestureRecognizer:_panGesture2];

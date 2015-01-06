@@ -12,6 +12,7 @@
 @implementation WFTableShareCell
 
 - (void)awakeFromNib {
+    [super awakeFromNib];
     [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [self.textLabel setTextColor:[UIColor whiteColor]];
     [self setBackgroundColor:[UIColor blackColor]];

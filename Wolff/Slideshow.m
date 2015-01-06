@@ -1,23 +1,22 @@
 //
-//  Presentation.m
+//  Slideshow.m
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 8/5/14.
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
-#import "Presentation.h"
+#import "Slideshow.h"
 
-
-@implementation Presentation
+@implementation Slideshow
 
 @dynamic identifier;
 @dynamic visible;
 @dynamic title;
-@dynamic presentationDescription;
+@dynamic slideshowDescription;
 @dynamic slides;
-@dynamic arts;
 @dynamic discussions;
+@dynamic photos;
 @dynamic table;
 @dynamic user;
 

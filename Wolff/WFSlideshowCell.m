@@ -1,17 +1,18 @@
 //
-//  WFPresentationCell.m
+//  WFSlideshowCell.m
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 12/30/14.
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
-#import "WFPresentationCell.h"
+#import "WFSlideshowCell.h"
 #import "Constants.h"
 
-@implementation WFPresentationCell
+@implementation WFSlideshowCell
 
 - (void)awakeFromNib {
+    [super awakeFromNib];
     [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [self.textLabel setTextColor:[UIColor whiteColor]];
     [self setBackgroundColor:[UIColor clearColor]];

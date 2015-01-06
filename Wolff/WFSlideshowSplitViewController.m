@@ -43,7 +43,7 @@
     NSTimeInterval duration;
     UIViewAnimationOptions animationCurve;
     CGFloat keyboardHeight;
-    Art *selectedArt;
+    Photo *selectedPhoto;
     Slide *selectedSlide;
     UIAlertView *titlePrompt;
     UIAlertView *artImageViewPrompt;
@@ -63,7 +63,7 @@
 
 @implementation WFSlideshowSplitViewController
 
-@synthesize presentation = _presentation;
+@synthesize slideshow = _slideshow;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -88,7 +88,7 @@
     [self setUpNavButtons];
     [self setUpTitleView];
     
-    [self redrawPresentation];
+    [self redrawSlideshow];
     [self registerKeyboardNotifications];
     
     [_longPressRecognizer addTarget:self action:@selector(longPressed:)];
@@ -105,8 +105,8 @@
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     
-    // only have the title textField become first responder if the presentation title is still blank
-    if (!_presentation.title.length){
+    // only have the title textField become first responder if the slideshow title is still blank
+    if (!_slideshow.title.length){
         [titleTextField becomeFirstResponder];
     }
 }
@@ -123,8 +123,8 @@
     settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"wrench"] style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
     playButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(playSlideshow)];
     
-    //only show the settings buttons, and such, to the presentation's owner
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [_presentation.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+    //only show the settings buttons, and such, to the slideshow's owner
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [_slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
         self.navigationItem.rightBarButtonItems = @[playButton, settingsButton, searchButton, saveButton, shareButton];
     } else {
         self.navigationItem.rightBarButtonItems = @[playButton, searchButton];
@@ -142,19 +142,19 @@
     UIView *paddingView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 7, 20)];
     titleTextField.leftView = paddingView;
     titleTextField.leftViewMode = UITextFieldViewModeAlways;
-    [titleTextField setText:_presentation.title];
+    [titleTextField setText:_slideshow.title];
     [titleTextField setTextColor:[UIColor whiteColor]];
     [titleTextField setTextAlignment:NSTextAlignmentCenter];
     [titleTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]];
-    [titleTextField setPlaceholder:@"Your Presentation Title"];
-    if (!_presentation.title.length){
+    [titleTextField setPlaceholder:@"Your Slideshow Title"];
+    if (!_slideshow.title.length){
         [titleTextField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.06]];
     }
     self.navigationItem.titleView = titleTextField;
 }
 
-- (void)redrawPresentation {
-    if (!_presentation.arts.count){
+- (void)redrawSlideshow {
+    if (!_slideshow.photos.count){
         [_lightBoxPlaceholderLabel setText:@"You don't have any slides in this light table"];
         [_lightBoxPlaceholderLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansThinItalic] size:0]];
         [_lightBoxPlaceholderLabel setTextAlignment:NSTextAlignmentCenter];
@@ -174,7 +174,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0){
-        return _presentation.slides.count;
+        return _slideshow.slides.count;
     } else {
         return 1;
     }
@@ -183,7 +183,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0){
         WFSlideTableCell *cell = (WFSlideTableCell *)[tableView dequeueReusableCellWithIdentifier:@"SlideTableCell"];
-        Slide *slide = _presentation.slides[indexPath.row];
+        Slide *slide = _slideshow.slides[indexPath.row];
         cell.artImageView1.imageViewDelegate = self;
         cell.artImageView2.imageViewDelegate = self;
         cell.artImageView3.imageViewDelegate = self;
@@ -219,7 +219,7 @@
         [self becomeFirstResponder];
         activeIndexPath = [self.tableView indexPathForCell:slideTableCell];
         activeImageView = imageView;
-        activeSlide = _presentation.slides[activeIndexPath.row];
+        activeSlide = _slideshow.slides[activeIndexPath.row];
         
         NSString *menuItemTitle = NSLocalizedString(@"Remove", @"Remove art from slide");
         UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeArt:)];
@@ -237,12 +237,12 @@
 
 - (void)removeArt:(UIMenuController*)menuController {
     
-    [activeSlide removeArt:activeImageView.art];
-    if (activeSlide.arts.count){
+    [activeSlide removePhoto:activeImageView.photo];
+    if (activeSlide.photos.count){
      [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
      } else {
      [self.tableView beginUpdates];
-     [_presentation removeSlide:activeSlide];
+     [_slideshow removeSlide:activeSlide];
      [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
      [self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
      [self.tableView endUpdates];
@@ -275,11 +275,11 @@
 
 // Override to support rearranging the table view.
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-    Slide *slide = _presentation.slides[fromIndexPath.row];
-    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:_presentation.slides];
+    Slide *slide = _slideshow.slides[fromIndexPath.row];
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:_slideshow.slides];
     [tempSet removeObject:slide];
     [tempSet insertObject:slide atIndex:toIndexPath.row];
-    _presentation.slides = tempSet;
+    _slideshow.slides = tempSet;
 }
 
 - (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -311,18 +311,18 @@
 #pragma mark - UICollectionView Datasource
 
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
-    return _presentation.arts.count;
+    return _slideshow.photos.count;
 }
 
 - (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
-    [self redrawPresentation];
+    [self redrawSlideshow];
     return 1;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFArtCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SlideshowArtCell" forIndexPath:indexPath];
-    Art *art = _presentation.arts[indexPath.item];
-    [cell configureForArt:art];
+    Photo *photo = _slideshow.photos[indexPath.item];
+    [cell configureForArt:photo.art];
     return cell;
 }
 
@@ -339,8 +339,8 @@
 
 #pragma mark - UICollectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    Art *art = _presentation.arts[indexPath.item];
-    [self showMetadata:art];
+    Photo *photo = _slideshow.photos[indexPath.item];
+    [self showMetadata:photo.art];
 }
 
 - (void)showSlideDetail:(Slide*)slide {
@@ -368,8 +368,8 @@
             self.startIndex = [self.tableView indexPathForRowAtPoint:loc];
             if (self.startIndex) {
                 WFSlideTableCell *cell = (WFSlideTableCell*)[self.tableView cellForRowAtIndexPath:self.startIndex];
-                selectedSlide = _presentation.slides[self.startIndex.row];
-                self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andArt:nil];
+                selectedSlide = _slideshow.slides[self.startIndex.row];
+                self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:nil];
                 
                 [cell.contentView setAlpha:0.1f];
                 [self.view addSubview:self.draggingView];
@@ -387,8 +387,8 @@
             self.startIndex = [self.collectionView indexPathForItemAtPoint:loc];
             if (self.startIndex) {
                 WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
-                selectedArt = _presentation.arts[self.startIndex.item];
-                self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andArt:selectedArt];
+                selectedPhoto = _slideshow.photos[self.startIndex.item];
+                self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:selectedPhoto];
                 
                 [cell.contentView setAlpha:0.1f];
                 [self.view addSubview:self.draggingView];
@@ -410,30 +410,30 @@
     
     if (sender.state == UIGestureRecognizerStateEnded) {
         NSLog(@"ended loc: %f, %f",loc.x,loc.y);
-        if (selectedArt){
+        if (selectedPhoto){
             if (loc.x < 0){
                 //cell was dropped in the left sidebar
                 NSArray *visibleCells = self.tableView.visibleCells;
                 [visibleCells enumerateObjectsUsingBlock:^(WFSlideTableCell *cell, NSUInteger idx, BOOL *stop) {
                     CGFloat lowerBounds = cell.frame.origin.y;
                     CGFloat upperBounds = cell.frame.origin.y + cell.frame.size.height;
-                    CGFloat bottomOfSlides = cell.frame.size.height * _presentation.slides.count;
+                    CGFloat bottomOfSlides = cell.frame.size.height * _slideshow.slides.count;
                     
                     if (loc.y > bottomOfSlides){
                         // this means we should add a new slide
                         Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-                        [slide addArt:selectedArt];
-                        [slide setIndex:@(_presentation.slides.count)];
+                        [slide addPhoto:selectedPhoto];
+                        [slide setIndex:@(_slideshow.slides.count)];
                         NSLog(@"new slide index: %@",slide.index);
-                        [_presentation addSlide:slide];
+                        [_slideshow addSlide:slide];
                         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                             
                             [self.tableView reloadData];
                         }];
                         
                     } else if (loc.y < upperBounds && loc.y > lowerBounds){
-                        Slide *slide = [_presentation.slides objectAtIndex:idx];
-                        if (selectedArt)[slide addArt:selectedArt];
+                        Slide *slide = [_slideshow.slides objectAtIndex:idx];
+                        if (selectedPhoto)[slide addPhoto:selectedPhoto];
                         [self.tableView reloadData];
                         *stop = YES;
                         [self endPressAnimation];
@@ -451,8 +451,8 @@
             self.moveToIndexPath = [self.collectionView indexPathForItemAtPoint:loc];
             if (self.moveToIndexPath) {
                 //update date source
-                NSNumber *thisNumber = [_presentation.arts objectAtIndex:self.startIndex.row];
-                NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:_presentation.arts];
+                NSNumber *thisNumber = [_slideshow.photos objectAtIndex:self.startIndex.row];
+                NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:_slideshow.photos];
                 [tempSet removeObjectAtIndex:self.startIndex.row];
                 
                 if (self.moveToIndexPath.row < self.startIndex.row) {
@@ -460,7 +460,7 @@
                 } else {
                     [tempSet insertObject:thisNumber atIndex:self.moveToIndexPath.row];
                 }
-                [_presentation setArts:tempSet];
+                [_slideshow setPhotos:tempSet];
                 
                 [UIView animateWithDuration:.23f animations:^{
                     self.draggingView.transform = CGAffineTransformIdentity;
@@ -508,7 +508,7 @@
         self.draggingView = nil;
         self.startIndex = nil;
         selectedSlide = nil;
-        selectedArt = nil;
+        selectedPhoto = nil;
     }];
 }
 
@@ -529,13 +529,13 @@
 }
 
 - (void)save {
-    if (_presentation.title.length) {
+    if (_slideshow.title.length) {
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             //NSLog(@"Success saving? %u",success);
             [self post];
         }];
     } else {
-        titlePrompt = [[UIAlertView alloc] initWithTitle:@"No title!" message:@"Please make sure you've titled this presentation before saving." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
+        titlePrompt = [[UIAlertView alloc] initWithTitle:@"No title!" message:@"Please make sure you've titled this slideshow before saving." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
         [titlePrompt show];
     }
 }
@@ -546,30 +546,30 @@
     }
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-    if (_presentation.title.length){
-        [parameters setObject:_presentation.title forKey:@"title"];
+    if (_slideshow.title.length){
+        [parameters setObject:_slideshow.title forKey:@"title"];
     }
-    if (_presentation.presentationDescription.length){
-        [parameters setObject:_presentation.presentationDescription forKey:@"description"];
+    if (_slideshow.slideshowDescription.length){
+        [parameters setObject:_slideshow.slideshowDescription forKey:@"description"];
     }
     
-    NSMutableArray *presentationArts = [NSMutableArray array];
-    for (Art *art in _presentation.arts){
-        [presentationArts addObject:art.identifier];
+    NSMutableArray *slideshowPhotos = [NSMutableArray array];
+    for (Photo *photo in _slideshow.photos){
+        [slideshowPhotos addObject:photo.identifier];
     }
-    NSLog(@"presentation arts: %@",presentationArts);
-    [parameters setObject:[presentationArts componentsJoinedByString:@","] forKey:@"art_ids"];
+    NSLog(@"slideshow arts: %@",slideshowPhotos);
+    [parameters setObject:[slideshowPhotos componentsJoinedByString:@","] forKey:@"photo_ids"];
     
     NSMutableArray *slides = [NSMutableArray array];
-    for (Slide *slide in _presentation.slides){
+    for (Slide *slide in _slideshow.slides){
         NSMutableDictionary *slideObject = [NSMutableDictionary dictionary];
         if (slide && ![slide.identifier isEqualToNumber:@0]){
             [slideObject setObject:slide.identifier forKey:@"slide_id"];
         }
         
-        NSLog(@"art count %d for slide index %@",slide.arts.count, slide.index);
-        NSMutableArray *artIds = [NSMutableArray arrayWithCapacity:slide.arts.count];
-        [slide.arts enumerateObjectsUsingBlock:^(Art *art, NSUInteger idx, BOOL *stop) {
+        NSLog(@"art count %d for slide index %@",slide.photos.count, slide.index);
+        NSMutableArray *artIds = [NSMutableArray arrayWithCapacity:slide.photos.count];
+        [slide.photos enumerateObjectsUsingBlock:^(Art *art, NSUInteger idx, BOOL *stop) {
             [artIds addObject:art.identifier];
         }];
         [slideObject setObject:artIds forKey:@"art_ids"];
@@ -579,25 +579,25 @@
     NSLog(@"slides: %@",slides);
     [parameters setObject:slides forKey:@"slides"];
     
-    if ([_presentation.identifier isEqualToNumber:@0]){
-        [manager POST:[NSString stringWithFormat:@"presentations"] parameters:@{@"presentation":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success creating a presentation: %@",responseObject);
-            [_presentation populateFromDictionary:[responseObject objectForKey:@"presentation"]];
+    if ([_slideshow.identifier isEqualToNumber:@0]){
+        [manager POST:[NSString stringWithFormat:@"slideshows"] parameters:@{@"slideshow":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success creating a slideshow: %@",responseObject);
+            [_slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 [WFAlert show:@"Slideshow saved!" withTime:2.3f];
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Failed to create a presentation: %@",error.description);
+            NSLog(@"Failed to create a slideshow: %@",error.description);
         }];
     } else {
-        [manager PATCH:[NSString stringWithFormat:@"presentations/%@",_presentation.identifier] parameters:@{@"presentation":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success saving a presentation: %@",responseObject);
-            [_presentation populateFromDictionary:[responseObject objectForKey:@"presentation"]];
+        [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",_slideshow.identifier] parameters:@{@"slideshow":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success saving a slideshow: %@",responseObject);
+            [_slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 [WFAlert show:@"Slideshow saved!" withTime:2.3f];
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Failed to save a presentation: %@",error.description);
+            NSLog(@"Failed to save a slideshow: %@",error.description);
         }];
     }
 }
@@ -630,17 +630,17 @@
     [self.popover presentPopoverFromBarButtonItem:searchButton permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
-- (void)searchDidSelectArt:(Art *)art {
+- (void)searchDidSelectPhoto:(Photo *)photo {
     BOOL add; NSIndexPath *indexPathToReload;
     
-    if ([_presentation.arts containsObject:art]){
-        indexPathToReload = [NSIndexPath indexPathForItem:[_presentation.arts indexOfObject:art] inSection:0];
-        [_presentation removeArt:art];
+    if ([_slideshow.photos containsObject:photo]){
+        indexPathToReload = [NSIndexPath indexPathForItem:[_slideshow.photos indexOfObject:photo] inSection:0];
+        [_slideshow removePhoto:photo];
         add = NO;
     } else {
-        [_presentation addArt:art];
+        [_slideshow addPhoto:photo];
         add = YES;
-        indexPathToReload = [NSIndexPath indexPathForItem:_presentation.arts.count-1 inSection:0];
+        indexPathToReload = [NSIndexPath indexPathForItem:_slideshow.photos.count-1 inSection:0];
     }
     
     [[NSManagedObjectContext MR_defaultContext] MR_saveOnlySelfWithCompletion:^(BOOL success, NSError *error) {
@@ -674,7 +674,7 @@
     showSlideshow = YES;
     showMetadata = NO;
     WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
-    [vc setPresentation:_presentation];
+    [vc setSlideshow:_slideshow];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.transitioningDelegate = self;
     nav.modalPresentationStyle = UIModalPresentationCustom;
@@ -740,7 +740,7 @@
 - (void)textFieldDidEndEditing:(UITextField *)textField {
     if (textField == titleTextField) {
         if (titleTextField.text.length){
-            [_presentation setTitle:titleTextField.text];
+            [_slideshow setTitle:titleTextField.text];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             }];
             [textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:0]];
@@ -791,31 +791,31 @@
                      completion:NULL];
 }
 
-- (void)savePresentation {
+- (void)saveSlideshow {
     [ProgressHUD show:@"Saving..."];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        NSLog(@"Success saving presentation? %u",success);
+        NSLog(@"Success saving slideshow? %u",success);
         [ProgressHUD showSuccess:@"Saved"];
     }];
 }
 
-- (void)deletePresentation {
+- (void)deleteSlideshow {
     [ProgressHUD show:@"Deleting..."];
-    [manager DELETE:[NSString stringWithFormat:@"presentations/%@",_presentation.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success deleting this presentation: %@",responseObject);
+    [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",_slideshow.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //NSLog(@"Success deleting this slideshow: %@",responseObject);
         [self deleteAndMoveOn];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"Failed to delete presentation: %@", error.description);
+        NSLog(@"Failed to delete slideshow: %@", error.description);
         [self deleteAndMoveOn];
     }];
 }
 
-- (void)updatePresentation {
-    NSLog(@"Should be updating presentation");
+- (void)updateSlideshow {
+    NSLog(@"Should be updating slideshow");
 }
 
 - (void)deleteAndMoveOn {
-    [_presentation MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [_slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext]MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         [ProgressHUD dismiss];
         [self dismiss];

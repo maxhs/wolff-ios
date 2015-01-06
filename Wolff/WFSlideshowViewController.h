@@ -7,13 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Presentation+helper.h"
+#import "Slideshow+helper.h"
 #import "WFGesturableCollectionView.h"
 
 @interface WFSlideshowViewController : UIViewController <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
 @property (weak, nonatomic) IBOutlet WFGesturableCollectionView *collectionView;
-@property (strong, nonatomic) Presentation *presentation;
+@property (strong, nonatomic) Slideshow *slideshow;
 @property (weak, nonatomic) IBOutlet UIToolbar *bottomToolbar;
 
 - (void)dismiss;

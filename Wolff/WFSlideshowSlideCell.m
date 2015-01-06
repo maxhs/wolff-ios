@@ -20,30 +20,32 @@
 @implementation WFSlideshowSlideCell
 
 - (void)awakeFromNib {
+    [super awakeFromNib];
     [_artImageView1 setAlpha:0.f];
     [_artImageView2 setAlpha:0.f];
     [_artImageView3 setAlpha:0.f];
 }
 
 - (void)prepareForReuse {
+    [super prepareForReuse];
     [_artImageView1 setAlpha:0.f];
     [_artImageView2 setAlpha:0.f];
     [_artImageView3 setAlpha:0.f];
 }
 
-- (void)configureForArts:(NSMutableOrderedSet *)arts inSlide:(Slide *)slide{
+- (void)configureForPhotos:(NSMutableOrderedSet *)photos inSlide:(Slide *)slide{
     [_artImageView1 setUserInteractionEnabled:YES];
     [_artImageView2 setUserInteractionEnabled:YES];
     [_artImageView3 setUserInteractionEnabled:YES];
     
-    if (arts.count == 1){
+    if (photos.count == 1){
         [_containerView1 setHidden:NO];
         [_containerView2 setHidden:YES];
         [_containerView3 setHidden:YES];
-        Art *art = (Art*)[arts firstObject];
-        NSLog(@"configuring for single art: %@",art.title);
-        NSURL *art1thumbUrl = [NSURL URLWithString:art.photo.thumbImageUrl];
-        NSURL *art1originalUrl = [NSURL URLWithString:art.photo.originalImageUrl];
+        Photo *photo = (Photo*)[photos firstObject];
+        NSLog(@"configuring for single art: %@",photo.art.title);
+        NSURL *art1thumbUrl = [NSURL URLWithString:photo.thumbImageUrl];
+        NSURL *art1originalUrl = [NSURL URLWithString:photo.originalImageUrl];
         
         [_artImageView1 sd_setImageWithURL:art1thumbUrl completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.27 animations:^{
@@ -65,8 +67,9 @@
         [_containerView2 setHidden:NO];
         [_containerView3 setHidden:NO];
         
-        NSURL *art2thumbUrl = [NSURL URLWithString:[[(Art*)[arts firstObject] photo] mediumImageUrl]];
-        NSURL *art2originalUrl = [NSURL URLWithString:[[(Art*)[arts firstObject] photo] originalImageUrl]];
+        Photo *photo2 = (Photo*)[photos firstObject];
+        NSURL *art2thumbUrl = [NSURL URLWithString:photo2.mediumImageUrl];
+        NSURL *art2originalUrl = [NSURL URLWithString:photo2.originalImageUrl];
         
         [_artImageView2 sd_setImageWithURL:art2thumbUrl placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.27 animations:^{
@@ -84,8 +87,9 @@
             }];
         }];
         
-        NSURL *art3thumbUrl = [NSURL URLWithString:[[(Art*)arts[1] photo] mediumImageUrl]];
-        NSURL *art3originalUrl = [NSURL URLWithString:[[(Art*)arts[1] photo] originalImageUrl]];
+        Photo *photo3 = (Photo*)photos[1];
+        NSURL *art3thumbUrl = [NSURL URLWithString:photo3.mediumImageUrl];
+        NSURL *art3originalUrl = [NSURL URLWithString:photo3.originalImageUrl];
         
         [_artImageView3 sd_setImageWithURL:art3thumbUrl  placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.27 animations:^{

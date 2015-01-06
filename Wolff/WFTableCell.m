@@ -12,6 +12,7 @@
 @implementation WFTableCell
 
 - (void)awakeFromNib {
+    [super awakeFromNib];
     [_tableLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
 }
 

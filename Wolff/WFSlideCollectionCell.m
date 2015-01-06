@@ -23,6 +23,8 @@
 }
 
 - (void)awakeFromNib {
+    [super awakeFromNib];
+    
     [_slideContainerView setBackgroundColor:kSlideBackgroundColor];
     _slideContainerView.layer.cornerRadius = 14.f;
     _slideContainerView.layer.shouldRasterize = YES;
@@ -37,9 +39,9 @@
 }
 
 - (void)configureForSlide:(Slide *)slide {
-    if (slide.arts.count == 1){
-        Art *art = slide.arts.firstObject;
-        [_singleArtImageView sd_setImageWithURL:[NSURL URLWithString:art.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+    if (slide.photos.count == 1){
+        Photo *photo = slide.photos.firstObject;
+        [_singleArtImageView sd_setImageWithURL:[NSURL URLWithString:photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             
         }];
     }

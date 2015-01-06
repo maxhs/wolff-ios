@@ -32,7 +32,7 @@
 @property (nonatomic, retain) NSOrderedSet *movements;
 @property (nonatomic, retain) NSOrderedSet *discussions;
 @property (nonatomic, retain) NSOrderedSet *notifications;
-@property (nonatomic, retain) NSOrderedSet *presentations;
+@property (nonatomic, retain) NSOrderedSet *slideshows;
 @property (nonatomic, retain) NSOrderedSet *icons;
 @property (nonatomic, retain) User *user;
 @property (nonatomic, retain) Interval *interval;

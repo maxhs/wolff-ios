@@ -10,8 +10,7 @@
 #import "Art.h"
 #import "Artist.h"
 #import "Table.h"
-#import "Presentation.h"
-
+#import "Slideshow+helper.h"
 
 @implementation Discussion
 
@@ -20,7 +19,7 @@
 @dynamic comments;
 @dynamic art;
 @dynamic artist;
-@dynamic presentation;
+@dynamic slideshow;
 @dynamic table;
 @dynamic notifications;
 

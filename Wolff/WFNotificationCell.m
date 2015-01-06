@@ -13,6 +13,7 @@
 @implementation WFNotificationCell
 
 - (void)awakeFromNib {
+    [super awakeFromNib];
     [self setBackgroundColor:[UIColor clearColor]];
     [self setSelectionStyle:UITableViewCellSelectionStyleNone];
 }

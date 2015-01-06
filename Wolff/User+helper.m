@@ -8,7 +8,7 @@
 
 #import "User+helper.h"
 #import "Institution+helper.h"
-#import "Presentation+helper.h"
+#import "Slideshow+helper.h"
 #import "Table+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
@@ -82,18 +82,18 @@
         self.arts = set;
     }
     
-    if ([dictionary objectForKey:@"presentations"] && [dictionary objectForKey:@"presentations"] != [NSNull null]){
+    if ([dictionary objectForKey:@"slideshows"] && [dictionary objectForKey:@"slideshows"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dict in [dictionary objectForKey:@"presentations"]){
+        for (id dict in [dictionary objectForKey:@"slideshows"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Presentation *presentation = [Presentation MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!presentation){
-                presentation = [Presentation MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!slideshow){
+                slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [presentation populateFromDictionary:dict];
-            [set addObject:presentation];
+            [slideshow populateFromDictionary:dict];
+            [set addObject:slideshow];
         }
-        self.presentations = set;
+        self.slideshows = set;
     }
     
     if ([dictionary objectForKey:@"light_tables"] && [dictionary objectForKey:@"light_tables"] != [NSNull null]){

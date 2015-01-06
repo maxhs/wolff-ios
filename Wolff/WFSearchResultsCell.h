@@ -7,7 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Art+helper.h"
 
 @interface WFSearchResultsCell : UITableViewCell
+
+@property (weak, nonatomic) IBOutlet UILabel *artLabel;
+@property (weak, nonatomic) IBOutlet UILabel *artistLabel;
+@property (weak, nonatomic) IBOutlet UIImageView *imageTile;
+- (void) configureForArt:(Art*)art;
 
 @end

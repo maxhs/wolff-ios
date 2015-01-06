@@ -15,7 +15,7 @@
 
 @implementation WFInteractiveImageView
 
-@synthesize art = _art;
+@synthesize photo = _photo;
 
 /*
 // Only override drawRect: if you perform custom drawing.
@@ -34,19 +34,19 @@
     [self setupGestures];
 }
 
-- (id)initWithFrame:(CGRect)frame andArt:(Art *)art {
+- (id)initWithFrame:(CGRect)frame andPhoto:(Photo *)photo {
     self = [super initWithFrame:frame];
     if (self) {
-        _art = art;
+        _photo = photo;
         [self setupGestures];
     }
     return self;
 }
 
-- (id)initWithImage:(UIImage *)image andArt:(Art *)art {
+- (id)initWithImage:(UIImage *)image andPhoto:(Photo *)photo {
     self = [super initWithImage:image];
     if (self) {
-        _art = art;
+        _photo = photo;
         [self setupGestures];
     }
     return self;

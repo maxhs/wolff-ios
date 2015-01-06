@@ -38,28 +38,28 @@
     [_slideNumberLabel setText:[NSString stringWithFormat:@"%ld",(long)number]];
     if (slide){
         [_addPrompt setHidden:YES];
-        if (slide.arts.count == 1){
+        if (slide.photos.count == 1){
             [_artImageView1 setHidden:NO];
             [_artImageView2 setHidden:YES];
             [_artImageView3 setHidden:YES];
-            Art *art = (Art*)[slide.arts firstObject];
-            [_artImageView1 sd_setImageWithURL:[NSURL URLWithString:art.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                [_artImageView1 setArt:art];
+            Photo *photo = (Photo*)[slide.photos firstObject];
+            [_artImageView1 sd_setImageWithURL:[NSURL URLWithString:photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                [_artImageView1 setPhoto:photo];
                 [self rasterize:_artImageView1];
             }];
-        } else if (slide.arts.count > 1) {
+        } else if (slide.photos.count > 1) {
             [_artImageView1 setHidden:YES];
             [_artImageView2 setHidden:NO];
             [_artImageView3 setHidden:NO];
             
-            Art *art2 = (Art*)slide.arts[0];
-            [_artImageView2 sd_setImageWithURL:[NSURL URLWithString:art2.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                [_artImageView2 setArt:art2];
+            Photo *photo2 = (Photo*)slide.photos[0];
+            [_artImageView2 sd_setImageWithURL:[NSURL URLWithString:photo2.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                [_artImageView2 setPhoto:photo2];
                 [self rasterize:_artImageView2];
             }];
-            Art *art3 = (Art*)slide.arts[1];
-            [_artImageView3 sd_setImageWithURL:[NSURL URLWithString:art3.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                [_artImageView3 setArt:art3];
+            Photo *photo3 = (Photo*)slide.photos[1];
+            [_artImageView3 sd_setImageWithURL:[NSURL URLWithString:photo3.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                [_artImageView3 setPhoto:photo3];
                 [self rasterize:_artImageView3];
             }];
             

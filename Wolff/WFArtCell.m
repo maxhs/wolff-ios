@@ -30,6 +30,9 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    [self.landscapeArtImageView setAlpha:0.f];
+    [self.portraitArtImageView setAlpha:0.f];
+    
     _slideContainerView.backgroundColor = kSlideBackgroundColor;
     _slideContainerView.layer.cornerRadius = 14.f;
     _slideContainerView.layer.backgroundColor = kSlideBackgroundColor.CGColor;
@@ -43,8 +46,8 @@
 
 - (void)prepareForReuse {
     [super prepareForReuse];
-    [self.landscapeArtImageView setAlpha:0.f];
-    [self.portraitArtImageView setAlpha:0.f];
+    //[self.landscapeArtImageView setAlpha:0.f];
+    //[self.portraitArtImageView setAlpha:0.f];
 }
 
 - (UIImage *)getRasterizedImageCopy {

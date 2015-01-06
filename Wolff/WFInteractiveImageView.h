@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "Art+helper.h"
+#import "Photo+helper.h"
 
 @protocol WFImageViewDelegate <NSObject>
 
@@ -18,9 +19,9 @@
 
 @interface WFInteractiveImageView : UIImageView
 
-@property (strong, nonatomic) Art *art;
+@property (strong, nonatomic) Photo *photo;
 @property (weak, nonatomic) id<WFImageViewDelegate>imageViewDelegate;
-- (id)initWithImage:(UIImage*)image andArt:(Art*)art;
-- (id)initWithFrame:(CGRect)frame andArt:(Art*)art;
+- (id)initWithImage:(UIImage*)image andPhoto:(Photo*)photo;
+- (id)initWithFrame:(CGRect)frame andPhoto:(Photo*)photo;
 
 @end

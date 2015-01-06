@@ -11,6 +11,6 @@
 
 @interface Slide (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
-- (void)addArt:(Art*)art;
-- (void)removeArt:(Art*)art;
+- (void)addPhoto:(Photo*)photo;
+- (void)removePhoto:(Photo*)photo;
 @end

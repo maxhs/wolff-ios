@@ -1,5 +1,5 @@
 //
-//  WFPresentationAnimator.m
+//  WFSlideshowAnimator.m
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 8/4/14.

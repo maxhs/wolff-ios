@@ -32,7 +32,7 @@
 @property (nonatomic, retain) NSOrderedSet *tables;
 @property (nonatomic, retain) NSOrderedSet *arts;
 @property (nonatomic, retain) NSOrderedSet *favorites;
-@property (nonatomic, retain) NSOrderedSet *presentations;
+@property (nonatomic, retain) NSOrderedSet *slideshows;
 @property (nonatomic, retain) NSOrderedSet *comments;
 @property (nonatomic, retain) NSOrderedSet *notifications;
 

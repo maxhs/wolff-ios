@@ -8,7 +8,7 @@
 
 #import "WFSlideshowsViewController.h"
 #import "WFAppDelegate.h"
-#import "WFPresentationCell.h"
+#import "WFSlideshowCell.h"
 
 @interface WFSlideshowsViewController () {
     WFAppDelegate *delegate;
@@ -44,12 +44,12 @@
 
 - (void)loadSlideshows {
     loading = YES;
-    [manager GET:[NSString stringWithFormat:@"users/%@/presentations",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success getting presentations: %@",responseObject);
+    [manager GET:[NSString stringWithFormat:@"users/%@/slideshows",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //NSLog(@"Success getting slideshows: %@",responseObject);
         [_currentUser populateFromDictionary:responseObject];
         [self endLoading];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"Failed to get presentations");
+        NSLog(@"Failed to get slideshows");
         [self endLoading];
     }];
 }
@@ -71,12 +71,12 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0){
-        if (!loading && _currentUser.presentations.count == 0){
+        if (!loading && _currentUser.slideshows.count == 0){
             return 1;
             [tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
         } else {
             [tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
-            return _currentUser.presentations.count;
+            return _currentUser.slideshows.count;
         }
     } else {
         return 1;
@@ -84,19 +84,20 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    WFPresentationCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PresentationCell" forIndexPath:indexPath];
+    WFSlideshowCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideshowCell" forIndexPath:indexPath];
     if (indexPath.section == 0){
         [cell.imageView setImage:nil];
-        if (!loading && _currentUser.presentations.count == 0){
+        if (!loading && _currentUser.slideshows.count == 0){
             [cell.textLabel setText:@"No Slideshows"];
             [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
         } else {
-            Presentation *presentation = _currentUser.presentations[indexPath.row];
-            [cell.textLabel setText:presentation.title];
+            Slideshow *slideshow = _currentUser.slideshows[indexPath.row];
+            [cell.textLabel setText:slideshow.title];
         }
         
     } else {
         [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
+        [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
         [cell.textLabel setText:@"New Slideshow"];
     }
     return cell;
@@ -104,15 +105,15 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0){
-        if (indexPath.row < _currentUser.presentations.count){
-            if (self.presentationDelegate && [self.presentationDelegate respondsToSelector:@selector(presentationSelected:)]) {
-                Presentation *presentation = _currentUser.presentations[indexPath.row];
-                [self.presentationDelegate presentationSelected:presentation];
+        if (indexPath.row < _currentUser.slideshows.count){
+            if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(slideshowSelected:)]) {
+                Slideshow *slideshow = _currentUser.slideshows[indexPath.row];
+                [self.slideshowDelegate slideshowSelected:slideshow];
             }
         }
     } else {
-        if (self.presentationDelegate && [self.presentationDelegate respondsToSelector:@selector(newPresentation)]) {
-            [self.presentationDelegate newPresentation];
+        if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(newSlideshow)]) {
+            [self.slideshowDelegate newSlideshow];
         }
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -130,8 +131,8 @@
     CGFloat headerHeight = section == 0 ? 34 : 0 ;
     UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, headerHeight)];
     UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, tableView.frame.size.width-10, 34)];
-    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [headerLabel setTextColor:[UIColor lightGrayColor]];
+    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
+    [headerLabel setTextColor:[UIColor colorWithWhite:1 alpha:.27]];
     [headerLabel setText:@"SLIDESHOWS"];
     
     [headerView addSubview:headerLabel];

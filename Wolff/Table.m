@@ -14,13 +14,13 @@
 @implementation Table
 
 @dynamic identifier;
-@dynamic arts;
 @dynamic users;
 @dynamic visible;
 @dynamic privateTable;
 @dynamic name;
 @dynamic tableDescription;
 @dynamic discussions;
-@dynamic presentations;
+@dynamic photos;
+@dynamic slideshows;
 
 @end

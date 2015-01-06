@@ -11,6 +11,6 @@
 @interface WFComparisonViewController : UIViewController
 
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
-@property (strong, nonatomic) NSMutableOrderedSet *arts;
+@property (strong, nonatomic) NSMutableOrderedSet *photos;
 
 @end

@@ -8,9 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
-
 @class Art;
-
 @interface Photo : NSManagedObject
 
 @property (nonatomic, retain) NSNumber * identifier;
@@ -24,7 +22,8 @@
 @property (nonatomic, retain) NSString * mediumImageUrl;
 @property (nonatomic, retain) NSString * originalImageUrl;
 @property (nonatomic, retain) NSDate * createdDate;
-@property (nonatomic, retain) id image;
+@property (nonatomic, retain) NSOrderedSet *slides;
 @property (nonatomic, retain) Art *art;
+@property (nonatomic, retain) id image;
 
 @end

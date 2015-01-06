@@ -9,6 +9,7 @@
 #import "WFNewLightTableAnimator.h"
 #import "Constants.h"
 #import "WFNewLightTableViewController.h"
+#import "WFDismissableNavigationController.h"
 
 @interface WFNewLightTableAnimator () {
     CGFloat width;
@@ -54,11 +55,11 @@
         [darkBackground setFrame:[UIScreen mainScreen].bounds];
         [darkBackground setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
         [darkBackground setTag:kDarkBackgroundConstant];
-        [darkBackground addTarget:(WFNewLightTableViewController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+        [darkBackground addTarget:(WFDismissableNavigationController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         
-        CGRect newArtStartFrame = CGRectMake(width*.1, 30, width*.6, height*.45);
+        CGRect newArtStartFrame = CGRectMake(width*.1, 23, width*.8, height*.425);
         toViewController.view.frame = newArtStartFrame;
-        CGRect newArtFrame = CGRectMake(width*.1, 30, width*.6, height*.45);
+        CGRect newArtFrame = CGRectMake(width*.1, 23, width*.8, height*.425);
         
         [transitionContext.containerView addSubview:darkBackground];
         [transitionContext.containerView addSubview:fromView];

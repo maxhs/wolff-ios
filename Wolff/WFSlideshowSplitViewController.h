@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Presentation+helper.h"
+#import "Slideshow+helper.h"
 #import "Slide+helper.h"
 
 @interface WFSlideshowSplitViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
@@ -17,7 +17,7 @@
 @property (weak, nonatomic) IBOutlet UILabel *lightBoxPlaceholderLabel;
 
 @property (strong, nonatomic) UIPopoverController *popover;
-@property (strong, nonatomic) Presentation *presentation;
+@property (strong, nonatomic) Slideshow *slideshow;
 
 - (void)dismissMetadata;
 @end

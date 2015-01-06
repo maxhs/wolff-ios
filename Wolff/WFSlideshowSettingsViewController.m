@@ -12,14 +12,14 @@
 
 @interface WFSlideshowSettingsViewController () <UIAlertViewDelegate> {
     UIAlertView *confirmDeletionAlertView;
-    UISwitch *presentationVisibilitySwitch;
-    Presentation *_presentation;
+    UISwitch *slideshowVisibilitySwitch;
+    Slideshow *_slideshow;
 }
 
 @end
 
 @implementation WFSlideshowSettingsViewController
-@synthesize presentationId = _presentationId;
+@synthesize slideshowId = _slideshowId;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -27,12 +27,12 @@
     [self.tableView setBackgroundColor:[UIColor clearColor]];
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.1]];
     
-    _presentation = [Presentation MR_findFirstByAttribute:@"identifier" withValue:_presentationId inContext:[NSManagedObjectContext MR_defaultContext]];
-    presentationVisibilitySwitch = [[UISwitch alloc] init];
+    _slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:_slideshowId inContext:[NSManagedObjectContext MR_defaultContext]];
+    slideshowVisibilitySwitch = [[UISwitch alloc] init];
 }
 
 - (void)confirmDeletion {
-    confirmDeletionAlertView = [[UIAlertView alloc] initWithTitle:@"Confirmation Needed" message:@"Are you sure you want to delete this presentation?" delegate:self cancelButtonTitle:@"No" otherButtonTitles:@"Delete", nil];
+    confirmDeletionAlertView = [[UIAlertView alloc] initWithTitle:@"Confirmation Needed" message:@"Are you sure you want to delete this slideshow?" delegate:self cancelButtonTitle:@"No" otherButtonTitles:@"Delete", nil];
     [confirmDeletionAlertView show];
 }
 
@@ -43,14 +43,14 @@
 }
 
 - (void)delete{
-    if (self.settingsDelegate && [self.settingsDelegate respondsToSelector:@selector(deletePresentation)]){
-        [self.settingsDelegate deletePresentation];
+    if (self.settingsDelegate && [self.settingsDelegate respondsToSelector:@selector(deleteSlideshow)]){
+        [self.settingsDelegate deleteSlideshow];
     }
 }
 
-- (void)updatePresentation {
-    if (self.settingsDelegate && [self.settingsDelegate respondsToSelector:@selector(updatePresentation)]){
-        [self.settingsDelegate updatePresentation];
+- (void)updateSlideshow {
+    if (self.settingsDelegate && [self.settingsDelegate respondsToSelector:@selector(updateSlideshow)]){
+        [self.settingsDelegate updateSlideshow];
     }
 }
 
@@ -70,13 +70,13 @@
         case 0:
             [cell.imageView setImage:nil];
             [cell.textLabel setText:@"Private"];
-            cell.accessoryView = presentationVisibilitySwitch;
-            [presentationVisibilitySwitch setOn:[_presentation.visible boolValue]];
-            [presentationVisibilitySwitch addTarget:self action:@selector(visiblitySwitched) forControlEvents:UIControlEventValueChanged];
+            cell.accessoryView = slideshowVisibilitySwitch;
+            [slideshowVisibilitySwitch setOn:[_slideshow.visible boolValue]];
+            [slideshowVisibilitySwitch addTarget:self action:@selector(visiblitySwitched) forControlEvents:UIControlEventValueChanged];
             break;
         case 1:
             [cell.imageView setImage:[UIImage imageNamed:@"whiteTrash"]];
-            [cell.textLabel setText:@"Delete Presentation"];
+            [cell.textLabel setText:@"Delete Slideshow"];
             break;
             
         default:

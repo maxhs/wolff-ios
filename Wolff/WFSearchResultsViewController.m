@@ -10,6 +10,7 @@
 #import "WFAppDelegate.h"
 #import "WFSearchResultsCell.h"
 #import "WFSearchCollectionCell.h"
+#import "WFSearchOptionsCell.h"
 
 @interface WFSearchResultsViewController () <UISearchBarDelegate> {
     WFAppDelegate *delegate;
@@ -30,10 +31,13 @@
     [super viewDidLoad];
     [self.view setBackgroundColor:[UIColor clearColor]];
     [_tableView setBackgroundColor:[UIColor clearColor]];
-    [_tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.23]];
+    [_tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    //[_tableView setSeparatorColor:[UIColor colorWithWhite:0 alpha:0]];
+    _tableView.rowHeight = 80.f;
     [_collectionView setBackgroundColor:[UIColor blackColor]];
     
-    if (!_arts.count){
+    // show full tile view if it's a real search
+    if (!_arts.count && _shouldShowTiles){
         _arts = [Art MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
     }
     _filteredArts = [NSMutableArray arrayWithArray:_arts];
@@ -97,38 +101,90 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    if (_filteredArts.count == 0){
+    if (_arts.count == 0){
         [_noResultsPrompt setHidden:NO];
         [tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+        return 1;
     } else {
         [_noResultsPrompt setHidden:YES];
-        [tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
+        //[tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
+        return 3;
     }
-    return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if (searching){
-        return _filteredArts.count;
+    if (section == 0){
+        if (searching){
+            return _filteredArts.count;
+        } else {
+            return _arts.count;
+        }
     } else {
-        return _arts.count;
+        return 1;
     }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    WFSearchResultsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SearchCell" forIndexPath:indexPath];
-    Art *art = searching ? _filteredArts[indexPath.row] : _arts[indexPath.row];
-    [cell.textLabel setText:art.title];
-    
-    return cell;
+    if (indexPath.section == 0){
+        WFSearchResultsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SearchCell" forIndexPath:indexPath];
+        Art *art = searching ? _filteredArts[indexPath.row] : _arts[indexPath.row];
+        [cell configureForArt:art];
+        
+        return cell;
+    } else if (indexPath.section == 1) {
+        WFSearchOptionsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SearchOptionsCell" forIndexPath:indexPath];
+        [cell.textLabel setText:@""];
+        [cell.lightTableButton setHidden:NO];
+        [cell.lightTableButton addTarget:self action:@selector(lightTableAction) forControlEvents:UIControlEventTouchUpInside];
+        [cell.lightTableButton setImage:[UIImage imageNamed:@"plus"] forState:UIControlStateNormal];
+        [cell.lightTableButton setTitle:[NSString stringWithFormat:@" Light table with %d images",_arts.count] forState:UIControlStateNormal];
+        [cell.lightTableButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.035f]];
+        [cell.slideShowButton setHidden:NO];
+        [cell.slideShowButton setImage:[UIImage imageNamed:@"plus"] forState:UIControlStateNormal];
+        [cell.slideShowButton setTitle:[NSString stringWithFormat:@" slideshow with %d images",_arts.count] forState:UIControlStateNormal];
+        [cell.slideShowButton addTarget:self action:@selector(slideShowAction) forControlEvents:UIControlEventTouchUpInside];
+        [cell.slideShowButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.07f]];
+        return cell;
+    } else {
+        WFSearchOptionsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"RemoveSelectedCell" forIndexPath:indexPath];
+        [cell.textLabel setText:@"Deselect all"];
+        [cell.lightTableButton setHidden:YES];
+        [cell.slideShowButton setHidden:YES];
+        [cell.imageView setImage:[UIImage imageNamed:@"blackRemove"]];
+        return cell;
+    }
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    Art *art = _arts[indexPath.row];
-    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectArt:)]) {
-        [self.searchDelegate searchDidSelectArt:art];
+    if (indexPath.section == 0){
+        Art *art = _arts[indexPath.row];
+        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhoto:)]) {
+            [self.searchDelegate searchDidSelectPhoto:art.photo];
+        }
+    } else if (indexPath.section == 1){
+        
+    } else {
+        [self removeSelected];
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (void)lightTableAction {
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(lightTableFromSelected)]) {
+        [self.searchDelegate lightTableFromSelected];
+    }
+}
+
+- (void)slideShowAction {
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(slideShowFromSelected)]) {
+        [self.searchDelegate slideShowFromSelected];
+    }
+}
+
+- (void)removeSelected{
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(removeAllSelected)]) {
+        [self.searchDelegate removeAllSelected];
+    }
 }
 
 #pragma mark – UICollectionViewDelegateFlowLayout
@@ -181,8 +237,8 @@
         [selectedArt addObject:art];
     }
     [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
-    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectArt:)]) {
-        [self.searchDelegate searchDidSelectArt:art];
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhoto:)]) {
+        [self.searchDelegate searchDidSelectPhoto:art.photo];
     }
 }
 

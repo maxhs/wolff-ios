@@ -12,6 +12,7 @@
 @implementation WFMenuCell
 
 - (void)awakeFromNib {
+    [super awakeFromNib];
     [self.textLabel setTextColor:[UIColor blackColor]];
     [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
     self.backgroundColor = [UIColor clearColor];

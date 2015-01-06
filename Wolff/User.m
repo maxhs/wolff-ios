@@ -30,7 +30,7 @@
 @dynamic emailPermission;
 @dynamic textPermission;
 @dynamic favorites;
-@dynamic presentations;
+@dynamic slideshows;
 @dynamic comments;
 @dynamic notifications;
 

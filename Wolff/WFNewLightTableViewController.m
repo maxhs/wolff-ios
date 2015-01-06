@@ -9,11 +9,15 @@
 #import "WFNewLightTableViewController.h"
 #import "WFAppDelegate.h"
 #import "Art+helper.h"
+#import "WFUtilities.h"
+#import "Constants.h"
 
 @interface WFNewLightTableViewController () {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     UIBarButtonItem *dismissButton;
+    UIBarButtonItem *nextButton;
+    UIImageView *navBarShadowView;
 }
 
 @end
@@ -27,9 +31,34 @@
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     [_tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    [self.view setBackgroundColor:[UIColor clearColor]];
+    [self.tableView setBackgroundColor:[UIColor clearColor]];
     
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
+    nextButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"right"] style:UIBarButtonItemStylePlain target:self action:@selector(next)];
+    self.navigationItem.rightBarButtonItem = nextButton;
+    navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
+    [self.navigationController.navigationBar setBarStyle:UIBarStyleDefault];
+    [self.navigationController.navigationBar setTintColor:[UIColor clearColor]];
+    UIToolbar *backgroundView = [[UIToolbar alloc] initWithFrame:self.view.frame];
+    [backgroundView setBarStyle:UIBarStyleDefault];
+    [backgroundView setTranslucent:YES];
+    [self.tableView setBackgroundView:backgroundView];
+    
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    navBarShadowView.hidden = YES;
+}
+
+- (void)next {
+    [self performSegueWithIdentifier:@"Next" sender:nil];
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    [super prepareForSegue:segue sender:sender];
 }
 
 #pragma mark - Table view data source
@@ -48,7 +77,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"NewLightTableCell" forIndexPath:indexPath];
-    
+    cell.backgroundColor = [UIColor clearColor];
     if (indexPath.section == 0){
         
     } else {

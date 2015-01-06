@@ -33,6 +33,6 @@
 @dynamic interval;
 @dynamic discussions;
 @dynamic notifications;
-@dynamic presentations;
+@dynamic slideshows;
 
 @end

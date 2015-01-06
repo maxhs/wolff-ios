@@ -1,5 +1,5 @@
 //
-//  Presentation.h
+//  Slideshow.h
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 8/5/14.
@@ -11,20 +11,20 @@
 
 @class Table, User;
 
-@interface Presentation : NSManagedObject
+@interface Slideshow : NSManagedObject
 
 @property (nonatomic, retain) NSNumber * identifier;
 @property (nonatomic, retain) NSNumber * visible;
 @property (nonatomic, retain) NSString * title;
-@property (nonatomic, retain) NSString * presentationDescription;
+@property (nonatomic, retain) NSString * slideshowDescription;
 @property (nonatomic, retain) NSOrderedSet *slides;
-@property (nonatomic, retain) NSOrderedSet *arts;
 @property (nonatomic, retain) NSOrderedSet *discussions;
+@property (nonatomic, retain) NSOrderedSet *photos;
 @property (nonatomic, retain) Table * table;
 @property (nonatomic, retain) User * user;
 @end
 
-@interface Presentation (CoreDataGeneratedAccessors)
+@interface Slideshow (CoreDataGeneratedAccessors)
 
 - (void)insertObject:(NSManagedObject *)value inSlidesAtIndex:(NSUInteger)idx;
 - (void)removeObjectFromSlidesAtIndex:(NSUInteger)idx;

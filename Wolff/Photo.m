@@ -21,9 +21,10 @@
 @dynamic originalImageUrl;
 @dynamic createdDate;
 @dynamic image;
-@dynamic art;
+@dynamic slides;
 @dynamic width;
 @dynamic height;
 @dynamic orientation;
+@dynamic art;
 
 @end

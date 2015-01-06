@@ -27,5 +27,6 @@
 @dynamic user;
 @dynamic artist;
 @dynamic discussion;
+@dynamic slideshow;
 
 @end

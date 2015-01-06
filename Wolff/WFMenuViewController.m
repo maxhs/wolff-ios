@@ -9,6 +9,7 @@
 #import "WFMenuViewController.h"
 #import "WFMenuCell.h"
 #import "WFAppDelegate.h"
+#import "WFAlert.h"
 
 @interface WFMenuViewController () {
     WFAppDelegate *delegate;
@@ -33,26 +34,26 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 4;
+    return 3;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFMenuCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MenuCell" forIndexPath:indexPath];
     
     switch (indexPath.row) {
-        case 0:
+        /*case 0:
             [cell.imageView setImage:[UIImage imageNamed:@"cloudDownload"]];
             [cell.textLabel setText:@" Local Backup"];
-            break;
-        case 1:
+            break;*/
+        case 0:
             [cell.imageView setImage:[UIImage imageNamed:@"blackSettings"]];
             [cell.textLabel setText:@" Account"];
             break;
-        case 2:
+        case 1:
             [cell.imageView setImage:[UIImage imageNamed:@"profile"]];
             [cell.textLabel setText:@" Profile"];
             break;
-        case 3:
+        case 2:
             [cell.imageView setImage:[UIImage imageNamed:@"logout"]];
             [cell.textLabel setText:@" Log Out"];
             break;
@@ -66,18 +67,18 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     switch (indexPath.row) {
-        case 0:
+        /*case 0:
             
-            break;
-        case 1:
+            break;*/
+        case 0:
             if (self.menuDelegate && [self.menuDelegate respondsToSelector:@selector(showSettings)]) {
                 [self.menuDelegate showSettings];
             }
             break;
-        case 2:
-            
+        case 1:
+            [WFAlert show:@"We haven't built your profile yet. Coming soon!" withTime:2.7f];
             break;
-        case 3:
+        case 2:
             [delegate logout];
             if (self.menuDelegate && [self.menuDelegate respondsToSelector:@selector(logout)]) {
                 [self.menuDelegate logout];

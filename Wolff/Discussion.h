@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Art, Artist, Group, Presentation;
+@class Art, Artist, Group, Slideshow;
 
 @interface Discussion : NSManagedObject
 
@@ -18,7 +18,7 @@
 @property (nonatomic, retain) NSManagedObject *comments;
 @property (nonatomic, retain) Art *art;
 @property (nonatomic, retain) Artist *artist;
-@property (nonatomic, retain) Presentation *presentation;
+@property (nonatomic, retain) Slideshow *slideshow;
 @property (nonatomic, retain) Group *table;
 @property (nonatomic, retain) NSOrderedSet *notifications;
 

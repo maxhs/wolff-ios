@@ -1,18 +1,18 @@
 //
-//  Presentation+helper.m
+//  Slideshow+helper.m
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 8/5/14.
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
-#import "Presentation+helper.h"
+#import "Slideshow+helper.h"
 #import "Slide+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
-@implementation Presentation (helper)
+@implementation Slideshow (helper)
 - (void)populateFromDictionary:(NSDictionary *)dictionary{
-    //NSLog(@"Presentation helper: %@",dictionary);
+    //NSLog(@"Slideshow helper: %@",dictionary);
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }
@@ -23,7 +23,7 @@
         self.visible = [dictionary objectForKey:@"visible"];
     }
     if ([dictionary objectForKey:@"description"] && [dictionary objectForKey:@"description"] != [NSNull null]){
-        self.presentationDescription = [dictionary objectForKey:@"description"];
+        self.slideshowDescription = [dictionary objectForKey:@"description"];
     }
     if ([dictionary objectForKey:@"slides"] && [dictionary objectForKey:@"slides"] != [NSNull null]){
         NSMutableOrderedSet *slides = [NSMutableOrderedSet orderedSet];
@@ -43,31 +43,31 @@
         }*/
         self.slides = slides;
     }
-    if ([dictionary objectForKey:@"arts"] && [dictionary objectForKey:@"arts"] != [NSNull null]){
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dict in [dictionary objectForKey:@"arts"]){
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!art){
-                art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-            }
-            [art populateFromDictionary:dict];
-            [set addObject:art];
-        }
-        self.arts = set;
-    }
+//    if ([dictionary objectForKey:@"arts"] && [dictionary objectForKey:@"arts"] != [NSNull null]){
+//        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+//        for (id dict in [dictionary objectForKey:@"arts"]){
+//            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+//            Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+//            if (!art){
+//                art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+//            }
+//            [art populateFromDictionary:dict];
+//            [set addObject:art];
+//        }
+//        self.arts = set;
+//    }
 }
 
-- (void)addArt:(Art *)art {
-    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.arts];
-    [tempSet addObject:art];
-    self.arts = tempSet;
+- (void)addPhoto:(Photo *)photo {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
+    [tempSet addObject:photo];
+    self.photos = tempSet;
 }
 
-- (void)removeArt:(Art *)art {
-    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.arts];
-    [tempSet removeObject:art];
-    self.arts = tempSet;
+- (void)removePhoto:(Photo *)photo {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
+    [tempSet removeObject:photo];
+    self.photos = tempSet;
 }
 
 - (void)addSlide:(Slide *)slide {

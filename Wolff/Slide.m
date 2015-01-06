@@ -7,16 +7,16 @@
 //
 
 #import "Slide.h"
-#import "Art.h"
-#import "Presentation.h"
+#import "Photo.h"
+#import "Slideshow.h"
 
 
 @implementation Slide
 
 @dynamic title;
 @dynamic identifier;
-@dynamic presentation;
-@dynamic arts;
+@dynamic slideshow;
+@dynamic photos;
 @dynamic caption;
 @dynamic index;
 

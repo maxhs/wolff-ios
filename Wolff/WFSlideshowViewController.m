@@ -50,13 +50,13 @@
     
     NSInteger currentPage;
 }
-@property (weak, nonatomic) IBOutlet UIBarButtonItem *presentationTitleButtonItem;
+@property (weak, nonatomic) IBOutlet UIBarButtonItem *slideshowTitleButtonItem;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *slideNumberButtonItem;
 @end
 
 @implementation WFSlideshowViewController
 
-@synthesize presentation = _presentation;
+@synthesize slideshow = _slideshow;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -103,7 +103,7 @@
     
     _collectionView.canCancelContentTouches = YES;
     _collectionView.delaysContentTouches = NO;
-    [_presentationTitleButtonItem setTitle:_presentation.title];
+    [_slideshowTitleButtonItem setTitle:_slideshow.title];
     currentPage = 1;
     [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %d",currentPage]];
 }
@@ -125,7 +125,7 @@
 - (void)showMetadata {
     WFSlideMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideMetadata"];
     [vc setSlide:currentSlide];
-    [vc setPresentation:_presentation];
+    [vc setSlideshow:_slideshow];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.transitioningDelegate = self;
     nav.modalPresentationStyle = UIModalPresentationCustom;
@@ -161,7 +161,6 @@
     NSInteger page = lround(fractionalPage)+1; // offset since we're starting on page 1
     if (currentPage != page) {
         currentPage = page;
-        NSLog(@"current page: %d",currentPage);
         [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %d",currentPage]];
     }
 }
@@ -173,17 +172,16 @@
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return _presentation.slides.count;
+    return _slideshow.slides.count;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
-    currentSlide = _presentation.slides[indexPath.item];
-    [cell configureForArts:currentSlide.arts.mutableCopy inSlide:currentSlide];
+    currentSlide = _slideshow.slides[indexPath.item];
+    [cell configureForPhotos:currentSlide.photos.mutableCopy inSlide:currentSlide];
    
     // set/reset gesture recognizers
-    
-    if (currentSlide.arts.count == 1){
+    if (currentSlide.photos.count == 1){
         artImageView1 = cell.artImageView1;
         containerView1 = cell.containerView1;
         [artImageView1 addGestureRecognizer:_panGesture1];

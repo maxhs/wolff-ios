@@ -7,18 +7,18 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Presentation+helper.h"
+#import "Slideshow+helper.h"
 
 @protocol WFSlideshowDelegate <NSObject>
 
 @required
-- (void)newPresentation;
-- (void)presentationSelected:(Presentation*)presentation;
+- (void)newSlideshow;
+- (void)slideshowSelected:(Slideshow*)slideshow;
 @end
 
 @interface WFSlideshowsViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
-@property (weak, nonatomic) id<WFSlideshowDelegate> presentationDelegate;
+@property (weak, nonatomic) id<WFSlideshowDelegate> slideshowDelegate;
 
 @end

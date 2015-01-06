@@ -8,10 +8,15 @@
 
 #import <UIKit/UIKit.h>
 #import "Art+helper.h"
+#import "Photo+helper.h"
 
 @protocol WFSearchDelegate <NSObject>
-- (void)searchDidSelectArt:(Art *)art;
+- (void)searchDidSelectPhoto:(Photo *)photo;
 - (void)endSearch;
+@optional
+- (void)removeAllSelected;
+- (void)lightTableFromSelected;
+- (void)slideShowFromSelected;
 @end
 
 @interface WFSearchResultsViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>

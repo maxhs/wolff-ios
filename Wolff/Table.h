@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Art, User;
+@class Photo, User;
 
 @interface Table : NSManagedObject
 
@@ -18,22 +18,12 @@
 @property (nonatomic, retain) NSNumber * privateTable;
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic, retain) NSString * tableDescription;
-@property (nonatomic, retain) NSOrderedSet *arts;
 @property (nonatomic, retain) NSOrderedSet *discussions;
-@property (nonatomic, retain) NSOrderedSet *presentations;
+@property (nonatomic, retain) NSOrderedSet *slideshows;
+@property (nonatomic, retain) NSOrderedSet *photos;
 @property (nonatomic, retain) User *users;
 @end
 
 @interface Table (CoreDataGeneratedAccessors)
 
-- (void)insertObject:(Art *)value inArtsAtIndex:(NSUInteger)idx;
-- (void)removeObjectFromArtsAtIndex:(NSUInteger)idx;
-- (void)insertArts:(NSArray *)value atIndexes:(NSIndexSet *)indexes;
-- (void)removeArtsAtIndexes:(NSIndexSet *)indexes;
-- (void)replaceObjectInArtsAtIndex:(NSUInteger)idx withObject:(Art *)value;
-- (void)replaceArtsAtIndexes:(NSIndexSet *)indexes withArts:(NSArray *)values;
-- (void)addArtsObject:(Art *)value;
-- (void)removeArtsObject:(Art *)value;
-- (void)addArts:(NSOrderedSet *)values;
-- (void)removeArts:(NSOrderedSet *)values;
 @end

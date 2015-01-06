@@ -23,16 +23,16 @@
 @end
 
 @implementation WFSlideMetadataViewController
-@synthesize arts = _arts;
+@synthesize photos = _photos;
 @synthesize slide = _slide;
-@synthesize presentation = _presentation;
+@synthesize slideshow = _slideshow;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"right"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
-    [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.01]];
-    self.navigationItem.title = _presentation.title;
+    [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.02]];
+    self.navigationItem.title = _slideshow.title;
     [self setupDateFormatter];
     UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.tableView.frame];
     [backgroundToolbar setTranslucent:YES];
@@ -41,6 +41,7 @@
     [self.tableView setBackgroundColor:[UIColor clearColor]];
     [self.view setBackgroundColor:[UIColor clearColor]];
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
+    self.tableView.tableFooterView = [UIView new];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -56,7 +57,7 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    if (_arts.count || _slide.arts.count > 1){
+    if (_photos.count || _slide.photos.count > 1){
         return 2;
     } else {
         return 1;
@@ -69,26 +70,27 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideMetadataCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
-    NSArray *artsArray = _arts.count ? _arts.array : _slide.arts.array;
-    Art *art;
-    if (artsArray.count > 1){
+    NSArray *photosArray = _photos.count ? _photos.array : _slide.photos.array;
+    Photo *photo;
+    Art *art = photo.art;
+    if (photosArray.count > 1){
         if (indexPath.section == 0){
-            art = artsArray.firstObject;
+            photo = photosArray.firstObject;
         } else {
-            art = artsArray[1];
+            photo = photosArray[1];
         }
     } else {
-        art = artsArray.firstObject;
+        photo = photosArray.firstObject;
     }
     
     switch (indexPath.row) {
         case 0:
-            [cell.textLabel setText:art.title];
+            [cell.textLabel setText:photo.art.title];
             [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]];
             break;
         case 1:
         {
-            NSString *artists = [art artistsToSentence];
+            NSString *artists = [photo.art artistsToSentence];
             if (artists.length > 1){
                 [cell.textLabel setText:artists];
             } else {
@@ -98,6 +100,7 @@
         }
             break;
         case 2:
+        {
             if (art.interval.single){
                 [cell.textLabel setText:[dateFormatter stringFromDate:art.interval.single]];
             } else if (![art.interval.beginRange isEqualToNumber:@0] && ![art.interval.endRange isEqualToNumber:@0]) {
@@ -112,6 +115,7 @@
                 [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
                 
             }
+        }
             break;
         case 3:
         {
@@ -130,7 +134,7 @@
                 [cell.textLabel setText:locations];
             } else {
                 [cell.textLabel setText:@"No locations listed"];
-                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
                 [cell.textLabel setTextColor:[UIColor lightGrayColor]];
             }
         }
@@ -141,7 +145,7 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    if (_arts.count || _slide.arts.count > 1){
+    if (_photos.count || _slide.photos.count > 1){
         if (section == 0){
             return 34;
         } else {
@@ -155,7 +159,7 @@
 - (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     
     CGFloat headerHeight;
-    if (_arts.count || _slide.arts.count > 1){
+    if (_photos.count || _slide.photos.count > 1){
         if (section == 0){
             headerHeight = 34;
         } else {
@@ -165,7 +169,7 @@
         headerHeight = 0;
     }
     UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, headerHeight)];
-    if (_arts.count || _slide.arts.count > 1){
+    if (_photos.count || _slide.photos.count > 1){
         CGFloat yOffset = section == 0 ? 0 : 66;
         UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, yOffset, tableView.frame.size.width, 34)];
         [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThin] size:0]];

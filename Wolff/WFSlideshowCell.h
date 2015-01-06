@@ -1,5 +1,5 @@
 //
-//  WFPresentationCell.h
+//  WFSlideshowCell.h
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 12/30/14.
@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface WFPresentationCell : UITableViewCell
+@interface WFSlideshowCell : UITableViewCell
 
 @end

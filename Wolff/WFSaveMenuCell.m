@@ -12,6 +12,7 @@
 @implementation WFSaveMenuCell
 
 - (void)awakeFromNib {
+    [super awakeFromNib];
     [self setBackgroundColor:[UIColor clearColor]];
     [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
 }
