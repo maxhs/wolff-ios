@@ -7,19 +7,22 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Table+helper.h"
 
-// This protocol is only to silence the compiler since we're using one of two different classes.
-@protocol WFTablesViewControllerPanTarget <NSObject>
+@protocol WFLightTablesDelegate <NSObject>
 
+@optional
 -(void)userDidPan:(UIScreenEdgePanGestureRecognizer *)gestureRecognizer;
+-(void)lightTableSelected:(NSNumber*)lightTableId;
 
 @end
 
 @interface WFTablesViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
+@property (strong, nonatomic) NSMutableArray *lightTables;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
-@property (weak, nonatomic) id<WFTablesViewControllerPanTarget> panTarget;
+@property (weak, nonatomic) id<WFLightTablesDelegate> lightTableDelegate;
 
--(id)initWithPanTarget:(id<WFTablesViewControllerPanTarget>)panTarget;
+-(id)initWithPanTarget:(id<WFLightTablesDelegate>)lightTableDelegate;
 - (void)dismiss;
 @end

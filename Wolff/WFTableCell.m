@@ -13,13 +13,12 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    [self setBackgroundColor:[UIColor clearColor]];
     [_tableLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
-
-    // Configure the view for the selected state
 }
 
 - (void)configureForTable:(Table *)table {

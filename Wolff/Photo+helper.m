@@ -7,6 +7,10 @@
 //
 
 #import "Photo+helper.h"
+#import "Art+helper.h"
+#import "User+helper.h"
+#import "Icon+helper.h"
+#import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Photo (helper)
 - (void)populateFromDictionary:(NSDictionary*)dictionary {
@@ -26,8 +30,8 @@
     if ([dictionary objectForKey:@"orientation"] && [dictionary objectForKey:@"orientation"] != [NSNull null]){
         self.orientation = [dictionary objectForKey:@"orientation"];
     }
-    if ([dictionary objectForKey:@"epoch_time"] && [dictionary objectForKey:@"epoch_time"] != [NSNull null]) {
-        NSTimeInterval _interval = [[dictionary objectForKey:@"epoch_time"] doubleValue];
+    if ([dictionary objectForKey:@"created_epoch"] && [dictionary objectForKey:@"created_epoch"] != [NSNull null]) {
+        NSTimeInterval _interval = [[dictionary objectForKey:@"created_epoch"] doubleValue];
         self.createdDate = [NSDate dateWithTimeIntervalSince1970:_interval];
     }
     if ([dictionary objectForKey:@"thumb_image_url"] && [dictionary objectForKey:@"thumb_image_url"] != [NSNull null]){
@@ -44,6 +48,51 @@
     }
     if ([dictionary objectForKey:@"original_image_url"] && [dictionary objectForKey:@"original_image_url"] != [NSNull null]){
         self.originalImageUrl = [dictionary objectForKey:@"original_image_url"];
+    }
+    if ([dictionary objectForKey:@"credit"] && [dictionary objectForKey:@"credit"] != [NSNull null]){
+        self.credit = [dictionary objectForKey:@"credit"];
+    }
+    if ([dictionary objectForKey:@"art"] && [dictionary objectForKey:@"art"] != [NSNull null]){
+        NSDictionary *dict = [dictionary objectForKey:@"art"];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+        Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!art){
+            art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        [art populateFromDictionary:dict];
+        self.art = art;
+    }
+    if ([dictionary objectForKey:@"art_id"] && [dictionary objectForKey:@"art_id"] != [NSNull null]){
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"art_id"]];
+        Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!art){
+            art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        art.identifier = [dictionary objectForKey:@"art_id"];
+        self.art = art;
+    }
+    if ([dictionary objectForKey:@"user"] && [dictionary objectForKey:@"user"] != [NSNull null]){
+        NSDictionary *dict = [dictionary objectForKey:@"user"];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+        User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!user){
+            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        [user populateFromDictionary:dict];
+        self.user = user;
+    }
+    if ([dictionary objectForKey:@"icons"] && [dictionary objectForKey:@"icons"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"icons"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Icon *icon = [Icon MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!icon){
+                icon = [Icon MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [icon populateFromDictionary:dict];
+            [set addObject:icon];
+        }
+        self.icons = set;
     }
 }
 

@@ -1,5 +1,5 @@
 //
-//  WFArtCell.h
+//  WFPhotoCell.h
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 8/3/14.
@@ -8,14 +8,15 @@
 
 #import <UIKit/UIKit.h>
 #import "Art+helper.h"
+#import "Photo+helper.h"
 
-@interface WFArtCell : UICollectionViewCell
+@interface WFPhotoCell : UICollectionViewCell
 @property (weak, nonatomic) IBOutlet UIView *slideContainerView;
 @property (weak, nonatomic) IBOutlet UIImageView *portraitArtImageView;
 @property (weak, nonatomic) IBOutlet UIImageView *landscapeArtImageView;
 @property (weak, nonatomic) IBOutlet UIImageView *checkmark;
 
 - (UIImage *)getRasterizedImageCopy;
-- (void)configureForArt:(Art*)art;
+- (void)configureForPhoto:(Photo*)photo;
 
 @end

@@ -15,8 +15,10 @@
 #import "Location+helper.h"
 #import <SDWebImage/UIButton+WebCache.h>
 #import <SDWebImage/UIImageView+WebCache.h>
+#import "WFTablesViewController.h"
+#import "WFAlert.h"
 
-@interface WFArtMetadataViewController () <UITextViewDelegate> {
+@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, WFLightTablesDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     NSDateFormatter *dateFormatter;
@@ -31,12 +33,12 @@
     UIButton *saveButton;
     UIImageView *navBarShadowView;
 }
-
+@property (strong, nonatomic) UIPopoverController *popover;
 @end
 
 @implementation WFArtMetadataViewController
 
-@synthesize art = _art;
+@synthesize photo = _photo;
 
 - (void)viewDidLoad
 {
@@ -74,7 +76,7 @@
     _topImageView.layer.backgroundColor = [UIColor clearColor].CGColor;
     self.tableView.tableHeaderView = _topImageContainerView;
     [_topImageView setAlpha:0.0];
-    [_topImageView sd_setImageWithURL:[NSURL URLWithString:_art.photo.largeImageUrl] placeholderImage:nil/*[UIImage imageNamed:@"transparentIcon"]*/ completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+    [_topImageView sd_setImageWithURL:[NSURL URLWithString:_photo.largeImageUrl] placeholderImage:nil/*[UIImage imageNamed:@"transparentIcon"]*/ completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
         [UIView animateWithDuration:.23 animations:^{
             [_topImageView setBackgroundColor:[UIColor whiteColor]];
             [_topImageView setAlpha:1.0];
@@ -91,10 +93,10 @@
 }
 
 - (void)setPostedCredit {
-    if (_art.user){
+    if (_photo.user){
         [_postedByButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
         [_postedByButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
-        [_postedByButton setTitle:[NSString stringWithFormat:@"Posted: %@",_art.user.fullName] forState:UIControlStateNormal];
+        [_postedByButton setTitle:[NSString stringWithFormat:@"Posted: %@",_photo.user.fullName] forState:UIControlStateNormal];
         [_postedByButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
         [_postedByButton setHidden:NO];
     } else {
@@ -113,7 +115,7 @@
     [_dropToTableButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.023]];
     [_dropToTableButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     
-    if (_currentUser && [_art.user.identifier isEqualToNumber:_currentUser.identifier]){
+    if (_currentUser && [_photo.user.identifier isEqualToNumber:_currentUser.identifier]){
         [_editButton addTarget:self action:@selector(edit) forControlEvents:UIControlEventTouchUpInside];
         [_editButton setImage:[UIImage imageNamed:@"edit"] forState:UIControlStateNormal];
         [_editButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.023]];
@@ -141,7 +143,7 @@
     
     [_favoriteButton setImage:[UIImage imageNamed:@"favorite"] forState:UIControlStateNormal];
     [_favoriteButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    _favorite = [_currentUser getFavorite:_art];
+    _favorite = [_currentUser getFavoritePhoto:_photo];
     if (_currentUser && _favorite){
         [_favoriteButton setTitle:@"   Favorited!" forState:UIControlStateNormal];
         [_favoriteButton addTarget:self action:@selector(unfavorite) forControlEvents:UIControlEventTouchUpInside];
@@ -152,7 +154,45 @@
 }
 
 - (void)dropToLightTable {
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
+    WFTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tables"];
+    vc.lightTableDelegate = self;
+    [vc setLightTables:_currentUser.lightTables.array.mutableCopy];
+    CGFloat vcHeight = _currentUser.lightTables.count*54.f > 260.f ? 260 : (_currentUser.lightTables.count)*54.f;
+    vc.preferredContentSize = CGSizeMake(270, vcHeight+34.f); // add the header height
+    self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
+    self.popover.delegate = self;
+    [self.popover presentPopoverFromRect:CGRectMake(_dropToTableButton.center.x,_dropToTableButton.center.y+_dropToTableButton.frame.size.height/2,1,1) inView:self.view permittedArrowDirections:UIPopoverArrowDirectionLeft animated:YES];
+}
+
+- (void)lightTableSelected:(NSNumber *)lightTableId {
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
     
+    //refetch the light table
+    Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
+    
+    //ensure we're playing with a real light table first
+    if (![lightTable.identifier isEqualToNumber:@0]){
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        [parameters setObject:_photo.identifier forKey:@"photo_id"];
+        [manager POST:[NSString stringWithFormat:@"light_tables/%@/add",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success dropping metadata photo to light table: %@",responseObject);
+            if ([responseObject objectForKey:@"success"] && [[responseObject objectForKey:@"success"] isEqualToNumber:@1]){
+                [lightTable addPhoto:_photo];
+                [[NSManagedObjectContext MR_defaultContext] MR_saveOnlySelfAndWait];
+            } else {
+                [WFAlert show:@"Something went wrong while trying to drop this art to your light table. Please try again soon" withTime:3.3f];
+            }
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to drop metadata photo to light table: %@",error.description);
+        }];
+    } else {
+        
+    }
 }
 
 - (void)edit {
@@ -195,9 +235,9 @@
 }
 
 - (void)loadArtMetadata {
-    [manager GET:[NSString stringWithFormat:@"arts/%@",_art.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [manager GET:[NSString stringWithFormat:@"arts/%@",_photo.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success fetching metadata: %@",responseObject);
-        [_art populateFromDictionary:[responseObject objectForKey:@"art"]];
+        [_photo populateFromDictionary:[responseObject objectForKey:@"art"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [self setupHeader];
             [self.tableView reloadData];
@@ -208,17 +248,17 @@
 }
 
 - (void)saveMetadata {
-    _art.notes = notesTextView.text;
-    _art.title = titleTextView.text;
+    _photo.art.notes = notesTextView.text;
+    _photo.art.title = titleTextView.text;
     [ProgressHUD show:@"Saving..."];
     [self.view endEditing:YES];
     
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    [parameters setObject:_art.title forKey:@"title"];
-    [parameters setObject:_art.notes forKey:@"notes"];
-    [manager PATCH:[NSString stringWithFormat:@"arts/%@",_art.identifier] parameters:@{@"art":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [parameters setObject:_photo.art.title forKey:@"title"];
+    [parameters setObject:_photo.art.notes forKey:@"notes"];
+    [manager PATCH:[NSString stringWithFormat:@"arts/%@",_photo.identifier] parameters:@{@"art":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success saving metadata: %@",responseObject);
-        [_art populateFromDictionary:[responseObject objectForKey:@"art"]];
+        [_photo populateFromDictionary:[responseObject objectForKey:@"art"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [ProgressHUD dismiss];
         }];
@@ -250,17 +290,17 @@
     switch (indexPath.row) {
         case 0:
             [cell.label setText:@"TITLE"];
-            [cell.textView setText:_art.title];
+            [cell.textView setText:_photo.art.title];
             titleTextView = cell.textView;
             break;
         case 1:
         {
             [cell.label setText:@"ARTIST(S)"];
-            NSString *artists = [_art artistsToSentence];
+            NSString *artists = [_photo.art artistsToSentence];
             if (artists.length > 1){
                 [cell.textView setText:artists];
             } else {
-                [cell.textView setText:@"Artist(s) unknown..."];
+                [cell.textView setText:@"Artist(s) Unknown"];
                 [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
                 [cell.textView setTextColor:[UIColor lightGrayColor]];
             }
@@ -268,16 +308,16 @@
             break;
         case 2:
             [cell.label setText:@"DATE"];
-            //NSLog(@"art interval: %@",_art.interval);
-            if (_art.interval.single){
-                [cell.textView setText:[dateFormatter stringFromDate:_art.interval.single]];
-            } else if (![_art.interval.beginRange isEqualToNumber:@0] && ![_art.interval.endRange isEqualToNumber:@0]) {
-                NSString *beginSuffix = _art.interval.beginSuffix.length ? _art.interval.beginSuffix : @"CE";
-                NSString *endSuffix = _art.interval.endSuffix.length ? _art.interval.endSuffix : @"CE";
-                [cell.textView setText:[NSString stringWithFormat:@"%@ %@ - %@ %@",_art.interval.beginRange, beginSuffix, _art.interval.endRange, endSuffix]];
-            } else if (![_art.interval.year isEqualToNumber:@0]){
-                NSString *suffix = _art.interval.suffix.length ? _art.interval.suffix : @"CE";
-                [cell.textView setText:[NSString stringWithFormat:@"%@ %@",_art.interval.year, suffix]];
+            //NSLog(@"art interval: %@",_photo.interval);
+            if (_photo.art.interval.single){
+                [cell.textView setText:[dateFormatter stringFromDate:_photo.art.interval.single]];
+            } else if (![_photo.art.interval.beginRange isEqualToNumber:@0] && ![_photo.art.interval.endRange isEqualToNumber:@0]) {
+                NSString *beginSuffix = _photo.art.interval.beginSuffix.length ? _photo.art.interval.beginSuffix : @"CE";
+                NSString *endSuffix = _photo.art.interval.endSuffix.length ? _photo.art.interval.endSuffix : @"CE";
+                [cell.textView setText:[NSString stringWithFormat:@"%@ %@ - %@ %@",_photo.art.interval.beginRange, beginSuffix, _photo.art.interval.endRange, endSuffix]];
+            } else if (![_photo.art.interval.year isEqualToNumber:@0]){
+                NSString *suffix = _photo.art.interval.suffix.length ? _photo.art.interval.suffix : @"CE";
+                [cell.textView setText:[NSString stringWithFormat:@"%@ %@",_photo.art.interval.year, suffix]];
             } else {
                 [cell.textView setText:@"No date listed"];
                 [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
@@ -287,7 +327,7 @@
         case 3:
         {
             [cell.label setText:@"MATERIAL(S)"];
-            NSString *materials = [_art materialsToSentence];
+            NSString *materials = [_photo.art materialsToSentence];
             if (materials.length){
                 [cell.textView setText:materials];
             } else {
@@ -300,7 +340,7 @@
         case 4:
         {
             [cell.label setText:@"LOCATION"];
-            NSString *locations = [_art locationsToSentence];
+            NSString *locations = [_photo.art locationsToSentence];
             
             if (locations.length){
                 [cell.textView setText:locations];
@@ -314,7 +354,7 @@
         case 5:
         {
             [cell.label setText:@"ICONOGRAPHY"];
-            NSString *icons = [_art iconsToSentence];
+            NSString *icons = [_photo.art iconsToSentence];
             if (icons.length){
                 [cell.textView setText:icons];
             } else {
@@ -337,7 +377,7 @@
             CGFloat minHeight = cellHeight-14 > 86 ? cellHeight-14 : 86;
             notesRect.size.height = minHeight;
             [cell.textView setFrame:notesRect];
-            [cell.textView setText:_art.notes];
+            [cell.textView setText:_photo.art.notes];
             break;
             
         default:
@@ -358,19 +398,19 @@
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-        [manager POST:[NSString stringWithFormat:@"arts/%@/favorite",_art.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            //NSLog(@"Success posting favorite: %@",responseObject);
+        [manager POST:[NSString stringWithFormat:@"photos/%@/favorite",_photo.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success posting favorite: %@",responseObject);
             _favorite = [Favorite MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             [_favorite populateFromDictionary:[responseObject objectForKey:@"favorite"]];
-            
-            [_favoriteButton setTitle:@"  Favorited!" forState:UIControlStateNormal];
-            [_favoriteButton removeTarget:nil
-                               action:NULL
-                     forControlEvents:UIControlEventAllEvents];
-            [_favoriteButton addTarget:self action:@selector(unfavorite) forControlEvents:UIControlEventTouchUpInside];
-            
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                [_favoriteButton setTitle:@"  Favorited!" forState:UIControlStateNormal];
+                [_favoriteButton removeTarget:nil
+                                       action:NULL
+                             forControlEvents:UIControlEventAllEvents];
+                [_favoriteButton addTarget:self action:@selector(unfavorite) forControlEvents:UIControlEventTouchUpInside];
+            }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Failed to favorite %@: %@",_art.title,error.description);
+            NSLog(@"Failed to favorite %@: %@",_photo.art.title,error.description);
         }];
     } else {
         [self showLogin];
@@ -393,7 +433,7 @@
             [_favoriteButton addTarget:self action:@selector(favorite) forControlEvents:UIControlEventTouchUpInside];
             
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Failed to unfavorite %@: %@",_art.title,error.description);
+            NSLog(@"Failed to unfavorite %@: %@",_photo.art.title,error.description);
         }];
     } else {
         [self showLogin];
@@ -406,14 +446,22 @@
 
 - (void)flag {
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    [parameters setObject:_art.identifier forKey:@"art_id"];
+    [parameters setObject:_photo.identifier forKey:@"photo_id"];
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     }
     [manager POST:[NSString stringWithFormat:@"flags"] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success creating a flag for %@, %@",_art.identifier, responseObject);
+        NSLog(@"Success creating a flag for %@, %@",_photo.identifier, responseObject);
+        [WFAlert show:@"Flagged" withTime:2.3f];
+        if (self.popover){
+            [self.popover dismissPopoverAnimated:YES];
+        }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to create a flag: %@",error.description);
+        [WFAlert show:@"Sorry, but something went wrong while trying to flag this art. Please try again soon." withTime:3.3f];
+        if (self.popover){
+            [self.popover dismissPopoverAnimated:YES];
+        }
     }];
 }
 

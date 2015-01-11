@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
-@class Art;
+@class Art, User;
 @interface Photo : NSManagedObject
 
 @property (nonatomic, retain) NSNumber * identifier;
@@ -21,9 +21,13 @@
 @property (nonatomic, retain) NSString * slideImageUrl;
 @property (nonatomic, retain) NSString * mediumImageUrl;
 @property (nonatomic, retain) NSString * originalImageUrl;
+@property (nonatomic, retain) NSString * credit;
 @property (nonatomic, retain) NSDate * createdDate;
 @property (nonatomic, retain) NSOrderedSet *slides;
+@property (nonatomic, retain) NSOrderedSet *icons;
+@property (nonatomic, retain) NSOrderedSet *photos;
 @property (nonatomic, retain) Art *art;
+@property (nonatomic, retain) User *user;
 @property (nonatomic, retain) id image;
 
 @end

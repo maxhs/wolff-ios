@@ -38,12 +38,12 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _currentUser.tables.count;
+    return _currentUser.lightTables.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFTableShareCell *cell = [tableView dequeueReusableCellWithIdentifier:@"TableShareCell" forIndexPath:indexPath];
-    Table *table = _currentUser.tables[indexPath.row];
+    Table *table = _currentUser.lightTables[indexPath.row];
     [cell configureForTable:table];
     
     return cell;

@@ -11,9 +11,8 @@
 
 @interface WFLightTableDetailsViewController : UIViewController
 
-@property (strong, nonatomic) NSMutableArray *arts;
-@property (strong, nonatomic) NSMutableArray *photos;
-@property (strong, nonatomic) Table *table;
+@property (strong, nonatomic) NSMutableOrderedSet *photos;
+@property (strong, nonatomic) NSNumber *tableId;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
-
+- (void)dismiss;
 @end

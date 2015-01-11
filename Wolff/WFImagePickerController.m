@@ -8,12 +8,18 @@
 
 #import "WFImagePickerController.h"
 #import "WFImagePickerCell.h"
+#import "Constants.h"
 
 @interface WFImagePickerController () {
+    CGFloat width;
+    CGFloat height;
     NSMutableArray *_assets;
     NSMutableOrderedSet *_selectedAssets;
     UIImageView *focusImageView;
     UIBarButtonItem *selectButton;
+    UIBarButtonItem *cancelButton;
+    UIBarButtonItem *doneButton;
+    UIBarButtonItem *backButton;
     BOOL selectMode;
 }
 
@@ -26,17 +32,43 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    if (IDIOM == IPAD){
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+            width = screenWidth();
+            height = screenHeight();
+        } else {
+            width = screenHeight();
+            height = screenWidth();
+        }
+    }
     _assets = [NSMutableArray array];
     _selectedAssets = [NSMutableOrderedSet orderedSet];
     [self loadPhotos];
     selectButton = [[UIBarButtonItem alloc] initWithTitle:@"Select" style:UIBarButtonItemStylePlain target:self action:@selector(toggleSelectMode)];
-    self.navigationItem.rightBarButtonItem = selectButton;
-    // Uncomment the following line to preserve selection between presentations
-    // self.clearsSelectionOnViewWillAppear = NO;
+
+    selectMode = YES;
+    
+    cancelButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel)];
+    doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(done)];
+    
+    self.navigationItem.leftBarButtonItem = doneButton;
+    self.navigationItem.rightBarButtonItem = cancelButton;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    backButton = self.navigationItem.backBarButtonItem;
 }
 
 - (void)toggleSelectMode {
     selectMode ? (selectMode = NO) : (selectMode = YES);
+    if (selectMode){
+        self.navigationItem.rightBarButtonItem = cancelButton;
+        self.navigationItem.leftBarButtonItem = doneButton;
+    } else {
+        self.navigationItem.rightBarButtonItem = selectButton;
+        self.navigationItem.leftBarButtonItem = backButton;
+    }
 }
 
 - (void)loadPhotos {
@@ -68,10 +100,7 @@ static NSString * const reuseIdentifier = @"PhotoCell";
     return _assets.count;
 }
 
-#define kImageViewTag 1 // the image view inside the collection view cell prototype is tagged with "1"
-
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-
     WFImagePickerCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
     
     ALAsset *asset = _assets[indexPath.item];
@@ -101,9 +130,9 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 #pragma mark <UICollectionViewDelegate>
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-
     ALAsset *asset = _assets[indexPath.item];
     WFImagePickerCell *selectedCell = (WFImagePickerCell*)[collectionView cellForItemAtIndexPath:indexPath];
+    
     if (selectMode){
         if ([_selectedAssets containsObject:asset]){
             [_selectedAssets removeObject:asset];
@@ -114,32 +143,27 @@ static NSString * const reuseIdentifier = @"PhotoCell";
         self.title = viewTitle;
         [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
     } else {
-        if (focusImageView){
-            [UIView animateWithDuration:.23f animations:^{
-                [selectedCell.contentView setAlpha:1.f];
-                focusImageView.transform = CGAffineTransformIdentity;
-            } completion:^(BOOL finished) {
-                [focusImageView removeFromSuperview];
-                focusImageView = nil;
-            }];
-        } else {
+//        if (focusImageView){
+//            [UIView animateWithDuration:.23f animations:^{
+//                [selectedCell.contentView setAlpha:1.f];
+//                focusImageView.transform = CGAffineTransformIdentity;
+//            } completion:^(BOOL finished) {
+//                [focusImageView removeFromSuperview];
+//                focusImageView = nil;
+//            }];
+//        } else {
             [_selectedAssets addObject:asset];
-            
-            UIImage *fullImage = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullResolutionImage]];
-            focusImageView = [[UIImageView alloc] initWithImage:fullImage];
-            
-            [selectedCell.contentView setAlpha:0.1f];
+            [selectedCell.contentView setAlpha:0.23f];
             [self.view addSubview:focusImageView];
-            
             [self.view bringSubviewToFront:focusImageView];
             NSLog(@"selected cell frame origin x: %f and y: %f",selectedCell.frame.origin.x,selectedCell.frame.origin.y);
             focusImageView.frame = selectedCell.frame;
+            CGRect newFrame = CGRectMake(width/2-400, height/2-300, 800, 600);
             
             [UIView animateWithDuration:.23f animations:^{
-                CGAffineTransform transform = CGAffineTransformMakeScale(1.1f, 1.1f);
-                focusImageView.transform = transform;
+                [focusImageView setFrame:newFrame];
             }];
-        }
+        //}
     }
 }
 
@@ -159,7 +183,29 @@ static NSString * const reuseIdentifier = @"PhotoCell";
     }
 }
 
-- (void)cancel {
+- (void)dismiss {
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+        
+    }];
+}
+
+- (void) cancel {
+    //[self toggleSelectMode];
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+        
+    }];
+}
+
+- (void)done {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(didFinishPickingPhotos:)]){
+        NSMutableArray *imageArray = [NSMutableArray arrayWithCapacity:_selectedAssets.count];
+        [_selectedAssets enumerateObjectsUsingBlock:^(ALAsset *asset, NSUInteger idx, BOOL *stop) {
+            UIImage *fullImage = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullResolutionImage]];
+            [imageArray addObject:fullImage];
+        }];
+        [self.delegate didFinishPickingPhotos:imageArray];
+    }
+    
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
         
     }];
@@ -167,7 +213,6 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 /*

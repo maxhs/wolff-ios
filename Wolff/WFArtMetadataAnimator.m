@@ -64,13 +64,20 @@
         UITableView *metadataTableView = [(WFArtMetadataViewController*)toViewController tableView];
         [metadataTableView setContentInset:UIEdgeInsetsMake(offset, 0, offset, 0)];
         [metadataTableView setContentOffset:CGPointMake(0, -offset)];
+        int lowerBound = 1;
+        int upperBound = 3;
+        int rndValue = lowerBound + arc4random() % (upperBound - lowerBound);
+        CGFloat xOffset = rndValue == 1 ? width : -width;
         
-        CGRect metadataStartFrame = CGRectMake((width/2-300)-width, 0, 600, height);
-        toViewController.view.frame = metadataStartFrame;
+        CGRect metadataStartFrame = CGRectMake((width/2-300)-xOffset, 0, 600, height);
+        toView.frame = metadataStartFrame;
+        [toView setAlpha:0.0];
+
         CGRect metadataFrame = CGRectMake(width/2-300, 0, 600, height);
     
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            toViewController.view.frame = metadataFrame;
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.975 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            toView.frame = metadataFrame;
+            [toView setAlpha:1.0];
             [darkBackground setAlpha:1.0];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
@@ -83,7 +90,7 @@
         [transitionContext.containerView addSubview:fromView];
         
         NSTimeInterval outDuration = [self transitionDuration:transitionContext]*.7;
-        [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseIn animations:^{
             fromViewController.view.transform = CGAffineTransformMakeScale(.923f, .923f);
             [fromViewController.view setAlpha:0.0];
             [darkBackground setAlpha:0.0];

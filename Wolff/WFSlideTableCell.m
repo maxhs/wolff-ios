@@ -19,7 +19,7 @@
     [self setBackgroundColor:[UIColor colorWithWhite:1 alpha:.17]];
     [_slideContainerView setBackgroundColor:[UIColor blackColor]];
     [_slideNumberLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:.5 alpha:1]];
+    [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
     [self setSelectionStyle:UITableViewCellSelectionStyleNone];
 }
 
@@ -35,7 +35,7 @@
 }
 
 - (void)configureForSlide:(Slide *)slide withSlideNumber:(NSInteger)number {
-    [_slideNumberLabel setText:[NSString stringWithFormat:@"%ld",(long)number]];
+    [_slideNumberLabel setText:[NSString stringWithFormat:@"%ld.",(long)number]];
     if (slide){
         [_addPrompt setHidden:YES];
         if (slide.photos.count == 1){
@@ -70,10 +70,10 @@
         }
     } else {
         // no slide, this means this is a new slide prompt cell
-        [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
-        [_addPrompt setFont:[UIFont fontWithName:kLatoHairline size:50]];
+        [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
+        [_addPrompt setFont:[UIFont fontWithName:kMuseoSansThin size:43]];
         [_addPrompt setHidden:NO];
-        [_addPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.4]];
+        [_addPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.23]];
         [_addPrompt setNumberOfLines:0];
         [_slideNumberLabel setText:@""];
         [_artImageView1 setImage:nil];

@@ -8,11 +8,14 @@
 
 #import "Table.h"
 #import "Photo+helper.h"
+#import "Slideshow+helper.h"
 
 @interface Table (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
 - (void)addPhoto:(Photo*)photo;
 - (void)removePhoto:(Photo*)photo;
+- (void)addSlideshow:(Slideshow*)slideshow;
+- (void)removeSlideshow:(Slideshow*)slideshow;
 - (void)addPhotos:(NSArray*)array;
 - (void)removePhotos:(NSArray*)array;
 @end

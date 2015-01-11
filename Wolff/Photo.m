@@ -25,6 +25,10 @@
 @dynamic width;
 @dynamic height;
 @dynamic orientation;
+@dynamic icons;
+@dynamic photos;
+@dynamic credit;
 @dynamic art;
+@dynamic user;
 
 @end

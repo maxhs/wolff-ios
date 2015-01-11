@@ -1,24 +1,22 @@
 //
-//  WFLoginAnimator.m
+//  WFWalkthroughAnimator.m
 //  Wolff
 //
-//  Created by Max Haines-Stiles on 8/5/14.
-//  Copyright (c) 2014 Wolff. All rights reserved.
+//  Created by Max Haines-Stiles on 1/10/15.
+//  Copyright (c) 2015 Wolff. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-#import "WFLoginAnimator.h"
+#import "WFWalkthroughAnimator.h"
 #import "Constants.h"
 #import "UIImage+ImageEffects.h"
 
-@interface WFLoginAnimator () {
+@interface WFWalkthroughAnimator () {
     CGFloat width;
     CGFloat height;
 }
-
 @end
-@implementation WFLoginAnimator
+
+@implementation WFWalkthroughAnimator
 
 - (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext {
     return .75f;
@@ -54,7 +52,7 @@
     
     if (self.presenting) {
         fromViewController.view.userInteractionEnabled = NO;
-        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
         
         UIButton *blurredButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [blurredButton setBackgroundImage:[self blurredSnapshotForWindow:[transitionContext.containerView window]]  forState:UIControlStateNormal];
@@ -65,7 +63,6 @@
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView insertSubview:blurredButton belowSubview:toView];
-        
         [toView setFrame:mainScreen];
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
@@ -75,20 +72,20 @@
         }];
         
     } else {
-        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
         
         toViewController.view.userInteractionEnabled = YES;
+        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
         UIImageView *blurredButton = (UIImageView*)[transitionContext.containerView viewWithTag:kBlurredBackgroundConstant];
         
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
         
         /*mainScreen.origin.x -= screenWidth();
-        CGRect originStartFrame = toViewController.view.frame;
-        originStartFrame.origin.x = screenWidth();
-        toViewController.view.frame = originStartFrame;
-        CGRect originEndFrame = toViewController.view.frame;
-        originEndFrame.origin.x = 0;*/
+         CGRect originStartFrame = toViewController.view.frame;
+         originStartFrame.origin.x = screenWidth();
+         toViewController.view.frame = originStartFrame;
+         CGRect originEndFrame = toViewController.view.frame;
+         originEndFrame.origin.x = 0;*/
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
             [fromView setAlpha:0.0];

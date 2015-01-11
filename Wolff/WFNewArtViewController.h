@@ -7,10 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "WFImagePickerController.h"
 
-@interface WFNewArtViewController : UIViewController
+@interface WFNewArtViewController : UIViewController <WFImagePickerControllerDelegate>
 @property (weak, nonatomic) IBOutlet UIView *slideContainerView;
 @property (weak, nonatomic) IBOutlet UIButton *addPhotoButton;
+@property (weak, nonatomic) IBOutlet UIButton *dismissButton;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 - (void)dismiss;
 @end

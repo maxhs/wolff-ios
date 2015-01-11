@@ -15,8 +15,8 @@
 @interface WFSearchResultsViewController () <UISearchBarDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-    NSMutableArray *_filteredArts;
-    NSMutableOrderedSet *selectedArt;
+    NSMutableArray *_filteredPhotos;
+    NSMutableOrderedSet *selectedPhotos;
     NSString *searchText;
     BOOL searching;
 }
@@ -25,39 +25,38 @@
 
 @implementation WFSearchResultsViewController
 
-@synthesize arts = _arts;
+@synthesize photos = _photos;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self.view setBackgroundColor:[UIColor clearColor]];
     [_tableView setBackgroundColor:[UIColor clearColor]];
     [_tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
-    //[_tableView setSeparatorColor:[UIColor colorWithWhite:0 alpha:0]];
     _tableView.rowHeight = 80.f;
     [_collectionView setBackgroundColor:[UIColor blackColor]];
     
     // show full tile view if it's a real search
-    if (!_arts.count && _shouldShowTiles){
-        _arts = [Art MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
+    if (!_photos.count && _shouldShowTiles){
+        _photos = [Photo MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
     }
-    _filteredArts = [NSMutableArray arrayWithArray:_arts];
-    selectedArt = [NSMutableOrderedSet orderedSet];
+    _filteredPhotos = [NSMutableArray arrayWithArray:_photos];
+    selectedPhotos = [NSMutableOrderedSet orderedSet];
     
     if (_shouldShowTiles) {
+        // this means we're looking at search results on the "make slideshow" view
         [_collectionView setHidden:NO];
         [_tableView setHidden:YES];
+        [_noResultsPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.7]];
         [self.collectionView reloadData];
     } else {
+        // this means we're actually looking at selected slides
+        [_noResultsPrompt setText:@"Nothing selected..."];
         [_collectionView setHidden:YES];
         [_tableView setHidden:NO];
+        [_noResultsPrompt setTextColor:[UIColor colorWithWhite:0 alpha:.7]];
         [self.tableView reloadData];
     }
-    
-    if (_shouldShowTiles){
-        [_noResultsPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.7]];
-    } else {
-        [_noResultsPrompt setTextColor:[UIColor colorWithWhite:0 alpha:.7]];
-    }
+
     [_noResultsPrompt setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
 }
 
@@ -101,23 +100,23 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    if (_arts.count == 0){
+    if (_photos.count == 0){
         [_noResultsPrompt setHidden:NO];
         [tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
         return 1;
     } else {
         [_noResultsPrompt setHidden:YES];
         //[tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
-        return 3;
+        return 2;
     }
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0){
         if (searching){
-            return _filteredArts.count;
+            return _filteredPhotos.count;
         } else {
-            return _arts.count;
+            return _photos.count;
         }
     } else {
         return 1;
@@ -127,42 +126,44 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0){
         WFSearchResultsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SearchCell" forIndexPath:indexPath];
-        Art *art = searching ? _filteredArts[indexPath.row] : _arts[indexPath.row];
-        [cell configureForArt:art];
+        Photo *photo = searching ? _filteredPhotos[indexPath.row] : _photos[indexPath.row];
+        [cell configureForPhoto:photo];
         
         return cell;
-    } else if (indexPath.section == 1) {
+    } else {
         WFSearchOptionsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SearchOptionsCell" forIndexPath:indexPath];
         [cell.textLabel setText:@""];
         [cell.lightTableButton setHidden:NO];
         [cell.lightTableButton addTarget:self action:@selector(lightTableAction) forControlEvents:UIControlEventTouchUpInside];
-        [cell.lightTableButton setImage:[UIImage imageNamed:@"plus"] forState:UIControlStateNormal];
-        [cell.lightTableButton setTitle:[NSString stringWithFormat:@" Light table with %d images",_arts.count] forState:UIControlStateNormal];
-        [cell.lightTableButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.035f]];
+        //[cell.lightTableButton setImage:[UIImage imageNamed:@"whitePlus"] forState:UIControlStateNormal];
+        [cell.lightTableButton setTitle:@"+   light table" forState:UIControlStateNormal];
+        [cell.lightTableButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:0.f]];
+        
         [cell.slideShowButton setHidden:NO];
-        [cell.slideShowButton setImage:[UIImage imageNamed:@"plus"] forState:UIControlStateNormal];
-        [cell.slideShowButton setTitle:[NSString stringWithFormat:@" slideshow with %d images",_arts.count] forState:UIControlStateNormal];
+        //[cell.slideShowButton setImage:[UIImage imageNamed:@"whitePlus"] forState:UIControlStateNormal];
+        [cell.slideShowButton setTitle:@"+   slideshow" forState:UIControlStateNormal];
         [cell.slideShowButton addTarget:self action:@selector(slideShowAction) forControlEvents:UIControlEventTouchUpInside];
-        [cell.slideShowButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.07f]];
-        return cell;
-    } else {
-        WFSearchOptionsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"RemoveSelectedCell" forIndexPath:indexPath];
-        [cell.textLabel setText:@"Deselect all"];
-        [cell.lightTableButton setHidden:YES];
-        [cell.slideShowButton setHidden:YES];
-        [cell.imageView setImage:[UIImage imageNamed:@"blackRemove"]];
+        [cell.slideShowButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.02f]];
+        
+        [cell.clearSelectedButton setHidden:NO];
+        [cell.cancelXImageView setImage:[UIImage imageNamed:@"remove"]];
+        CGPoint centerPoint = cell.clearSelectedButton.center;
+        CGRect cancelXFrame = cell.cancelXImageView.frame;
+        cancelXFrame.origin.x = centerPoint.x-40;
+        [cell.cancelXImageView setFrame:cancelXFrame];
+        [cell.clearSelectedButton setTitle:@"   clear" forState:UIControlStateNormal];
+        [cell.clearSelectedButton addTarget:self action:@selector(removeSelected) forControlEvents:UIControlEventTouchUpInside];
+        [cell.clearSelectedButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.04f]];
         return cell;
     }
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0){
-        Art *art = _arts[indexPath.row];
+        Photo *photo = _photos[indexPath.row];
         if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhoto:)]) {
-            [self.searchDelegate searchDidSelectPhoto:art.photo];
+            [self.searchDelegate searchDidSelectPhoto:photo];
         }
-    } else if (indexPath.section == 1){
-        
     } else {
         [self removeSelected];
     }
@@ -201,14 +202,14 @@
 
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
     if (searching){
-        return _filteredArts.count;
+        return _filteredPhotos.count;
     } else {
-        return _arts.count;
+        return _photos.count;
     }
 }
 
 - (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
-    if (_filteredArts.count == 0){
+    if (_filteredPhotos.count == 0){
         [_noResultsPrompt setHidden:NO];
     } else {
         [_noResultsPrompt setHidden:YES];
@@ -218,9 +219,9 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFSearchCollectionCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SearchCollectionCell" forIndexPath:indexPath];
-    Art *art = searching ? _filteredArts[indexPath.row] : _arts[indexPath.row];
-    [cell configureForArt:art];
-    if ([selectedArt containsObject:art]){
+    Photo *photo = searching ? _filteredPhotos[indexPath.row] : _photos[indexPath.row];
+    [cell configureForPhoto:photo];
+    if ([selectedPhotos containsObject:photo]){
         [cell.checkmark setHidden:NO];
     } else {
         [cell.checkmark setHidden:YES];
@@ -229,16 +230,15 @@
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    Art *art = _filteredArts[indexPath.row];
-    
-    if ([selectedArt containsObject:art]){
-        [selectedArt removeObject:art];
+    Photo *photo = _filteredPhotos[indexPath.row];
+    if ([selectedPhotos containsObject:photo]){
+        [selectedPhotos removeObject:photo];
     } else {
-        [selectedArt addObject:art];
+        [selectedPhotos addObject:photo];
     }
     [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
     if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhoto:)]) {
-        [self.searchDelegate searchDidSelectPhoto:art.photo];
+        [self.searchDelegate searchDidSelectPhoto:photo];
     }
 }
 
@@ -270,25 +270,25 @@
     [self.view endEditing:YES];
     searching = NO;
     [self.searchBar setShowsCancelButton:NO animated:YES];
-    [_filteredArts removeAllObjects];
+    [_filteredPhotos removeAllObjects];
 }
 
 - (void)filterContentForSearchText:(NSString*)text scope:(NSString*)scope {
     NSLog(@"search text: %@",text);
     if (text.length) {
-        [_filteredArts removeAllObjects];
-        for (Art *art in _arts){
+        [_filteredPhotos removeAllObjects];
+        for (Art *art in _photos){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF contains[cd] %@", text];
             if([predicate evaluateWithObject:art.title]) {
-                [_filteredArts addObject:art];
+                [_filteredPhotos addObject:art];
             } else if ([predicate evaluateWithObject:art.artistsToSentence]){
-                [_filteredArts addObject:art];
+                [_filteredPhotos addObject:art];
             } else if ([predicate evaluateWithObject:art.locationsToSentence]){
-                [_filteredArts addObject:art];
+                [_filteredPhotos addObject:art];
             }
         }
     } else {
-        _filteredArts = [NSMutableArray arrayWithArray:_arts];
+        _filteredPhotos = [NSMutableArray arrayWithArray:_photos];
     }
     if (_shouldShowTiles) {
         [self.collectionView reloadData];

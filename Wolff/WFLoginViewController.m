@@ -27,8 +27,7 @@
 
 @synthesize currentUser = _currentUser;
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
     delegate = [UIApplication sharedApplication].delegate;
     delegate.loginDelegate = self;
@@ -57,6 +56,11 @@
     [self styleForgotPasswordButton];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -137,7 +141,7 @@
             NSLog(@"Failed with password reset: %@",error.description);
         }];
     } else {
-        UIAlertView *forgotPasswordAlert = [[UIAlertView alloc] initWithTitle:@"Password Reset" message:@"Please enter the email address associated with this account:" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Submit", nil];
+        UIAlertView *forgotPasswordAlert = [[UIAlertView alloc] initWithTitle:@"Password Reset" message:@"Please enter your account's email address:" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Submit", nil];
         forgotPasswordAlert.alertViewStyle = UIAlertViewStylePlainTextInput;
         [[forgotPasswordAlert textFieldAtIndex:0] setKeyboardType:UIKeyboardTypeEmailAddress];
         [forgotPasswordAlert show];
@@ -179,7 +183,7 @@
 - (void)termsWebView {
     WFWebViewController *webViewVC = [[self storyboard] instantiateViewControllerWithIdentifier:@"WebView"];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:webViewVC];
-    [webViewVC setUrl:[NSURL URLWithString:[NSString stringWithFormat:@"%@/home/terms",kBaseUrl]]];
+    [webViewVC setUrl:[NSURL URLWithString:[NSString stringWithFormat:@"%@/terms",kBaseUrl]]];
     [webViewVC setTitle:@"Terms of Service"];
     [self presentViewController:nav animated:YES completion:^{
         
@@ -316,8 +320,12 @@
     textField.delegate = self;
 }
 
-- (void)didReceiveMemoryWarning
-{
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
+}
+
+- (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }

@@ -20,7 +20,7 @@
 @dynamic phone;
 @dynamic bio;
 @dynamic institution;
-@dynamic tables;
+@dynamic lightTables;
 @dynamic admin;
 @dynamic arts;
 @dynamic avatarSmall;
@@ -33,5 +33,6 @@
 @dynamic slideshows;
 @dynamic comments;
 @dynamic notifications;
+@dynamic photos;
 
 @end

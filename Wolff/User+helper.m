@@ -83,7 +83,7 @@
     }
     
     if ([dictionary objectForKey:@"slideshows"] && [dictionary objectForKey:@"slideshows"] != [NSNull null]){
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshows];
         for (id dict in [dictionary objectForKey:@"slideshows"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -97,7 +97,7 @@
     }
     
     if ([dictionary objectForKey:@"light_tables"] && [dictionary objectForKey:@"light_tables"] != [NSNull null]){
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithOrderedSet:self.lightTables];
         for (id dict in [dictionary objectForKey:@"light_tables"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Table *table = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -107,11 +107,10 @@
             [table populateFromDictionary:dict];
             [set addObject:table];
         }
-        self.tables = set;
+        self.lightTables = set;
     }
     
     if ([dictionary objectForKey:@"institution"] && [dictionary objectForKey:@"institution"] != [NSNull null]){
-    
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"institution"] objectForKey:@"id"]];
         Institution *institution = [Institution MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!institution){
@@ -122,6 +121,7 @@
     }
     
     if ([dictionary objectForKey:@"favorites"] && [dictionary objectForKey:@"favorites"] != [NSNull null]){
+        NSLog(@"favorites: %@",[dictionary objectForKey:@"favorites"]);
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"favorites"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
@@ -133,6 +133,20 @@
             [set addObject:favorite];
         }
         self.favorites = set;
+    }
+    
+    if ([dictionary objectForKey:@"photos"] && [dictionary objectForKey:@"photos"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"photos"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!photo){
+                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [photo populateFromDictionary:dict];
+            [set addObject:photo];
+        }
+        self.photos = set;
     }
 }
 
@@ -150,7 +164,8 @@
     }
 }
 
-- (Favorite *)getFavorite:(Art *)art {
+
+- (Favorite *)getFavoriteArt:(Art *)art {
     __block Favorite *favorite = nil;
     [self.favorites enumerateObjectsUsingBlock:^(Favorite *fav, NSUInteger idx, BOOL *stop) {
         if (fav.art && [fav.art.identifier isEqualToNumber:art.identifier]){
@@ -159,6 +174,36 @@
         }
     }];
     return favorite;
+}
+
+
+- (Favorite *)getFavoritePhoto:(Photo *)photo {
+    __block Favorite *favorite = nil;
+    [self.favorites enumerateObjectsUsingBlock:^(Favorite *fav, NSUInteger idx, BOOL *stop) {
+        if (fav.photo && [fav.photo.identifier isEqualToNumber:photo.identifier]){
+            favorite = fav;
+            *stop = YES;
+        }
+    }];
+    return favorite;
+}
+
+- (void)addLightTable:(Table *)lightTable {
+    NSMutableOrderedSet *lightTables = [NSMutableOrderedSet orderedSetWithOrderedSet:self.lightTables];
+    [lightTables addObject:lightTable];
+    self.lightTables = lightTables;
+}
+
+- (void)removeLightTable:(Table *)lightTable {
+    NSMutableOrderedSet *lightTables = [NSMutableOrderedSet orderedSetWithOrderedSet:self.lightTables];
+    [lightTables removeObject:lightTable];
+    self.lightTables = lightTables;
+}
+
+- (void)removeSlideshow:(Slideshow *)slideshow {
+    NSMutableOrderedSet *slideshows = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshows];
+    [slideshows removeObject:slideshow];
+    self.slideshows = slideshows;
 }
 
 @end

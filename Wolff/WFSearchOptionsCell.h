@@ -12,5 +12,7 @@
 
 @property (weak, nonatomic) IBOutlet UIButton *lightTableButton;
 @property (weak, nonatomic) IBOutlet UIButton *slideShowButton;
+@property (weak, nonatomic) IBOutlet UIButton *clearSelectedButton;
+@property (weak, nonatomic) IBOutlet UIImageView *cancelXImageView;
 
 @end

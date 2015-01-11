@@ -15,7 +15,7 @@
 #import "WFSlideAnimator.h"
 #import "WFSlideshowFocusAnimator.h"
 #import "WFSearchResultsViewController.h"
-#import "WFArtCell.h"
+#import "WFPhotoCell.h"
 #import "WFArtMetadataAnimator.h"
 #import "WFArtMetadataViewController.h"
 #import "WFSlideshowSettingsViewController.h"
@@ -23,9 +23,10 @@
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "WFSaveMenuViewController.h"
 #import "WFAlert.h"
+#import "WFTablesViewController.h"
 #import <QuartzCore/QuartzCore.h>
 
-@interface WFSlideshowSplitViewController () <UIViewControllerTransitioningDelegate, WFSearchDelegate,WFSlideshowSettingsDelegate, UIPopoverControllerDelegate,  UITextFieldDelegate, UIAlertViewDelegate, WFImageViewDelegate, WFSaveSlideshowDelegate> {
+@interface WFSlideshowSplitViewController () <UIViewControllerTransitioningDelegate, WFSearchDelegate,WFSlideshowSettingsDelegate, UIPopoverControllerDelegate,  UITextFieldDelegate, UIAlertViewDelegate, WFImageViewDelegate, WFSaveSlideshowDelegate, WFLightTablesDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     CGFloat width;
@@ -51,6 +52,8 @@
     NSIndexPath *activeIndexPath;
     Slide *activeSlide;
     WFInteractiveImageView *activeImageView;
+    
+    User *_currentUser;
 }
 
 @property (nonatomic) WFInteractiveImageView *draggingView;
@@ -90,6 +93,10 @@
     
     [self redrawSlideshow];
     [self registerKeyboardNotifications];
+    
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
+    }
     
     [_longPressRecognizer addTarget:self action:@selector(longPressed:)];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
@@ -193,7 +200,6 @@
         // prompt to add new cell
         WFSlideTableCell *cell = (WFSlideTableCell *)[tableView dequeueReusableCellWithIdentifier:@"SlideTableCell"];
         [cell configureForSlide:nil withSlideNumber:indexPath.row];
-        //[cell.slideNumberLabel setText:@"+"];
         return cell;
     }
 }
@@ -236,24 +242,24 @@
 }
 
 - (void)removeArt:(UIMenuController*)menuController {
-    
     [activeSlide removePhoto:activeImageView.photo];
+    NSLog(@"active slide index: %@",activeSlide.index);
     if (activeSlide.photos.count){
-     [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-     } else {
-     [self.tableView beginUpdates];
-     [_slideshow removeSlide:activeSlide];
-     [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-     [self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-     [self.tableView endUpdates];
+        [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+    } else {
+        [self.tableView beginUpdates];
+        [_slideshow removeSlide:activeSlide];
+        [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+        [self.tableView endUpdates];
      
-     activeSlide = nil;
-     activeImageView = nil;
-     activeIndexPath = nil;
-     }
-     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        activeSlide = nil;
+        activeImageView = nil;
+        activeIndexPath = nil;
+    }
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
      
-     }];
+    }];
 }
 
 // UIMenuController requires that we can become first responder or it won't display
@@ -320,9 +326,9 @@
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    WFArtCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SlideshowArtCell" forIndexPath:indexPath];
+    WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SlideshowArtCell" forIndexPath:indexPath];
     Photo *photo = _slideshow.photos[indexPath.item];
-    [cell configureForArt:photo.art];
+    [cell configureForPhoto:photo];
     return cell;
 }
 
@@ -340,7 +346,7 @@
 #pragma mark - UICollectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     Photo *photo = _slideshow.photos[indexPath.item];
-    [self showMetadata:photo.art];
+    [self showMetadata:photo];
 }
 
 - (void)showSlideDetail:(Slide*)slide {
@@ -386,7 +392,7 @@
             NSLog(@"we've selected a slide");
             self.startIndex = [self.collectionView indexPathForItemAtPoint:loc];
             if (self.startIndex) {
-                WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
+                WFPhotoCell *cell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
                 selectedPhoto = _slideshow.photos[self.startIndex.item];
                 self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:selectedPhoto];
                 
@@ -424,7 +430,6 @@
                         Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
                         [slide addPhoto:selectedPhoto];
                         [slide setIndex:@(_slideshow.slides.count)];
-                        NSLog(@"new slide index: %@",slide.index);
                         [_slideshow addSlide:slide];
                         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                             
@@ -476,9 +481,9 @@
                             [strongSelf.collectionView insertItemsAtIndexPaths:@[ strongSelf.moveToIndexPath ]];
                         }
                     } completion:^(BOOL finished) {
-                        WFArtCell *movedCell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.moveToIndexPath];
+                        WFPhotoCell *movedCell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.moveToIndexPath];
                         [movedCell.contentView setAlpha:1.f];
-                        WFArtCell *oldIndexCell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
+                        WFPhotoCell *oldIndexCell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
                         [oldIndexCell.contentView setAlpha:1.f];
                     }];
                     
@@ -501,7 +506,7 @@
     [UIView animateWithDuration:.23f animations:^{
         self.draggingView.transform = CGAffineTransformIdentity;
     } completion:^(BOOL finished) {
-        WFArtCell *cell = (WFArtCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
+        WFPhotoCell *cell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
         [cell.contentView setAlpha:1.f];
         
         [self.draggingView removeFromSuperview];
@@ -553,31 +558,27 @@
         [parameters setObject:_slideshow.slideshowDescription forKey:@"description"];
     }
     
-    NSMutableArray *slideshowPhotos = [NSMutableArray array];
+    NSMutableArray *slideshowPhotos = [NSMutableArray arrayWithCapacity:_slideshow.photos.count];
     for (Photo *photo in _slideshow.photos){
         [slideshowPhotos addObject:photo.identifier];
     }
-    NSLog(@"slideshow arts: %@",slideshowPhotos);
-    [parameters setObject:[slideshowPhotos componentsJoinedByString:@","] forKey:@"photo_ids"];
+    NSLog(@"slideshow photos: %@",slideshowPhotos);
+    [parameters setObject:slideshowPhotos forKey:@"photo_ids"];
     
-    NSMutableArray *slides = [NSMutableArray array];
-    for (Slide *slide in _slideshow.slides){
+    [_slideshow.slides enumerateObjectsUsingBlock:^(Slide *slide, NSUInteger idx, BOOL *stop) {
         NSMutableDictionary *slideObject = [NSMutableDictionary dictionary];
         if (slide && ![slide.identifier isEqualToNumber:@0]){
             [slideObject setObject:slide.identifier forKey:@"slide_id"];
         }
         
-        NSLog(@"art count %d for slide index %@",slide.photos.count, slide.index);
+        NSLog(@"art count %lu for slide index %@",(unsigned long)slide.photos.count, slide.index);
         NSMutableArray *artIds = [NSMutableArray arrayWithCapacity:slide.photos.count];
         [slide.photos enumerateObjectsUsingBlock:^(Art *art, NSUInteger idx, BOOL *stop) {
             [artIds addObject:art.identifier];
         }];
-        [slideObject setObject:artIds forKey:@"art_ids"];
-        //[slideObject setObject:slide.index forKey:@"index"];
-        [slides addObject:slideObject];
-    }
-    NSLog(@"slides: %@",slides);
-    [parameters setObject:slides forKey:@"slides"];
+        [slideObject setObject:artIds forKey:@"photo_ids"];
+        [parameters setObject:slideObject forKey:[NSString stringWithFormat:@"slides[%lu]",(unsigned long)idx]];
+    }];
     
     if ([_slideshow.identifier isEqualToNumber:@0]){
         [manager POST:[NSString stringWithFormat:@"slideshows"] parameters:@{@"slideshow":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -613,7 +614,37 @@
 }
 
 - (void)share {
-    NSLog(@"Should be sharing");
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
+    WFTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tables"];
+    vc.lightTableDelegate = self;
+    [vc setLightTables:_currentUser.lightTables.array.mutableCopy];
+    CGFloat vcHeight = _currentUser.lightTables.count*54.f > 260.f ? 260 : (_currentUser.lightTables.count)*54.f;
+    vc.preferredContentSize = CGSizeMake(270, vcHeight + 34.f); // add the header height
+    self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
+    self.popover.delegate = self;
+    [self.popover presentPopoverFromBarButtonItem:shareButton permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+}
+
+- (void)lightTableSelected:(NSNumber *)lightTableId {
+    Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
+    [lightTable addSlideshow:_slideshow];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        [WFAlert show:[NSString stringWithFormat:@"Dropped to \"%@\"",lightTable.name] withTime:2.7f];
+    }];
+    
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    [parameters setObject:_slideshow.identifier forKey:@"slideshow_id"];
+    [manager POST:[NSString stringWithFormat:@"light_tables/%@/add_slideshow",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success adding slideshow to light table: %@",responseObject);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed to add slideshow to light table: %@",error.description);
+    }];
 }
 
 - (void)startSearch {
@@ -671,21 +702,25 @@
 }
 
 - (void)playSlideshow {
-    showSlideshow = YES;
-    showMetadata = NO;
-    WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
-    [vc setSlideshow:_slideshow];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    if (_slideshow.slides.count){
+        showSlideshow = YES;
+        showMetadata = NO;
+        WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
+        [vc setSlideshow:_slideshow];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        [self presentViewController:nav animated:YES completion:^{
+            
+        }];
+    } else {
+        [WFAlert show:@"Remember to add at least one slide before playing your slideshow." withTime:3.3f];
+    }
 }
 
-- (void)showMetadata:(Art*)art{
+- (void)showMetadata:(Photo*)photo{
     WFArtMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"ArtMetadata"];
-    [vc setArt:art];
+    [vc setPhoto:photo];
     vc.transitioningDelegate = self;
     vc.modalPresentationStyle = UIModalPresentationCustom;
     showSlideshow = NO;

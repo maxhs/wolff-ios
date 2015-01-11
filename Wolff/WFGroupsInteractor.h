@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "WFTablesViewController.h"
 
-@interface WFGroupsInteractor : UIPercentDrivenInteractiveTransition <WFTablesViewControllerPanTarget>
+@interface WFGroupsInteractor : UIPercentDrivenInteractiveTransition <WFLightTablesDelegate>
 
 -(id)initWithParentViewController:(UIViewController *)viewController;
 

@@ -42,11 +42,36 @@
     [self.view setBackgroundColor:[UIColor clearColor]];
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     self.tableView.tableFooterView = [UIView new];
+    NSMutableSet *artSet = [NSMutableSet set];
+    if (_slide.photos.count){
+        for (Photo *photo in _slide.photos){
+            [artSet addObject:photo.art];
+        }
+    } else {
+        for (Photo *photo in _photos){
+            [artSet addObject:photo.art];
+        }
+    }
+    for (Art *art in artSet){
+        [self loadMetadata:art];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     navBarShadowView.hidden = YES;
+}
+
+- (void)loadMetadata:(Art*)art{
+    [manager GET:[NSString stringWithFormat:@"arts/%@",art.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success loading art: %@",responseObject);
+        [art populateFromDictionary:[responseObject objectForKey:@"art"]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [self.tableView reloadData];
+        }];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed to load art: %@",error.description);
+    }];
 }
 
 - (void)setupDateFormatter {
@@ -70,9 +95,9 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideMetadataCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
+    [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
     NSArray *photosArray = _photos.count ? _photos.array : _slide.photos.array;
     Photo *photo;
-    Art *art = photo.art;
     if (photosArray.count > 1){
         if (indexPath.section == 0){
             photo = photosArray.firstObject;
@@ -82,10 +107,11 @@
     } else {
         photo = photosArray.firstObject;
     }
-    
+    Art *art = photo.art;
+    [cell.textLabel setTextColor:[UIColor whiteColor]];
     switch (indexPath.row) {
         case 0:
-            [cell.textLabel setText:photo.art.title];
+            [cell.textLabel setText:art.title];
             [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]];
             break;
         case 1:
@@ -94,26 +120,29 @@
             if (artists.length > 1){
                 [cell.textLabel setText:artists];
             } else {
-                [cell.textLabel setText:@"Artist(s) unknown..."];
+                [cell.textLabel setText:@"Artist(s) Unknown"];
                 [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
+                [cell.textLabel setTextColor:[UIColor lightGrayColor]];
             }
         }
             break;
         case 2:
         {
             if (art.interval.single){
+                //check exact date
                 [cell.textLabel setText:[dateFormatter stringFromDate:art.interval.single]];
-            } else if (![art.interval.beginRange isEqualToNumber:@0] && ![art.interval.endRange isEqualToNumber:@0]) {
+            } else if (art.interval.beginRange && ![art.interval.beginRange isEqualToNumber:@0] && art.interval.endRange && ![art.interval.endRange isEqualToNumber:@0]) {
+                //check for range
                 NSString *beginSuffix = art.interval.beginSuffix.length ? art.interval.beginSuffix : @"CE";
                 NSString *endSuffix = art.interval.endSuffix.length ? art.interval.endSuffix : @"CE";
                 [cell.textLabel setText:[NSString stringWithFormat:@"%@ %@ - %@ %@",art.interval.beginRange, beginSuffix, art.interval.endRange, endSuffix]];
-            } else if (![art.interval.year isEqualToNumber:@0]){
+            } else if (art.interval.year && ![art.interval.year isEqualToNumber:@0]){
                 NSString *suffix = art.interval.suffix.length ? art.interval.suffix : @"CE";
                 [cell.textLabel setText:[NSString stringWithFormat:@"%@ %@",art.interval.year, suffix]];
             } else {
                 [cell.textLabel setText:@"No date listed"];
                 [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
-                
+                [cell.textLabel setTextColor:[UIColor lightGrayColor]];
             }
         }
             break;
@@ -125,8 +154,10 @@
             } else {
                 [cell.textLabel setText:@"No materials listed"];
                 [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
+                [cell.textLabel setTextColor:[UIColor lightGrayColor]];
             }
         }
+            break;
         case 4:
         {
             NSString *locations = [art locationsToSentence];
@@ -138,6 +169,7 @@
                 [cell.textLabel setTextColor:[UIColor lightGrayColor]];
             }
         }
+            break;
         default:
             break;
     }
@@ -172,8 +204,8 @@
     if (_photos.count || _slide.photos.count > 1){
         CGFloat yOffset = section == 0 ? 0 : 66;
         UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, yOffset, tableView.frame.size.width, 34)];
-        [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThin] size:0]];
-        [headerLabel setTextColor:[UIColor colorWithWhite:1 alpha:.23]];
+        [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+        [headerLabel setTextColor:[UIColor colorWithWhite:1 alpha:.43]];
         [headerLabel setTextAlignment:NSTextAlignmentCenter];
         if (section == 0){
             [headerLabel setText:@"LEFT"];

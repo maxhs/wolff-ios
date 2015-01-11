@@ -17,6 +17,8 @@
 @dynamic createdDate;
 @dynamic user;
 @dynamic art;
+@dynamic photo;
 @dynamic artist;
+@dynamic table;
 
 @end

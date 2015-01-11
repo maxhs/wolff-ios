@@ -57,9 +57,9 @@
         [darkBackground setTag:kDarkBackgroundConstant];
         [darkBackground addTarget:(WFDismissableNavigationController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         
-        CGRect newArtStartFrame = CGRectMake(width*.1, 23, width*.8, height*.425);
+        CGRect newArtStartFrame = CGRectMake(width*.1, 7, width*.8, height*.475);
         toViewController.view.frame = newArtStartFrame;
-        CGRect newArtFrame = CGRectMake(width*.1, 23, width*.8, height*.425);
+        CGRect newArtFrame = CGRectMake(width*.1, 7, width*.8, height*.475);
         
         [transitionContext.containerView addSubview:darkBackground];
         [transitionContext.containerView addSubview:fromView];

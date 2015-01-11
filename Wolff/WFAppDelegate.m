@@ -12,30 +12,26 @@
 @implementation WFAppDelegate
 @synthesize manager = _manager;
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [MagicalRecord setShouldDeleteStoreOnModelMismatch:YES];
     [MagicalRecord setupAutoMigratingCoreDataStack];
+    
     [Mixpanel sharedInstanceWithToken:MIXPANEL_TOKEN];
     Mixpanel *mixpanel = [Mixpanel sharedInstance];
     [mixpanel track:@"Launch"];
     
-    [self hackForPreloadingKeyboard];
-    
     _manager = [[AFHTTPRequestOperationManager manager] initWithBaseURL:[NSURL URLWithString:kApiBaseUrl]];
-    //_manager.requestSerializer = [AFJSONRequestSerializer serializer];
     [_manager.requestSerializer setAuthorizationHeaderFieldWithUsername:@"wolff_mobile" password:@"0fd11d82b574e0b13fc66b6227c4925c"];
     [_manager.requestSerializer setValue:(IDIOM == IPAD) ? @"2" : @"1" forHTTPHeaderField:@"device_type"];
-    
-    [self customizeAppearance];
 
     // automatically log the user in if they
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken]){
-        NSLog(@"app did finish launching and we should be automatically logging in");
         NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken] forKey:@"mobile_token"];
         [self connectWithParameters:parameters];
     }
     
+    [self hackForPreloadingKeyboard];
+    [self customizeAppearance];
     [self.window makeKeyAndVisible];
     return YES;
 }
@@ -49,13 +45,11 @@
 }
 
 - (void)connectWithParameters:(NSMutableDictionary *)parameters {
-    
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken] forKey:@"device_token"];
     }
     
     [ProgressHUD show:@"Logging in..."];
-    
     [_manager POST:[NSString stringWithFormat:@"%@/sessions",kApiBaseUrl] parameters:@{@"user":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success connecting: %@",responseObject);
         if ([responseObject objectForKey:@"user"]){
@@ -138,17 +132,16 @@
     // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application
-{
+- (void)applicationDidBecomeActive:(UIApplication *)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 }
 
 - (void)logout {
     //[self cleanAndResetDB];
-    NSLog(@"Log out!");
     NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
     [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
     [NSUserDefaults resetStandardUserDefaults];
+    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kExistingUser];
     [[NSUserDefaults standardUserDefaults] synchronize];    
     [ProgressHUD dismiss];
 }

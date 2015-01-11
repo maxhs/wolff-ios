@@ -29,12 +29,13 @@
 @property (nonatomic, retain) NSString * avatarMedium;
 @property (nonatomic, retain) NSString * avatarLarge;
 @property (nonatomic, retain) Institution *institution;
-@property (nonatomic, retain) NSOrderedSet *tables;
+@property (nonatomic, retain) NSOrderedSet *lightTables;
 @property (nonatomic, retain) NSOrderedSet *arts;
 @property (nonatomic, retain) NSOrderedSet *favorites;
 @property (nonatomic, retain) NSOrderedSet *slideshows;
 @property (nonatomic, retain) NSOrderedSet *comments;
 @property (nonatomic, retain) NSOrderedSet *notifications;
+@property (nonatomic, retain) NSOrderedSet *photos;
 
 @end
 

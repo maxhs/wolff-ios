@@ -25,7 +25,7 @@
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
 @property (weak, nonatomic) IBOutlet UILabel *noResultsPrompt;
-@property (strong, nonatomic) NSMutableArray *arts;
+@property (strong, nonatomic) NSMutableArray *photos;
 @property (weak, nonatomic) id<WFSearchDelegate> searchDelegate;
 @property BOOL shouldShowSearchBar;
 @property BOOL shouldShowTiles;

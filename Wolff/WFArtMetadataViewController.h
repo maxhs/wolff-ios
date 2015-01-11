@@ -21,7 +21,7 @@
 @property (weak, nonatomic) IBOutlet UIButton *dropToTableButton;
 @property (weak, nonatomic) IBOutlet UIButton *flagButton;
 @property (weak, nonatomic) IBOutlet UIButton *favoriteButton;
-@property (strong, nonatomic) Art *art;
+@property (strong, nonatomic) Photo *photo;
 
 - (void)dismiss;
 

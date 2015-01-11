@@ -11,6 +11,7 @@
 #import "WFAppDelegate.h"
 #import "WFSlideMetadataViewController.h"
 #import "WFSlideMetadataAnimator.h"
+#import "WFUtilities.h"
 
 @interface WFSlideshowViewController () <UIToolbarDelegate, UIViewControllerTransitioningDelegate, UIGestureRecognizerDelegate> {
     UIBarButtonItem *dismissButton;
@@ -49,6 +50,8 @@
     CGPoint lastPoint;
     
     NSInteger currentPage;
+    UIImageView *navBarShadowView;
+    UIImageView *toolBarShadowView;
 }
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *slideshowTitleButtonItem;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *slideNumberButtonItem;
@@ -64,6 +67,8 @@
     [self setUpNavBar];
     
     barsVisible = YES;
+    navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
+    toolBarShadowView = [WFUtilities findNavShadow:self.bottomToolbar];
     
     [_bottomToolbar setBarStyle:UIBarStyleBlackTranslucent];
     [_bottomToolbar setTranslucent:YES];
@@ -105,7 +110,7 @@
     _collectionView.delaysContentTouches = NO;
     [_slideshowTitleButtonItem setTitle:_slideshow.title];
     currentPage = 1;
-    [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %d",currentPage]];
+    [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
 }
 
 - (void)setUpNavBar {
@@ -120,6 +125,8 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     topInset = _collectionView.contentInset.top;
+    [navBarShadowView setHidden:YES];
+    [toolBarShadowView setHidden:YES];
 }
 
 - (void)showMetadata {
@@ -161,7 +168,8 @@
     NSInteger page = lround(fractionalPage)+1; // offset since we're starting on page 1
     if (currentPage != page) {
         currentPage = page;
-        [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %d",currentPage]];
+        [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
+        currentSlide = _slideshow.slides[currentPage-1];
     }
 }
 

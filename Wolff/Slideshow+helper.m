@@ -27,12 +27,12 @@
     }
     if ([dictionary objectForKey:@"slides"] && [dictionary objectForKey:@"slides"] != [NSNull null]){
         NSMutableOrderedSet *slides = [NSMutableOrderedSet orderedSet];
-        for (NSDictionary *artDict in [dictionary objectForKey:@"slides"]){
-            Slide *slide = [Slide MR_findFirstByAttribute:@"identifier" withValue:[artDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+        for (NSDictionary *dict in [dictionary objectForKey:@"slides"]){
+            Slide *slide = [Slide MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!slide){
                 slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [slide populateFromDictionary:artDict];
+            [slide populateFromDictionary:dict];
             [slides addObject:slide];
         }
         /*for (Slide *slide in self.slides){
@@ -43,19 +43,19 @@
         }*/
         self.slides = slides;
     }
-//    if ([dictionary objectForKey:@"arts"] && [dictionary objectForKey:@"arts"] != [NSNull null]){
-//        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-//        for (id dict in [dictionary objectForKey:@"arts"]){
-//            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-//            Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-//            if (!art){
-//                art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-//            }
-//            [art populateFromDictionary:dict];
-//            [set addObject:art];
-//        }
-//        self.arts = set;
-//    }
+    if ([dictionary objectForKey:@"photos"] && [dictionary objectForKey:@"photos"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"photos"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!photo){
+                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [photo populateFromDictionary:dict];
+            [set addObject:photo];
+        }
+        self.photos = set;
+    }
 }
 
 - (void)addPhoto:(Photo *)photo {

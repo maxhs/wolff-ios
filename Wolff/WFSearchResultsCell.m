@@ -17,7 +17,7 @@
     [self setBackgroundColor:[UIColor clearColor]];
     [self.imageTile setAlpha:0.0];
     [self.artLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [self.artistLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
+    [self.artistLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];
     [self.artistLabel setTextColor:[UIColor lightGrayColor]];
 }
 
@@ -32,11 +32,17 @@
     // Configure the view for the selected state
 }
 
-- (void)configureForArt:(Art *)art {
-    [self.artLabel setText:art.title];
-    NSString *artists = art.artistsToSentence;
-    [self.artistLabel setText:artists.length ? artists : @"Artist Unknown"];
-    NSURL *artUrl = [NSURL URLWithString:art.photo.thumbImageUrl];
+- (void)configureForPhoto:(Photo *)photo {
+    [self.artLabel setText:photo.art.title];
+    NSString *artists = photo.art.artistsToSentence;
+    if (artists.length){
+        [self.artistLabel setText:artists];
+        [self.artistLabel setTextColor:[UIColor blackColor]];
+    } else {
+        [self.artistLabel setText:@"Artist Uknown"];
+        [self.artistLabel setTextColor:[UIColor lightGrayColor]];
+    }
+    NSURL *artUrl = [NSURL URLWithString:photo.thumbImageUrl];
     [self.imageTile sd_setImageWithURL:artUrl placeholderImage:nil options:0 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
         [UIView animateWithDuration:.23f animations:^{
             [self.imageTile setAlpha:1.0];

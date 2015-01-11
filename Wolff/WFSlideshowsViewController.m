@@ -10,12 +10,13 @@
 #import "WFAppDelegate.h"
 #import "WFSlideshowCell.h"
 
-@interface WFSlideshowsViewController () {
+@interface WFSlideshowsViewController () <UIAlertViewDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     User *_currentUser;
     UIRefreshControl *refreshControl;
     BOOL loading;
+    NSIndexPath *indexPathForDeletion;
 }
 
 @end
@@ -92,7 +93,13 @@
             [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
         } else {
             Slideshow *slideshow = _currentUser.slideshows[indexPath.row];
-            [cell.textLabel setText:slideshow.title];
+            if (slideshow.title.length){
+                [cell.textLabel setText:slideshow.title];
+                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+            } else {
+                [cell.textLabel setText:@"No name..."];
+                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];
+            }
         }
         
     } else {
@@ -117,6 +124,55 @@
         }
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0){
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        indexPathForDeletion = [NSIndexPath indexPathForRow:indexPath.row inSection:indexPath.section];
+        [self confirmDeletion];
+    }
+}
+
+- (void)confirmDeletion {
+    Slideshow *slideshow = _currentUser.slideshows[indexPathForDeletion.row];
+    NSString *title = slideshow.title.length ? [NSString stringWithFormat:@"\"%@\"",slideshow.title] : @"this slideshow";
+    [[[UIAlertView alloc] initWithTitle:@"Confirmation Needed" message:[NSString stringWithFormat:@"Are you sure you want to delete %@? This can NOT be undone.",title] delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Delete",nil] show];
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Delete"]){
+        [self deleteSlideshow];
+    } else {
+        indexPathForDeletion = nil;
+    }
+}
+
+- (void)deleteSlideshow {
+    Slideshow *slideshow = _currentUser.slideshows[indexPathForDeletion.row];
+    if (slideshow && ![slideshow.identifier isEqualToNumber:@0]){
+        [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            [self.tableView beginUpdates];
+            [_currentUser removeSlideshow:slideshow];
+            [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
+            [self.tableView endUpdates];
+            
+            [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                
+            }];
+            NSLog(@"Success deleting this slideshow: %@",responseObject);
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to delete this slideshow: %@",error.description);
+        }];
+    }
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {

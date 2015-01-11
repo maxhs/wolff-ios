@@ -9,6 +9,8 @@
 #import "WFAssetGroupPickerController.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 #import "WFImagePickerController.h"
+#import "WFAssetGroupPickerCell.h"
+#import "WFNewArtViewController.h"
 
 @interface WFAssetGroupPickerController () {
     ALAssetsLibrary *_assetsLibrary;
@@ -22,15 +24,25 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.tableView.rowHeight = 80.f;
-    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
+    [self.view setBackgroundColor:[UIColor clearColor]];
+    [self.tableView setBackgroundColor:[UIColor clearColor]];
+    [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.03]];
+    self.tableView.rowHeight = 100.f;
     
     _assetsLibrary = [[ALAssetsLibrary alloc] init];
     _assetGroups = [NSMutableArray array];
     [self loadGroups];
     
-    cancelButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(cancel)];
+    cancelButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = cancelButton;
+    
+    UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.view.frame];
+    [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
+    [backgroundToolbar setTranslucent:YES];
+    [self.tableView setBackgroundView:backgroundToolbar];
+    
+    //make sure the buttons are tinted white
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
 }
 
 - (void)loadGroups {
@@ -79,7 +91,7 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"GroupCell" forIndexPath:indexPath];
+    WFAssetGroupPickerCell *cell = [tableView dequeueReusableCellWithIdentifier:@"GroupCell" forIndexPath:indexPath];
     
     ALAssetsGroup *group = _assetGroups[indexPath.row];
     CGImageRef posterImageRef = [group posterImage];
@@ -101,6 +113,9 @@
     [super prepareForSegue:segue sender:sender];
     if ([segue.identifier isEqualToString:@"AssetGroupSelected"]) {
         WFImagePickerController *imagePicker = [segue destinationViewController];
+        if ([self.navigationController.presentingViewController isKindOfClass:[WFNewArtViewController class]]){
+            imagePicker.delegate = (WFNewArtViewController*)self.navigationController.presentingViewController;
+        }
         NSIndexPath *selectedIndexPath = (NSIndexPath*)sender;
         [imagePicker setAssetsGroup:_assetGroups[selectedIndexPath.row]];
     }
@@ -150,6 +165,11 @@
 }
 */
 
+- (void)dismiss {
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+    
+    }];
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

@@ -56,16 +56,23 @@
         [darkBackground setTag:kDarkBackgroundConstant];
         [darkBackground addTarget:(WFNewArtViewController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         
-        CGRect newArtStartFrame = CGRectMake(width*.1, 30, width*.8, height*.45);
-        toViewController.view.frame = newArtStartFrame;
-        CGRect newArtFrame = CGRectMake(width*.1, 30, width*.8, height*.45);
+        CGRect newArtStartFrame = CGRectMake(0, 0, width, height*.5);
+        toView.frame = newArtStartFrame;
+        CGRect newArtFrame = CGRectMake(0, 0, width, height*.5);
         
         [transitionContext.containerView addSubview:darkBackground];
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:toView];
         
+        // set the new art view background here, becuase we're resetting the framing (and it's not reflects in either the viewDidLoad or viewWillAppear methods
+        UIToolbar *toolbarBackground = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, newArtFrame.size.width, newArtFrame.size.height)];
+        [toolbarBackground setBarStyle:UIBarStyleBlackTranslucent];
+        [toolbarBackground setTranslucent:YES];
+        [toView addSubview:toolbarBackground];
+        [toView sendSubviewToBack:toolbarBackground];
+        
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            toViewController.view.frame = newArtFrame;
+            toView.frame = newArtFrame;
             [darkBackground setAlpha:1.0];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
@@ -73,14 +80,14 @@
     } else {
         UIButton *darkBackground = (UIButton*)[transitionContext.containerView viewWithTag:kDarkBackgroundConstant];
         
-        toViewController.view.userInteractionEnabled = YES;
+        toView.userInteractionEnabled = YES;
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
         
         NSTimeInterval outDuration = [self transitionDuration:transitionContext]*.7;
         [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.8 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            fromViewController.view.transform = CGAffineTransformMakeScale(.87, .87);
-            [fromViewController.view setAlpha:0.0];
+            fromView.transform = CGAffineTransformMakeScale(.87, .87);
+            [fromView setAlpha:0.0];
             [darkBackground setAlpha:0.0];
         } completion:^(BOOL finished) {
             [darkBackground removeFromSuperview];

@@ -28,12 +28,14 @@
     [self.textLabel setText:@""];
     [_artLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
     [_artLabel setTextColor:[UIColor whiteColor]];
+    
+    UIView *selectedView = [[UIView alloc] initWithFrame:self.frame];
+    [selectedView setBackgroundColor:kDarkTableViewCellSelectionColor];
+    self.selectedBackgroundView = selectedView;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
-
-    // Configure the view for the selected state
 }
 
 - (void)configureForArt:(Art*)art {
@@ -41,6 +43,12 @@
 }
 
 - (void)configureForTable:(Table *)table {
-    [_artLabel setText:table.name];
+    if (table.name.length){
+        [_artLabel setText:table.name];
+        [_artLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    } else {
+        [_artLabel setText:@"No name..."];
+        [_artLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
+    }
 }
 @end

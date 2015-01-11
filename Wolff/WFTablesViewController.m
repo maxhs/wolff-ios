@@ -13,7 +13,6 @@
 @interface WFTablesViewController () {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-    NSMutableArray *tables;
     User *_currentUser;
     CGFloat height;
     CGFloat width;
@@ -22,17 +21,22 @@
 @end
 
 @implementation WFTablesViewController
+@synthesize lightTables = _lightTables;
 
--(id)initWithPanTarget:(id<WFTablesViewControllerPanTarget>)panTarget {
+-(id)initWithPanTarget:(id<WFLightTablesDelegate>)lightTableDelegate {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        _panTarget = panTarget;
+        _lightTableDelegate = lightTableDelegate;
     }
     return self;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [self.view setBackgroundColor:[UIColor clearColor]];
+    [self.tableView setBackgroundColor:[UIColor clearColor]];
+    [self.tableView setSeparatorColor:[UIColor colorWithWhite:0 alpha:.07]];
+        self.tableView.rowHeight = 54.f;
     
     if (IDIOM == IPAD){
         if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
@@ -46,11 +50,8 @@
     
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
     
-    tables = [Table MR_findAll].mutableCopy;
-
-    [self.tableView reloadData];
+    _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -65,9 +66,19 @@
     [self.view addSubview:footerContainerView];
 }
 
-- (void)loadGroups {
-    [manager GET:[NSString stringWithFormat:@"users/%@/groups",_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success getting groups: %@", responseObject);
+- (void)loadLightTables {
+    [manager GET:[NSString stringWithFormat:@"users/%@/light_tables",_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success getting light tables: %@", responseObject);
+        for (NSDictionary *dict in [responseObject objectForKey:@"light_tables"]){
+            Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!lightTable){
+                lightTable = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [lightTable populateFromDictionary:dict];
+            [_currentUser addLightTable:lightTable];
+        }
+        _lightTables = [NSMutableArray arrayWithArray:_currentUser.lightTables.array.mutableCopy];
+        [self.tableView reloadData];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error getting groups: %@",error.description);
     }];
@@ -80,14 +91,39 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return tables.count;
+    return _lightTables.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFTableCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LightTableCell" forIndexPath:indexPath];
-    [cell configureForTable:(Table*)tables[indexPath.row]];
+    [cell configureForTable:(Table*)_lightTables[indexPath.row]];
     
     return cell;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 34.f)];
+    [headerView setBackgroundColor:[UIColor clearColor]];
+    
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, tableView.frame.size.width, 34.f)];
+    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
+    [headerLabel setTextColor:[UIColor colorWithWhite:.5 alpha:.5]];
+    [headerLabel setText:@"SHARE ON LIGHT TABLE"];
+    [headerView addSubview:headerLabel];
+    
+    return headerView;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 34;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableSelected:)]){
+        Table *lightTable = (Table*)_lightTables[indexPath.row];
+        [self.lightTableDelegate lightTableSelected:lightTable.identifier];
+    }
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 /*

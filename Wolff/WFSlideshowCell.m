@@ -13,6 +13,10 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    UIView *selectionView = [[UIView alloc] initWithFrame:self.frame];
+    [selectionView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
+    self.selectedBackgroundView = selectionView;
+    
     [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [self.textLabel setTextColor:[UIColor whiteColor]];
     [self setBackgroundColor:[UIColor clearColor]];
@@ -20,8 +24,6 @@
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
-
-    // Configure the view for the selected state
 }
 
 @end

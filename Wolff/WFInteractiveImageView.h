@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Art+helper.h"
 #import "Photo+helper.h"
 
 @protocol WFImageViewDelegate <NSObject>

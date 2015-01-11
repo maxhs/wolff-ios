@@ -8,12 +8,13 @@
 
 #import <UIKit/UIKit.h>
 #import "Art+helper.h"
+#import "Photo+helper.h"
 
 @interface WFSearchResultsCell : UITableViewCell
 
 @property (weak, nonatomic) IBOutlet UILabel *artLabel;
 @property (weak, nonatomic) IBOutlet UILabel *artistLabel;
 @property (weak, nonatomic) IBOutlet UIImageView *imageTile;
-- (void) configureForArt:(Art*)art;
+- (void) configureForPhoto:(Photo*)photo;
 
 @end

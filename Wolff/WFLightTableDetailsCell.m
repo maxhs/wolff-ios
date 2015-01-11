@@ -15,7 +15,7 @@
     [super awakeFromNib];
     [self setBackgroundColor:[UIColor clearColor]];
     [self.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [self.label setTextColor:[UIColor darkGrayColor]];
+    [self.label setTextColor:[UIColor colorWithWhite:.7 alpha:.7]];
     
     [self.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [self.textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.9]];

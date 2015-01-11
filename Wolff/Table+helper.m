@@ -83,6 +83,18 @@
     self.photos = tempSet;
 }
 
+- (void)addSlideshow:(Slideshow *)slideshow {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshows];
+    [tempSet addObject:slideshow];
+    self.slideshows = tempSet;
+}
+
+- (void)removeSlideshow:(Slideshow *)slideshow {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshows];
+    [tempSet removeObject:slideshow];
+    self.slideshows = tempSet;
+}
+
 - (void)addPhotos:(NSArray *)array {
     NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
     [tempSet addObjectsFromArray:array];

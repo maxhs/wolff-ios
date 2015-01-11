@@ -7,12 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Art+helper.h"
+#import "Photo+helper.h"
 
 @interface WFSearchCollectionCell : UICollectionViewCell
 
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (weak, nonatomic) IBOutlet UIImageView *checkmark;
 - (UIImage *)getRasterizedImageCopy;
-- (void)configureForArt:(Art*)art;
+- (void)configureForPhoto:(Photo*)photo;
 @end

@@ -12,12 +12,15 @@
 #import "WFUtilities.h"
 #import "Art+helper.h"
 #import "Photo+helper.h"
+#import "WFAlert.h"
 
 #define kLightTableDescriptionPlaceholder @"Describe your light table..."
 
 @interface WFLightTableDetailsViewController () < UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UITextViewDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
+    CGFloat width;
+    CGFloat height;
     UITextField *titleTextField;
     UITextField *tableKeyTextField;
     UITextField *confirmTableKeyTextField;
@@ -25,17 +28,24 @@
     UIBarButtonItem *dismissButton;
     UIBarButtonItem *createButton;
     UIImageView *navBarShadowView;
+    Table *_table;
 }
 
 @end
 
 @implementation WFLightTableDetailsViewController
-@synthesize arts = _arts;
 @synthesize photos = _photos;
-@synthesize table = _table;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        width = screenWidth();
+        height = screenHeight();
+    } else {
+        width = screenHeight();
+        height = screenWidth();
+    }
+    
     [self.view setBackgroundColor:[UIColor clearColor]];
     [self.tableView setBackgroundColor:[UIColor clearColor]];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
@@ -44,7 +54,7 @@
     [self.navigationController.navigationBar setTintColor:[UIColor blackColor]];
     UIToolbar *backgroundView = [[UIToolbar alloc] initWithFrame:self.view.frame];
     [backgroundView setTranslucent:YES];
-    [backgroundView setBarStyle:UIBarStyleDefault];
+    [backgroundView setBarStyle:UIBarStyleBlackTranslucent];
     [self.tableView setBackgroundView:backgroundView];
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.03]];
     
@@ -54,24 +64,18 @@
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     self.title = @"New Light Table";
     
-    _table = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-    if (_photos.count){
-        NSLog(@"Should be pre-seeding table with %d image objects",_photos.count);
+    if (!_tableId || [_tableId isEqualToNumber:@0]){
+        _table = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    } else {
+        _table = [Table MR_findFirstByAttribute:@"identifier" withValue:_tableId inContext:[NSManagedObjectContext MR_defaultContext]];
     }
-}
-
-- (void)setUpFooterView {
-    UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.frame.size.width, 60)];
-    [footerView setBackgroundColor:[UIColor clearColor]];
+    if (!_table){
+        // TO DO find table from the internet
+    }
     
-    CGFloat originX = 140;
-    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(originX, 0, self.tableView.frame.size.width-originX*2, footerView.frame.size.height)];
-    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [headerLabel setTextColor:[UIColor colorWithWhite:.5 alpha:.7]];
-    [headerLabel setText:@"The table key is like a password for your light table. Invite others to your light table by sharing this key."];
-    headerLabel.numberOfLines = 0;
-    [footerView addSubview:headerLabel];
-    self.tableView.tableFooterView = footerView;
+    if (_photos.count){
+        NSLog(@"Should be pre-seeding table with %lu image objects",(unsigned long)_photos.count);
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -83,6 +87,35 @@
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     [titleTextField becomeFirstResponder];
+}
+
+
+- (void)setUpFooterView {
+    UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.frame.size.width, 120)];
+    [footerView setBackgroundColor:[UIColor clearColor]];
+    
+    CGFloat originX = 20;
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(originX, 7, self.tableView.frame.size.width-(originX*2), 37)];
+    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [headerLabel setTextColor:[UIColor colorWithWhite:.7 alpha:.7]];
+    [headerLabel setText:@"The table key is like a password for your light table. Invite others to your light table by sharing this key."];
+    headerLabel.numberOfLines = 0;
+    [footerView addSubview:headerLabel];
+    
+    UIButton *submitButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [submitButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [submitButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [submitButton setTitle:@"CREATE" forState:UIControlStateNormal];
+    [submitButton addTarget:self action:@selector(createLightTable) forControlEvents:UIControlEventTouchUpInside];
+    
+    [submitButton setFrame:CGRectMake(width*.1, headerLabel.frame.origin.y + headerLabel.frame.size.height+17, width*.6, 44)];
+    [submitButton setBackgroundColor:[UIColor blackColor]];
+    submitButton.layer.cornerRadius = 14.f;
+    submitButton.clipsToBounds = YES;
+    
+    [footerView addSubview:submitButton];
+    
+    self.tableView.tableFooterView = footerView;
 }
 
 #pragma mark - Table view data source
@@ -151,9 +184,13 @@
 }
 
 - (void)createLightTable {
+    [self.view endEditing:YES];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     if (titleTextField.text.length){
         [parameters setObject:titleTextField.text forKey:@"name"];
+    } else {
+        [WFAlert show:@"Please make sure you've included a name for your light table before continuing." withTime:3.3f];
+        return;
     }
     if (descriptionTextView.text.length){
         [parameters setObject:descriptionTextView.text forKey:@"description"];
@@ -161,16 +198,33 @@
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"owner_id"];
     }
-    if (tableKeyTextField.text.length && [tableKeyTextField.text isEqualToString:confirmTableKeyTextField.text]){
-        [parameters setObject:tableKeyTextField.text forKey:@"code"];
+    if (tableKeyTextField.text.length){
+        if ([tableKeyTextField.text isEqualToString:confirmTableKeyTextField.text]){
+            [parameters setObject:tableKeyTextField.text forKey:@"code"];
+        } else {
+            [WFAlert show:@"Please ensure that your light table keys match before continuing." withTime:3.3f];
+            return;
+        }
+    } else {
+        [WFAlert show:@"Please ensure you've added a light table key before continuing." withTime:3.3f];
+        return;
     }
+    NSMutableArray *photoIds = [NSMutableArray arrayWithCapacity:_photos.count];
+    for (Photo *photo in _photos){
+        [photoIds addObject:photo.identifier];
+    }
+    [parameters setObject:photoIds forKey:@"photo_ids"];
+    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_ids"];
     [ProgressHUD show:@"Creating light table..."];
-    [manager POST:@"light_tables" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        [_table populateFromDictionary:[responseObject objectForKey:@"table"]];
+    [manager POST:@"light_tables" parameters:@{@"light_table":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success creating a light table: %@", responseObject);
+        [_table populateFromDictionary:[responseObject objectForKey:@"light_table"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [WFAlert show:[NSString stringWithFormat:@"\"%@\" successfully created!",_table.name] withTime:2.7f];
+            [self dismiss];
             [ProgressHUD dismiss];
         }];
-        NSLog(@"Success creating a light table: %@", responseObject);
+        
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         [ProgressHUD dismiss];
         NSLog(@"Error creating a light table: %@",error.description);
@@ -199,19 +253,23 @@
     
 }
 
-- (void)doneEditing {
-    [self.view endEditing:YES];
-}
-
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
     if ([string isEqualToString:@"\n"]) {
-        if (textField == tableKeyTextField){
+        if (textField == titleTextField){
+            [descriptionTextView becomeFirstResponder];
+        } else if (textField == tableKeyTextField) {
             [confirmTableKeyTextField becomeFirstResponder];
         } else if (textField == confirmTableKeyTextField) {
             //[self connect];
         }
+        return NO;
+    } else {
+        return YES;
     }
-    return YES;
+}
+
+- (void)doneEditing {
+    [self.view endEditing:YES];
 }
 
 /*
@@ -257,6 +315,12 @@
     // Pass the selected object to the new view controller.
 }
 */
+
+- (void)dismiss {
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+        
+    }];
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

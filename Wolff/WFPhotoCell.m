@@ -1,23 +1,23 @@
 //
-//  WFArtCell.m
+//  WFPhotoCell.m
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 8/3/14.
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
-#import "WFArtCell.h"
+#import "WFPhotoCell.h"
 #import "Constants.h"
 #import <SDWebImage/UIButton+WebCache.h>
 #import <SDWebImage/UIImageView+WebCache.h>
 
-@interface WFArtCell () {
+@interface WFPhotoCell () {
     
 }
 
 @end
 
-@implementation WFArtCell
+@implementation WFPhotoCell
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -59,11 +59,11 @@
     return image;
 }
 
-- (void)configureForArt:(Art *)art {
-    if (art.photo.isLandscape){
+- (void)configureForPhoto:(Photo *)photo {
+    if (photo.isLandscape){
         [self.portraitArtImageView setHidden:YES];
         [self.landscapeArtImageView setHidden:NO];
-        [self.landscapeArtImageView sd_setImageWithURL:[NSURL URLWithString:art.photo.slideImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        [self.landscapeArtImageView sd_setImageWithURL:[NSURL URLWithString:photo.slideImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.23 animations:^{
                 [self.landscapeArtImageView setAlpha:1.0];
             } completion:^(BOOL finished) {
@@ -74,7 +74,7 @@
     } else {
         [self.portraitArtImageView setHidden:NO];
         [self.landscapeArtImageView setHidden:YES];
-        [self.portraitArtImageView sd_setImageWithURL:[NSURL URLWithString:art.photo.slideImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        [self.portraitArtImageView sd_setImageWithURL:[NSURL URLWithString:photo.slideImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.23 animations:^{
                 [self.portraitArtImageView setAlpha:1.0];
             } completion:^(BOOL finished) {

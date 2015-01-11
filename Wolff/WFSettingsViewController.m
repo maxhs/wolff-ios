@@ -32,6 +32,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = @"Settings";
+    [self.view setBackgroundColor:[UIColor clearColor]];
+    [self.tableView setBackgroundColor:[UIColor clearColor]];
     
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
@@ -39,7 +41,10 @@
     [self loadUserDetails];
     
     _tableView.rowHeight = 54.f;
-    [_tableView setBackgroundColor:[UIColor darkGrayColor]];
+    UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.view.frame];
+    [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
+    [backgroundToolbar setTranslucent:YES];
+    [_tableView setBackgroundView:backgroundToolbar];
     [self registerForKeyboardNotifications];
     [self setUpNavigationButtons];
 }
@@ -63,7 +68,7 @@
     [_versionLabel setText:[NSString stringWithFormat:@"Version: %@", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]]];
     [_versionLabel setTextColor:[UIColor lightGrayColor]];
     [_versionLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    
+    NSLog(@"footer container view: %@",_footerContainerView);
     self.tableView.tableFooterView = _footerContainerView;
 }
 
@@ -98,7 +103,7 @@
 {
     switch (section) {
         case 0:
-            return 5;
+            return 4;
             break;
         case 1:
             return 3;
@@ -231,6 +236,7 @@
 }
 
 - (void)logout {
+    NSLog(@"pressed logout");
     [delegate logout];
 }
 

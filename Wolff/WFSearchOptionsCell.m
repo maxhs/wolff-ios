@@ -15,28 +15,32 @@
     [super awakeFromNib];
     [self setBackgroundColor:[UIColor clearColor]];
     
-    [_slideShowButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [_slideShowButton.titleLabel setNumberOfLines:0];
-    [_slideShowButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
-    [_slideShowButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
-    /*CGRect slideShowButtonFrame = _slideShowButton.frame;
-    slideShowButtonFrame.size.width = self.frame.size.width/2;
-    slideShowButtonFrame.origin.x = 0;
-    [_slideShowButton setFrame:slideShowButtonFrame];*/
-    
-    [_lightTableButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
+    [_lightTableButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0]];
     [_lightTableButton.titleLabel setNumberOfLines:0];
-    [_lightTableButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+    [_lightTableButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_lightTableButton setContentHorizontalAlignment:UIControlContentHorizontalAlignmentCenter];
     [_lightTableButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
-    /*CGRect lightTableFrame = _lightTableButton.frame;
-    lightTableFrame.size.width = self.frame.size.width/2;
-    lightTableFrame.origin.x = self.frame.size.width/2;
-    [_lightTableButton setFrame:lightTableFrame];*/
     
-    [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [_slideShowButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0]];
+    [_slideShowButton.titleLabel setNumberOfLines:0];
+    [_slideShowButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_slideShowButton setContentHorizontalAlignment:UIControlContentHorizontalAlignmentCenter];
+    [_slideShowButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    
+    [_clearSelectedButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0]];
+    [_clearSelectedButton.titleLabel setNumberOfLines:0];
+    [_clearSelectedButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_clearSelectedButton setContentHorizontalAlignment:UIControlContentHorizontalAlignmentCenter];
+    [_clearSelectedButton.titleLabel setTextAlignment:NSTextAlignmentCenter];
+    
+    [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     [self.textLabel setTextColor:[UIColor darkGrayColor]];
     [self.textLabel setTextAlignment:NSTextAlignmentCenter];
+    
+    UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.frame];
+    [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
+    backgroundToolbar.translucent = YES;
+    [self setBackgroundView:backgroundToolbar];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
