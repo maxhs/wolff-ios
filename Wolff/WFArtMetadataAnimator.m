@@ -24,12 +24,15 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
+    CGRect mainScreen;
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
         width = screenWidth();
         height = screenHeight();
+        mainScreen = [UIScreen mainScreen].bounds;
     } else {
         width = screenHeight();
         height = screenWidth();
+        mainScreen = CGRectMake(0, 0, height, width);
     }
     
     // Grab the from and to view controllers from the context
@@ -52,35 +55,48 @@
         UIButton *darkBackground = [UIButton buttonWithType:UIButtonTypeCustom];
         [darkBackground setBackgroundColor:[UIColor colorWithWhite:.1 alpha:.5]];
         [darkBackground setAlpha:0.0];
-        [darkBackground setFrame:[UIScreen mainScreen].bounds];
+        [darkBackground setHidden:NO];
+        [darkBackground setUserInteractionEnabled:YES];
+        
         [darkBackground setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
         [darkBackground setTag:kDarkBackgroundConstant];
         [darkBackground addTarget:(WFArtMetadataViewController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         [transitionContext.containerView addSubview:darkBackground];
+        [darkBackground setFrame:mainScreen];
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:toView];
+        [toView setAlpha:0.0];
         
-        CGFloat offset = screenHeight()/2-350;
+        CGFloat offset = height/2-350;
         UITableView *metadataTableView = [(WFArtMetadataViewController*)toViewController tableView];
         [metadataTableView setContentInset:UIEdgeInsetsMake(offset, 0, offset, 0)];
         [metadataTableView setContentOffset:CGPointMake(0, -offset)];
-        int lowerBound = 1;
-        int upperBound = 3;
+        int lowerBound = 1; int upperBound = 3;
         int rndValue = lowerBound + arc4random() % (upperBound - lowerBound);
         CGFloat xOffset = rndValue == 1 ? width : -width;
         
-        CGRect metadataStartFrame = CGRectMake((width/2-300)-xOffset, 0, 600, height);
-        toView.frame = metadataStartFrame;
-        [toView setAlpha:0.0];
+        CGRect metadataFrame;
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f) {
+            metadataFrame = CGRectMake(width/2-300, 0, 600, height);
+            CGRect metadataStartFrame = CGRectMake((width/2-300)-xOffset, 0, 600, height);
+            toView.frame = metadataStartFrame;
+        } else {
+            metadataFrame = CGRectMake(0, width/2-300, height, 600);
+            CGRect metadataStartFrame = CGRectMake(0, (width/2-300)-xOffset, height, 600);
+            toView.frame = metadataStartFrame;
+        }
 
-        CGRect metadataFrame = CGRectMake(width/2-300, 0, 600, height);
+        
     
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.975 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseOut animations:^{
             toView.frame = metadataFrame;
             [toView setAlpha:1.0];
             [darkBackground setAlpha:1.0];
+            
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
+            NSLog(@"where is dark background? %@, %f",darkBackground, darkBackground.alpha);
+            NSLog(@"to view: %@",toView);
         }];
     } else {
         UIButton *darkBackground = (UIButton*)[transitionContext.containerView viewWithTag:kDarkBackgroundConstant];

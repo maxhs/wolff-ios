@@ -35,7 +35,6 @@
     [_scrollView setFrame:CGRectMake(0, 0, width, height)];
     [_scrollView setBackgroundColor:[UIColor clearColor]];
     
-    NSLog(@"scrollview content width: %f",_scrollView.contentSize.width);
     [_skipButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
     [_skipButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [_skipButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];

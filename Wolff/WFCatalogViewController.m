@@ -196,8 +196,7 @@
     [self loadPhotos];
 }
 
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
+- (void)showWalkthrough {
     //if (![[NSUserDefaults standardUserDefaults] boolForKey:kExistingUser]){
         newUser = YES;
         WFWalkthroughViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Walkthrough"];
@@ -348,9 +347,11 @@
                 NSLog(@"Can't load any more photo. We got it all!");
             }
             [self.collectionView reloadData];
+            [self showWalkthrough];
             [self endRefresh];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [self endRefresh];
+            [self showWalkthrough];
         }];
     }
 }
@@ -1264,8 +1265,10 @@
     } else {
         //show the light table sidebar
         CGRect collectionFrame = _collectionView.frame;
+        NSLog(@"sidebar width: %f",kSidebarWidth);
         collectionFrame.origin.x = kSidebarWidth;
         collectionFrame.size.width -= kSidebarWidth;
+        NSLog(@"collection frame: %f",collectionFrame.size.width);
         tableIsVisible = YES;
         tablesButton.selected = YES;
         
