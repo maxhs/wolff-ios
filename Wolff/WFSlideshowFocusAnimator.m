@@ -14,6 +14,7 @@
 @interface WFSlideshowFocusAnimator () {
     CGFloat width;
     CGFloat height;
+    BOOL iOS8;
 }
 
 @end
@@ -24,12 +25,17 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
+    CGRect mainScreen;
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        iOS8 = YES;
         width = screenWidth();
         height = screenHeight();
+        mainScreen = [UIScreen mainScreen].bounds;
     } else {
+        iOS8 = NO;
         width = screenHeight();
         height = screenWidth();
+        mainScreen = CGRectMake(0, 0, height, width);
     }
 
     // Grab the from and to view controllers from the context
@@ -48,9 +54,6 @@
         toView = toViewController.view;
     }
     
-    // Set our ending frame. We'll modify this later if we have to
-    CGRect mainScreen = [UIScreen mainScreen].bounds;
-    
     if (self.presenting) {
         fromViewController.view.userInteractionEnabled = NO;
         
@@ -64,8 +67,10 @@
         [blurredButton setAlpha:0.0];
         [blurredButton setTag:kBlurredBackgroundConstant];
         
-        [toView setFrame:[UIScreen mainScreen].bounds];
-        toView.transform = CGAffineTransformMakeScale(.95, .95);
+        [toView setFrame:mainScreen];
+        if (iOS8){
+            toView.transform = CGAffineTransformMakeScale(.95, .95);
+        }
         [toView setAlpha:0.0];
         
         [transitionContext.containerView addSubview:fromView];
@@ -76,7 +81,9 @@
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.75 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [blurredButton setAlpha:1.0];
             [toView setAlpha:1.0];
-            toView.transform = CGAffineTransformIdentity;
+            if (iOS8){
+                toView.transform = CGAffineTransformIdentity;
+            }
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];

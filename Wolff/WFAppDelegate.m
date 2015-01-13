@@ -32,7 +32,7 @@
     
     [self hackForPreloadingKeyboard];
     [self customizeAppearance];
-    [self.window makeKeyAndVisible];
+    
     return YES;
 }
 
@@ -61,13 +61,12 @@
             [_currentUser populateFromDictionary:userDict];
             [self setUserDefaults];
             
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                //NSLog(@"Success logging in user: %u",success);
-                if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(loginSuccessful)]) {
-                    [self.loginDelegate loginSuccessful];
-                }
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"LoginSuccessful" object:nil];
-            }];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+            
+            if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(loginSuccessful)]) {
+                [self.loginDelegate loginSuccessful];
+            }
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"LoginSuccessful" object:nil];
         }
         [ProgressHUD dismiss];
     
@@ -81,11 +80,13 @@
             if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(incorrectPassword)]) {
                 [self.loginDelegate incorrectPassword];
             }
+        } else if ([operation.responseString isEqualToString:kInvalidToken]){
+            
         } else {
             [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to log you in." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
         }
-        //NSLog(@"Failed to connect: %@",error.description);
-        //NSLog(@"Response string: %@",operation.responseString);
+        NSLog(@"Failed to connect: %@",error.description);
+        NSLog(@"Response string: %@",operation.responseString);
     }];
 }
 

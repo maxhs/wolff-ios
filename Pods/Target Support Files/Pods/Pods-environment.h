@@ -78,18 +78,6 @@
 #define COCOAPODS_VERSION_MINOR_Mixpanel_MPCategoryHelpers 6
 #define COCOAPODS_VERSION_PATCH_Mixpanel_MPCategoryHelpers 2
 
-// ObjectiveRecord
-#define COCOAPODS_POD_AVAILABLE_ObjectiveRecord
-#define COCOAPODS_VERSION_MAJOR_ObjectiveRecord 1
-#define COCOAPODS_VERSION_MINOR_ObjectiveRecord 5
-#define COCOAPODS_VERSION_PATCH_ObjectiveRecord 0
-
-// ObjectiveSugar
-#define COCOAPODS_POD_AVAILABLE_ObjectiveSugar
-#define COCOAPODS_VERSION_MAJOR_ObjectiveSugar 1
-#define COCOAPODS_VERSION_MINOR_ObjectiveSugar 1
-#define COCOAPODS_VERSION_PATCH_ObjectiveSugar 0
-
 // PaymentKit
 #define COCOAPODS_POD_AVAILABLE_PaymentKit
 #define COCOAPODS_VERSION_MAJOR_PaymentKit 1

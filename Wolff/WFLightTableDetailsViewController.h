@@ -14,5 +14,7 @@
 @property (strong, nonatomic) NSMutableOrderedSet *photos;
 @property (strong, nonatomic) NSNumber *tableId;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (weak, nonatomic) IBOutlet UIButton *dismissButton;
 - (void)dismiss;
+
 @end

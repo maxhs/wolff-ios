@@ -14,6 +14,9 @@
 @interface WFSlideMetadataAnimator () {
     CGFloat width;
     CGFloat height;
+    BOOL iOS8;
+    CGRect mainScreen;
+    CGFloat differential;
 }
 @end
 
@@ -25,30 +28,30 @@
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        width = screenWidth();
-        height = screenHeight();
+        iOS8 = YES;
+        width = screenWidth(); height = screenHeight();
+        mainScreen = [UIScreen mainScreen].bounds;
     } else {
-        width = screenHeight();
-        height = screenWidth();
+        iOS8 = NO;
+        width = screenHeight(); height = screenWidth();
+        mainScreen = CGRectMake(0, 0, height, width);
     }
+    
     // Grab the from and to view controllers from the context
     UIViewController *fromViewController, *toViewController;
     UIView *fromView,*toView;
     fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f) {
-        // iOS 8 logic
+    if (iOS8) {
         fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
         toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     } else {
-        // iOS 7 and below logic
         fromView = fromViewController.view;
         toView = toViewController.view;
     }
     
-    // Set our ending frame. We'll modify this later if we have to
-    CGRect mainScreen = [UIScreen mainScreen].bounds;
+    differential = width/3;
     
     if (self.presenting) {
         fromViewController.view.userInteractionEnabled = NO;
@@ -63,15 +66,22 @@
         [blurredButton setAlpha:0.0];
         [blurredButton setTag:kBlurredBackgroundConstant];
         
-        CGFloat differential = width/3;
-        [toView setFrame:CGRectMake(width, 0, (differential), height)];
-        [toViewController setPreferredContentSize:CGSizeMake((differential), height)];
-        CGRect toEndFrame = toView.frame;
-        toEndFrame.origin.x -= differential;
+        CGRect toEndFrame;
+        if (iOS8){
+            [toView setFrame:CGRectMake(width, 0, (differential), height)];
+            [toViewController setPreferredContentSize:CGSizeMake((differential), height)];
+            toEndFrame = toView.frame;
+            toEndFrame.origin.x -= differential;
+        } else {
+            [toView setFrame:CGRectMake(0, -width, width, (differential))];
+            [toViewController setPreferredContentSize:CGSizeMake((differential), width)];
+            toEndFrame = toView.frame;
+            toEndFrame.origin.x = 0;
+            toEndFrame.origin.y = 0;
+        }
         
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:toView];
-        
         [transitionContext.containerView insertSubview:blurredButton belowSubview:toView];
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
@@ -80,18 +90,23 @@
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
-    }
-    else {
+    
+    } else {
         UIImageView *blurredButton = (UIImageView*)[transitionContext.containerView viewWithTag:kBlurredBackgroundConstant];
         toViewController.view.userInteractionEnabled = YES;
         
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
         
-        CGRect fromEndFrame = fromView.frame;
-        fromEndFrame.origin.x = width;
+        CGRect fromEndFrame;
+        if (iOS8){
+            fromEndFrame = fromView.frame;
+            fromEndFrame.origin.x = width;
+        } else {
+            fromEndFrame = CGRectMake(0, -width, width, differential);
+        }
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [blurredButton setAlpha:0.0];
             [fromView setFrame:fromEndFrame];
         } completion:^(BOOL finished) {
@@ -102,8 +117,8 @@
 }
 
 -(UIImage *)blurredSnapshotForWindow:(UIWindow*)window {
-    UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, height), NO, window.screen.scale);
-    [window drawViewHierarchyInRect:CGRectMake(0, 0, width, height) afterScreenUpdates:NO];
+    UIGraphicsBeginImageContextWithOptions(mainScreen.size, NO, window.screen.scale);
+    [window drawViewHierarchyInRect:mainScreen afterScreenUpdates:NO];
     UIImage *snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
     UIImage *blurredSnapshotImage = [snapshotImage applyDarkEffect];
     UIGraphicsEndImageContext();

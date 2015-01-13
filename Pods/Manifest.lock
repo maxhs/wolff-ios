@@ -27,9 +27,6 @@ PODS:
   - Mixpanel (2.6.2):
     - Mixpanel/MPCategoryHelpers (= 2.6.2)
   - Mixpanel/MPCategoryHelpers (2.6.2)
-  - ObjectiveRecord (1.5.0):
-    - ObjectiveSugar
-  - ObjectiveSugar (1.1.0)
   - PaymentKit (1.1.1)
   - SDWebImage (3.7.1):
     - SDWebImage/Core (= 3.7.1)
@@ -43,7 +40,6 @@ DEPENDENCIES:
   - DateTools
   - MagicalRecord
   - Mixpanel
-  - ObjectiveRecord
   - PaymentKit
   - SDWebImage
   - Stripe
@@ -53,8 +49,6 @@ SPEC CHECKSUMS:
   DateTools: 7c2d233ea2d4bda3a717d0cd5f58da926a5998d0
   MagicalRecord: 2b471584fc9e3137f3d0a56967917baa4979e224
   Mixpanel: c075cedebda3328ce1ee29a18429e265ce967cd8
-  ObjectiveRecord: 173527cdf923ee956f6b0a4430916534b54583f5
-  ObjectiveSugar: f48793f5902c77cfc02a4ce46d2e8ecddcad4dc2
   PaymentKit: f77b4d5cee45947949429c3d587e8eb160a3c9e2
   SDWebImage: 116e88633b5b416ea0ca4b334a4ac59cf72dd38d
   Stripe: c9484104b577a9ae0aa275614640b2ee7b9f92f5

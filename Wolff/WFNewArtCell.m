@@ -13,6 +13,7 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+
     [self setBackgroundColor:[UIColor clearColor]];
     
     [_label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
@@ -25,9 +26,10 @@
     [_textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
     [_textField setTextColor:[UIColor whiteColor]];
     [_textField setTintColor:[UIColor whiteColor]];
-    //_textField.layer.borderColor = [UIColor colorWithWhite:.9 alpha:1].CGColor;
-    //_textField.layer.borderWidth = .5f;
     _textField.layer.cornerRadius = 2.f;
+    
+    [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [self.textLabel setTextColor:[UIColor whiteColor]];
 }
 
 @end

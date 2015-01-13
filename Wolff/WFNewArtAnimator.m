@@ -13,6 +13,8 @@
 @interface WFNewArtAnimator () {
     CGFloat width;
     CGFloat height;
+    BOOL iOS8;
+    CGRect mainScreen;
 }
 
 @end
@@ -23,12 +25,14 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        width = screenWidth();
-        height = screenHeight();
+    if (SYSTEM_VERSION >= 8.f){
+        iOS8 = YES;
+        width = screenWidth(); height = screenHeight();
+        mainScreen = [UIScreen mainScreen].bounds;
     } else {
-        width = screenHeight();
-        height = screenWidth();
+        iOS8 = NO;
+        width = screenHeight(); height = screenWidth();
+        mainScreen = CGRectMake(0, 0, height, width);
     }
     
     // Grab the from and to view controllers from the context
@@ -37,12 +41,10 @@
     fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f) {
-        // iOS 8 logic
+    if (iOS8) {
         fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
         toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     } else {
-        // iOS 7 and below logic
         fromView = fromViewController.view;
         toView = toViewController.view;
     }
@@ -51,28 +53,33 @@
         UIButton *darkBackground = [UIButton buttonWithType:UIButtonTypeCustom];
         [darkBackground setBackgroundColor:[UIColor colorWithWhite:.1 alpha:.5]];
         [darkBackground setAlpha:0.0];
-        [darkBackground setFrame:[UIScreen mainScreen].bounds];
+        [darkBackground setFrame:mainScreen];
         [darkBackground setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
         [darkBackground setTag:kDarkBackgroundConstant];
         [darkBackground addTarget:(WFNewArtViewController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         
-        CGRect newArtStartFrame = CGRectMake(0, 0, width, height*.5);
-        toView.frame = newArtStartFrame;
-        CGRect newArtFrame = CGRectMake(0, 0, width, height*.5);
-        
-        [transitionContext.containerView addSubview:darkBackground];
         [transitionContext.containerView addSubview:fromView];
+        [transitionContext.containerView addSubview:darkBackground];
         [transitionContext.containerView addSubview:toView];
+        [toView setAlpha:0.0];
         
-        // set the new art view background here, becuase we're resetting the framing (and it's not reflects in either the viewDidLoad or viewWillAppear methods
-        UIToolbar *toolbarBackground = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, newArtFrame.size.width, newArtFrame.size.height)];
+        UIToolbar *toolbarBackground; // set the new art view background here, becuase we're resetting the framing (and it's not reflects in either the viewDidLoad or viewWillAppear methods
+        if (iOS8){
+            CGRect newArtStartFrame = CGRectMake(0, 0, width, height*.5);
+            toView.frame = newArtStartFrame;
+            toolbarBackground = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, toView.frame.size.width, toView.frame.size.height)];
+        } else {
+            CGRect newArtStartFrame = CGRectMake(0, 0, height*5, width);
+            toView.frame = newArtStartFrame;
+            toolbarBackground = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, toView.frame.size.height, toView.frame.size.width)];
+        }
         [toolbarBackground setBarStyle:UIBarStyleBlackTranslucent];
         [toolbarBackground setTranslucent:YES];
         [toView addSubview:toolbarBackground];
         [toView sendSubviewToBack:toolbarBackground];
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            toView.frame = newArtFrame;
+            [toView setAlpha:1.0];
             [darkBackground setAlpha:1.0];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];

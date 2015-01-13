@@ -11,6 +11,7 @@
 #import "WFImagePickerController.h"
 #import "WFAssetGroupPickerCell.h"
 #import "WFNewArtViewController.h"
+#import "Constants.h"
 
 @interface WFAssetGroupPickerController () {
     ALAssetsLibrary *_assetsLibrary;
@@ -92,6 +93,9 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFAssetGroupPickerCell *cell = [tableView dequeueReusableCellWithIdentifier:@"GroupCell" forIndexPath:indexPath];
+    if (SYSTEM_VERSION < 7.f){
+        [cell setBackgroundColor:[UIColor clearColor]];
+    }
     
     ALAssetsGroup *group = _assetGroups[indexPath.row];
     CGImageRef posterImageRef = [group posterImage];

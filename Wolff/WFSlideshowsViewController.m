@@ -172,6 +172,16 @@
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to delete this slideshow: %@",error.description);
         }];
+    } else {
+        [self.tableView beginUpdates];
+        [_currentUser removeSlideshow:slideshow];
+        [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
+        [self.tableView endUpdates];
+        
+        [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
     }
 }
 

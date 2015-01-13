@@ -40,10 +40,10 @@
 
 - (void)addPhoto:(Photo *)photo {
     NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
-    if (![self.photos containsObject:photo]){
-        [photos addObject:photo];
+    if ([self.photos containsObject:photo]){
+        
     }
-    
+    [photos addObject:photo];
     self.photos = photos;
 }
 

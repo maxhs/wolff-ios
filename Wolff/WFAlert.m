@@ -15,6 +15,7 @@
     CGFloat dismissTime;
     CGFloat width;
     CGFloat height;
+    CGRect mainScreen;
     UITapGestureRecognizer *dismissGesture;
 }
 @end
@@ -53,18 +54,22 @@
 - (id)init {
     self = [super initWithFrame:[[UIScreen mainScreen] bounds]];
     id<UIApplicationDelegate> delegate = [[UIApplication sharedApplication] delegate];
-    if ([delegate respondsToSelector:@selector(window)])
+    if ([delegate respondsToSelector:@selector(window)]){
         window = [delegate performSelector:@selector(window)];
-    else window = [[UIApplication sharedApplication] keyWindow];
+    } else {
+        window = [[UIApplication sharedApplication] keyWindow];
+    }
     background = nil; label = nil;
     self.alpha = 0;
     
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+    if (SYSTEM_VERSION >= 8.f){
         width = screenWidth();
         height = screenHeight();
+        mainScreen = [UIScreen mainScreen].bounds;
     } else {
         width = screenHeight();
         height = screenWidth();
+        mainScreen = CGRectMake(0, 0, height, width);
     }
     
     dismissGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hideAlert)];
@@ -85,10 +90,9 @@
 
 - (void)create {
     if (background == nil) {
-        
         background = [[UIImageView alloc] initWithImage:[self blurredSnapshotForWindow]];
         [background setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-        [background setFrame:self.window.frame];
+        [background setFrame:mainScreen];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(rotate:) name:UIDeviceOrientationDidChangeNotification object:nil];
         [self addSubview:background];
     }
@@ -107,8 +111,8 @@
 }
 
 -(UIImage *)blurredSnapshotForWindow {
-    UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, height), NO, [UIScreen mainScreen].scale);
-    [window drawViewHierarchyInRect:CGRectMake(0, 0, width, height) afterScreenUpdates:NO];
+    UIGraphicsBeginImageContextWithOptions(mainScreen.size, NO, [UIScreen mainScreen].scale);
+    [window drawViewHierarchyInRect:mainScreen afterScreenUpdates:NO];
     UIImage *snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
     UIImage *blurredSnapshotImage = [snapshotImage applyDarkEffect];
     UIGraphicsEndImageContext();
@@ -120,7 +124,7 @@
 }
 
 - (void)orient {
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+    if (SYSTEM_VERSION >= 8.f){
         
     } else {
         CGFloat rotate;
@@ -136,7 +140,8 @@
         else if (orient == UIInterfaceOrientationLandscapeLeft)         rotate = - M_PI_2;
         else if (orient == UIInterfaceOrientationLandscapeRight)		rotate = + M_PI_2;
         else rotate = 0.0;
-        background.transform = CGAffineTransformMakeRotation(rotate);
+        //background.transform = CGAffineTransformMakeRotation(rotate);
+        label.transform = CGAffineTransformMakeRotation(rotate);
     }
 }
 

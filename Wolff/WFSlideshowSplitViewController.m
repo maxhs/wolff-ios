@@ -98,6 +98,10 @@
         _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     }
     
+    UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(slideDoubleTap:)];
+    doubleTap.numberOfTapsRequired = 2;
+    [self.tableView addGestureRecognizer:doubleTap];
+    
     [_longPressRecognizer addTarget:self action:@selector(longPressed:)];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didHideEditMenu:) name:UIMenuControllerDidHideMenuNotification object:nil];
@@ -111,7 +115,6 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    
     // only have the title textField become first responder if the slideshow title is still blank
     if (!_slideshow.title.length){
         [titleTextField becomeFirstResponder];
@@ -128,11 +131,11 @@
     searchButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"search"] style:UIBarButtonItemStylePlain target:self action:@selector(startSearch)];
     saveButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"cloud"] style:UIBarButtonItemStylePlain target:self action:@selector(showSaveMenu)];
     settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"wrench"] style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
-    playButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(playSlideshow)];
+    playButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(playSlideshowFromStart)];
     
     //only show the settings buttons, and such, to the slideshow's owner
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [_slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
-        self.navigationItem.rightBarButtonItems = @[playButton, settingsButton, searchButton, saveButton, shareButton];
+        self.navigationItem.rightBarButtonItems = @[playButton, /*settingsButton,*/ searchButton, saveButton, shareButton];
     } else {
         self.navigationItem.rightBarButtonItems = @[playButton, searchButton];
     }
@@ -204,6 +207,12 @@
     }
 }
 
+- (void)slideDoubleTap:(UITapGestureRecognizer*)gestureRecognizer {
+    CGPoint loc = [gestureRecognizer locationInView:_tableView];
+    NSIndexPath *selectedIndexPath = [_tableView indexPathForRowAtPoint:loc];
+    [self playSlideshow:selectedIndexPath.row];
+}
+
 - (void)longPressGesture:(UILongPressGestureRecognizer*)gestureRecognizer {
     
     WFInteractiveImageView *imageView = (WFInteractiveImageView*)gestureRecognizer.view;
@@ -266,18 +275,18 @@
 - (BOOL)canBecomeFirstResponder {
     return YES;
 }
-
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    return YES;
-}
-
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
+//
+//- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+//    return YES;
+//}
+//
+//- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+//    if (editingStyle == UITableViewCellEditingStyleDelete) {
+//        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+//    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
+//        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+//    }   
+//}
 
 // Override to support rearranging the table view.
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
@@ -368,9 +377,8 @@
     CGPoint locInScreen = CGPointMake( loc.x-self.collectionView.contentOffset.x+hoverOffset, heightInScreen );
     
     if (sender.state == UIGestureRecognizerStateBegan) {
-        NSLog(@"loc start: x %f and y: %f",loc.x, loc.y);
+        //NSLog(@"loc start: x %f and y: %f",loc.x, loc.y);
         if (loc.x < 0){
-            NSLog(@"we've selected a slide, not an art piece");
             self.startIndex = [self.tableView indexPathForRowAtPoint:loc];
             if (self.startIndex) {
                 WFSlideTableCell *cell = (WFSlideTableCell*)[self.tableView cellForRowAtIndexPath:self.startIndex];
@@ -389,7 +397,6 @@
                 }];
             }
         } else {
-            NSLog(@"we've selected a slide");
             self.startIndex = [self.collectionView indexPathForItemAtPoint:loc];
             if (self.startIndex) {
                 WFPhotoCell *cell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
@@ -432,13 +439,14 @@
                         [slide setIndex:@(_slideshow.slides.count)];
                         [_slideshow addSlide:slide];
                         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                            
                             [self.tableView reloadData];
                         }];
                         
                     } else if (loc.y < upperBounds && loc.y > lowerBounds){
                         Slide *slide = [_slideshow.slides objectAtIndex:idx];
-                        if (selectedPhoto)[slide addPhoto:selectedPhoto];
+                        if (selectedPhoto){
+                            [slide addPhoto:selectedPhoto];
+                        }
                         [self.tableView reloadData];
                         *stop = YES;
                         [self endPressAnimation];
@@ -476,7 +484,6 @@
                     [self.collectionView performBatchUpdates:^{
                         __strong typeof(self) strongSelf = weakSelf;
                         if (strongSelf) {
-                            
                             [strongSelf.collectionView deleteItemsAtIndexPaths:@[ self.startIndex ]];
                             [strongSelf.collectionView insertItemsAtIndexPaths:@[ strongSelf.moveToIndexPath ]];
                         }
@@ -701,11 +708,16 @@
     [self.popover presentPopoverFromBarButtonItem:settingsButton permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
-- (void)playSlideshow {
+- (void)playSlideshowFromStart{
+    [self playSlideshow:0];
+}
+
+- (void)playSlideshow:(NSInteger)startIndex {
     if (_slideshow.slides.count){
         showSlideshow = YES;
         showMetadata = NO;
         WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
+        [vc setStartIndex:startIndex];
         [vc setSlideshow:_slideshow];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         nav.transitioningDelegate = self;

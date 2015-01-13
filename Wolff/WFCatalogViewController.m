@@ -38,8 +38,9 @@
 #import "WFLightTableDetailsViewController.h"
 #import "WFWalkthroughViewController.h"
 #import "WFWalkthroughAnimator.h"
+#import "WFSlideshowCell.h"
 
-@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate, WFLoginDelegate, WFMenuDelegate, UIPopoverControllerDelegate, WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, UIGestureRecognizerDelegate> {
+@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, UIGestureRecognizerDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     User *_currentUser;
@@ -82,6 +83,8 @@
     BOOL showPrivate;
     BOOL showFavorites;
     BOOL showLightTable;
+    BOOL iOS8;
+    BOOL slideshowSidebarMode;
     Table *_table;
     CGFloat topInset;
     UIRefreshControl *tableViewRefresh;
@@ -94,6 +97,7 @@
     UITapGestureRecognizer *catalogDoubleTap;
     UITapGestureRecognizer *comparisonTap;
     
+    NSIndexPath *indexPathForDeletion;
     NSIndexPath *indexPathForFavoriteToRemove;
     NSIndexPath *indexPathForLightTableArtToRemove;
     WFInteractiveImageView *comparison1;
@@ -101,6 +105,7 @@
     
     WFSearchResultsViewController *searchResultsVc;
     NSString *searchText;
+    UIButton *resetButton;
 }
 @property (weak, nonatomic) IBOutlet UIView *comparisonContainerView;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
@@ -118,14 +123,14 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if (IDIOM == IPAD){
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-            width = screenWidth();
-            height = screenHeight();
-        } else {
-            width = screenHeight();
-            height = screenWidth();
-        }
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        iOS8 = YES;
+        width = screenWidth();
+        height = screenHeight();
+    } else {
+        iOS8 = NO;
+        width = screenHeight();
+        height = screenWidth();
     }
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
@@ -197,15 +202,15 @@
 }
 
 - (void)showWalkthrough {
-    //if (![[NSUserDefaults standardUserDefaults] boolForKey:kExistingUser]){
+    if (![[NSUserDefaults standardUserDefaults] boolForKey:kExistingUser]){
         newUser = YES;
         WFWalkthroughViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Walkthrough"];
         vc.modalPresentationStyle = UIModalPresentationCustom;
         vc.transitioningDelegate = self;
         [self presentViewController:vc animated:YES completion:^{
-            
+            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kExistingUser];
         }];
-    //}
+    }
 }
 
 - (void)refreshTableView:(UIRefreshControl*)refreshControl {
@@ -290,6 +295,9 @@
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     topInset = self.navigationController.navigationBar.frame.size.height;
     self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+    if (!iOS8){
+        self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+    }
 }
 
 - (void)configureSelectedButton {
@@ -420,63 +428,104 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 3;
+    if (slideshowSidebarMode){
+        return 2;
+    } else {
+        return 3;
+    }
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    switch (section) {
-        case 0:
-            return 2;
-            break;
-        case 1:
-            if (_tables.count){
-                return _tables.count;
-            } else {
-                return 1;
-            }
-            break;
-        case 2:
+    if (slideshowSidebarMode){
+        if (section == 0){
+            return _currentUser.slideshows.count;
+        } else {
             return 1;
-            break;
-        default:
-            return 0;
-            break;
+        }
+    } else {
+        switch (section) {
+            case 0:
+                return 2;
+                break;
+            case 1:
+                if (_tables.count){
+                    return _tables.count;
+                } else {
+                    return 1;
+                }
+                break;
+            case 2:
+                return 1;
+                break;
+            default:
+                return 0;
+                break;
+        }
     }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    WFMainTableCell *cell = (WFMainTableCell *)[tableView dequeueReusableCellWithIdentifier:@"MainCell"];
-
-    if (indexPath.section == 0){
-        if (indexPath.row == 0){
-            [cell.imageView setImage:[UIImage imageNamed:@"whiteLock"]];
-            [cell.textLabel setText:@"Private"];
+    if (slideshowSidebarMode){
+        WFSlideshowCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideshowCell" forIndexPath:indexPath];
+        [cell setBackgroundColor:[UIColor clearColor]];
+        
+        if (indexPath.section == 0){
+            [cell.imageView setImage:nil];
+            if (!loading && _currentUser.slideshows.count == 0){
+                [cell.textLabel setText:@"No Slideshows"];
+                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+            } else {
+                Slideshow *slideshow = _currentUser.slideshows[indexPath.row];
+                if (slideshow.title.length){
+                    [cell.textLabel setText:slideshow.title];
+                    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+                } else {
+                    [cell.textLabel setText:@"No name..."];
+                    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];
+                }
+            }
+            
         } else {
-            [cell.imageView setImage:[UIImage imageNamed:@"whiteFavorite"]];
-            [cell.textLabel setText:@"Favorites"];
+            [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
+            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
+            [cell.textLabel setText:@"New Slideshow"];
         }
-        
-    } else if (indexPath.section == 1){
-        
-        if (_tables.count){
-            Table *table;
-            table = _tables[indexPath.row];
-            [cell configureForTable:table];
-            [cell.textLabel setText:@""];
-            cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-        } else {
-            cell.selectionStyle = UITableViewCellSelectionStyleNone;
-            [cell.textLabel setTextAlignment:NSTextAlignmentCenter];
-            [cell.textLabel setText:@"No Light Tables"];
-            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
-        }
-        [cell.imageView setImage:nil];
-        
+        return cell;
     } else {
-        [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
-        [cell.textLabel setText:@"Light Table"];
+        WFMainTableCell *cell = (WFMainTableCell *)[tableView dequeueReusableCellWithIdentifier:@"MainCell"];
+        [cell awakeFromNib];
+        
+        if (indexPath.section == 0){
+            if (indexPath.row == 0){
+                [cell.imageView setImage:[UIImage imageNamed:@"whiteLock"]];
+                [cell.textLabel setText:@"Private"];
+            } else {
+                [cell.imageView setImage:[UIImage imageNamed:@"whiteFavorite"]];
+                [cell.textLabel setText:@"Favorites"];
+            }
+            
+        } else if (indexPath.section == 1){
+            
+            if (_tables.count){
+                Table *table;
+                table = _tables[indexPath.row];
+                [cell configureForTable:table];
+                [cell.textLabel setText:@""];
+                cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+            } else {
+                cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                [cell.textLabel setTextAlignment:NSTextAlignmentCenter];
+                [cell.textLabel setText:@"No Light Tables"];
+                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+            }
+            [cell.imageView setImage:nil];
+            
+        } else {
+            [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
+            [cell.textLabel setText:@"Light Table"];
+        }
+        return cell;
     }
-    return cell;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
@@ -488,10 +537,16 @@
 }
 
 - (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    CGFloat headerHeight = (section == 1 ? 34.f : 0.f);
+    CGFloat headerHeight;
+    if (section == 1 && !slideshowSidebarMode){
+        headerHeight = 34.f;
+    } else {
+        headerHeight = 0.f;
+    }
+    
     UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, headerHeight)];
     [headerView setBackgroundColor:[UIColor clearColor]];
-    if (section == 1){
+    if (section == 1 && !slideshowSidebarMode){
         UILabel *headerLabel = [[UILabel alloc] init];
         [headerView addSubview:headerLabel];
         [headerLabel setFrame:CGRectMake(10, 0, width-10, headerHeight)];
@@ -505,21 +560,137 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 0){
-        if (indexPath.row == 0){
-            [self showPrivateArt];
+    if (slideshowSidebarMode){
+        if (indexPath.section == 0){
+            Slideshow *slideshow = _currentUser.slideshows[indexPath.row];
+            [self slideshowSelected:slideshow];
         } else {
-            [self showFavorites];
+            [self newSlideshow];
         }
-    } else if (indexPath.section == 1 && _currentUser.lightTables.count){
-        Table *table = _currentUser.lightTables[indexPath.row];
-        [self showTable:table];
-    } else if (indexPath.section == 2){
-        [self newLightTable];
     } else {
-        
+        if (indexPath.section == 0){
+            if (indexPath.row == 0){
+                [self showPrivateArt];
+            } else {
+                [self showFavorites];
+            }
+        } else if (indexPath.section == 1 && _currentUser.lightTables.count){
+            Table *table = _currentUser.lightTables[indexPath.row];
+            [self showTable:table];
+        } else if (indexPath.section == 2){
+            [self newLightTable];
+        } else {
+            
+        }
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (slideshowSidebarMode){
+        if (indexPath.section == 0){
+            return YES;
+        } else {
+            return NO;
+        }
+    } else {
+        if (indexPath.section == 0 || indexPath.section == 2){
+            return NO;
+        } else {
+            return YES;
+        }
+    }
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        indexPathForDeletion = indexPath;
+        [self confirmDeletion];
+    }
+}
+
+- (void)confirmDeletion {
+    NSString *message;
+    if (slideshowSidebarMode){
+        message = @"Are you sure you want to delete this slideshow?";
+    } else {
+        message = @"Are you sure you want to delete this light table?";
+    }
+    [[[UIAlertView alloc] initWithTitle:@"Confirmation Needed" message:message delegate:self cancelButtonTitle:@"No" otherButtonTitles:@"Delete", nil] show];
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Delete"]){
+        if (slideshowSidebarMode){
+            [self deleteSlideshow];
+        } else {
+            [self deleteLightTable];
+        }
+    } else {
+        indexPathForDeletion = nil;
+    }
+}
+
+- (void)deleteLightTable {
+    Table *lightTable = _currentUser.lightTables[indexPathForDeletion.row];
+    NSLog(@"light table for deletion: %@",lightTable.name);
+    if (lightTable && ![lightTable.identifier isEqualToNumber:@0]){
+        [manager DELETE:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            [self.tableView beginUpdates];
+            [_currentUser removeLightTable:lightTable];
+            [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
+            [self.tableView endUpdates];
+            
+            [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                
+            }];
+            NSLog(@"Success deleting this light table: %@",responseObject);
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to delete this light table: %@",error.description);
+        }];
+    } else {
+        [self.tableView beginUpdates];
+        [_currentUser removeLightTable:lightTable];
+        [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
+        [self.tableView endUpdates];
+        
+        [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
+    }
+
+}
+
+- (void)deleteSlideshow {
+    Slideshow *slideshow = _currentUser.slideshows[indexPathForDeletion.row];
+    if (slideshow && ![slideshow.identifier isEqualToNumber:@0]){
+        [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            [self.tableView beginUpdates];
+            [_currentUser removeSlideshow:slideshow];
+            [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
+            [self.tableView endUpdates];
+            
+            [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                
+            }];
+            NSLog(@"Success deleting this slideshow: %@",responseObject);
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to delete this slideshow: %@",error.description);
+        }];
+    } else {
+        [self.tableView beginUpdates];
+        [_currentUser removeSlideshow:slideshow];
+        [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
+        [self.tableView endUpdates];
+        
+        [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
+    }
 }
 
 - (void)resetArtBooleans {
@@ -634,12 +805,10 @@
     } else if (showFavorites){
         return _favorites.count;
     } else if (searching){
-        if (_filteredPhotos.count == 0) {
-            NSLog(@"set no search NOT hidden");
-            [_noSearchResultsLabel setHidden:NO];
-        } else {
-            NSLog(@"set no search hidden");
+        if (_filteredPhotos.count > 0) {
             [_noSearchResultsLabel setHidden:YES];
+        } else {
+            [_noSearchResultsLabel setHidden:NO];
         }
         return _filteredPhotos.count;
     } else {
@@ -669,7 +838,8 @@
         }
         
         [headerView.headerLabel setTextColor:[UIColor blackColor]];
-        [headerView.resetButton addTarget:self action:@selector(resetLightTable) forControlEvents:UIControlEventTouchUpInside];
+        resetButton = headerView.resetButton;
+        [headerView.resetButton addTarget:self action:@selector(resetCatalog) forControlEvents:UIControlEventTouchUpInside];
         reusableview = headerView;
     }
     
@@ -681,9 +851,17 @@
     return reusableview;
 }
 
-- (void)resetLightTable {
+- (void)resetCatalog {
     [self resetArtBooleans];
-    [self.collectionView reloadData];
+    dispatch_async(dispatch_get_main_queue(), ^(void){
+        searching = NO;
+        [_filteredPhotos removeAllObjects];
+        [_noSearchResultsLabel setHidden:YES];
+        [self.searchBar setText:@""];
+        [self.searchBar resignFirstResponder];
+        [self.view endEditing:YES];
+        [self.collectionView reloadData];
+    });
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
@@ -1146,7 +1324,7 @@
     }
     WFMenuViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Menu"];
     vc.menuDelegate = self;
-    vc.preferredContentSize = CGSizeMake(230, 162);
+    vc.preferredContentSize = CGSizeMake(170, 162);
     self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
     self.popover.delegate = self;
     [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
@@ -1194,15 +1372,19 @@
 
 - (void)showSlideshows {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        WFSlideshowsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshows"];
-        vc.slideshowDelegate = self;
-        CGFloat slideshowHeight = _currentUser.slideshows.count > 9 ? 440.f : 44.f*(_currentUser.slideshows.count+1);
-        vc.preferredContentSize = CGSizeMake(300, slideshowHeight+34.f); // add the section header height
-        self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
-        self.popover.delegate = self;
-        [self.popover setBackgroundColor:[UIColor blackColor]];
-        
-        [self.popover presentPopoverFromBarButtonItem:slideshowsBarButton permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+        if (slideshowSidebarMode){
+            [self.tableView reloadData];
+            [self showSidebar];
+        } else {
+            slideshowSidebarMode = YES;
+            if (tableIsVisible){
+                [self.tableView reloadData];
+            } else {
+                [self.tableView reloadData];
+                [self showSidebar];
+            }
+        }
+        slideshowsButton.selected = tableIsVisible ? NO : YES;
     } else {
         [self showLogin];
     }
@@ -1243,17 +1425,44 @@
 }
 
 - (void)showLightTables {
+    if (slideshowSidebarMode){
+        if (tableIsVisible){
+            slideshowSidebarMode = NO;
+            [self.tableView reloadData];
+        } else {
+            slideshowSidebarMode = NO;
+            [self.tableView reloadData];
+            [self showSidebar];
+        }
+    } else {
+        slideshowSidebarMode = NO; //light table mode
+        [self.tableView reloadData];
+        [self showSidebar];
+    }
+    tablesButton.selected = tableIsVisible ? NO : YES;
+}
+
+- (void)showSidebar {
+    if (self.searchBar.isFirstResponder){
+        dispatch_async(dispatch_get_main_queue(), ^(void){
+            [self.searchBar resignFirstResponder];
+            searching = NO;
+        });
+    }
+
+    [_collectionView.collectionViewLayout invalidateLayout];
+    
     if (tableIsVisible){
+        tableIsVisible = NO;
         //hide the light table sidebar
         CGRect collectionFrame = _collectionView.frame;
         collectionFrame.origin.x = 0;
         collectionFrame.size.width += kSidebarWidth;
-        tableIsVisible = NO;
-        tablesButton.selected = NO;
         
-        [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.000001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             _tableView.transform = CGAffineTransformIdentity;
             _comparisonContainerView.transform = CGAffineTransformIdentity;
+            resetButton.transform = CGAffineTransformIdentity;
             [_collectionView setFrame:collectionFrame];
             [_collectionView performBatchUpdates:^{
                 [_collectionView reloadData];
@@ -1263,25 +1472,37 @@
             
         }];
     } else {
+        tableIsVisible = YES;
+        
         //show the light table sidebar
         CGRect collectionFrame = _collectionView.frame;
-        NSLog(@"sidebar width: %f",kSidebarWidth);
         collectionFrame.origin.x = kSidebarWidth;
         collectionFrame.size.width -= kSidebarWidth;
-        NSLog(@"collection frame: %f",collectionFrame.size.width);
-        tableIsVisible = YES;
-        tablesButton.selected = YES;
         
-        [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
             _tableView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
             _comparisonContainerView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
-            [_collectionView setFrame:collectionFrame];            
-            [_collectionView performBatchUpdates:^{
-                [_collectionView reloadData];
-            } completion:^(BOOL finished) { }];
+            resetButton.transform = CGAffineTransformMakeTranslation(-kSidebarWidth, 0);
+            [_collectionView setFrame:collectionFrame];
+            
+            if (iOS8){
+                [_collectionView performBatchUpdates:^{
+                    [_collectionView reloadData];
+                } completion:^(BOOL finished) {
+                
+                }];
+            }
             
         } completion:^(BOOL finished) {
-            
+            if (!iOS8){
+                [_collectionView performBatchUpdates:^{
+                    [_collectionView reloadData];
+                } completion:^(BOOL finished) {
+                    
+                }];
+            }
+            NSLog(@"where's the reset button? %@",resetButton);
+
         }];
     }
 }
@@ -1366,6 +1587,16 @@
     searching = NO;
 }
 
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+    [self.searchBar endEditing:YES];
+    searching = NO;
+}
+
+- (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
+    NSLog(@"ended editing");
+    searching = NO;
+}
+
 - (void)dismiss {
     [self dismissViewControllerAnimated:YES completion:^{
        
@@ -1390,6 +1621,7 @@
             break;
         }
     }
+    self.searchBar.delegate = self;
     [self.searchBar setSearchBarStyle:UISearchBarStyleMinimal];
 }
 
@@ -1417,11 +1649,12 @@
         searching = YES;
         [self filterContentForSearchText:searchText scope:nil];
     } else {
-        searching = NO;
-        [self.collectionView reloadData];
-        
         dispatch_async(dispatch_get_main_queue(), ^(void){
+            NSLog(@"setting searching to no");
             [self.searchBar resignFirstResponder];
+            searching = NO;
+            [_noSearchResultsLabel setHidden:YES];
+            [self.collectionView reloadData];
         });
     }
 }

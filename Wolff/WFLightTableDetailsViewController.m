@@ -17,6 +17,7 @@
 #define kLightTableDescriptionPlaceholder @"Describe your light table..."
 
 @interface WFLightTableDetailsViewController () < UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UITextViewDelegate> {
+    BOOL iOS8;
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     CGFloat width;
@@ -25,7 +26,7 @@
     UITextField *tableKeyTextField;
     UITextField *confirmTableKeyTextField;
     UITextView *descriptionTextView;
-    UIBarButtonItem *dismissButton;
+    UIBarButtonItem *dismissBarButton;
     UIBarButtonItem *createButton;
     UIImageView *navBarShadowView;
     Table *_table;
@@ -38,12 +39,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        width = screenWidth();
-        height = screenHeight();
+    if (SYSTEM_VERSION >= 8.f){
+        iOS8 = YES; width = screenWidth(); height = screenHeight();
     } else {
-        width = screenHeight();
-        height = screenWidth();
+        iOS8 = NO; width = screenHeight(); height = screenWidth();
     }
     
     [self.view setBackgroundColor:[UIColor clearColor]];
@@ -58,9 +57,11 @@
     [self.tableView setBackgroundView:backgroundView];
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.03]];
     
-    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
-    self.navigationItem.leftBarButtonItem = dismissButton;
-    dismissButton.tintColor = [UIColor blackColor];
+    dismissBarButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    self.navigationItem.leftBarButtonItem = dismissBarButton;
+    dismissBarButton.tintColor = [UIColor blackColor];
+    [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+    
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     self.title = @"New Light Table";
     
@@ -91,11 +92,11 @@
 
 
 - (void)setUpFooterView {
-    UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.frame.size.width, 120)];
+    UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 120)];
     [footerView setBackgroundColor:[UIColor clearColor]];
     
     CGFloat originX = 20;
-    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(originX, 7, self.tableView.frame.size.width-(originX*2), 37)];
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(originX, 7, self.view.frame.size.width-(originX*2), 37)];
     [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [headerLabel setTextColor:[UIColor colorWithWhite:.7 alpha:.7]];
     [headerLabel setText:@"The table key is like a password for your light table. Invite others to your light table by sharing this key."];
@@ -130,6 +131,10 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFLightTableDetailsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LightTableDetailsCell" forIndexPath:indexPath];
+    if (!iOS8){
+        [cell setBackgroundColor:[UIColor clearColor]];
+    }
+    [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
     cell.textField.delegate = self;
     switch (indexPath.row) {
         case 0:

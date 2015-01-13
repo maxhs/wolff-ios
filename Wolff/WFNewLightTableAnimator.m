@@ -14,6 +14,8 @@
 @interface WFNewLightTableAnimator () {
     CGFloat width;
     CGFloat height;
+    CGRect mainScreen;
+    BOOL iOS8;
 }
 
 @end
@@ -25,11 +27,13 @@
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        width = screenWidth();
-        height = screenHeight();
+        iOS8 = YES;
+        width = screenWidth(); height = screenHeight();
+        mainScreen = [UIScreen mainScreen].bounds;
     } else {
-        width = screenHeight();
-        height = screenWidth();
+        iOS8 = NO;
+        width = screenHeight(); height = screenWidth();
+        mainScreen = CGRectMake(0, 0, height, width);
     }
     
     // Grab the from and to view controllers from the context
@@ -38,12 +42,10 @@
     fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f) {
-        // iOS 8 logic
+    if (iOS8) {
         fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
         toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     } else {
-        // iOS 7 and below logic
         fromView = fromViewController.view;
         toView = toViewController.view;
     }
@@ -57,15 +59,22 @@
         [darkBackground setTag:kDarkBackgroundConstant];
         [darkBackground addTarget:(WFDismissableNavigationController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         
-        CGRect newArtStartFrame = CGRectMake(width*.1, 7, width*.8, height*.475);
-        toViewController.view.frame = newArtStartFrame;
-        CGRect newArtFrame = CGRectMake(width*.1, 7, width*.8, height*.475);
+        CGRect newArtFrame;
+        if (iOS8){
+            CGRect newArtStartFrame = CGRectMake(width*.1, 7, width*.8, height*.475);
+            toViewController.view.frame = newArtStartFrame;
+            newArtFrame = CGRectMake(width*.1, 7, width*.8, height*.475);
+        } else {
+            CGRect newArtStartFrame = CGRectMake(0, 0, height, width);
+            toViewController.view.frame = newArtStartFrame;
+            newArtFrame = CGRectMake(0, 0, height, width);
+        }
         
-        [transitionContext.containerView addSubview:darkBackground];
         [transitionContext.containerView addSubview:fromView];
+        [transitionContext.containerView addSubview:darkBackground];
         [transitionContext.containerView addSubview:toView];
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             toViewController.view.frame = newArtFrame;
             [darkBackground setAlpha:1.0];
         } completion:^(BOOL finished) {
@@ -80,7 +89,9 @@
         
         NSTimeInterval outDuration = [self transitionDuration:transitionContext]*.7;
         [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.8 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            fromViewController.view.transform = CGAffineTransformMakeScale(.87, .87);
+            if (iOS8){
+                fromViewController.view.transform = CGAffineTransformMakeScale(.87, .87);
+            }
             [fromViewController.view setAlpha:0.0];
             [darkBackground setAlpha:0.0];
         } completion:^(BOOL finished) {

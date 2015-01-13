@@ -14,10 +14,14 @@
 #import "WFUtilities.h"
 
 @interface WFSlideshowViewController () <UIToolbarDelegate, UIViewControllerTransitioningDelegate, UIGestureRecognizerDelegate> {
+    CGFloat width;
+    CGFloat height;
+    BOOL iOS8;
     UIBarButtonItem *dismissButton;
     UIBarButtonItem *fullScreenButton;
     UIBarButtonItem *metadataButton;
     WFAppDelegate *delegate;
+    AFHTTPRequestOperationManager *manager;
     CGFloat topInset;
     UITapGestureRecognizer *singleTap;
     BOOL barsVisible;
@@ -60,16 +64,28 @@
 @implementation WFSlideshowViewController
 
 @synthesize slideshow = _slideshow;
+@synthesize startIndex = _startIndex;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
-    [self setUpNavBar];
     
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        iOS8 = YES;
+        width = screenWidth();
+        height = screenHeight();
+    } else {
+        iOS8 = NO;
+        width = screenHeight();
+        height = screenWidth();
+    }
+    
+    delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
+    manager = delegate.manager;
+    
+    [self setUpNavBar];
     barsVisible = YES;
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     toolBarShadowView = [WFUtilities findNavShadow:self.bottomToolbar];
-    
     [_bottomToolbar setBarStyle:UIBarStyleBlackTranslucent];
     [_bottomToolbar setTranslucent:YES];
     
@@ -109,7 +125,10 @@
     _collectionView.canCancelContentTouches = YES;
     _collectionView.delaysContentTouches = NO;
     [_slideshowTitleButtonItem setTitle:_slideshow.title];
-    currentPage = 1;
+    NSLog(@"start index: %lu",(long)(unsigned)_startIndex);
+    currentPage = 1+_startIndex;
+    [_collectionView setContentOffset:CGPointMake(width*_startIndex, 0) animated:NO];
+    
     [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
 }
 

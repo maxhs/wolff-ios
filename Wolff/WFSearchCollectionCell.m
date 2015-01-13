@@ -33,8 +33,6 @@
             }];
         }];
         
-    } /*else {
-        [self.imageView setImage:nil];
-    }*/
+    }
 }
 @end

@@ -14,11 +14,12 @@
 #import "Favorite+helper.h"
 #import "Location+helper.h"
 #import <SDWebImage/UIButton+WebCache.h>
-#import <SDWebImage/UIImageView+WebCache.h>
 #import "WFTablesViewController.h"
 #import "WFAlert.h"
+#import "WFComparisonViewController.h"
+#import "WFSlideshowFocusAnimator.h"
 
-@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, WFLightTablesDelegate> {
+@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     NSDateFormatter *dateFormatter;
@@ -71,22 +72,23 @@
 }
 
 - (void)setupHeader {
-    [_topImageView setBackgroundColor:kSlideBackgroundColor];
-    _topImageView.layer.cornerRadius = 3.f;
-    _topImageView.layer.backgroundColor = [UIColor clearColor].CGColor;
+    [_imageButton setBackgroundColor:kSlideBackgroundColor];
+    _imageButton.imageView.contentMode = UIViewContentModeScaleAspectFill;
+    _imageButton.imageView.layer.cornerRadius = 3.f;
+    _imageButton.imageView.layer.backgroundColor = [UIColor clearColor].CGColor;
     self.tableView.tableHeaderView = _topImageContainerView;
-    [_topImageView setAlpha:0.0];
-    [_topImageView sd_setImageWithURL:[NSURL URLWithString:_photo.largeImageUrl] placeholderImage:nil/*[UIImage imageNamed:@"transparentIcon"]*/ completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+    [_imageButton setAlpha:0.0];
+    [_imageButton sd_setImageWithURL:[NSURL URLWithString:_photo.largeImageUrl] forState:UIControlStateNormal placeholderImage:nil/*[UIImage imageNamed:@"transparentIcon"]*/ completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
         [UIView animateWithDuration:.23 animations:^{
-            [_topImageView setBackgroundColor:[UIColor whiteColor]];
-            [_topImageView setAlpha:1.0];
+            [_imageButton setBackgroundColor:[UIColor whiteColor]];
+            [_imageButton setAlpha:1.0];
         } completion:^(BOOL finished) {
-            [_topImageView.layer setShouldRasterize:YES];
-            _topImageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+            [_imageButton.imageView.layer setShouldRasterize:YES];
+            _imageButton.imageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
         }];
-        
     }];
     
+    [_imageButton addTarget:self action:@selector(showFullScreen) forControlEvents:UIControlEventTouchUpInside];
     [_backButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
     [self setUpButtons];
     [self setPostedCredit];
@@ -168,9 +170,7 @@
 }
 
 - (void)lightTableSelected:(NSNumber *)lightTableId {
-    if (self.popover){
-        [self.popover dismissPopoverAnimated:YES];
-    }
+    if (self.popover) [self.popover dismissPopoverAnimated:YES];
     
     //refetch the light table
     Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -190,8 +190,6 @@
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to drop metadata photo to light table: %@",error.description);
         }];
-    } else {
-        
     }
 }
 
@@ -444,13 +442,24 @@
     
 }
 
+- (void)showFullScreen {
+    WFComparisonViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Comparison"];
+    [vc setPhotos:[NSMutableOrderedSet orderedSetWithObject:_photo]];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
 - (void)flag {
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:_photo.identifier forKey:@"photo_id"];
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     }
-    [manager POST:[NSString stringWithFormat:@"flags"] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [manager POST:[NSString stringWithFormat:@"flags"] parameters:@{@"flag":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success creating a flag for %@, %@",_photo.identifier, responseObject);
         [WFAlert show:@"Flagged" withTime:2.3f];
         if (self.popover){
@@ -515,6 +524,21 @@
 
 - (void)textViewDidEndEditing:(UITextView *)textView {
     
+}
+
+#pragma mark Dismiss & Transition Methods
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
+                                                                  presentingController:(UIViewController *)presenting
+                                                                      sourceController:(UIViewController *)source {
+    WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
+    animator.presenting = YES;
+    return animator;
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
+    
+    WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
+    return animator;
 }
 
 - (void)dismiss {

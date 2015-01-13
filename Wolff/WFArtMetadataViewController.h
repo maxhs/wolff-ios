@@ -13,7 +13,7 @@
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UIView *topImageContainerView;
-@property (weak, nonatomic) IBOutlet UIImageView *topImageView;
+@property (weak, nonatomic) IBOutlet UIButton *imageButton;
 @property (weak, nonatomic) IBOutlet UIButton *postedByButton;
 @property (weak, nonatomic) IBOutlet UIButton *creditButton;
 @property (weak, nonatomic) IBOutlet UIButton *backButton;

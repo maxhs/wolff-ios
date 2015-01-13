@@ -17,6 +17,7 @@ static inline int screenHeight(){ return [UIScreen mainScreen].bounds.size.heigh
 static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width; }
 #define IDIOM    UI_USER_INTERFACE_IDIOM()
 #define IPAD     UIUserInterfaceIdiomPad
+#define SYSTEM_VERSION     [[[UIDevice currentDevice] systemVersion] floatValue]
 
 #define kSidebarWidth 280.f
 #define kDefaultAnimationDuration .77f

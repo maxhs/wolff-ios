@@ -22,6 +22,7 @@
     UITextField *dateTextField;
     UITextField *locationTextField;
     UITextField *materialTextField;
+    UISwitch *privacySwitch;
     Art *_art;
     UIButton *createButton;
 }
@@ -154,11 +155,16 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 6;
+    return 7;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFNewArtCell *cell = [tableView dequeueReusableCellWithIdentifier:@"NewArtCell"];
+    if (SYSTEM_VERSION < 8.f){
+        //[cell awakeFromNib];
+        [cell setBackgroundColor:[UIColor clearColor]];
+    }
+    [cell.textField setHidden:NO];
     [cell.textField setKeyboardAppearance:UIKeyboardAppearanceDark];
     switch (indexPath.row) {
         case 0:
@@ -189,12 +195,18 @@
             materialTextField = cell.textField;
             break;
         case 5:
+            [cell.label setText:@""];
+            [cell.textLabel setText:@""];
+            [cell.textField setHidden:YES];
+            break;
+        case 6:
         {
-            [cell.label setText:@"SHOULD WE KEEP THIS ART PRIVATE?"];
-            [cell.textField setPlaceholder:@""];
-            UISwitch *privateSwitch  = [[UISwitch alloc] init];
-            [privateSwitch addTarget:self action:@selector(switchSwitched:) forControlEvents:UIControlEventValueChanged];
-            cell.accessoryView = privateSwitch;
+            [cell.label setText:@""];
+            [cell.textField setHidden:YES];
+            [cell.textLabel setText:@"Would you like to keep this art private?"];
+            privacySwitch  = [[UISwitch alloc] init];
+            [privacySwitch addTarget:self action:@selector(switchSwitched:) forControlEvents:UIControlEventValueChanged];
+            cell.accessoryView = privacySwitch;
         }
             break;
             

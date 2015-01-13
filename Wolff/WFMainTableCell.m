@@ -23,6 +23,10 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     [self setBackgroundColor:[UIColor clearColor]];
+    UIView *clearFrame = [[UIView alloc] initWithFrame:self.frame];
+    [clearFrame setBackgroundColor:[UIColor clearColor]];
+    self.backgroundView = clearFrame;
+    
     [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansSemibold] size:0]];
     [self.textLabel setTextColor:[UIColor whiteColor]];
     [self.textLabel setText:@""];

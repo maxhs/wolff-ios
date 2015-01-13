@@ -209,7 +209,7 @@
 }
 
 - (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
-    if (_filteredPhotos.count == 0){
+    if (searching && _filteredPhotos.count == 0){
         [_noResultsPrompt setHidden:NO];
     } else {
         [_noResultsPrompt setHidden:YES];
@@ -252,6 +252,22 @@
     }
 }
 
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)text {
+    if (!text.length){
+        dispatch_async(dispatch_get_main_queue(), ^(void){
+            [_filteredPhotos removeAllObjects];
+            [self.searchBar setText:@""];
+            searching = NO;
+            [_noResultsPrompt setHidden:YES];
+            if (_shouldShowTiles){
+                [self.collectionView reloadData];
+            } else {
+                [self.tableView reloadData];
+            }
+        });
+    }
+}
+
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
     [self endSearch];
     [self.tableView reloadData];
@@ -274,17 +290,18 @@
 }
 
 - (void)filterContentForSearchText:(NSString*)text scope:(NSString*)scope {
-    NSLog(@"search text: %@",text);
+    //NSLog(@"search text: %@",text);
     if (text.length) {
         [_filteredPhotos removeAllObjects];
-        for (Art *art in _photos){
+        for (Photo *photo in _photos){
+            Art *art = photo.art;
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF contains[cd] %@", text];
             if([predicate evaluateWithObject:art.title]) {
-                [_filteredPhotos addObject:art];
+                [_filteredPhotos addObject:photo];
             } else if ([predicate evaluateWithObject:art.artistsToSentence]){
-                [_filteredPhotos addObject:art];
+                [_filteredPhotos addObject:photo];
             } else if ([predicate evaluateWithObject:art.locationsToSentence]){
-                [_filteredPhotos addObject:art];
+                [_filteredPhotos addObject:photo];
             }
         }
     } else {

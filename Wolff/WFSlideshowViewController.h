@@ -15,6 +15,7 @@
 @property (weak, nonatomic) IBOutlet WFGesturableCollectionView *collectionView;
 @property (strong, nonatomic) Slideshow *slideshow;
 @property (weak, nonatomic) IBOutlet UIToolbar *bottomToolbar;
+@property NSInteger startIndex;
 
 - (void)dismiss;
 

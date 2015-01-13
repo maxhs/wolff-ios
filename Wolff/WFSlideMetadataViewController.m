@@ -18,6 +18,7 @@
     UIBarButtonItem *dismissButton;
     NSDateFormatter *dateFormatter;
     UIImageView *navBarShadowView;
+    BOOL iOS8;
 }
 
 @end
@@ -29,6 +30,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    iOS8 = SYSTEM_VERSION >= 8.f ? YES : NO;
+    
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"right"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.02]];
@@ -95,6 +98,9 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideMetadataCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
+    if (!iOS8){
+        [cell awakeFromNib];
+    }
     [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
     NSArray *photosArray = _photos.count ? _photos.array : _slide.photos.array;
     Photo *photo;

@@ -14,6 +14,8 @@
 @interface WFSettingsAnimator () {
     CGFloat width;
     CGFloat height;
+    CGRect mainScreen;
+    BOOL iOS8;
 }
 @end
 
@@ -24,12 +26,14 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        width = screenWidth();
-        height = screenHeight();
+    if (SYSTEM_VERSION >= 8.f){
+        iOS8 = YES;
+        width = screenWidth(); height = screenHeight();
+        mainScreen = [UIScreen mainScreen].bounds;
     } else {
-        width = screenHeight();
-        height = screenWidth();
+        iOS8 = NO;
+        width = screenHeight(); height = screenWidth();
+        mainScreen = CGRectMake(0, 0, height, width);
     }
     // Grab the from and to view controllers from the context
     UIViewController *fromViewController, *toViewController;
@@ -37,18 +41,12 @@
     fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f) {
-        // iOS 8 logic
+    if (iOS8) {
         fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
         toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     } else {
-        // iOS 7 and below logic
-        fromView = fromViewController.view;
-        toView = toViewController.view;
+        fromView = fromViewController.view; toView = toViewController.view;
     }
-    
-    // Set our ending frame. We'll modify this later if we have to
-    CGRect mainScreen = [UIScreen mainScreen].bounds;
     
     if (self.presenting) {
         fromViewController.view.userInteractionEnabled = NO;
@@ -63,10 +61,19 @@
         [blurredButton setAlpha:0.0];
         [blurredButton setTag:kBlurredBackgroundConstant];
         
-        [toView setFrame:CGRectMake(width, 0, width-(width/2), height)];
-        [toViewController setPreferredContentSize:CGSizeMake((width/2), height)];
-        CGRect toEndFrame = toView.frame;
-        toEndFrame.origin.x -= width/2;
+        CGRect toEndFrame;
+        if (iOS8){
+            [toView setFrame:CGRectMake(width, 0, width-(width/2), height)];
+            [toViewController setPreferredContentSize:CGSizeMake((width/2), height)];
+            toEndFrame = toView.frame;
+            toEndFrame.origin.x -= width/2;
+        } else {
+            [toView setFrame:CGRectMake(0, -height, height, width-(width/2))];
+            [toViewController setPreferredContentSize:CGSizeMake((width/2), height)];
+            toEndFrame = toView.frame;
+            toEndFrame.origin.x = 0; toEndFrame.origin.y = 0;
+        }
+        
 
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:toView];

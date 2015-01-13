@@ -24,16 +24,6 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>Pods-ObjectiveRecord.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-		</dict>
-		<key>Pods-ObjectiveSugar.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-		</dict>
 		<key>Pods-PaymentKit.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -57,52 +47,42 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>53DB6FE33A6D04F91E03BD1B</key>
+		<key>115240D37EF37DF9308217A0</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>6C1044FA4BA59812F7718458</key>
+		<key>3104EBD10C8EE93B6233029E</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>76B472A7F783A30A32952B6B</key>
+		<key>3DB9DD5ADDBB3213A9AB0516</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>86B670CAB2FDA89851B2D588</key>
+		<key>5D7A26B35F45BFB35D36401F</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>89941D2667527113F2673DD4</key>
+		<key>5F26FA17CA210D29C8686C10</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>8DA74BFB371ACF5DC322022F</key>
+		<key>855D1AA56AF5370B0366DD46</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>A544DDA906A5D8C44E6E55BC</key>
+		<key>DA3683073E0A07DF4C395C57</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>CD21A958BF3D22712CB509AA</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>EEC4A1BF18C73063ADFE82B5</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>F447B172E9C32077E3F587DD</key>
+		<key>ECB8A503D81FEAAAE1CC891C</key>
 		<dict>
 			<key>primary</key>
 			<true/>
