@@ -8,7 +8,6 @@
 
 #import "WFNewLightTableAnimator.h"
 #import "Constants.h"
-#import "WFNewLightTableViewController.h"
 #import "WFDismissableNavigationController.h"
 
 @interface WFNewLightTableAnimator () {
@@ -37,8 +36,7 @@
     }
     
     // Grab the from and to view controllers from the context
-    UIViewController *fromViewController, *toViewController;
-    UIView *fromView,*toView;
+    UIViewController *fromViewController, *toViewController; UIView *fromView,*toView;
     fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     
@@ -61,9 +59,9 @@
         
         CGRect newArtFrame;
         if (iOS8){
-            CGRect newArtStartFrame = CGRectMake(width*.1, 7, width*.8, height*.475);
+            CGRect newArtStartFrame = CGRectMake(width*.1, 0, width*.8, height);
             toViewController.view.frame = newArtStartFrame;
-            newArtFrame = CGRectMake(width*.1, 7, width*.8, height*.475);
+            newArtFrame = CGRectMake(width*.1, 0, width*.8, height);
         } else {
             CGRect newArtStartFrame = CGRectMake(0, 0, height, width);
             toViewController.view.frame = newArtStartFrame;
@@ -80,7 +78,9 @@
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
+        
     } else {
+        
         UIButton *darkBackground = (UIButton*)[transitionContext.containerView viewWithTag:kDarkBackgroundConstant];
         
         toViewController.view.userInteractionEnabled = YES;
@@ -88,7 +88,7 @@
         [transitionContext.containerView addSubview:fromView];
         
         NSTimeInterval outDuration = [self transitionDuration:transitionContext]*.7;
-        [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.8 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.8 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             if (iOS8){
                 fromViewController.view.transform = CGAffineTransformMakeScale(.87, .87);
             }

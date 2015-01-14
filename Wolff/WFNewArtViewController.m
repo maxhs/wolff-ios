@@ -14,7 +14,7 @@
 #import "WFImagePickerController.h"
 #import "WFAlert.h"
 
-@interface WFNewArtViewController () <UITableViewDataSource, UITableViewDelegate , UIScrollViewDelegate, WFImagePickerControllerDelegate> {
+@interface WFNewArtViewController () <UITableViewDataSource, UITableViewDelegate , UIScrollViewDelegate, UITextFieldDelegate, WFImagePickerControllerDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     UITextField *titleTextField;
@@ -24,7 +24,6 @@
     UITextField *materialTextField;
     UISwitch *privacySwitch;
     Art *_art;
-    UIButton *createButton;
 }
 
 @end
@@ -42,7 +41,14 @@
     [self setupSlideContainer];
     _art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
     [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-
+    [_submitButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:1]];
+    [_submitButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    [_submitButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_submitButton addTarget:self action:@selector(post) forControlEvents:UIControlEventTouchUpInside];
+    _submitButton.layer.cornerRadius = 14.f;
+    _submitButton.clipsToBounds = YES;
+    [_photoCountLabel setTextColor:[UIColor whiteColor]];
+    [_photoCountLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -90,8 +96,14 @@
     [_addPhotoButton setImage:selectedImages.firstObject forState:UIControlStateNormal];
     [_addPhotoButton.imageView setContentMode:UIViewContentModeScaleAspectFill];
     _addPhotoButton.imageView.clipsToBounds = YES;
-    if (selectedImages.count && createButton.hidden){
-        [createButton setHidden:NO];
+    if (selectedImages.count) {
+        NSString *photoCountText = selectedImages.count == 1 ? @"1 image selected" : [NSString stringWithFormat:@"%d images selected",selectedImages.count];
+        [_photoCountLabel setText:photoCountText];
+    } else {
+        [_photoCountLabel setText:@""];
+    }
+    if (selectedImages.count && _submitButton.isHidden){
+        [_submitButton setHidden:NO];
     }
 }
 
@@ -109,67 +121,80 @@
     if (materialTextField.text.length){
         [parameters setObject:materialTextField.text forKey:@"material"];
     }
+    if (dateTextField.text.length){
+        [parameters setObject:dateTextField.text forKey:@"year"];
+    }
+    if (locationTextField.text.length){
+        [parameters setObject:locationTextField.text forKey:@"location"];
+    }
     if ([_art.privateArt isEqualToNumber:@YES]){
         [parameters setObject:@1 forKey:@"private"];
     } else {
         [parameters setObject:@0 forKey:@"private"];
     }
     
-    NSData *imageData = UIImageJPEGRepresentation(_art.photo.image, 1);
-    [manager POST:@"arts" parameters:@{@"art":parameters, @"photo[user_id]":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-        [formData appendPartWithFileData:imageData name:@"photo[image]" fileName:@"photo.jpg" mimeType:@"image/jpg"];
+    [manager POST:@"arts" parameters:@{@"art":parameters} constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+        for (Photo *photo in _art.photos){
+            NSData *imageData = UIImageJPEGRepresentation(photo.image, 1);
+            [formData appendPartWithFileData:imageData name:@"photos[][image]" fileName:@"photo.jpg" mimeType:@"image/jpg"];
+        }
     } success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success creating art: %@",responseObject);
         [_art populateFromDictionary:[responseObject objectForKey:@"art"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                
-            }];
+            if (self.artDelegate && [self.artDelegate respondsToSelector:@selector(newArtAdded:)]){
+                [self.artDelegate newArtAdded:_art];
+            }
         }];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error creating art: %@",error.description);
+        if (self.artDelegate && [self.artDelegate respondsToSelector:@selector(failedToAddArt:)]){
+            [self.artDelegate failedToAddArt:_art];
+        }
+    }];
+    
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+        [WFAlert show:@"We're adding your art to the catalog!\n\nThis may take a few minutes." withTime:3.3f];
     }];
 }
 
 - (void)setupTableFooter {
     UIView *tableFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.frame.size.width, 84)];
-    createButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [tableFooterView addSubview:createButton];
-    [createButton setFrame:CGRectMake(10, 20, tableFooterView.frame.size.width-20, 44)];
-    [createButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:1]];
-    [createButton setTitle:@"ADD" forState:UIControlStateNormal];
-    [createButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
-    [createButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [createButton addTarget:self action:@selector(post) forControlEvents:UIControlEventTouchUpInside];
-    createButton.layer.cornerRadius = 14.f;
-    createButton.clipsToBounds = YES;
-    [createButton setHidden:YES];
-    
+    UILabel *privateLabel = [[UILabel alloc] initWithFrame:CGRectMake(142, 44, self.tableView.frame.size.width-100, 27)];
+    [privateLabel setBackgroundColor:[UIColor clearColor]];
+    [privateLabel setTextColor:[UIColor whiteColor]];
+    [privateLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [privateLabel setText:@"Would you like to keep this art private?"];
+    [privateLabel sizeToFit];
+    [tableFooterView addSubview:privateLabel];
+    privacySwitch = [[UISwitch alloc] initWithFrame:CGRectMake(privateLabel.frame.origin.x + privateLabel.frame.size.width+30, 38, 44, 44)];
+    [privacySwitch addTarget:self action:@selector(switchSwitched:) forControlEvents:UIControlEventValueChanged];
+    [tableFooterView addSubview:privacySwitch];
     self.tableView.tableFooterView = tableFooterView;
 }
 
 #pragma mark - Table view data source
-
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 7;
+    return 5;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFNewArtCell *cell = [tableView dequeueReusableCellWithIdentifier:@"NewArtCell"];
     if (SYSTEM_VERSION < 8.f){
-        //[cell awakeFromNib];
         [cell setBackgroundColor:[UIColor clearColor]];
     }
+    cell.textField.delegate = self;
     [cell.textField setHidden:NO];
     [cell.textField setKeyboardAppearance:UIKeyboardAppearanceDark];
     switch (indexPath.row) {
         case 0:
             [cell.label setText:@"TITLE"];
             [cell.textField setPlaceholder:@"Art title"];
+            [cell.textField setReturnKeyType:UIReturnKeyNext];
             titleTextField = cell.textField;
             [titleTextField setAutocapitalizationType:UITextAutocapitalizationTypeSentences];
             break;
@@ -177,43 +202,50 @@
             [cell.label setText:@"ARTIST"];
             [cell.textField setPlaceholder:@"Artist"];
             artistTextField = cell.textField;
+            [cell.textField setReturnKeyType:UIReturnKeyNext];
+            [artistTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
             break;
         case 2:
             [cell.label setText:@"DATE"];
             [cell.textField setPlaceholder:@"e.g. 1776"];
+            [cell.textField setKeyboardType:UIKeyboardTypeNumberPad];
+            [cell.textField setReturnKeyType:UIReturnKeyNext];
             dateTextField = cell.textField;
             break;
         case 3:
             [cell.label setText:@"LOCATION"];
             [cell.textField setPlaceholder:@"e.g. Paris"];
             locationTextField = cell.textField;
+            [cell.textField setReturnKeyType:UIReturnKeyNext];
             [locationTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
             break;
         case 4:
             [cell.label setText:@"MATERIAL"];
             [cell.textField setPlaceholder:@"e.g. clay, wrought iron, etc."];
+            [cell.textField setAutocapitalizationType:UITextAutocapitalizationTypeSentences];
             materialTextField = cell.textField;
             break;
-        case 5:
-            [cell.label setText:@""];
-            [cell.textLabel setText:@""];
-            [cell.textField setHidden:YES];
-            break;
-        case 6:
-        {
-            [cell.label setText:@""];
-            [cell.textField setHidden:YES];
-            [cell.textLabel setText:@"Would you like to keep this art private?"];
-            privacySwitch  = [[UISwitch alloc] init];
-            [privacySwitch addTarget:self action:@selector(switchSwitched:) forControlEvents:UIControlEventValueChanged];
-            cell.accessoryView = privacySwitch;
-        }
-            break;
-            
         default:
             break;
     }
     return cell;
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    if ([string isEqualToString:@"\n"]){
+        if (textField == titleTextField){
+            [artistTextField becomeFirstResponder];
+        } else if (textField == artistTextField){
+            [dateTextField becomeFirstResponder];
+        } else if (textField == dateTextField){
+            [locationTextField becomeFirstResponder];
+        } else if (textField == locationTextField){
+            [materialTextField becomeFirstResponder];
+        }
+        return NO;
+    } else {
+        return YES;
+    }
 }
 
 - (void)switchSwitched:(UISwitch*)thisSwitch {

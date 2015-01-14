@@ -43,7 +43,6 @@
         [_containerView2 setHidden:YES];
         [_containerView3 setHidden:YES];
         Photo *photo = (Photo*)[photos firstObject];
-        NSLog(@"configuring for single art: %@",photo.art.title);
         NSURL *art1thumbUrl = [NSURL URLWithString:photo.thumbImageUrl];
         NSURL *art1originalUrl = [NSURL URLWithString:photo.originalImageUrl];
         

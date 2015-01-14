@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Table, User;
+@class User;
 
 @interface Slideshow : NSManagedObject
 
@@ -20,7 +20,7 @@
 @property (nonatomic, retain) NSOrderedSet *slides;
 @property (nonatomic, retain) NSOrderedSet *discussions;
 @property (nonatomic, retain) NSOrderedSet *photos;
-@property (nonatomic, retain) Table * table;
+@property (nonatomic, retain) NSOrderedSet *tables;
 @property (nonatomic, retain) User * user;
 @end
 

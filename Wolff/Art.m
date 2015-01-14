@@ -18,6 +18,7 @@
 @dynamic artists;
 @dynamic tables;
 @dynamic privateArt;
+@dynamic visible;
 @dynamic photos;
 @dynamic user;
 @dynamic createdDate;

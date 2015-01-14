@@ -39,8 +39,9 @@
 #import "WFWalkthroughViewController.h"
 #import "WFWalkthroughAnimator.h"
 #import "WFSlideshowCell.h"
+#import "WFAlert.h"
 
-@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, UIGestureRecognizerDelegate> {
+@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, UIGestureRecognizerDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     User *_currentUser;
@@ -124,13 +125,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        iOS8 = YES;
-        width = screenWidth();
-        height = screenHeight();
+        iOS8 = YES; width = screenWidth(); height = screenHeight();
     } else {
-        iOS8 = NO;
-        width = screenHeight();
-        height = screenWidth();
+        iOS8 = NO; width = screenHeight(); height = screenWidth();
     }
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
@@ -201,16 +198,25 @@
     [self loadPhotos];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self showWalkthrough];
+}
+
 - (void)showWalkthrough {
-    if (![[NSUserDefaults standardUserDefaults] boolForKey:kExistingUser]){
-        newUser = YES;
-        WFWalkthroughViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Walkthrough"];
-        vc.modalPresentationStyle = UIModalPresentationCustom;
-        vc.transitioningDelegate = self;
-        [self presentViewController:vc animated:YES completion:^{
-            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kExistingUser];
-        }];
-    }
+    //if (![[NSUserDefaults standardUserDefaults] boolForKey:kExistingUser]){
+        double delayInSeconds = .23f;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            newUser = YES;
+            WFWalkthroughViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Walkthrough"];
+            vc.modalPresentationStyle = UIModalPresentationCustom;
+            vc.transitioningDelegate = self;
+            [self presentViewController:vc animated:YES completion:^{
+                [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kExistingUser];
+            }];
+        });
+    //}
 }
 
 - (void)refreshTableView:(UIRefreshControl*)refreshControl {
@@ -230,20 +236,21 @@
 - (void)setUpTableView {
     [_tableView setBackgroundColor:[UIColor blackColor]];
     [_tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
-    _tableView.rowHeight = 54.f;
+    _tableView.rowHeight = 60.f;
 }
 
 - (void)setUpNavBar {
     slideshowsButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    slideshowsButton.frame = CGRectMake(0.0, 0.0, 64.0, 44.0);
+    slideshowsButton.frame = CGRectMake(0.0, 0.0, 70.0, 40.0);
     [slideshowsButton setImage:[UIImage imageNamed:@"whiteSlideshow"] forState:UIControlStateNormal];
+    [slideshowsButton setImage:[UIImage imageNamed:@"saffronSlideshow"] forState:UIControlStateSelected];
     [slideshowsButton addTarget:self action:@selector(showSlideshows) forControlEvents:UIControlEventTouchUpInside];
     slideshowsBarButton = [[UIBarButtonItem alloc] initWithCustomView:slideshowsButton];
     
     tablesButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [tablesButton setImage:[UIImage imageNamed:@"whiteTables"] forState:UIControlStateNormal];
-    [tablesButton setImage:[UIImage imageNamed:@"blueTable"] forState:UIControlStateSelected];
-    tablesButton.frame = CGRectMake(20.0, 0.0, 40.0, 40.0);
+    [tablesButton setImage:[UIImage imageNamed:@"blueTables"] forState:UIControlStateSelected];
+    tablesButton.frame = CGRectMake(5.0, 0.0, 40.0, 40.0);
     [tablesButton addTarget:self action:@selector(showLightTables) forControlEvents:UIControlEventTouchUpInside];
     lightTablesButton = [[UIBarButtonItem alloc] initWithCustomView:tablesButton];
     
@@ -272,7 +279,7 @@
     [customSelectedView addSubview:selectedButton];
     selectedBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:customSelectedView];
     
-    if (_currentUser){
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"settings"] style:UIBarButtonItemStylePlain target:self action:@selector(settingsPopover:)];
         notificationsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"alert"] style:UIBarButtonItemStylePlain target:self action:@selector(showNotifications:)];
         
@@ -291,13 +298,9 @@
     }
     
     self.navigationItem.titleView = self.searchBar;
-    
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     topInset = self.navigationController.navigationBar.frame.size.height;
     self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
-    if (!iOS8){
-        self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
-    }
 }
 
 - (void)configureSelectedButton {
@@ -355,11 +358,9 @@
                 NSLog(@"Can't load any more photo. We got it all!");
             }
             [self.collectionView reloadData];
-            [self showWalkthrough];
             [self endRefresh];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [self endRefresh];
-            [self showWalkthrough];
         }];
     }
 }
@@ -414,6 +415,7 @@
         settings = NO; metadata = NO; _login = NO; groupBool = NO;
         newArt = YES;
         WFNewArtViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"NewArt"];
+        vc.artDelegate = self;
         //UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         vc.transitioningDelegate = self;
         vc.modalPresentationStyle = UIModalPresentationCustom;
@@ -423,6 +425,25 @@
     } else {
         [self showLogin];
     }
+}
+
+- (void)newArtAdded:(Art *)art {
+    if ([art.privateArt isEqualToNumber:@YES]){
+        NSMutableArray *indexPathArray = [NSMutableArray array];
+        [art.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
+            [_photos insertObject:photo atIndex:0];
+            [indexPathArray addObject:[NSIndexPath indexPathForItem:0 inSection:0]];
+        }];
+        [self.collectionView performBatchUpdates:^{
+            [_collectionView insertItemsAtIndexPaths:indexPathArray];
+        } completion:^(BOOL finished) {
+            
+        }];
+    }
+}
+
+- (void)failedToAddArt:(Art*)art {
+    [WFAlert show:[NSString stringWithFormat:@"Something went wrong while trying to add \"%@\" to the catalog. Please try again soon.",art.title] withTime:3.3f];
 }
 
 #pragma mark - Table view data source
@@ -478,10 +499,12 @@
                 Slideshow *slideshow = _currentUser.slideshows[indexPath.row];
                 if (slideshow.title.length){
                     [cell.textLabel setText:slideshow.title];
-                    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+                    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansItalic] size:0]];
+                    [cell.textLabel setTextColor:[UIColor whiteColor]];
                 } else {
                     [cell.textLabel setText:@"No name..."];
                     [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];
+                    [cell.textLabel setTextColor:[UIColor lightGrayColor]];
                 }
             }
             
@@ -497,11 +520,11 @@
         
         if (indexPath.section == 0){
             if (indexPath.row == 0){
-                [cell.imageView setImage:[UIImage imageNamed:@"whiteLock"]];
-                [cell.textLabel setText:@"Private"];
+                [cell.iconImageView setImage:[UIImage imageNamed:@"whiteLock"]];
+                [cell.label setText:@"Private"];
             } else {
-                [cell.imageView setImage:[UIImage imageNamed:@"whiteFavorite"]];
-                [cell.textLabel setText:@"Favorites"];
+                [cell.iconImageView setImage:[UIImage imageNamed:@"whiteFavorite"]];
+                [cell.label setText:@"Favorites"];
             }
             
         } else if (indexPath.section == 1){
@@ -510,25 +533,26 @@
                 Table *table;
                 table = _tables[indexPath.row];
                 [cell configureForTable:table];
-                [cell.textLabel setText:@""];
+                [cell.label setText:@""];
                 cell.selectionStyle = UITableViewCellSelectionStyleDefault;
             } else {
                 cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                [cell.textLabel setTextAlignment:NSTextAlignmentCenter];
-                [cell.textLabel setText:@"No Light Tables"];
-                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+                //[cell.label setTextAlignment:NSTextAlignmentCenter];
+                [cell.label setText:@"No Light Tables"];
+                [cell.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
             }
-            [cell.imageView setImage:nil];
+            [cell.iconImageView setImage:nil];
             
         } else {
-            [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
-            [cell.textLabel setText:@"Light Table"];
+            [cell.iconImageView setImage:[UIImage imageNamed:@"whitePlus"]];
+            [cell.label setText:@"Light Table"];
+            [cell.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
         }
         return cell;
     }
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+/*- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
     if (section == 1){
         return 34;
     } else {
@@ -557,7 +581,7 @@
     }
     
     return headerView;
-}
+}*/
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (slideshowSidebarMode){
@@ -636,14 +660,16 @@
     NSLog(@"light table for deletion: %@",lightTable.name);
     if (lightTable && ![lightTable.identifier isEqualToNumber:@0]){
         [manager DELETE:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            [self.tableView beginUpdates];
-            [_currentUser removeLightTable:lightTable];
-            [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
-            [self.tableView endUpdates];
             
+            // remove light table from data source
+            [_tables removeObject:lightTable];
+            [_currentUser removeLightTable:lightTable];
             [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                
+                [self.tableView beginUpdates];
+                [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
+                [self.tableView endUpdates];
             }];
             NSLog(@"Success deleting this light table: %@",responseObject);
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -757,10 +783,12 @@
 
 - (void)newLightTable {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        //WFNewLightTableController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"NewLightTable"];
-        
         WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
-        [vc setPhotos:_selectedPhotos];
+        if (_selectedPhotos.count){
+            [vc setPhotos:_selectedPhotos];
+        } else {
+            [vc setShowKey:YES];
+        }
         
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             //WFDismissableNavigationController *nav = [[WFDismissableNavigationController alloc] initWithRootViewController:vc];
@@ -868,7 +896,7 @@
     if (showFavorites || showLightTable || showPrivate || searching){
         return CGSizeMake(collectionView.frame.size.width, 54);
     } else {
-        return CGSizeMake(0, 0);
+        return CGSizeMake(1, 0);
     }
 }
 
@@ -923,15 +951,18 @@
     } else {
         photo = _photos[selectedIndexPath.item];
     }
-    if ([_selectedPhotos containsObject:photo]){
-        [_selectedPhotos removeObject:photo];
+    if (photo){
+        if ([_selectedPhotos containsObject:photo]){
+            [_selectedPhotos removeObject:photo];
+        } else {
+            [_selectedPhotos addObject:photo];
+        }
     } else {
-        [_selectedPhotos addObject:photo];
+        return;
     }
     [_collectionView reloadItemsAtIndexPaths:@[selectedIndexPath]];
     [selectedLabel setText:[NSString stringWithFormat:@"%lu",(unsigned long)_selectedPhotos.count]];
     [self configureSelectedButton];
-    //NSLog(@"double tapped: %@",art.title);
 }
 
 - (void)adjustAnchorPointForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
@@ -1218,7 +1249,6 @@
 }
 
 - (void)resetDraggingView {
-    NSLog(@"reset dragging view");
     WFPhotoCell *cell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
     [UIView animateWithDuration:.27f animations:^{
         [self.draggingView setAlpha:0.0];
@@ -1246,7 +1276,6 @@
     }
     
     if (searching && tableIsVisible){
-        //WFPhotoCell *selectedCell = (WFPhotoCell*)[collectionView cellForItemAtIndexPath:indexPath];
         if ([_selectedPhotos containsObject:photo]){
             [_selectedPhotos removeObject:photo];
         } else {
@@ -1262,6 +1291,7 @@
 
 - (void)showMetadata:(Photo*)photo{
     WFArtMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"ArtMetadata"];
+    vc.metadataDelegate = self;
     [vc setPhoto:photo];
     vc.transitioningDelegate = self;
     vc.modalPresentationStyle = UIModalPresentationCustom;
@@ -1273,12 +1303,21 @@
     }];
 }
 
+- (void)favoritedPhoto:(Photo *)photo {
+    [_favorites addObject:photo];
+}
+
+- (void)droppedPhoto:(Photo*)photo toLightTable:(Table*)lightTable {
+    if (!slideshowSidebarMode && tableIsVisible){
+        [self.tableView reloadData];
+    }
+}
+
 - (void)dismissMetadata {
     [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
 #pragma mark - Custom Transitions 
-
 - (void)showLogin {
     WFLoginViewController *login = [[self storyboard] instantiateViewControllerWithIdentifier:@"Login"];
     delegate.loginDelegate = self;
@@ -1324,7 +1363,7 @@
     }
     WFMenuViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Menu"];
     vc.menuDelegate = self;
-    vc.preferredContentSize = CGSizeMake(170, 162);
+    vc.preferredContentSize = CGSizeMake(200, 150);
     self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
     self.popover.delegate = self;
     [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
@@ -1370,26 +1409,6 @@
     [self loadPhotos];
 }
 
-- (void)showSlideshows {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        if (slideshowSidebarMode){
-            [self.tableView reloadData];
-            [self showSidebar];
-        } else {
-            slideshowSidebarMode = YES;
-            if (tableIsVisible){
-                [self.tableView reloadData];
-            } else {
-                [self.tableView reloadData];
-                [self showSidebar];
-            }
-        }
-        slideshowsButton.selected = tableIsVisible ? NO : YES;
-    } else {
-        [self showLogin];
-    }
-}
-
 - (void)newSlideshow {
     [self.popover dismissPopoverAnimated:YES];
     WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
@@ -1424,11 +1443,34 @@
     }];
 }
 
+- (void)showSlideshows {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        tablesButton.selected = NO;
+        if (slideshowSidebarMode){
+            [self.tableView reloadData];
+            [self showSidebar];
+        } else {
+            slideshowSidebarMode = YES;
+            if (tableIsVisible){
+                [self.tableView reloadData];
+                slideshowsButton.selected = YES;
+            } else {
+                [self.tableView reloadData];
+                [self showSidebar];
+            }
+        }
+    } else {
+        [self showLogin];
+    }
+}
+
 - (void)showLightTables {
+    slideshowsButton.selected = NO;
     if (slideshowSidebarMode){
         if (tableIsVisible){
             slideshowSidebarMode = NO;
             [self.tableView reloadData];
+            tablesButton.selected = YES;
         } else {
             slideshowSidebarMode = NO;
             [self.tableView reloadData];
@@ -1439,7 +1481,6 @@
         [self.tableView reloadData];
         [self showSidebar];
     }
-    tablesButton.selected = tableIsVisible ? NO : YES;
 }
 
 - (void)showSidebar {
@@ -1458,7 +1499,8 @@
         CGRect collectionFrame = _collectionView.frame;
         collectionFrame.origin.x = 0;
         collectionFrame.size.width += kSidebarWidth;
-        
+        slideshowsButton.selected = NO;
+        tablesButton.selected = NO;
         [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             _tableView.transform = CGAffineTransformIdentity;
             _comparisonContainerView.transform = CGAffineTransformIdentity;
@@ -1473,7 +1515,11 @@
         }];
     } else {
         tableIsVisible = YES;
-        
+        if (slideshowSidebarMode) {
+            slideshowsButton.selected = YES;
+        } else {
+            tablesButton.selected = YES;
+        }
         //show the light table sidebar
         CGRect collectionFrame = _collectionView.frame;
         collectionFrame.origin.x = kSidebarWidth;
@@ -1501,8 +1547,6 @@
                     
                 }];
             }
-            NSLog(@"where's the reset button? %@",resetButton);
-
         }];
     }
 }
@@ -1626,14 +1670,13 @@
 }
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
-    if (!_filteredPhotos){
-        _filteredPhotos = [NSMutableArray array];
-    }
+    if (!_filteredPhotos) _filteredPhotos = [NSMutableArray array];
     searching = YES;
+    if (self.popover) [self.popover dismissPopoverAnimated:YES];
 }
 
 - (void)searchDidSelectPhoto:(Photo *)photo {
-    NSLog(@"search did select art: %@",photo.art.title);
+    NSLog(@"Search did select art: %@",photo.art.title);
 }
 
 - (void)endSearch {

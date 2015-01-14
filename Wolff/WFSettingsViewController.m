@@ -22,9 +22,13 @@
     UIBarButtonItem *dismissButton;
     UIBarButtonItem *saveButton;
     UITextField *emailTextField;
+    UITextField *firstNameTextField;
+    UITextField *lastNameTextField;
+    UITextField *phoneTextField;
     UITextField *institutionTextField;
     UIImageView *navBarShadowView;
     BOOL iOS8;
+    BOOL editing;
 }
 
 @end
@@ -35,6 +39,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    
     if (SYSTEM_VERSION >= 8.f){
         iOS8 = YES;
     } else {
@@ -137,11 +143,8 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSettingsCell *cell = (WFSettingsCell *)[tableView dequeueReusableCellWithIdentifier:@"SettingsCell"];
     
-    [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.77]];
-    
-    [cell.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [cell.textField setKeyboardAppearance:UIKeyboardAppearanceDark];
-    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [cell setBackgroundColor:kTextFieldBackground];
+    cell.textField.delegate = self;
     
     if (indexPath.section == 0){
         [cell.settingsSwitch setHidden:YES];
@@ -150,18 +153,22 @@
             case 0:
                 [cell.textField setText:_currentUser.firstName];
                 [cell.textField setPlaceholder:@"First name"];
+                firstNameTextField = cell.textField;
                 break;
             case 1:
                 [cell.textField setText:_currentUser.lastName];
                 [cell.textField setPlaceholder:@"Last name"];
+                lastNameTextField = cell.textField;
                 break;
             case 2:
                 [cell.textField setText:_currentUser.email];
                 [cell.textField setPlaceholder:@"albrecht@durer.com"];
+                emailTextField = cell.textField;
                 break;
             case 3:
                 [cell.textField setText:_currentUser.phone];
                 [cell.textField setPlaceholder:@"555-555-5555"];
+                phoneTextField = cell.textField;
                 break;
             case 4:
                 [cell.textField setText:_currentUser.institution.name];
@@ -232,11 +239,26 @@
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
+    editing = YES;
     if (textField == institutionTextField){
         [textField resignFirstResponder];
         [self showInstitutionSearch];
         return;
     }
+    NSIndexPath *scrollToIndexPath;
+    if (textField == firstNameTextField){
+        scrollToIndexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+    } else if (textField == lastNameTextField){
+        scrollToIndexPath = [NSIndexPath indexPathForRow:1 inSection:0];
+    } else if (textField == emailTextField){
+        scrollToIndexPath = [NSIndexPath indexPathForRow:2 inSection:0];
+    } else if (textField == phoneTextField){
+        scrollToIndexPath = [NSIndexPath indexPathForRow:3 inSection:0];
+    }
+    if (scrollToIndexPath){
+        [self.tableView scrollToRowAtIndexPath:scrollToIndexPath atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
+    }
+    
     if (!doneEditingButton) {
         doneEditingButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneEditing)];
     }
@@ -254,6 +276,7 @@
 //}
 
 - (void)doneEditing {
+    editing = NO;
     [self.view endEditing:YES];
 }
 
@@ -279,16 +302,17 @@
     NSDictionary* info = [note userInfo];
     NSTimeInterval duration = [info[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationOptions curve = [info[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
-    NSValue *keyboardValue = info[UIKeyboardFrameBeginUserInfoKey];
-    CGFloat keyboardHeight = keyboardValue.CGRectValue.size.height;
+    NSValue *keyboardValue = info[UIKeyboardFrameEndUserInfoKey];
+    CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
+    CGFloat keyboardHeight = convertedKeyboardFrame.size.height;
     [UIView animateWithDuration:duration
                           delay:0
                         options:curve | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
-                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
+                        self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
+                        self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
                      }
-                     completion:nil];
+                     completion:NULL];
 }
 
 - (void)keyboardWillHide:(NSNotification *)note {
@@ -302,11 +326,17 @@
                          self.tableView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
                          self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, 0, 0);
                      }
-                     completion:nil];
+                     completion:^(BOOL finished) {
+    
+                     }];
 }
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
+    if (editing){
+        [self doneEditing];
+    } else {
+        [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
+    }
 }
 
 - (void)didReceiveMemoryWarning {

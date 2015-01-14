@@ -15,6 +15,7 @@
 @property (strong, nonatomic) NSNumber *tableId;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UIButton *dismissButton;
+@property BOOL showKey;
 - (void)dismiss;
 
 @end

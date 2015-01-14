@@ -13,6 +13,8 @@
 @interface WFWalkthroughAnimator () {
     CGFloat width;
     CGFloat height;
+    BOOL iOS8;
+    CGRect mainScreen;
 }
 @end
 
@@ -23,7 +25,6 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    CGRect mainScreen;
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
         width = screenWidth();
         height = screenHeight();
@@ -53,20 +54,13 @@
     if (self.presenting) {
         fromViewController.view.userInteractionEnabled = NO;
         [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
-        
-        UIButton *blurredButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [blurredButton setBackgroundImage:[self blurredSnapshotForWindow:[transitionContext.containerView window]]  forState:UIControlStateNormal];
-        [blurredButton setFrame:mainScreen];
-        [blurredButton setAlpha:0.0];
-        [blurredButton setTag:kBlurredBackgroundConstant];
-        
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:toView];
-        [transitionContext.containerView insertSubview:blurredButton belowSubview:toView];
         [toView setFrame:mainScreen];
+        [toView setAlpha:0.0];
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            [blurredButton setAlpha:1.0];
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] animations:^{
+            [toView setAlpha:1.0];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
@@ -75,7 +69,6 @@
         
         toViewController.view.userInteractionEnabled = YES;
         [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
-        UIImageView *blurredButton = (UIImageView*)[transitionContext.containerView viewWithTag:kBlurredBackgroundConstant];
         
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
@@ -87,21 +80,19 @@
          CGRect originEndFrame = toViewController.view.frame;
          originEndFrame.origin.x = 0;*/
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] animations:^{
             [fromView setAlpha:0.0];
-            [blurredButton setAlpha:0.0];
         } completion:^(BOOL finished) {
-            [blurredButton removeFromSuperview];
             [transitionContext completeTransition:YES];
         }];
     }
 }
 
 -(UIImage *)blurredSnapshotForWindow:(UIWindow*)window {
-    UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, height), NO, window.screen.scale);
-    [window drawViewHierarchyInRect:CGRectMake(0, 0, width, height) afterScreenUpdates:NO];
+    UIGraphicsBeginImageContextWithOptions(mainScreen.size, NO, window.screen.scale);
+    [window drawViewHierarchyInRect:mainScreen afterScreenUpdates:YES];
     UIImage *snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIImage *blurredSnapshotImage = [snapshotImage applyDarkEffect];
+    UIImage *blurredSnapshotImage = [snapshotImage applyExtraLightEffect];
     UIGraphicsEndImageContext();
     return blurredSnapshotImage;
 }

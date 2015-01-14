@@ -17,22 +17,27 @@
 @interface WFComparisonViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UIGestureRecognizerDelegate, UIViewControllerTransitioningDelegate> {
     UIBarButtonItem *dismissButton;
     UIBarButtonItem *metadataButton;
+    UIImageView *artImageView1;
     UIImageView *artImageView2;
     UIImageView *artImageView3;
+    UIView *containerView1;
     UIView *containerView2;
     UIView *containerView3;
+    UIPanGestureRecognizer *_panGesture1;
     UIPanGestureRecognizer *_panGesture2;
     UIPanGestureRecognizer *_panGesture3;
+    /*UIRotationGestureRecognizer *_rotationGesture1;
     UIRotationGestureRecognizer *_rotationGesture2;
-    UIRotationGestureRecognizer *_rotationGesture3;
+    UIRotationGestureRecognizer *_rotationGesture3;*/
+    UIPinchGestureRecognizer *_pinchGesture1;
     UIPinchGestureRecognizer *_pinchGesture2;
     UIPinchGestureRecognizer *_pinchGesture3;
     UITapGestureRecognizer *_doubleTapGesture1;
     UITapGestureRecognizer *_doubleTapGesture2;
     UITapGestureRecognizer *_doubleTapGesture3;
-    CGPoint savedPoint2;
-    CGPoint savedPoint3;
+    
     CGFloat lastScale;
+    CGRect originalFrame1;
     CGRect originalFrame2;
     CGRect originalFrame3;
     CGPoint lastPoint;
@@ -56,19 +61,29 @@
     if ([[UIDevice currentDevice] systemVersion].floatValue >= 8.f){
         self.navigationController.hidesBarsOnTap = YES;
     }
-    if (!_panGesture2) {
-        _panGesture2 = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-        _panGesture3 = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    }
     
-    if (!_rotationGesture2) {
-        _rotationGesture2 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
-        _rotationGesture3 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
-    }
-    
-    if (!_pinchGesture2) {
-        _pinchGesture2 = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-        _pinchGesture3 = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
+    if (_photos.count == 1){
+        _panGesture1 = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+        _pinchGesture1 = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
+        /*_rotationGesture1 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
+        [_rotationGesture1 requireGestureRecognizerToFail:_pinchGesture1];*/
+    } else {
+        if (!_panGesture2) {
+            _panGesture2 = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+            _panGesture3 = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+        }
+        
+        /*if (!_rotationGesture2) {
+            _rotationGesture2 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
+            _rotationGesture3 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
+        }*/
+        
+        if (!_pinchGesture2) {
+            _pinchGesture2 = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
+            _pinchGesture3 = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
+        }
+        /*[_rotationGesture2 requireGestureRecognizerToFail:_pinchGesture2];
+        [_rotationGesture3 requireGestureRecognizerToFail:_pinchGesture3];*/
     }
     
     if(!_doubleTapGesture2){
@@ -79,8 +94,11 @@
         _doubleTapGesture1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(reset)];
         _doubleTapGesture1.numberOfTapsRequired = 2;
     }
-    savedPoint2 = CGPointZero;
-    savedPoint3 = CGPointZero;
+    
+    /*[_rotationGesture2 requireGestureRecognizerToFail:_panGesture2];
+    [_rotationGesture3 requireGestureRecognizerToFail:_panGesture3];
+    [_rotationGesture2 requireGestureRecognizerToFail:_pinchGesture2];
+    [_rotationGesture3 requireGestureRecognizerToFail:_pinchGesture3];*/
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -104,13 +122,6 @@
 #pragma mark - Handle Gestures
 
 - (void)handlePan:(UIPanGestureRecognizer*)gestureRecognizer {
-    UIView *viewInQuestion;
-    if (gestureRecognizer == _panGesture2){
-        viewInQuestion = containerView2;
-    } else if (gestureRecognizer == _panGesture3) {
-        viewInQuestion = containerView3;
-    }
-    
     CGPoint translation = [gestureRecognizer translationInView:self.view];
     CGPoint newPoint = CGPointMake(gestureRecognizer.view.center.x + translation.x, gestureRecognizer.view.center.y + translation.y);
     if (newPoint.x > 0){
@@ -176,10 +187,11 @@
 }
 
 - (void)handleTap:(UITapGestureRecognizer*)gestureRecognizer {
-    
     [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         gestureRecognizer.view.transform = CGAffineTransformIdentity;
-        if (gestureRecognizer == _doubleTapGesture2){
+        if (gestureRecognizer == _doubleTapGesture1){
+            [gestureRecognizer.view setFrame:originalFrame1];
+        } else if (gestureRecognizer == _doubleTapGesture2){
             [gestureRecognizer.view setFrame:originalFrame2];
         } else {
             [gestureRecognizer.view setFrame:originalFrame3];
@@ -192,10 +204,14 @@
 
 - (void)reset {
     [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.7 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        
+        artImageView1.transform = CGAffineTransformIdentity;
         artImageView2.transform = CGAffineTransformIdentity;
-        artImageView2.transform = CGAffineTransformIdentity;
+        artImageView3.transform = CGAffineTransformIdentity;
+        [artImageView1 setFrame:originalFrame1];
         [artImageView2 setFrame:originalFrame2];
         [artImageView3 setFrame:originalFrame3];
+    
     } completion:^(BOOL finished) {
         
     }];
@@ -214,22 +230,32 @@
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"ComparisonCell" forIndexPath:indexPath];
     [cell configureForPhotos:_photos inSlide:nil];
-    artImageView2 = cell.artImageView2;
-    containerView2 = cell.containerView2;
-    [cell.artImageView2 addGestureRecognizer:_panGesture2];
-    [cell.artImageView2 addGestureRecognizer:_pinchGesture2];
-    [cell.artImageView2 addGestureRecognizer:_doubleTapGesture2];
-    [cell.artImageView2 addGestureRecognizer:_rotationGesture2];
     
-    artImageView3 = cell.artImageView3;
-    containerView3 = cell.containerView3;
-    [cell.artImageView3 addGestureRecognizer:_panGesture3];
-    [cell.artImageView3 addGestureRecognizer:_pinchGesture3];
-    [cell.artImageView3 addGestureRecognizer:_doubleTapGesture3];
-    [cell.artImageView3 addGestureRecognizer:_rotationGesture3];
+    if (_photos.count == 1){
+        artImageView1 = cell.artImageView1;
+        containerView1 = cell.containerView1;
+        [artImageView1 addGestureRecognizer:_panGesture1];
+        [artImageView1 addGestureRecognizer:_pinchGesture1];
+        [artImageView1 addGestureRecognizer:_doubleTapGesture1];
+        //[artImageView1 addGestureRecognizer:_rotationGesture1];
+        originalFrame1 = cell.artImageView1.frame;
+    } else {
+        artImageView2 = cell.artImageView2;
+        containerView2 = cell.containerView2;
+        [cell.artImageView2 addGestureRecognizer:_panGesture2];
+        [cell.artImageView2 addGestureRecognizer:_pinchGesture2];
+        [cell.artImageView2 addGestureRecognizer:_doubleTapGesture2];
+        //[cell.artImageView2 addGestureRecognizer:_rotationGesture2];
+        originalFrame2 = cell.artImageView2.frame;
     
-    originalFrame2 = cell.artImageView2.frame;
-    originalFrame3 = cell.artImageView3.frame;
+        artImageView3 = cell.artImageView3;
+        containerView3 = cell.containerView3;
+        [cell.artImageView3 addGestureRecognizer:_panGesture3];
+        [cell.artImageView3 addGestureRecognizer:_pinchGesture3];
+        [cell.artImageView3 addGestureRecognizer:_doubleTapGesture3];
+        //[cell.artImageView3 addGestureRecognizer:_rotationGesture3];
+        originalFrame3 = cell.artImageView3.frame;
+    }
     
     return cell;
 }

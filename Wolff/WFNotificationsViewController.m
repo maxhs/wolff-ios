@@ -106,6 +106,25 @@
     return cell;
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 34;
+}
+
+- (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 34.f)];
+    [headerView setBackgroundColor:[UIColor clearColor]];
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, tableView.frame.size.width-10, 34)];
+    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
+    [headerLabel setTextColor:[UIColor colorWithWhite:.5 alpha:.5]];
+    [headerLabel setBackgroundColor:[UIColor clearColor]];
+    [headerLabel setText:@"NOTIFICATIONS"];
+    [headerLabel setTextAlignment:NSTextAlignmentCenter];
+    
+    [headerView addSubview:headerLabel];
+    
+    return headerView;
+}
+
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
     return YES;
 }

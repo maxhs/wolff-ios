@@ -17,7 +17,7 @@
 @dynamic slides;
 @dynamic discussions;
 @dynamic photos;
-@dynamic table;
+@dynamic tables;
 @dynamic user;
 
 @end

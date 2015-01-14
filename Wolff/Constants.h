@@ -70,15 +70,18 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kNoAccess @"No Access"
 #define kNoArt @"No Art"
 #define kNoPresentation @"No Presentation"
-
+#define kIncorrectLightTableCode @"Incorrect light table code"
+#define kNoLightTable @"No light table"
 #define kExistingUser @"ExistingUser"
+#define kExistingLightTable @"Existing light table"
 
 #define kSlideBackgroundColor [UIColor colorWithWhite:.95f alpha:1]
 #define kSlideShadowColor [UIColor colorWithWhite:.4 alpha:1]
 #define kSaffronColor [UIColor colorWithRed:244.f/255.f green:196.f/255.f blue:48.f/255.f alpha:1.f]
-#define kPlaceholderTextColor [UIColor colorWithWhite:.729 alpha:1]
+#define kPlaceholderTextColor [UIColor colorWithWhite:.67 alpha:1]
 #define kRedBubbleColor [UIColor colorWithRed:226.f/255.f green:60.f/255.f blue:62.f/255.f alpha:1.f]
 #define kElectricBlue [UIColor colorWithRed:(0.0/255.0) green:(128.0/255.0) blue:(255.0/255.0) alpha:1]
 #define kDarkTableViewCellSelectionColor [UIColor colorWithWhite:1 alpha:.23]
+#define kTextFieldBackground [UIColor colorWithWhite:1 alpha:.83]
 
 #endif

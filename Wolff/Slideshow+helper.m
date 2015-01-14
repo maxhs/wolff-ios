@@ -8,11 +8,12 @@
 
 #import "Slideshow+helper.h"
 #import "Slide+helper.h"
+#import "Table+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Slideshow (helper)
 - (void)populateFromDictionary:(NSDictionary *)dictionary{
-    //NSLog(@"Slideshow helper: %@",dictionary);
+    NSLog(@"Slideshow helper: %@",dictionary);
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }
@@ -56,11 +57,24 @@
         }
         self.photos = set;
     }
+    if ([dictionary objectForKey:@"light_tables"] && [dictionary objectForKey:@"light_tables"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"light_tables"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Table *lightTable = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!lightTable){
+                lightTable = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [lightTable populateFromDictionary:dict];
+            [set addObject:lightTable];
+        }
+        self.tables = set;
+    }
 }
 
 - (void)addPhoto:(Photo *)photo {
     NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
-    [tempSet addObject:photo];
+    [tempSet insertObject:photo atIndex:0];
     self.photos = tempSet;
 }
 

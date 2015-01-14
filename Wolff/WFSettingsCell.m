@@ -7,6 +7,7 @@
 //
 
 #import "WFSettingsCell.h"
+#import "Constants.h"
 
 @implementation WFSettingsCell
 
@@ -19,10 +20,17 @@
     return self;
 }
 
-- (void)awakeFromNib
-{
+- (void)awakeFromNib {
     [super awakeFromNib];
-    // Initialization code
+    [self.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [self.textField setKeyboardAppearance:UIKeyboardAppearanceDark];
+    [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+}
+
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    [self.textField setText:@""];
+    [self.textLabel setText:@""];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated

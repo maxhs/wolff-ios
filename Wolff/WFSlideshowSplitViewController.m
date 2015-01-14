@@ -259,7 +259,8 @@
         [self.tableView beginUpdates];
         [_slideshow removeSlide:activeSlide];
         [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-        [self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
+        //[self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
         [self.tableView endUpdates];
      
         activeSlide = nil;
@@ -377,7 +378,7 @@
     CGPoint locInScreen = CGPointMake( loc.x-self.collectionView.contentOffset.x+hoverOffset, heightInScreen );
     
     if (sender.state == UIGestureRecognizerStateBegan) {
-        //NSLog(@"loc start: x %f and y: %f",loc.x, loc.y);
+        NSLog(@"loc start: x %f and y: %f",loc.x, loc.y);
         if (loc.x < 0){
             self.startIndex = [self.tableView indexPathForRowAtPoint:loc];
             if (self.startIndex) {
@@ -425,19 +426,22 @@
         NSLog(@"ended loc: %f, %f",loc.x,loc.y);
         if (selectedPhoto){
             if (loc.x < 0){
+                NSLog(@"content offset y: %f",_tableView.contentOffset.y);
+                loc.y += _tableView.contentOffset.y + 44.f; //the original offset
                 //cell was dropped in the left sidebar
                 NSArray *visibleCells = self.tableView.visibleCells;
                 [visibleCells enumerateObjectsUsingBlock:^(WFSlideTableCell *cell, NSUInteger idx, BOOL *stop) {
                     CGFloat lowerBounds = cell.frame.origin.y;
                     CGFloat upperBounds = cell.frame.origin.y + cell.frame.size.height;
                     CGFloat bottomOfSlides = cell.frame.size.height * _slideshow.slides.count;
-                    
+                    NSLog(@"Bottom of slides: %f, new loc y: %f",bottomOfSlides,loc.y);
                     if (loc.y > bottomOfSlides){
                         // this means we should add a new slide
                         Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
                         [slide addPhoto:selectedPhoto];
                         [slide setIndex:@(_slideshow.slides.count)];
                         [_slideshow addSlide:slide];
+                        *stop = YES;
                         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                             [self.tableView reloadData];
                         }];
@@ -626,6 +630,7 @@
     }
     WFTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tables"];
     vc.lightTableDelegate = self;
+    [vc setSlideshow:_slideshow];
     [vc setLightTables:_currentUser.lightTables.array.mutableCopy];
     CGFloat vcHeight = _currentUser.lightTables.count*54.f > 260.f ? 260 : (_currentUser.lightTables.count)*54.f;
     vc.preferredContentSize = CGSizeMake(270, vcHeight + 34.f); // add the header height
@@ -665,6 +670,7 @@
     vc.preferredContentSize = CGSizeMake(400, 500);
     self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
     self.popover.delegate = self;
+    [self.popover setBackgroundColor:[UIColor blackColor]];
     [self.popover presentPopoverFromBarButtonItem:searchButton permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
@@ -678,7 +684,7 @@
     } else {
         [_slideshow addPhoto:photo];
         add = YES;
-        indexPathToReload = [NSIndexPath indexPathForItem:_slideshow.photos.count-1 inSection:0];
+        indexPathToReload = [NSIndexPath indexPathForItem:0 inSection:0];
     }
     
     [[NSManagedObjectContext MR_defaultContext] MR_saveOnlySelfWithCompletion:^(BOOL success, NSError *error) {
@@ -693,6 +699,11 @@
 - (void)endSearch {
     [self.view endEditing:YES];
     [self.popover dismissPopoverAnimated:YES];
+}
+
+- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController {
+    // ensure it's really gone
+    self.popover = nil;
 }
 
 - (void)showSettings {
@@ -811,8 +822,9 @@
 
 - (void)willShowKeyboard:(NSNotification*)notification {
     NSDictionary* keyboardInfo = [notification userInfo];
-    NSValue* keyboardFrameBegin = [keyboardInfo valueForKey:UIKeyboardFrameBeginUserInfoKey];
-    keyboardHeight = [keyboardFrameBegin CGRectValue].size.height;
+    NSValue *keyboardValue = keyboardInfo[UIKeyboardFrameEndUserInfoKey];
+    CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
+    keyboardHeight = convertedKeyboardFrame.size.height;
     duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     animationCurve = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
     [UIView animateWithDuration:duration
@@ -879,6 +891,13 @@
 
 - (void)dismiss {
     [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    if (self.popover && self.popover.isPopoverVisible){
+        [self.popover dismissPopoverAnimated:YES];
+    }
 }
 
 - (void)didReceiveMemoryWarning {

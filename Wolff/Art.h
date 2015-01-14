@@ -21,6 +21,7 @@
 @property (nonatomic, retain) NSString * notes;
 @property (nonatomic, retain) NSNumber * notExtant;
 @property (nonatomic, retain) NSNumber * privateArt;
+@property (nonatomic, retain) NSNumber * visible;
 @property (nonatomic, retain) NSOrderedSet *artists;
 @property (nonatomic, retain) NSOrderedSet *tables;
 @property (nonatomic, retain) NSOrderedSet *photos;

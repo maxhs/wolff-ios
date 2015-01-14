@@ -51,10 +51,10 @@
         [transitionContext.containerView addSubview:toView];
         
         CGRect startFrame = endFrame;
-        startFrame.origin.x -= width;
+        startFrame.origin.x += width;
         
         CGRect originEndFrame = endFrame;
-        originEndFrame.origin.x += width;
+        originEndFrame.origin.x -= width;
         
         toViewController.view.frame = startFrame;
         
@@ -71,9 +71,9 @@
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
         
-        endFrame.origin.x -= width;
+        endFrame.origin.x += width;
         CGRect originStartFrame = toViewController.view.frame;
-        originStartFrame.origin.x = width;
+        originStartFrame.origin.x = -width;
         toViewController.view.frame = originStartFrame;
         CGRect originEndFrame = toViewController.view.frame;
         originEndFrame.origin.x = 0;

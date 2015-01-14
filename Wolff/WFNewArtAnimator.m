@@ -65,11 +65,11 @@
         
         UIToolbar *toolbarBackground; // set the new art view background here, becuase we're resetting the framing (and it's not reflects in either the viewDidLoad or viewWillAppear methods
         if (iOS8){
-            CGRect newArtStartFrame = CGRectMake(0, 0, width, height*.5);
+            CGRect newArtStartFrame = CGRectMake(0, 0, width, height);
             toView.frame = newArtStartFrame;
             toolbarBackground = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, toView.frame.size.width, toView.frame.size.height)];
         } else {
-            CGRect newArtStartFrame = CGRectMake(0, 0, height*5, width);
+            CGRect newArtStartFrame = CGRectMake(0, 0, height, width);
             toView.frame = newArtStartFrame;
             toolbarBackground = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, toView.frame.size.height, toView.frame.size.width)];
         }

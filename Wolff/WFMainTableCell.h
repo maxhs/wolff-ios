@@ -12,9 +12,11 @@
 
 @interface WFMainTableCell : UITableViewCell
 
-@property (weak, nonatomic) IBOutlet UILabel *artLabel;
+@property (weak, nonatomic) IBOutlet UIImageView *iconImageView;
+@property (weak, nonatomic) IBOutlet UILabel *label;
+@property (weak, nonatomic) IBOutlet UILabel *tableLabel;
+@property (weak, nonatomic) IBOutlet UILabel *pieceCountLabel;
 
-- (void)configureForArt:(Art*)art;
 - (void)configureForTable:(Table*)table;
 
 @end

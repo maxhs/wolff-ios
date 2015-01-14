@@ -25,7 +25,7 @@
     [self.view setBackgroundColor:[UIColor blackColor]];
     [self.tableView setBackgroundColor:[UIColor clearColor]];
     [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
-    self.tableView.rowHeight = 54.f;
+    self.tableView.rowHeight = 50.f;
 }
 
 #pragma mark - Table view data source

@@ -13,6 +13,7 @@
     CGFloat width;
     CGFloat height;
     NSInteger currentPage;
+    CGRect mainScreen;
 }
 
 @end
@@ -22,12 +23,12 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        width = screenWidth();
-        height = screenHeight();
+        width = screenWidth();height = screenHeight();
+        mainScreen = [UIScreen mainScreen].bounds;
         [_scrollView setContentSize:CGSizeMake(width*4, height)];
     } else {
-        height = screenHeight();
-        width = screenWidth();
+        height = screenHeight(); width = screenWidth();
+        mainScreen = CGRectMake(0, 0, height, width);
         [_scrollView setContentSize:CGSizeMake(height*4, width)];
     }
     
@@ -43,31 +44,57 @@
     _skipButton.clipsToBounds = YES;
     _skipButton.backgroundColor = [UIColor colorWithWhite:1 alpha:.07];
     
-    _pageControl.numberOfPages = 4;
+    _pageControl.numberOfPages = 3;
     
     [self labelTreatment:_label1];
-    [_label1 setText:@"Hello! Welcome to Wolff!"];
+    [_label1 setText:@"Discover, organize, and present works of art in high resolution."];
     [self labelTreatment:_label2];
-    [_label2 setText:@"This is another slide, where we'll tell you more about this fantastic app."];
+    [_label2 setText:@"Interactive slideshows with side-by-side comparisons in high resolution."];
     [self labelTreatment:_label3];
-    [_label3 setText:@"But wait... there's more! Yes, much more. You can actually DO things with this Wolff thingy."];
-    [self labelTreatment:_label4];
-    [_label4 setText:@"As if you thought we'd only have three slides... here's a fourth! That was the last one though. Time to get going!"];
+    [_label3 setText:@"Contribute to the Wolff catalog: a crowd-sourced library of digitized artworks."];
+    
+    [self bigLabelTreatment:_bigLabel1];
+    [self bigLabelTreatment:_bigLabel2];
+    [self bigLabelTreatment:_bigLabel3];
 }
 
 - (void)labelTreatment:(UILabel *)label {
+    [label setClipsToBounds:NO];
     [label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
     [label setTextColor:[UIColor whiteColor]];
-    [label setClipsToBounds:NO];
+    label.layer.shadowColor = [UIColor colorWithWhite:0 alpha:.5].CGColor;
+    label.layer.shadowOffset = CGSizeMake(.9f, .9f);
+    label.layer.shadowRadius = 1.7f;
+    label.layer.shadowOpacity = .45f;
+}
+
+- (void)bigLabelTreatment:(UILabel*)label {
+    [label setFont:[UIFont fontWithName:kMuseoSansThin size:66]];
+    [label setTextColor:[UIColor whiteColor]];
+    label.layer.shadowColor = [UIColor colorWithWhite:0 alpha:.5].CGColor;
+    label.layer.shadowOffset = CGSizeMake(1.2f, 1.2f);
+    label.layer.shadowRadius = 3.7f;
+    label.layer.shadowOpacity = .75f;
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     CGFloat pageWidth = scrollView.frame.size.width;
-    float fractionalPage = scrollView.contentOffset.x / pageWidth;
+    CGFloat offsetX = scrollView.contentOffset.x;
+    float fractionalPage = offsetX / pageWidth;
     NSInteger page = lround(fractionalPage);
     if (currentPage != page) {
         currentPage = page;
         [_pageControl setCurrentPage:currentPage];
+    }
+    [_backgroundImageView1 setAlpha:1-(offsetX/_scrollView.frame.size.width)];
+    [_backgroundImageView2 setAlpha:2-(offsetX/(_scrollView.frame.size.width))];
+    [_backgroundImageView3 setAlpha:3-(offsetX/(_scrollView.frame.size.width))];
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    CGFloat endedAtX = scrollView.contentOffset.x;
+    if (endedAtX > (width * 2.25)) {
+        [self dismiss];
     }
 }
 

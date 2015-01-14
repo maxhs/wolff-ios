@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "Table+helper.h"
+#import "Slideshow+helper.h"
 
 @protocol WFLightTablesDelegate <NSObject>
 
@@ -19,6 +20,7 @@
 
 @interface WFTablesViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
+@property (strong, nonatomic) Slideshow *slideshow;
 @property (strong, nonatomic) NSMutableArray *lightTables;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) id<WFLightTablesDelegate> lightTableDelegate;

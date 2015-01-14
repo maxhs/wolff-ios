@@ -18,7 +18,7 @@
     [self.label setTextColor:[UIColor colorWithWhite:.7 alpha:.7]];
     
     [self.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [self.textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.9]];
+    [self.textField setBackgroundColor:kTextFieldBackground];
     self.textField.layer.cornerRadius = 3.f;
     self.textField.clipsToBounds = YES;
     [self.textField setKeyboardAppearance:UIKeyboardAppearanceDark];
@@ -27,7 +27,7 @@
     self.textField.leftViewMode = UITextFieldViewModeAlways;
     
     [self.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [self.textView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.9]];
+    [self.textView setBackgroundColor:kTextFieldBackground];
     self.textView.layer.cornerRadius = 3.f;
     self.textView.clipsToBounds = YES;
     [self.textView setKeyboardAppearance:UIKeyboardAppearanceDark];

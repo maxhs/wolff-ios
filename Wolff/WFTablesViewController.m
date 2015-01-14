@@ -22,6 +22,7 @@
 
 @implementation WFTablesViewController
 @synthesize lightTables = _lightTables;
+@synthesize slideshow = _slideshow;
 
 -(id)initWithPanTarget:(id<WFLightTablesDelegate>)lightTableDelegate {
     self = [super initWithNibName:nil bundle:nil];
@@ -96,8 +97,15 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFTableCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LightTableCell" forIndexPath:indexPath];
-    [cell configureForTable:(Table*)_lightTables[indexPath.row]];
-    
+    Table *table = (Table*)_lightTables[indexPath.row];
+    [cell configureForTable:table];
+    if (_slideshow){
+        if ([_slideshow.tables containsObject:table]){
+            cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        } else {
+            cell.accessoryType = UITableViewCellAccessoryNone;
+        }
+    }
     return cell;
 }
 
@@ -109,6 +117,7 @@
     [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     [headerLabel setTextColor:[UIColor colorWithWhite:.5 alpha:.5]];
     [headerLabel setText:@"SHARE ON LIGHT TABLE"];
+    [headerLabel setTextAlignment:NSTextAlignmentCenter];
     [headerView addSubview:headerLabel];
     
     return headerView;

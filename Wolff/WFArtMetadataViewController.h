@@ -8,6 +8,14 @@
 
 #import <UIKit/UIKit.h>
 #import "Art+helper.h"
+#import "Table+helper.h"
+
+@protocol WFMetadataDelegate <NSObject>
+
+@optional
+- (void)favoritedPhoto:(Photo*)photo;
+- (void)droppedPhoto:(Photo*)photo toLightTable:(Table*)lightTable;
+@end
 
 @interface WFArtMetadataViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
@@ -22,6 +30,7 @@
 @property (weak, nonatomic) IBOutlet UIButton *flagButton;
 @property (weak, nonatomic) IBOutlet UIButton *favoriteButton;
 @property (strong, nonatomic) Photo *photo;
+@property (weak, nonatomic) id<WFMetadataDelegate> metadataDelegate;
 
 - (void)dismiss;
 

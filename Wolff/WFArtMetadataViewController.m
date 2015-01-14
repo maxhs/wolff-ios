@@ -18,14 +18,17 @@
 #import "WFAlert.h"
 #import "WFComparisonViewController.h"
 #import "WFSlideshowFocusAnimator.h"
+#import "WFLoginAnimator.h"
+#import "WFLoginViewController.h"
 
-@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate> {
+@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     NSDateFormatter *dateFormatter;
     User *_currentUser;
     Favorite *_favorite;
     BOOL editMode;
+    BOOL login;
     CGFloat keyboardHeight;
     UITextView *titleTextView;
     UITextView *notesTextView;
@@ -184,6 +187,9 @@
             if ([responseObject objectForKey:@"success"] && [[responseObject objectForKey:@"success"] isEqualToNumber:@1]){
                 [lightTable addPhoto:_photo];
                 [[NSManagedObjectContext MR_defaultContext] MR_saveOnlySelfAndWait];
+                if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(droppedPhoto:toLightTable:)]){
+                    [self.metadataDelegate droppedPhoto:_photo toLightTable:lightTable];
+                }
             } else {
                 [WFAlert show:@"Something went wrong while trying to drop this art to your light table. Please try again soon" withTime:3.3f];
             }
@@ -228,6 +234,10 @@
     }
 }
 
+- (void)loginSuccessful {
+    NSLog(@"Login successful");
+}
+
 - (void)showProfile {
     NSLog(@"Should be showing profile");
 }
@@ -270,7 +280,6 @@
 }
 
 #pragma mark - Table view data source
-
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
@@ -406,6 +415,9 @@
                                        action:NULL
                              forControlEvents:UIControlEventAllEvents];
                 [_favoriteButton addTarget:self action:@selector(unfavorite) forControlEvents:UIControlEventTouchUpInside];
+                if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(favoritedPhoto:)]){
+                    [self.metadataDelegate favoritedPhoto:_photo];
+                }
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to favorite %@: %@",_photo.art.title,error.description);
@@ -439,7 +451,14 @@
 }
 
 - (void)showLogin {
-    
+    WFLoginViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Login"];
+    delegate.loginDelegate = self;
+    vc.modalPresentationStyle = UIModalPresentationCustom;
+    vc.transitioningDelegate = self;
+    login = YES;
+    [self presentViewController:vc animated:YES completion:^{
+        
+    }];
 }
 
 - (void)showFullScreen {
@@ -489,8 +508,9 @@
     NSDictionary* info = [note userInfo];
     NSTimeInterval duration = [info[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationOptions curve = [info[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
-    NSValue *keyboardValue = info[UIKeyboardFrameBeginUserInfoKey];
-    keyboardHeight = keyboardValue.CGRectValue.size.height;
+    NSValue *keyboardValue = info[UIKeyboardFrameEndUserInfoKey];
+    CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
+    keyboardHeight = convertedKeyboardFrame.size.height;
     [UIView animateWithDuration:duration
                           delay:0
                         options:curve | UIViewAnimationOptionBeginFromCurrentState
@@ -530,15 +550,26 @@
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
                                                                   presentingController:(UIViewController *)presenting
                                                                       sourceController:(UIViewController *)source {
-    WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
-    animator.presenting = YES;
-    return animator;
+    if (login){
+        WFLoginAnimator *animator = [WFLoginAnimator new];
+        animator.presenting = YES;
+        return animator;
+    } else {
+        WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
+        animator.presenting = YES;
+        return animator;
+    }
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
     
-    WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
-    return animator;
+    if (login){
+        WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
+        return animator;
+    } else {
+        WFLoginAnimator *animator = [WFLoginAnimator new];
+        return animator;
+    }
 }
 
 - (void)dismiss {

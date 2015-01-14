@@ -20,7 +20,7 @@
     [_label setTextColor:[UIColor whiteColor]];
     
     [_textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
-    UIView *paddingView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 5, 20)];
+    UIView *paddingView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 7, 20)];
     _textField.leftView = paddingView;
     _textField.leftViewMode = UITextFieldViewModeAlways;
     [_textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
@@ -30,6 +30,12 @@
     
     [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [self.textLabel setTextColor:[UIColor whiteColor]];
+}
+
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    [_textField setText:@""];
+    [self.textLabel setText:@""];
 }
 
 @end

@@ -79,7 +79,7 @@
                 UITextField *searchTextField = (UITextField*)subview;
                 [searchTextField setTextColor:[UIColor whiteColor]];
                 [searchTextField setTintColor:[UIColor whiteColor]];
-                [searchTextField setBackgroundColor:[UIColor colorWithWhite:0 alpha:.5]];
+                [searchTextField setBackgroundColor:[UIColor colorWithWhite:0 alpha:.77]];
                 [searchTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
                 searchTextField.keyboardAppearance = UIKeyboardAppearanceDark;
                 break;
@@ -230,7 +230,12 @@
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    Photo *photo = _filteredPhotos[indexPath.row];
+    Photo *photo;
+    if (searching){
+        photo = _filteredPhotos[indexPath.row];
+    } else {
+        photo = _photos[indexPath.row];
+    }
     if ([selectedPhotos containsObject:photo]){
         [selectedPhotos removeObject:photo];
     } else {
@@ -255,15 +260,10 @@
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)text {
     if (!text.length){
         dispatch_async(dispatch_get_main_queue(), ^(void){
-            [_filteredPhotos removeAllObjects];
             [self.searchBar setText:@""];
             searching = NO;
             [_noResultsPrompt setHidden:YES];
-            if (_shouldShowTiles){
-                [self.collectionView reloadData];
-            } else {
-                [self.tableView reloadData];
-            }
+            _shouldShowTiles ? [self.collectionView reloadData] : [self.tableView reloadData];
         });
     }
 }
@@ -292,6 +292,7 @@
 - (void)filterContentForSearchText:(NSString*)text scope:(NSString*)scope {
     //NSLog(@"search text: %@",text);
     if (text.length) {
+        searching = YES;
         [_filteredPhotos removeAllObjects];
         for (Photo *photo in _photos){
             Art *art = photo.art;
@@ -304,9 +305,8 @@
                 [_filteredPhotos addObject:photo];
             }
         }
-    } else {
-        _filteredPhotos = [NSMutableArray arrayWithArray:_photos];
     }
+    
     if (_shouldShowTiles) {
         [self.collectionView reloadData];
     } else {

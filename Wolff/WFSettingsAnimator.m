@@ -53,6 +53,7 @@
         
         UIButton *blurredButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [blurredButton setBackgroundImage:[self blurredSnapshotForWindow:[transitionContext.containerView window]]  forState:UIControlStateNormal];
+        [blurredButton setAdjustsImageWhenHighlighted:NO];
         
         //this is a little fragile, since if the view hierarchy changes, this will break
         UINavigationController *nav = (UINavigationController*)toViewController;
@@ -73,11 +74,9 @@
             toEndFrame = toView.frame;
             toEndFrame.origin.x = 0; toEndFrame.origin.y = 0;
         }
-        
 
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:toView];
-        
         [transitionContext.containerView insertSubview:blurredButton belowSubview:toView];
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{

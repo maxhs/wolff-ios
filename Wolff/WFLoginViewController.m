@@ -307,10 +307,8 @@
 }
 
 - (void)textFieldTreatment:(UITextField*)textField {
-    [textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.8]];
+    [textField setBackgroundColor:kTextFieldBackground];
     [textField setKeyboardAppearance:UIKeyboardAppearanceDark];
-    //textField.layer.borderColor = [UIColor colorWithWhite:.9 alpha:1].CGColor;
-    //textField.layer.borderWidth = .5f;
     textField.layer.cornerRadius = 2.f;
     textField.clipsToBounds = YES;
     [textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];

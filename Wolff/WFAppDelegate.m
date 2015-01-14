@@ -8,13 +8,16 @@
 
 #import "WFAppDelegate.h"
 #import <Mixpanel/Mixpanel.h>
+#import <Crashlytics/Crashlytics.h>
 
 @implementation WFAppDelegate
 @synthesize manager = _manager;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    [Crashlytics startWithAPIKey:@"fdf66a0a10b6fc2a0f7052c9758873dc992773d5"];
     [MagicalRecord setShouldDeleteStoreOnModelMismatch:YES];
     [MagicalRecord setupAutoMigratingCoreDataStack];
+    
     
     [Mixpanel sharedInstanceWithToken:MIXPANEL_TOKEN];
     Mixpanel *mixpanel = [Mixpanel sharedInstance];
@@ -85,7 +88,7 @@
         } else {
             [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to log you in." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
         }
-        NSLog(@"Failed to connect: %@",error.description);
+        //NSLog(@"Failed to connect: %@",error.description);
         NSLog(@"Response string: %@",operation.responseString);
     }];
 }

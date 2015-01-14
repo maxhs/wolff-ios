@@ -38,9 +38,9 @@
     UIPanGestureRecognizer *_panGesture1;
     UIPanGestureRecognizer *_panGesture2;
     UIPanGestureRecognizer *_panGesture3;
-    UIRotationGestureRecognizer *_rotateGesture1;
+    /*UIRotationGestureRecognizer *_rotateGesture1;
     UIRotationGestureRecognizer *_rotateGesture2;
-    UIRotationGestureRecognizer *_rotateGesture3;
+    UIRotationGestureRecognizer *_rotateGesture3;*/
     UIPinchGestureRecognizer *_pinchGesture1;
     UIPinchGestureRecognizer *_pinchGesture2;
     UIPinchGestureRecognizer *_pinchGesture3;
@@ -103,9 +103,9 @@
     _pinchGesture3 = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
     _pinchGesture3.delegate = self;
     
-    _rotateGesture1 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
+    /*_rotateGesture1 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
     _rotateGesture2 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
-    _rotateGesture3 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
+    _rotateGesture3 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];*/
     
     _doubleTapGesture1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(reset)];
     _doubleTapGesture1.numberOfTapsRequired = 2;
@@ -125,7 +125,6 @@
     _collectionView.canCancelContentTouches = YES;
     _collectionView.delaysContentTouches = NO;
     [_slideshowTitleButtonItem setTitle:_slideshow.title];
-    NSLog(@"start index: %lu",(long)(unsigned)_startIndex);
     currentPage = 1+_startIndex;
     [_collectionView setContentOffset:CGPointMake(width*_startIndex, 0) animated:NO];
     
@@ -214,7 +213,7 @@
         [artImageView1 addGestureRecognizer:_panGesture1];
         [artImageView1 addGestureRecognizer:_pinchGesture1];
         [artImageView1 addGestureRecognizer:_doubleTapGesture1];
-        [artImageView1 addGestureRecognizer:_rotateGesture1];
+        //[artImageView1 addGestureRecognizer:_rotateGesture1];
         
     } else {
         artImageView2 = cell.artImageView2;
@@ -222,14 +221,14 @@
         [artImageView2 addGestureRecognizer:_panGesture2];
         [artImageView2 addGestureRecognizer:_pinchGesture2];
         [artImageView2 addGestureRecognizer:_doubleTapGesture2];
-        [artImageView2 addGestureRecognizer:_rotateGesture2];
+        //[artImageView2 addGestureRecognizer:_rotateGesture2];
         
         artImageView3 = cell.artImageView3;
         containerView3 = cell.containerView3;
         [artImageView3 addGestureRecognizer:_panGesture3];
         [artImageView3 addGestureRecognizer:_pinchGesture3];
         [artImageView3 addGestureRecognizer:_doubleTapGesture3];
-        [artImageView3 addGestureRecognizer:_rotateGesture3];
+        //[artImageView3 addGestureRecognizer:_rotateGesture3];
     }
     
     if (!originalsAreSet){
@@ -246,6 +245,22 @@
     [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_pinchGesture2];
     [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_pinchGesture3];
     return cell;
+}
+
+- (IBAction)nextSlide:(id)sender {
+    CGPoint contentOffset = _collectionView.contentOffset;
+    contentOffset.x += width;
+    if (currentPage < _slideshow.slides.count){
+        [_collectionView setContentOffset:contentOffset animated:YES];
+    }
+}
+
+- (IBAction)previousSlide:(id)sender {
+    CGPoint contentOffset = _collectionView.contentOffset;
+    contentOffset.x -= width;
+    if (contentOffset.x >= 0.f){
+        [_collectionView setContentOffset:contentOffset animated:YES];
+    }
 }
 
 #pragma mark – UICollectionViewDelegateFlowLayout

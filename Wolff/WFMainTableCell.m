@@ -27,32 +27,39 @@
     [clearFrame setBackgroundColor:[UIColor clearColor]];
     self.backgroundView = clearFrame;
     
-    [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansSemibold] size:0]];
-    [self.textLabel setTextColor:[UIColor whiteColor]];
-    [self.textLabel setText:@""];
-    [_artLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
-    [_artLabel setTextColor:[UIColor whiteColor]];
+    [_label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
+    [_label setTextColor:[UIColor whiteColor]];
+    [_label setText:@""];
+
+    [_tableLabel setTextColor:[UIColor whiteColor]];
+    [_pieceCountLabel setTextColor:[UIColor colorWithWhite:1 alpha:.33]];
     
     UIView *selectedView = [[UIView alloc] initWithFrame:self.frame];
     [selectedView setBackgroundColor:kDarkTableViewCellSelectionColor];
     self.selectedBackgroundView = selectedView;
 }
 
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    [_pieceCountLabel setText:@""];
+    [_tableLabel setText:@""];
+    [_label setText:@""];
+}
+
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
 }
 
-- (void)configureForArt:(Art*)art {
-    [_artLabel setText:art.title];
-}
-
 - (void)configureForTable:(Table *)table {
     if (table.name.length){
-        [_artLabel setText:table.name];
-        [_artLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+        [_tableLabel setText:table.name];
+        [_tableLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansItalic] size:0]];
     } else {
-        [_artLabel setText:@"No name..."];
-        [_artLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
+        [_tableLabel setText:@"No name..."];
+        [_tableLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
     }
+    NSString *pieceCount = table.photos.count == 1 ? @"1 slide" : [NSString stringWithFormat:@"%lu slides",(unsigned long)table.photos.count];
+    [_pieceCountLabel setText:pieceCount];
+    [_pieceCountLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansItalic] size:0]];
 }
 @end

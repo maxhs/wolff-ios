@@ -85,7 +85,7 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    if (_photos.count || _slide.photos.count > 1){
+    if ([self multipleImages]){
         return 2;
     } else {
         return 1;
@@ -183,7 +183,7 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    if (_photos.count || _slide.photos.count > 1){
+    if ([self multipleImages]){
         if (section == 0){
             return 34;
         } else {
@@ -194,10 +194,18 @@
     }
 }
 
+- (BOOL)multipleImages {
+    if (_photos.count > 1 || _slide.photos.count > 1){
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
 - (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     
     CGFloat headerHeight;
-    if (_photos.count || _slide.photos.count > 1){
+    if ([self multipleImages]){
         if (section == 0){
             headerHeight = 34;
         } else {
@@ -207,7 +215,7 @@
         headerHeight = 0;
     }
     UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, headerHeight)];
-    if (_photos.count || _slide.photos.count > 1){
+    if ([self multipleImages]){
         CGFloat yOffset = section == 0 ? 0 : 66;
         UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, yOffset, tableView.frame.size.width, 34)];
         [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];

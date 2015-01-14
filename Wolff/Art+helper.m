@@ -35,6 +35,12 @@
     if ([dictionary objectForKey:@"not_extant"] && [dictionary objectForKey:@"not_extant"] != [NSNull null]){
         self.notExtant = [dictionary objectForKey:@"not_extant"];
     }
+    if ([dictionary objectForKey:@"private"] && [dictionary objectForKey:@"private"] != [NSNull null]){
+        self.privateArt = [dictionary objectForKey:@"private"];
+    }
+    if ([dictionary objectForKey:@"visible"] && [dictionary objectForKey:@"visible"] != [NSNull null]){
+        self.visible = [dictionary objectForKey:@"visible"];
+    }
     if ([dictionary objectForKey:@"uploaded_epoch_time"] && [dictionary objectForKey:@"uploaded_epoch_time"] != [NSNull null]) {
         NSTimeInterval _interval = [[dictionary objectForKey:@"uploaded_epoch_time"] doubleValue];
         self.uploadedDate = [NSDate dateWithTimeIntervalSince1970:_interval];

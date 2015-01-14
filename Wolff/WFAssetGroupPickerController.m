@@ -93,7 +93,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFAssetGroupPickerCell *cell = [tableView dequeueReusableCellWithIdentifier:@"GroupCell" forIndexPath:indexPath];
-    if (SYSTEM_VERSION < 7.f){
+    if (SYSTEM_VERSION < 8.f){
         [cell setBackgroundColor:[UIColor clearColor]];
     }
     

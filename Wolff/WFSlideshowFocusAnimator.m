@@ -28,13 +28,11 @@
     CGRect mainScreen;
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
         iOS8 = YES;
-        width = screenWidth();
-        height = screenHeight();
+        width = screenWidth(); height = screenHeight();
         mainScreen = [UIScreen mainScreen].bounds;
     } else {
         iOS8 = NO;
-        width = screenHeight();
-        height = screenWidth();
+        width = screenHeight(); height = screenWidth();
         mainScreen = CGRectMake(0, 0, height, width);
     }
 
@@ -44,12 +42,10 @@
     fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f) {
-        // iOS 8 logic
+    if (iOS8) {
         fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
         toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     } else {
-        // iOS 7 and below logic
         fromView = fromViewController.view;
         toView = toViewController.view;
     }
@@ -62,7 +58,8 @@
         
         //this is a little fragile, since if the view hierarchy changes, this will break
         UINavigationController *nav = (UINavigationController*)toViewController;
-        [blurredButton addTarget:(WFSlideshowViewController*)nav.viewControllers.firstObject action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+        
+        [blurredButton addTarget:nav.viewControllers.firstObject action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         [blurredButton setFrame:mainScreen];
         [blurredButton setAlpha:0.0];
         [blurredButton setTag:kBlurredBackgroundConstant];
