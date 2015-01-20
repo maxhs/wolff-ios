@@ -204,9 +204,10 @@
         <relationship name="discussions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Discussion" inverseName="table" inverseEntity="Discussion" syncable="YES"/>
         <relationship name="favorites" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Favorite" inverseName="table" inverseEntity="Favorite" syncable="YES"/>
         <relationship name="notifications" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Notification" inverseName="table" inverseEntity="Notification" syncable="YES"/>
+        <relationship name="owner" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="ownedTables" inverseEntity="User" syncable="YES"/>
         <relationship name="photos" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Photo" inverseName="tables" inverseEntity="Photo" syncable="YES"/>
         <relationship name="slideshows" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Slideshow" inverseName="tables" inverseEntity="Slideshow" syncable="YES"/>
-        <relationship name="users" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="lightTables" inverseEntity="User" syncable="YES"/>
+        <relationship name="users" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="User" inverseName="lightTables" inverseEntity="User" syncable="YES"/>
     </entity>
     <entity name="User" representedClassName="User">
         <attribute name="admin" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
@@ -232,6 +233,7 @@
         <relationship name="institution" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Institution" inverseName="users" inverseEntity="Institution" syncable="YES"/>
         <relationship name="lightTables" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Table" inverseName="users" inverseEntity="Table" syncable="YES"/>
         <relationship name="notifications" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Notification" inverseName="user" inverseEntity="Notification" syncable="YES"/>
+        <relationship name="ownedTables" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Table" inverseName="owner" inverseEntity="Table" syncable="YES"/>
         <relationship name="photos" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Photo" inverseName="user" inverseEntity="Photo" syncable="YES"/>
         <relationship name="slideshows" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Slideshow" inverseName="user" inverseEntity="Slideshow" syncable="YES"/>
         <userInfo/>
@@ -253,7 +255,7 @@
         <element name="Photo" positionX="279" positionY="324" width="128" height="343"/>
         <element name="Slide" positionX="297" positionY="315" width="128" height="135"/>
         <element name="Slideshow" positionX="288" positionY="306" width="128" height="195"/>
-        <element name="Table" positionX="288" positionY="270" width="128" height="210"/>
-        <element name="User" positionX="261" positionY="189" width="128" height="390"/>
+        <element name="Table" positionX="288" positionY="270" width="128" height="223"/>
+        <element name="User" positionX="261" positionY="189" width="128" height="403"/>
     </elements>
 </model>

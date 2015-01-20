@@ -10,13 +10,20 @@
 #import "Art+helper.h"
 #import "Table+helper.h"
 
-@interface WFMainTableCell : UITableViewCell
+@protocol WFLightTableCellDelegate <NSObject>
+- (void)deleteLightTable:(Table*)lightTable;
+- (void)leaveLightTable:(Table*)lightTable;
+@end
+
+@interface WFMainTableCell : UITableViewCell <UIScrollViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UIImageView *iconImageView;
 @property (weak, nonatomic) IBOutlet UILabel *label;
 @property (weak, nonatomic) IBOutlet UILabel *tableLabel;
 @property (weak, nonatomic) IBOutlet UILabel *pieceCountLabel;
-
-- (void)configureForTable:(Table*)table;
+@property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
+@property (weak, nonatomic) IBOutlet UIButton *actionButton;
+@property (weak, nonatomic) id<WFLightTableCellDelegate> delegate;
+- (void)configureForTable:(Table*)lightTable;
 
 @end

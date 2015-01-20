@@ -139,7 +139,7 @@ static NSString * const reuseIdentifier = @"PhotoCell";
         } else {
             [_selectedAssets addObject:asset];
         }
-        NSString *viewTitle = _selectedAssets.count == 1 ? @"1 item selected" : [NSString stringWithFormat:@"%lu items selected",(unsigned long)_selectedAssets.count];
+        NSString *viewTitle = _selectedAssets.count == 1 ? @"1 photo selected" : [NSString stringWithFormat:@"%lu photos selected",(unsigned long)_selectedAssets.count];
         self.title = viewTitle;
         [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
     } else {

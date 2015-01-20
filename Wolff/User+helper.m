@@ -97,11 +97,14 @@
     }
     
     if ([dictionary objectForKey:@"light_tables"] && [dictionary objectForKey:@"light_tables"] != [NSNull null]){
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithOrderedSet:self.lightTables];
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        //NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithOrderedSet:self.lightTables];
         for (id dict in [dictionary objectForKey:@"light_tables"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Table *table = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!table){
+            if (table){
+                
+            } else {
                 table = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [table populateFromDictionary:dict];

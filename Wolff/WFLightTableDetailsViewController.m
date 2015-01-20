@@ -114,7 +114,7 @@
     [submitButton setTitle:@"CREATE" forState:UIControlStateNormal];
     [submitButton addTarget:self action:@selector(createLightTable) forControlEvents:UIControlEventTouchUpInside];
     
-    [submitButton setFrame:CGRectMake(width*.1, headerLabel.frame.origin.y + headerLabel.frame.size.height+17, width*.6, 44)];
+    [submitButton setFrame:CGRectMake(width*.2, headerLabel.frame.origin.y + headerLabel.frame.size.height+17, width*.4, 44)];
     [submitButton setBackgroundColor:[UIColor blackColor]];
     submitButton.layer.cornerRadius = 14.f;
     submitButton.clipsToBounds = YES;
@@ -146,14 +146,15 @@
     if (indexPath.section == 0 && _showKey){
         WFLightTableKeyCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LightTableKeyCell" forIndexPath:indexPath];
         [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
-        [cell.label setText:@"TABLE KEY"];
+        [cell setBackgroundColor:[UIColor clearColor]];
         
+        [cell.label setText:@"TABLE KEY"];
         [cell.textField setPlaceholder:@"The key code for the light table code you'd like to join"];
         [cell.joinButton setTitle:@"JOIN" forState:UIControlStateNormal];
         [cell.joinButton setUserInteractionEnabled:YES];
         [cell.joinButton addTarget:self action:@selector(joinLightTable) forControlEvents:UIControlEventTouchUpInside];
         CGFloat originY = cell.textField.frame.origin.y + cell.textField.frame.size.height + 14.f;
-        [cell.joinButton setFrame:CGRectMake(width*.1, originY, width*.6, 44)];
+        [cell.joinButton setFrame:CGRectMake(width*.2, originY, width*.4, 44)]; //takes into account
         joinTableTextField = cell.textField;
         return cell;
     } else {
@@ -185,7 +186,7 @@
                     [cell.textView setTextColor:kPlaceholderTextColor];
                 }
                 cell.textView.delegate = self;
-                [cell.textView setReturnKeyType:UIReturnKeyNext];
+                [cell.textView setReturnKeyType:UIReturnKeyDefault];
             }
                 break;
             case 2:
@@ -209,7 +210,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0 && _showKey){
-        return 140;
+        return 160;
     } else {
         if (indexPath.row == 1){
             return 88;
@@ -219,9 +220,13 @@
     }
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 60;
+}
+
 - (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 34)];
-    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, tableView.frame.size.width-10, 34)];
+    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 44)];
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 10, tableView.frame.size.width-10, 34)];
     [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [headerLabel setTextColor:[UIColor colorWithWhite:1 alpha:.27]];
     if (section == 0 && _showKey){
@@ -273,6 +278,9 @@
         [_table populateFromDictionary:[responseObject objectForKey:@"light_table"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [WFAlert show:[NSString stringWithFormat:@"\"%@\" successfully created!",_table.name] withTime:2.7f];
+            if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(didCreateLightTable:)]){
+                [self.lightTableDelegate didCreateLightTable:_table];
+            }
             [self dismiss];
             [ProgressHUD dismiss];
         }];
@@ -300,6 +308,7 @@
         [parameters setObject:_table.identifier forKey:@"id"];
     }
     
+    [ProgressHUD show:@"Searching for light table..."];
     [manager POST:@"light_tables/join" parameters:@{@"light_table":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Response object for joining a light table: %@",responseObject);
         NSDictionary *lightTableDict = [responseObject objectForKey:@"light_table"];
@@ -311,10 +320,14 @@
         }
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [WFAlert show:[NSString stringWithFormat:@"You just joined \"%@\"",_table.name] withTime:3.3f];
+            if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(didJoinLightTable:)]){
+                [self.lightTableDelegate didJoinLightTable:_table];
+            }
+            [ProgressHUD dismiss];
             [self dismiss];
         }];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"operation response: %@",operation.responseString);
+        //NSLog(@"operation response: %@",operation.responseString);
         if ([operation.responseString isEqualToString:kIncorrectLightTableCode]){
             [WFAlert show:@"We couldn't find a light table for that key."  withTime:3.3f];
         } else if ([operation.responseString isEqualToString:kNoLightTable]){
@@ -322,6 +335,7 @@
         } else {
             NSLog(@"Error joining light table: %@",error.description);
         }
+        [ProgressHUD dismiss];
     }];
 }
 
@@ -329,6 +343,11 @@
     if ([textView.text isEqualToString:kLightTableDescriptionPlaceholder]){
         [textView setText:@""];
         [textView setTextColor:[UIColor blackColor]];
+    }
+    if (textView == descriptionTextView) {
+        if (_showKey){
+            [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:1] atScrollPosition:UITableViewScrollPositionTop animated:YES];
+        }
     }
 }
 
@@ -340,7 +359,19 @@
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
-    
+    if (textField == titleTextField){
+        if (_showKey){
+            [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1] atScrollPosition:UITableViewScrollPositionTop animated:YES];
+        }
+    } else if (textField == tableKeyTextField){
+        if (_showKey){
+            [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:1] atScrollPosition:UITableViewScrollPositionTop animated:YES];
+        }
+    } else if (textField == confirmTableKeyTextField){
+        if (_showKey){
+            [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:3 inSection:1] atScrollPosition:UITableViewScrollPositionTop animated:YES];
+        }
+    }
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField {

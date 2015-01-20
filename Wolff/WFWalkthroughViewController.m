@@ -14,6 +14,7 @@
     CGFloat height;
     NSInteger currentPage;
     CGRect mainScreen;
+    UIMotionEffectGroup *motionGroup;
 }
 
 @end
@@ -25,11 +26,11 @@
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
         width = screenWidth();height = screenHeight();
         mainScreen = [UIScreen mainScreen].bounds;
-        [_scrollView setContentSize:CGSizeMake(width*4, height)];
+        [_scrollView setContentSize:CGSizeMake(width*3, height)];
     } else {
         height = screenHeight(); width = screenWidth();
         mainScreen = CGRectMake(0, 0, height, width);
-        [_scrollView setContentSize:CGSizeMake(height*4, width)];
+        [_scrollView setContentSize:CGSizeMake(height*3, width)];
     }
     
     [self.view setBackgroundColor:[UIColor clearColor]];
@@ -46,6 +47,11 @@
     
     _pageControl.numberOfPages = 3;
     
+    [self setUpMotionEffects];
+    
+    [_imageView1 addMotionEffect:motionGroup];
+    [_imageView2 addMotionEffect:motionGroup];
+    [_imageView3 addMotionEffect:motionGroup];
     [self labelTreatment:_label1];
     [_label1 setText:@"Discover, organize, and present works of art in high resolution."];
     [self labelTreatment:_label2];
@@ -58,6 +64,19 @@
     [self bigLabelTreatment:_bigLabel3];
 }
 
+- (void)setUpMotionEffects {
+    UIInterpolatingMotionEffect *verticalMotionEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.y" type:UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis];
+    verticalMotionEffect.minimumRelativeValue = @(-33);
+    verticalMotionEffect.maximumRelativeValue = @(33);
+    
+    UIInterpolatingMotionEffect *horizontalMotionEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.x" type:UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
+    horizontalMotionEffect.minimumRelativeValue = @(-33);
+    horizontalMotionEffect.maximumRelativeValue = @(33);
+    
+    motionGroup = [UIMotionEffectGroup new];
+    motionGroup.motionEffects = @[horizontalMotionEffect, verticalMotionEffect];
+}
+
 - (void)labelTreatment:(UILabel *)label {
     [label setClipsToBounds:NO];
     [label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
@@ -66,6 +85,7 @@
     label.layer.shadowOffset = CGSizeMake(.9f, .9f);
     label.layer.shadowRadius = 1.7f;
     label.layer.shadowOpacity = .45f;
+    [label addMotionEffect:motionGroup];
 }
 
 - (void)bigLabelTreatment:(UILabel*)label {
@@ -75,6 +95,7 @@
     label.layer.shadowOffset = CGSizeMake(1.2f, 1.2f);
     label.layer.shadowRadius = 3.7f;
     label.layer.shadowOpacity = .75f;
+    [label addMotionEffect:motionGroup];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {

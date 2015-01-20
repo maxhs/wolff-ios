@@ -13,6 +13,7 @@
 #import "WFInteractiveImageView.h"
 #import "WFSlideMetadataAnimator.h"
 #import "WFSlideMetadataViewController.h"
+#import "WFArtMetadataViewController.h"
 
 @interface WFComparisonViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UIGestureRecognizerDelegate, UIViewControllerTransitioningDelegate> {
     UIBarButtonItem *dismissButton;
@@ -41,6 +42,10 @@
     CGRect originalFrame2;
     CGRect originalFrame3;
     CGPoint lastPoint;
+    
+    CGFloat width;
+    CGFloat height;
+    BOOL iOS8;
 }
 
 @end
@@ -51,6 +56,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.automaticallyAdjustsScrollViewInsets = NO;
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     
@@ -58,8 +64,11 @@
     
     self.navigationItem.rightBarButtonItem = metadataButton;
     
-    if ([[UIDevice currentDevice] systemVersion].floatValue >= 8.f){
+    if (SYSTEM_VERSION >= 8.f){
+        iOS8 = YES; width = screenWidth(); height = screenHeight();
         self.navigationController.hidesBarsOnTap = YES;
+    } else {
+        iOS8 = NO; width = screenHeight(); height = screenWidth();
     }
     
     if (_photos.count == 1){
@@ -288,7 +297,18 @@
 }
 
 - (void)dismiss {
+    if (!iOS8){
+        [self.presentingViewController.view setFrame:CGRectMake(-212, 0, height, width)];
+    }
+    if ([self.presentingViewController isKindOfClass:[WFArtMetadataViewController class]]){
+        WFArtMetadataViewController *vc = (WFArtMetadataViewController*)self.presentingViewController;
+        if (!iOS8){
+            [vc.tableView setFrame:CGRectMake(212, 0, kMetadataWidth, height)];
+        }
+    }
+    
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+        
     }];
 }
 

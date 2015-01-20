@@ -84,8 +84,9 @@
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
-    }
-    else {
+    
+    } else {
+    
         UIImageView *blurredButton = (UIImageView*)[transitionContext.containerView viewWithTag:kBlurredBackgroundConstant];
         toViewController.view.userInteractionEnabled = YES;
         
@@ -99,6 +100,7 @@
         } completion:^(BOOL finished) {
             [blurredButton removeFromSuperview];
             [transitionContext completeTransition:YES];
+            NSLog(@"toView from slideshowFocusAnimator? %@",toView);
         }];
     }
 }

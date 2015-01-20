@@ -287,8 +287,7 @@
     }];
 }
 
-- (void)registerForKeyboardNotifications
-{
+- (void)registerForKeyboardNotifications {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
                                                  name:UIKeyboardWillShowNotification object:nil];

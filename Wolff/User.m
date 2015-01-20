@@ -21,6 +21,7 @@
 @dynamic bio;
 @dynamic institution;
 @dynamic lightTables;
+@dynamic ownedTables;
 @dynamic admin;
 @dynamic arts;
 @dynamic avatarSmall;

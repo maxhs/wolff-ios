@@ -7,7 +7,18 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Slideshow+helper.h"
 
-@interface WFSlideshowCell : UITableViewCell
+@protocol WFSlideshowCellDelegate <NSObject, UIAlertViewDelegate>
+- (void)deleteSlideshow:(Slideshow*)slideshow;
+- (void)removeSlideshow:(Slideshow*)slideshow;
+@end
 
+@interface WFSlideshowCell : UITableViewCell <UIScrollViewDelegate>
+@property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
+@property (weak, nonatomic) IBOutlet UIImageView *iconImageView;
+@property (weak, nonatomic) IBOutlet UILabel *slideshowLabel;
+@property (weak, nonatomic) IBOutlet UIButton *actionButton;
+@property (weak, nonatomic) id<WFSlideshowCellDelegate>delegate;
+- (void)configureForSlideshow:(Slideshow*)slideshow;
 @end

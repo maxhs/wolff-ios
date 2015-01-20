@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Photo, User;
+@class User;
 
 @interface Table : NSManagedObject
 
@@ -21,7 +21,8 @@
 @property (nonatomic, retain) NSOrderedSet *discussions;
 @property (nonatomic, retain) NSOrderedSet *slideshows;
 @property (nonatomic, retain) NSOrderedSet *photos;
-@property (nonatomic, retain) User *users;
+@property (nonatomic, retain) NSOrderedSet *users;
+@property (nonatomic, retain) User *owner;
 @end
 
 @interface Table (CoreDataGeneratedAccessors)

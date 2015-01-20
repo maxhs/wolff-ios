@@ -65,7 +65,6 @@
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:darkBackground];
         [transitionContext.containerView addSubview:toView];
-        
 
         [toView setAlpha:0.0];
         
@@ -79,12 +78,12 @@
         
         CGRect metadataFrame;
         if (iOS8) {
-            metadataFrame = CGRectMake(width/2-300, 0, 600, height);
-            CGRect metadataStartFrame = CGRectMake((width/2-300)-xOffset, 0, 600, height);
+            metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
+            CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
             toView.frame = metadataStartFrame;
         } else {
-            metadataFrame = CGRectMake(0, width/2-300, height, 600);
-            CGRect metadataStartFrame = CGRectMake(0, (width/2-300)-xOffset, height, 600);
+            metadataFrame = CGRectMake(0, width/2-kMetadataWidth/2, height, kMetadataWidth);
+            CGRect metadataStartFrame = CGRectMake(0, (width/2-kMetadataWidth/2)-xOffset, height, kMetadataWidth);
             toView.frame = metadataStartFrame;
         }
     

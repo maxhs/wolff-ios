@@ -97,7 +97,7 @@
     [_addPhotoButton.imageView setContentMode:UIViewContentModeScaleAspectFill];
     _addPhotoButton.imageView.clipsToBounds = YES;
     if (selectedImages.count) {
-        NSString *photoCountText = selectedImages.count == 1 ? @"1 image selected" : [NSString stringWithFormat:@"%d images selected",selectedImages.count];
+        NSString *photoCountText = selectedImages.count == 1 ? @"1 image selected" : [NSString stringWithFormat:@"%lu images selected",(unsigned long)selectedImages.count];
         [_photoCountLabel setText:photoCountText];
     } else {
         [_photoCountLabel setText:@""];
@@ -154,7 +154,7 @@
     }];
     
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        [WFAlert show:@"We're adding your art to the catalog!\n\nThis may take a few minutes." withTime:3.3f];
+        [WFAlert show:@"We're adding your art to the catalog!\n\nThis may take a few minutes..." withTime:3.3f];
     }];
 }
 

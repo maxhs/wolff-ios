@@ -44,9 +44,9 @@
 
 @synthesize photo = _photo;
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
+    self.automaticallyAdjustsScrollViewInsets = NO;
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
@@ -318,11 +318,11 @@
             //NSLog(@"art interval: %@",_photo.interval);
             if (_photo.art.interval.single){
                 [cell.textView setText:[dateFormatter stringFromDate:_photo.art.interval.single]];
-            } else if (![_photo.art.interval.beginRange isEqualToNumber:@0] && ![_photo.art.interval.endRange isEqualToNumber:@0]) {
+            } else if (_photo.art.interval.beginRange && ![_photo.art.interval.beginRange isEqualToNumber:@0] && _photo.art.interval.endRange && ![_photo.art.interval.endRange isEqualToNumber:@0]) {
                 NSString *beginSuffix = _photo.art.interval.beginSuffix.length ? _photo.art.interval.beginSuffix : @"CE";
                 NSString *endSuffix = _photo.art.interval.endSuffix.length ? _photo.art.interval.endSuffix : @"CE";
                 [cell.textView setText:[NSString stringWithFormat:@"%@ %@ - %@ %@",_photo.art.interval.beginRange, beginSuffix, _photo.art.interval.endRange, endSuffix]];
-            } else if (![_photo.art.interval.year isEqualToNumber:@0]){
+            } else if (_photo.art.interval.year && ![_photo.art.interval.year isEqualToNumber:@0]){
                 NSString *suffix = _photo.art.interval.suffix.length ? _photo.art.interval.suffix : @"CE";
                 [cell.textView setText:[NSString stringWithFormat:@"%@ %@",_photo.art.interval.year, suffix]];
             } else {

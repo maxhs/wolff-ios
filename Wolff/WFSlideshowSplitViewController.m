@@ -198,6 +198,7 @@
         cell.artImageView2.imageViewDelegate = self;
         cell.artImageView3.imageViewDelegate = self;
         [cell configureForSlide:slide withSlideNumber:indexPath.row + 1];
+        
         return cell;
     } else {
         // prompt to add new cell
@@ -542,6 +543,10 @@
 
 - (void)enableOfflineMode {
     NSLog(@"Should enable offline mode");
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+        self.popover = nil;
+    }
 }
 
 - (void)save {
@@ -859,9 +864,12 @@
 }
 
 - (void)deleteSlideshow {
+    
     [ProgressHUD show:@"Deleting..."];
-    [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",_slideshow.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success deleting this slideshow: %@",responseObject);
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",_slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success deleting this slideshow: %@",responseObject);
         [self deleteAndMoveOn];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to delete slideshow: %@", error.description);

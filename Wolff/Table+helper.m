@@ -10,61 +10,93 @@
 #import "Slideshow+helper.h"
 #import "Art+helper.h"
 #import "Discussion+helper.h"
+#import "User+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Table (helper)
 
-- (void)populateFromDictionary:(NSDictionary*)dict {
-    if ([dict objectForKey:@"id"] && [dict objectForKey:@"id"] != [NSNull null]){
-        self.identifier = [dict objectForKey:@"id"];
+- (void)populateFromDictionary:(NSDictionary*)dictionary {
+    if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
+        self.identifier = [dictionary objectForKey:@"id"];
     }
-    if ([dict objectForKey:@"description"] && [dict objectForKey:@"description"] != [NSNull null]){
-        self.tableDescription = [dict objectForKey:@"description"];
+    if ([dictionary objectForKey:@"description"] && [dictionary objectForKey:@"description"] != [NSNull null]){
+        self.tableDescription = [dictionary objectForKey:@"description"];
     }
-    if ([dict objectForKey:@"name"] && [dict objectForKey:@"name"] != [NSNull null]){
-        self.name = [dict objectForKey:@"name"];
+    if ([dictionary objectForKey:@"name"] && [dictionary objectForKey:@"name"] != [NSNull null]){
+        self.name = [dictionary objectForKey:@"name"];
     }
-    if ([dict objectForKey:@"visible"] && [dict objectForKey:@"visible"] != [NSNull null]){
-        self.visible = [dict objectForKey:@"visible"];
+    if ([dictionary objectForKey:@"visible"] && [dictionary objectForKey:@"visible"] != [NSNull null]){
+        self.visible = [dictionary objectForKey:@"visible"];
     }
-    if ([dict objectForKey:@"private"] && [dict objectForKey:@"private"] != [NSNull null]){
-        self.privateTable = [dict objectForKey:@"private"];
+    if ([dictionary objectForKey:@"private"] && [dictionary objectForKey:@"private"] != [NSNull null]){
+        self.privateTable = [dictionary objectForKey:@"private"];
     }
-    if ([dict objectForKey:@"slideshows"] && [dict objectForKey:@"slideshows"] != [NSNull null]){
+    if ([dictionary objectForKey:@"slideshows"] && [dictionary objectForKey:@"slideshows"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dictionary in [dict objectForKey:@"slideshows"]){
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"id"]];
+        for (id dict in [dictionary objectForKey:@"slideshows"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!slideshow){
                 slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [slideshow populateFromDictionary:dictionary];
+            [slideshow populateFromDictionary:dict];
             [set addObject:slideshow];
         }
         self.slideshows = set;
     }
-    if ([dict objectForKey:@"photos"] && [dict objectForKey:@"photos"] != [NSNull null]){
+    if ([dictionary objectForKey:@"photos"] && [dictionary objectForKey:@"photos"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dictionary in [dict objectForKey:@"photos"]){
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"id"]];
+        for (id dict in [dictionary objectForKey:@"photos"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!photo){
                 photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [photo populateFromDictionary:dictionary];
+            [photo populateFromDictionary:dict];
             [set addObject:photo];
         }
         self.photos = set;
     }
-    if ([dict objectForKey:@"discussions"] && [dict objectForKey:@"discussions"] != [NSNull null]){
+    if ([dictionary objectForKey:@"users"] && [dictionary objectForKey:@"users"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dictionary in [dict objectForKey:@"discussions"]){
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"id"]];
+        for (id dict in [dictionary objectForKey:@"users"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!user){
+                user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [user populateFromDictionary:dict];
+            [set addObject:user];
+        }
+        self.users = set;
+    }
+    if ([dictionary objectForKey:@"owner_id"] && [dictionary objectForKey:@"owner_id"] != [NSNull null]){
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"owner_id"]];
+        User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!user){
+            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        user.identifier = [dictionary objectForKey:@"owner_id"];
+        self.owner = user;
+    }
+    if ([dictionary objectForKey:@"owner"] && [dictionary objectForKey:@"owner"] != [NSNull null]){
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"owner"] objectForKey:@"id"]];
+        User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!user){
+            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        [user populateFromDictionary:[dictionary objectForKey:@"owner"]];
+        self.owner = user;
+    }
+    if ([dictionary objectForKey:@"discussions"] && [dictionary objectForKey:@"discussions"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"discussions"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Discussion *discussion = [Discussion MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!discussion){
                 discussion = [Discussion MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [discussion populateFromDictionary:dictionary];
+            [discussion populateFromDictionary:dict];
             [set addObject:discussion];
         }
         self.discussions = set;
@@ -105,6 +137,18 @@
     NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
     [tempSet removeObjectsInArray:array];
     self.photos = tempSet;
+}
+
+- (void)addUser:(User *)user {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.users];
+    [tempSet addObject:user];
+    self.users = tempSet;
+}
+
+- (void)removeUser:(User *)user {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.users];
+    [tempSet removeObject:user];
+    self.users = tempSet;
 }
 
 @end

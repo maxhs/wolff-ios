@@ -16,6 +16,7 @@
 		501473FC1A3EA136000422B8 /* trash.png in Resources */ = {isa = PBXBuildFile; fileRef = 501473ED1A3EA136000422B8 /* trash.png */; };
 		501473FD1A3EA136000422B8 /* trash@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 501473EE1A3EA136000422B8 /* trash@2x.png */; };
 		501473FE1A3EA136000422B8 /* trash@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 501473EF1A3EA136000422B8 /* trash@3x.png */; };
+		502460CD1A67B4600082635E /* WFSlideshowCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB43F21A53C72D00856174 /* WFSlideshowCell.m */; };
 		5026DF541A3B470A000CD26F /* Interval.m in Sources */ = {isa = PBXBuildFile; fileRef = 5026DF531A3B470A000CD26F /* Interval.m */; };
 		5026DF571A3B473E000CD26F /* Interval+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 5026DF561A3B473E000CD26F /* Interval+helper.m */; };
 		5026DF5A1A3CBE80000CD26F /* WFGroupsInteractor.m in Sources */ = {isa = PBXBuildFile; fileRef = 5026DF591A3CBE80000CD26F /* WFGroupsInteractor.m */; };
@@ -131,6 +132,9 @@
 		50952EAB1A480BD000485831 /* camera.png in Resources */ = {isa = PBXBuildFile; fileRef = 50952EA81A480BD000485831 /* camera.png */; };
 		50952EAC1A480BD000485831 /* camera@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50952EA91A480BD000485831 /* camera@2x.png */; };
 		50952EAD1A480BD000485831 /* camera@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50952EAA1A480BD000485831 /* camera@3x.png */; };
+		50CEAAE81A6DD3FB0040E8EF /* homeIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CEAAE51A6DD3FB0040E8EF /* homeIcon.png */; };
+		50CEAAE91A6DD3FB0040E8EF /* homeIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CEAAE61A6DD3FB0040E8EF /* homeIcon@2x.png */; };
+		50CEAAEA1A6DD3FB0040E8EF /* homeIcon@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CEAAE71A6DD3FB0040E8EF /* homeIcon@3x.png */; };
 		50D7A9D11A622E5C007FE14C /* WFWalkthroughViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D7A9D01A622E5C007FE14C /* WFWalkthroughViewController.m */; };
 		50D7A9D41A62306D007FE14C /* WFWalkthroughAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D7A9D31A62306D007FE14C /* WFWalkthroughAnimator.m */; };
 		50D7A9DB1A6234E3007FE14C /* logout.png in Resources */ = {isa = PBXBuildFile; fileRef = 50D7A9D51A6234E3007FE14C /* logout.png */; };
@@ -164,7 +168,6 @@
 		50DB43E01A53872200856174 /* cloudDownload@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB43DD1A53872200856174 /* cloudDownload@2x.png */; };
 		50DB43E11A53872200856174 /* cloudDownload@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB43DE1A53872200856174 /* cloudDownload@3x.png */; };
 		50DB43EA1A53946A00856174 /* WFNewArtAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB43E91A53946A00856174 /* WFNewArtAnimator.m */; };
-		50DB43F31A53C72D00856174 /* WFSlideshowCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB43F21A53C72D00856174 /* WFSlideshowCell.m */; };
 		50DB43FC1A53D35400856174 /* WFImagePickerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB43FB1A53D35400856174 /* WFImagePickerController.m */; };
 		50DB43FE1A53D45100856174 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50DB43FD1A53D45100856174 /* AssetsLibrary.framework */; };
 		50DB44011A545DA700856174 /* WFAssetGroupPickerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB44001A545DA700856174 /* WFAssetGroupPickerController.m */; };
@@ -479,6 +482,9 @@
 		50952EA81A480BD000485831 /* camera.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = camera.png; sourceTree = "<group>"; };
 		50952EA91A480BD000485831 /* camera@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "camera@2x.png"; sourceTree = "<group>"; };
 		50952EAA1A480BD000485831 /* camera@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "camera@3x.png"; sourceTree = "<group>"; };
+		50CEAAE51A6DD3FB0040E8EF /* homeIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = homeIcon.png; sourceTree = "<group>"; };
+		50CEAAE61A6DD3FB0040E8EF /* homeIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "homeIcon@2x.png"; sourceTree = "<group>"; };
+		50CEAAE71A6DD3FB0040E8EF /* homeIcon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "homeIcon@3x.png"; sourceTree = "<group>"; };
 		50D7A9CF1A622E5C007FE14C /* WFWalkthroughViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFWalkthroughViewController.h; sourceTree = "<group>"; };
 		50D7A9D01A622E5C007FE14C /* WFWalkthroughViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFWalkthroughViewController.m; sourceTree = "<group>"; };
 		50D7A9D21A62306D007FE14C /* WFWalkthroughAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFWalkthroughAnimator.h; sourceTree = "<group>"; };
@@ -1143,6 +1149,9 @@
 			isa = PBXGroup;
 			children = (
 				F28C780618E1E4950088B4C9 /* Images.xcassets */,
+				50CEAAE51A6DD3FB0040E8EF /* homeIcon.png */,
+				50CEAAE61A6DD3FB0040E8EF /* homeIcon@2x.png */,
+				50CEAAE71A6DD3FB0040E8EF /* homeIcon@3x.png */,
 				505D3B9B1A65D4E800CD70DE /* walkthrough3.jpg */,
 				505D3B9C1A65D4E800CD70DE /* walkthrough3@2x.jpg */,
 				505D3B951A65D32A00CD70DE /* walkthrough2.jpg */,
@@ -1313,6 +1322,10 @@
 				F2CE0572198E85850061DB94 /* WFPhotoCell.m */,
 				F2CE05B919913ECC0061DB94 /* WFMainTableCell.h */,
 				F2CE05BA19913ECC0061DB94 /* WFMainTableCell.m */,
+				50DB43F11A53C72D00856174 /* WFSlideshowCell.h */,
+				50DB43F21A53C72D00856174 /* WFSlideshowCell.m */,
+				F28C67061A33F4D900B82FD8 /* WFSlideshowSlideCell.h */,
+				F28C67071A33F4D900B82FD8 /* WFSlideshowSlideCell.m */,
 				F2CE056E198E85740061DB94 /* WFSlideCollectionCell.h */,
 				F2CE056F198E85740061DB94 /* WFSlideCollectionCell.m */,
 				F2CE0580198E937B0061DB94 /* WFArtMetadataCell.h */,
@@ -1327,8 +1340,6 @@
 				F2CE0597198EAB7A0061DB94 /* WFSettingsCell.m */,
 				F20FB2C91A22B1A60007C905 /* WFNewArtCell.h */,
 				F20FB2CA1A22B1A60007C905 /* WFNewArtCell.m */,
-				F28C67061A33F4D900B82FD8 /* WFSlideshowSlideCell.h */,
-				F28C67071A33F4D900B82FD8 /* WFSlideshowSlideCell.m */,
 				F28C670F1A34150500B82FD8 /* WFInstitutionSearchCell.h */,
 				F28C67101A34150500B82FD8 /* WFInstitutionSearchCell.m */,
 				5026DF5E1A3CC4D1000CD26F /* WFTableCell.h */,
@@ -1337,8 +1348,6 @@
 				50DB43A71A53619400856174 /* WFNotificationCell.m */,
 				50DB43C71A53694C00856174 /* WFMenuCell.h */,
 				50DB43C81A53694C00856174 /* WFMenuCell.m */,
-				50DB43F11A53C72D00856174 /* WFSlideshowCell.h */,
-				50DB43F21A53C72D00856174 /* WFSlideshowCell.m */,
 				50DB44021A5462B000856174 /* WFImagePickerCell.h */,
 				50DB44031A5462B000856174 /* WFImagePickerCell.m */,
 				50DB44261A54CA4E00856174 /* WFSearchResultsCell.h */,
@@ -1469,6 +1478,7 @@
 				F2A957FA19E220F100A3B471 /* icon-29.png in Resources */,
 				50DB44461A56211D00856174 /* transparentIcon@3x.png in Resources */,
 				F2A9580119E220F100A3B471 /* icon-80.png in Resources */,
+				50CEAAEA1A6DD3FB0040E8EF /* homeIcon@3x.png in Resources */,
 				505D3B9A1A65D32A00CD70DE /* walkthrough2@2x.jpg in Resources */,
 				F2A957FF19E220F100A3B471 /* icon-72.png in Resources */,
 				50D7A9DE1A6234E3007FE14C /* profile.png in Resources */,
@@ -1561,6 +1571,7 @@
 				50D7A9E51A623A5C007FE14C /* login@2x.png in Resources */,
 				5026DF751A3D1F63000CD26F /* remove@3x.png in Resources */,
 				F2A957FE19E220F100A3B471 /* icon-58.png in Resources */,
+				50CEAAE81A6DD3FB0040E8EF /* homeIcon.png in Resources */,
 				505D3B4A1A646FD400CD70DE /* left@2x.png in Resources */,
 				505D3B8C1A6516DE00CD70DE /* rightArrow.png in Resources */,
 				505D3B8D1A6516DE00CD70DE /* rightArrow@2x.png in Resources */,
@@ -1590,6 +1601,7 @@
 				F20D2E9F19EB095F00CA54C0 /* Lato-Reg.ttf in Resources */,
 				F2A957FC19E220F100A3B471 /* icon-50.png in Resources */,
 				505D3B6F1A64AECA00CD70DE /* saffronSlideshow@3x.png in Resources */,
+				50CEAAE91A6DD3FB0040E8EF /* homeIcon@2x.png in Resources */,
 				505D3B4B1A646FD400CD70DE /* left@3x.png in Resources */,
 				F2A9580F19E2245F00A3B471 /* Default_iPad_landscape.png in Resources */,
 				50DB44621A5756D600856174 /* whiteTrash@2x.png in Resources */,
@@ -1774,6 +1786,7 @@
 				50DB43C91A53694C00856174 /* WFMenuCell.m in Sources */,
 				5026DF5D1A3CC0C0000CD26F /* WFTablesViewController.m in Sources */,
 				F2CE05A3198FCD180061DB94 /* WFSlideshowAnimator.m in Sources */,
+				502460CD1A67B4600082635E /* WFSlideshowCell.m in Sources */,
 				F2139D81193A56BE00EE5C96 /* ProgressHUD.m in Sources */,
 				50DB44931A588AA500856174 /* WFAlert.m in Sources */,
 				50D7A9E91A6254E2007FE14C /* WFImagePickerAnimator.m in Sources */,
@@ -1788,7 +1801,6 @@
 				F20FB3041A24E9650007C905 /* Icon.m in Sources */,
 				F2CE05AC199117990061DB94 /* Slideshow.m in Sources */,
 				50DB44041A5462B000856174 /* WFImagePickerCell.m in Sources */,
-				50DB43F31A53C72D00856174 /* WFSlideshowCell.m in Sources */,
 				50FB5F801A3F3734004D6062 /* Citation.m in Sources */,
 				F28C67051A33F4BE00B82FD8 /* WFSlideshowViewController.m in Sources */,
 				F28C66FC1A33DA0000B82FD8 /* WFSlideshowsViewController.m in Sources */,
@@ -1955,6 +1967,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-2";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-2";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -1965,6 +1978,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 2;
 				WRAPPER_EXTENSION = app;
 			};
@@ -1977,6 +1991,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-2";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-2";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -1987,6 +2002,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 2;
 				WRAPPER_EXTENSION = app;
 			};

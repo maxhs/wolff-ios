@@ -22,5 +22,6 @@
 @dynamic discussions;
 @dynamic photos;
 @dynamic slideshows;
+@dynamic owner;
 
 @end

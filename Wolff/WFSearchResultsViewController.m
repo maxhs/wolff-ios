@@ -32,7 +32,7 @@
     [self.view setBackgroundColor:[UIColor clearColor]];
     [_tableView setBackgroundColor:[UIColor clearColor]];
     [_tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
-    _tableView.rowHeight = 80.f;
+
     [_collectionView setBackgroundColor:[UIColor blackColor]];
     
     // show full tile view if it's a real search
@@ -113,24 +113,19 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0){
+        return 1;
+    } else {
         if (searching){
             return _filteredPhotos.count;
         } else {
             return _photos.count;
         }
-    } else {
-        return 1;
     }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0){
-        WFSearchResultsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SearchCell" forIndexPath:indexPath];
-        Photo *photo = searching ? _filteredPhotos[indexPath.row] : _photos[indexPath.row];
-        [cell configureForPhoto:photo];
         
-        return cell;
-    } else {
         WFSearchOptionsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SearchOptionsCell" forIndexPath:indexPath];
         [cell.textLabel setText:@""];
         [cell.lightTableButton setHidden:NO];
@@ -155,6 +150,19 @@
         [cell.clearSelectedButton addTarget:self action:@selector(removeSelected) forControlEvents:UIControlEventTouchUpInside];
         [cell.clearSelectedButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.04f]];
         return cell;
+    } else {
+        WFSearchResultsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SearchCell" forIndexPath:indexPath];
+        Photo *photo = searching ? _filteredPhotos[indexPath.row] : _photos[indexPath.row];
+        [cell configureForPhoto:photo];
+        return cell;
+    }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0){
+        return 44.f;
+    } else {
+        return 80.f;
     }
 }
 

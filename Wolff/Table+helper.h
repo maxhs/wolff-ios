@@ -8,6 +8,7 @@
 
 #import "Table.h"
 #import "Photo+helper.h"
+#import "User+helper.h"
 #import "Slideshow+helper.h"
 
 @interface Table (helper)
@@ -18,4 +19,6 @@
 - (void)removeSlideshow:(Slideshow*)slideshow;
 - (void)addPhotos:(NSArray*)array;
 - (void)removePhotos:(NSArray*)array;
+- (void)addUser:(User*)user;
+- (void)removeUser:(User*)user;
 @end

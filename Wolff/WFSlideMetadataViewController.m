@@ -105,16 +105,14 @@
     NSArray *photosArray = _photos.count ? _photos.array : _slide.photos.array;
     Photo *photo;
     if (photosArray.count > 1){
-        if (indexPath.section == 0){
-            photo = photosArray.firstObject;
-        } else {
-            photo = photosArray[1];
-        }
+        photo = indexPath.section == 0 ? photosArray.firstObject : photosArray[1];
     } else {
         photo = photosArray.firstObject;
     }
     Art *art = photo.art;
     [cell.textLabel setTextColor:[UIColor whiteColor]];
+    [cell.textLabel setNumberOfLines:0];
+    
     switch (indexPath.row) {
         case 0:
             [cell.textLabel setText:art.title];

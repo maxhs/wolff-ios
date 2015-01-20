@@ -30,6 +30,7 @@
 @property (nonatomic, retain) NSString * avatarLarge;
 @property (nonatomic, retain) Institution *institution;
 @property (nonatomic, retain) NSOrderedSet *lightTables;
+@property (nonatomic, retain) NSOrderedSet *ownedTables;
 @property (nonatomic, retain) NSOrderedSet *arts;
 @property (nonatomic, retain) NSOrderedSet *favorites;
 @property (nonatomic, retain) NSOrderedSet *slideshows;

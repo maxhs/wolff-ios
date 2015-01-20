@@ -8,22 +8,81 @@
 
 #import "WFSlideshowCell.h"
 #import "Constants.h"
+#import "User+helper.h"
+@interface WFSlideshowCell() {
+    Slideshow *_slideshow;
+}
+@end
 
 @implementation WFSlideshowCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    [self setBackgroundColor:[UIColor clearColor]];
     UIView *selectionView = [[UIView alloc] initWithFrame:self.frame];
     [selectionView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
     self.selectedBackgroundView = selectionView;
     
-    [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [self.textLabel setTextColor:[UIColor whiteColor]];
-    [self setBackgroundColor:[UIColor clearColor]];
+    [_slideshowLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [_slideshowLabel setTextColor:[UIColor whiteColor]];
+    
+    [_actionButton setBackgroundColor:[UIColor redColor]];
+    [_actionButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_actionButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    
+    [_scrollView setContentSize:CGSizeMake(kSidebarWidth+100, self.contentView.frame.size.height)];
+    [_scrollView setUserInteractionEnabled:NO];
+    [self.contentView addGestureRecognizer:_scrollView.panGestureRecognizer];
+    _scrollView.delegate = self;
+}
+
+- (void)configureForSlideshow:(Slideshow *)slideshow {
+    _slideshow = slideshow;
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+        [_actionButton setTitle:@"Delete" forState:UIControlStateNormal];
+        [_actionButton setBackgroundColor:[UIColor redColor]];
+        [_actionButton addTarget:self action:@selector(deleteShow) forControlEvents:UIControlEventTouchUpInside];
+    } else {
+        [_actionButton setTitle:@"Remove" forState:UIControlStateNormal];
+        [_actionButton setBackgroundColor:kSaffronColor];
+        [_actionButton addTarget:self action:@selector(removeShow) forControlEvents:UIControlEventTouchUpInside];
+    }
+    
+    //set up the title
+    if (slideshow.title.length){
+        [_slideshowLabel setText:slideshow.title];
+        [_slideshowLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansItalic] size:0]];
+        [_slideshowLabel setTextColor:[UIColor whiteColor]];
+    } else {
+        [_slideshowLabel setText:@"No name..."];
+        [_slideshowLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];
+        [_slideshowLabel setTextColor:[UIColor lightGrayColor]];
+    }
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    CGFloat contentOffsetX = scrollView.contentOffset.x;
+    //NSLog(@"action button origin x: %f",_actionButton.frame.origin.x);
+    //NSLog(@"content offset x: %f",contentOffsetX);
+    //if (_actionButton.frame.origin.x >= 219.f){
+    _actionButton.transform = CGAffineTransformMakeTranslation(-contentOffsetX, 0);
+    //}
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
+}
+
+- (void)deleteShow {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(deleteSlideshow:)]){
+        [self.delegate deleteSlideshow:_slideshow];
+    }
+}
+
+- (void)removeShow {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(removeSlideshow:)]){
+        [self.delegate removeSlideshow:_slideshow];
+    }
 }
 
 @end

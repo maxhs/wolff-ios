@@ -55,17 +55,7 @@
     
     if (self.presenting) {
         fromViewController.view.userInteractionEnabled = NO;
-        
-        UIButton *blurredButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [blurredButton setBackgroundImage:[self blurredSnapshotForWindow:[transitionContext.containerView window]]  forState:UIControlStateNormal];
-        
-        //this is a little fragile, since if the view hierarchy changes, this will break
-        UINavigationController *nav = (UINavigationController*)toViewController;
-        [blurredButton addTarget:(WFSlideMetadataViewController*)nav.viewControllers.firstObject action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-        [blurredButton setFrame:mainScreen];
-        [blurredButton setAlpha:0.0];
-        [blurredButton setTag:kBlurredBackgroundConstant];
-        
+    
         CGRect toEndFrame;
         if (iOS8){
             [toView setFrame:CGRectMake(width, 0, (differential), height)];
@@ -82,17 +72,14 @@
         
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:toView];
-        [transitionContext.containerView insertSubview:blurredButton belowSubview:toView];
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            [blurredButton setAlpha:1.0];
             [toView setFrame:toEndFrame];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
     
     } else {
-        UIImageView *blurredButton = (UIImageView*)[transitionContext.containerView viewWithTag:kBlurredBackgroundConstant];
         toViewController.view.userInteractionEnabled = YES;
         
         [transitionContext.containerView addSubview:toView];
@@ -107,22 +94,12 @@
         }
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            [blurredButton setAlpha:0.0];
             [fromView setFrame:fromEndFrame];
         } completion:^(BOOL finished) {
-            [blurredButton removeFromSuperview];
             [transitionContext completeTransition:YES];
+            NSLog(@"toView from slideMetadataAnimator? %@",toView);
         }];
     }
-}
-
--(UIImage *)blurredSnapshotForWindow:(UIWindow*)window {
-    UIGraphicsBeginImageContextWithOptions(mainScreen.size, NO, window.screen.scale);
-    [window drawViewHierarchyInRect:mainScreen afterScreenUpdates:NO];
-    UIImage *snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIImage *blurredSnapshotImage = [snapshotImage applyDarkEffect];
-    UIGraphicsEndImageContext();
-    return blurredSnapshotImage;
 }
 
 @end
