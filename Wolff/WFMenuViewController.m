@@ -76,7 +76,9 @@
             }
             break;
         case 1:
-            [WFAlert show:@"We haven't built your profile yet. Coming soon!" withTime:2.7f];
+            if (self.menuDelegate && [self.menuDelegate respondsToSelector:@selector(showProfile)]) {
+                [self.menuDelegate showProfile];
+            }
             break;
         case 2:
             [delegate logout];

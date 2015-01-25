@@ -15,6 +15,7 @@
 
 @dynamic identifier;
 @dynamic name;
+@dynamic blurb;
 @dynamic users;
 @dynamic arts;
 @dynamic locations;

@@ -12,5 +12,6 @@
 
 @property (weak, nonatomic) IBOutlet UITextField *textField;
 @property (weak, nonatomic) IBOutlet UISwitch *settingsSwitch;
+@property (weak, nonatomic) IBOutlet UIButton *actionButton;
 
 @end

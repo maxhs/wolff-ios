@@ -16,6 +16,12 @@
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }
+    if ([dictionary objectForKey:@"name"] && [dictionary objectForKey:@"name"] != [NSNull null]){
+        self.name = [dictionary objectForKey:@"name"];
+    }
+    if ([dictionary objectForKey:@"blurb"] && [dictionary objectForKey:@"blurb"] != [NSNull null]){
+        self.blurb = [dictionary objectForKey:@"blurb"];
+    }
     
     if ([dictionary objectForKey:@"arts"] && [dictionary objectForKey:@"arts"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
@@ -30,7 +36,18 @@
         }
         self.arts = set;
     }
-    
+}
+
+- (void)addUser:(User *)user {
+    NSMutableOrderedSet *users = [NSMutableOrderedSet orderedSetWithOrderedSet:self.users];
+    [users addObject:user];
+    self.users = users;
+}
+
+- (void)removeUser:(User *)user {
+    NSMutableOrderedSet *users = [NSMutableOrderedSet orderedSetWithOrderedSet:self.users];
+    [users removeObject:user];
+    self.users = users;
 }
 
 @end

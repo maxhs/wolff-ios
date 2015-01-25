@@ -14,8 +14,9 @@
 #import "WFInstitutionSearchViewController.h"
 #import "WFAlert.h"
 #import "WFUtilities.h"
+#import "Alternate+helper.h"
 
-@interface WFSettingsViewController () <UITextFieldDelegate> {
+@interface WFSettingsViewController () <UITextFieldDelegate, UIPopoverControllerDelegate, WFInstitutionSearchDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     UIBarButtonItem *doneEditingButton;
@@ -26,11 +27,13 @@
     UITextField *lastNameTextField;
     UITextField *phoneTextField;
     UITextField *institutionTextField;
+    UITextField *alternateTextField;
     UIImageView *navBarShadowView;
     BOOL iOS8;
     BOOL editing;
+    NSIndexPath *indexPathToDeleteAlternate;
 }
-
+@property (strong, nonatomic) UIPopoverController *popover;
 @end
 
 @implementation WFSettingsViewController
@@ -39,7 +42,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.automaticallyAdjustsScrollViewInsets = NO;
     
     if (SYSTEM_VERSION >= 8.f){
         iOS8 = YES;
@@ -50,6 +52,7 @@
     self.title = @"Settings";
     [self.view setBackgroundColor:[UIColor clearColor]];
     [self.tableView setBackgroundColor:[UIColor clearColor]];
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
@@ -107,6 +110,12 @@
     if (emailTextField.text.length && ![emailTextField.text isEqualToString:_currentUser.email]){
         [parameters setObject:emailTextField.text forKey:@"email"];
     }
+    NSMutableArray *institutionIds = [NSMutableArray arrayWithCapacity:_currentUser.institutions.count];
+    for (Institution *institution in _currentUser.institutions){
+        [institutionIds addObject:institution.identifier];
+    }
+    [parameters setObject:institutionIds forKey:@"institution_ids"];
+    
     [manager PATCH:[NSString stringWithFormat:@"users/%@",_currentUser.identifier] parameters:@{@"user":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success saving user settings: %@",responseObject);
         [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
@@ -123,7 +132,7 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 2;
+    return 4;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -132,6 +141,14 @@
             return 4;
             break;
         case 1:
+            // manage institutions
+            return _currentUser.institutions.count + 1;
+            break;
+        case 2:
+            // manage alternate contact info
+            return _currentUser.alternates.count + 1;
+            break;
+        case 3:
             return 3;
             break;
         default:
@@ -180,8 +197,34 @@
                 break;
         }
         cell.accessoryView = nil;
-        
     } else if (indexPath.section == 1) {
+        [cell.textField setHidden:NO];
+        [cell.textField setUserInteractionEnabled:NO];
+        if (indexPath.row == _currentUser.institutions.count){
+            [cell.textField setPlaceholder:@"Add an affiliated institution"];
+        } else {
+            Institution *institution = _currentUser.institutions[indexPath.row];
+            [cell.textField setText:institution.name];
+        }
+    } else if (indexPath.section == 2) {
+        [cell.textField setHidden:NO];
+        [cell.actionButton setHidden:NO];
+        [cell.actionButton setTag:indexPath.row];
+        if (indexPath.row == _currentUser.alternates.count){
+            alternateTextField = cell.textField;
+            [cell.textField setPlaceholder:@"Alternate email address(es)"];
+            [cell.actionButton setTitle:@"ADD" forState:UIControlStateNormal];
+            [cell.actionButton addTarget:self action:@selector(createAlternate:) forControlEvents:UIControlEventTouchUpInside];
+        } else {
+            Alternate *alternate = _currentUser.alternates[indexPath.row];
+            [cell.textField setText:alternate.email];
+            [cell.textField setKeyboardType:UIKeyboardTypeEmailAddress];
+            [cell.textField setAutocapitalizationType:UITextAutocapitalizationTypeNone];
+            [cell.textField setAutocorrectionType:UITextAutocorrectionTypeNo];
+            [cell.actionButton setTitle:@"SAVE" forState:UIControlStateNormal];
+            [cell.actionButton addTarget:self action:@selector(editAlternate:) forControlEvents:UIControlEventTouchUpInside];
+        }
+    } else if (indexPath.section == 3) {
         [cell.settingsSwitch setHidden:NO];
         [cell.textField setHidden:YES];
         switch (indexPath.row) {
@@ -230,21 +273,161 @@
     }
 }
 
-- (void)showInstitutionSearch {
-    WFInstitutionSearchViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"InstitutionSearch"];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    [self presentViewController:nav animated:YES completion:^{
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    if (section == 0){
+        return 0;
+    } else {
+        return 34;
+    }
+}
+
+- (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    CGFloat headerHeight = section == 0 ? 0 : 34 ;
+    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, headerHeight)];
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, tableView.frame.size.width-10, 34)];
+    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
+    [headerLabel setTextColor:[UIColor colorWithWhite:1 alpha:.27]];
+    switch (section) {
+        case 1:
+            [headerLabel setText:@"YOUR AFFILIATED INSTITUTIONS"];
+            break;
+        case 2:
+            [headerLabel setText:@"SECONDARY CONTACT INFORMATION"];
+            break;
+            
+        default:
+            break;
+    }
+    
+    [headerView addSubview:headerLabel];
+    return headerView;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 1 && indexPath.row > 0){
+        WFSettingsCell *cell = (WFSettingsCell*)[_tableView cellForRowAtIndexPath:indexPath];
+        [self showInstitutionSearchFromRect:cell.frame];
+    }
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (void)showInstitutionSearchFromRect:(CGRect)rect {
+    [self doneEditing];
+    if (IDIOM == IPAD){
+        if (self.popover){
+            [self.popover dismissPopoverAnimated:YES];
+        }
+        WFInstitutionSearchViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"InstitutionSearch"];
+        vc.searchDelegate = self;
+        vc.preferredContentSize = CGSizeMake(370, 500);
+        self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
+        self.popover.delegate = self;
+        [self.popover presentPopoverFromRect:rect inView:self.view permittedArrowDirections:UIPopoverArrowDirectionRight animated:YES];
+    } else {
+        WFInstitutionSearchViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"InstitutionSearch"];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        [self presentViewController:nav animated:YES completion:^{
+            
+        }];
+    }
+}
+
+- (void)institutionSelected:(Institution *)institution {
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
+    if (institution){
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+        [manager POST:[NSString stringWithFormat:@"institutions/%@",institution.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success creating institution user: %@",responseObject);
+            [self.tableView beginUpdates];
+            [institution addUser:_currentUser];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
+            [self.tableView endUpdates];
+            [WFAlert show:[NSString stringWithFormat:@"You've been added to %@, pending administrator review and approval.", institution.name] withTime:3.3f];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failure creating institution user: %@",error.description);
+        }];
         
+    }
+}
+
+- (void)createAlternate:(UIButton*)button {
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    if (!alternateTextField.text.length){
+        [WFAlert show:@"Please make sure you've entered a valid email address before trying to add alternate contact information." withTime:3.3f];
+        return;
+    } else {
+        [parameters setObject:alternateTextField.text forKey:@"email"];
+    }
+    [ProgressHUD show:[NSString stringWithFormat:@"Adding \"%@\"",alternateTextField.text]];
+    [manager POST:@"alternates" parameters:@{@"alternate":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success creating an alternate: %@", responseObject);
+        Alternate *newAlternate = [Alternate MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        [newAlternate populateFromDictionary:[responseObject objectForKey:@"alternate"]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [ProgressHUD dismiss];
+            [self.tableView reloadData];
+        }];
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        [ProgressHUD dismiss];
+        [WFAlert show:@"Sorry, but something went wrong while trying to add this alternate. Please try agian soon." withTime:3.3f];
+        NSLog(@"Failed to edit alterante: %@",error.description);
+    }];
+}
+
+- (void)editAlternate:(UIButton*)button {
+    Alternate *alternate;
+    if (_currentUser.alternates.count == button.tag){
+        return;
+    }
+    alternate = _currentUser.alternates[button.tag];
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [manager PATCH:[NSString stringWithFormat:@"alternates/%@",alternate.identifier] parameters:@{@"alternate":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success editing alternate: %@", responseObject);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed to edit alterante: %@",error.description);
+    }];
+}
+
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 2 && indexPath.row != _currentUser.alternates.count){
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (editingStyle == UITableViewCellEditingStyleDelete){
+        indexPathToDeleteAlternate = indexPath;
+        [self deleteAlternate];
+    }
+}
+
+- (void)deleteAlternate {
+    Alternate *alternateForDeletion = _currentUser.alternates[indexPathToDeleteAlternate.row];
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    
+    [manager DELETE:[NSString stringWithFormat:@"alternates/%@",alternateForDeletion.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success deleting an alternate: %@",responseObject);
+        [self.tableView beginUpdates];
+        [alternateForDeletion MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+        [self.tableView deleteRowsAtIndexPaths:@[indexPathToDeleteAlternate] withRowAnimation:UITableViewRowAnimationAutomatic];
+        [self.tableView endUpdates];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed to delete an alternate: %@",error.description);
     }];
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
     editing = YES;
-    if (textField == institutionTextField){
-        [textField resignFirstResponder];
-        [self showInstitutionSearch];
-        return;
-    }
     NSIndexPath *scrollToIndexPath;
     if (textField == firstNameTextField){
         scrollToIndexPath = [NSIndexPath indexPathForRow:0 inSection:0];
@@ -255,6 +438,7 @@
     } else if (textField == phoneTextField){
         scrollToIndexPath = [NSIndexPath indexPathForRow:3 inSection:0];
     }
+    
     if (scrollToIndexPath){
         [self.tableView scrollToRowAtIndexPath:scrollToIndexPath atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
     }
@@ -264,16 +448,12 @@
     }
     
     self.navigationItem.rightBarButtonItem = doneEditingButton;
+    
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField {
     self.navigationItem.rightBarButtonItem = saveButton;
 }
-
-//- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
-//    
-//    return YES;
-//}
 
 - (void)doneEditing {
     editing = NO;
@@ -283,7 +463,7 @@
 - (void)logout {
     [delegate logout];
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        [WFAlert show:@"You've succesffully logged out. See you again real soon!" withTime:3.3f];
+        [WFAlert show:kLogoutMessage withTime:3.3f];
     }];
 }
 

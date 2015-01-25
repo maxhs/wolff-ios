@@ -9,10 +9,10 @@
 #import <UIKit/UIKit.h>
 #import "WFAppDelegate.h"
 
-@interface WFProfileViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+@interface WFProfileViewController : UIViewController <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
 @property (weak, nonatomic) IBOutlet UIView *topContainerView;
-@property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (strong, nonatomic) User *user;
 
 @end

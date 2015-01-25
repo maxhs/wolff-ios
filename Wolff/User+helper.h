@@ -12,13 +12,17 @@
 #import "Favorite+helper.h"
 #import "Table+helper.h"
 #import "Slideshow+helper.h"
+#import "Institution+helper.h"
 
 @interface User (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
 - (NSString *)fullName;
+- (Institution*)institution;
 - (Favorite *)getFavoriteArt:(Art*)art;
 - (Favorite *)getFavoritePhoto:(Photo*)photo;
 - (void)addLightTable:(Table*)lightTable;
 - (void)removeLightTable:(Table*)lightTable;
+- (void)addInstitution:(Institution*)institution;
+- (void)removeInstitution:(Institution*)institution;
 - (void)removeSlideshow:(Slideshow*)slideshow;
 @end

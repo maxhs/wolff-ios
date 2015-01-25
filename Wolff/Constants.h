@@ -21,9 +21,11 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 
 #define kSidebarWidth 280.f
 #define kDefaultAnimationDuration .77f
+#define kMediumAnimationDuration 1.4f
+#define kSlowAnimationDuration 2.3f
 
-#define kApiBaseUrl @"http://wolffapp.com/api/v1"
-#define kBaseUrl @"http://wolffapp.com"
+#define kApiBaseUrl @"https://wolffapp.com/api/v1"
+#define kBaseUrl @"https://wolffapp.com"
 #define kTestFlightToken @"a37d3f4a-b21b-4f38-ac66-83c68b65a8a1"
 
 #define MIXPANEL_TOKEN @"b091c81f24a93b828683bb5c3c260278"
@@ -41,6 +43,7 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kUserDefaultsDeviceToken @"deviceToken"
 #define kUserDefaultsAdmin @"admin"
 #define kUserDefaultsMobileToken @"mobileToken"
+#define kLogoutMessage @"You've been successfully logged out.\n\nSee you again real soon."
 
 #define kMuseoSansThin @"MuseoSans-100"
 #define kMuseoSansThinItalic @"MuseoSans-100Italic"

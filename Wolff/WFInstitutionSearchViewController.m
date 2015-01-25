@@ -14,6 +14,7 @@
 @interface WFInstitutionSearchViewController () {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
+    BOOL iOS8;
     User *_currentUser;
     CGFloat width;
     CGFloat height;
@@ -27,22 +28,37 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [self.view setBackgroundColor:[UIColor clearColor]];
+    [self.tableView setBackgroundColor:[UIColor clearColor]];
     delegate = [UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     
-    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation)){
-        width = screenWidth();
-        height = screenHeight();
+    if (SYSTEM_VERSION >= 8.f){
+        iOS8 = YES; width = screenWidth(); height = screenHeight();
     } else {
-        height = screenWidth();
-        width = screenHeight();
+        iOS8 = NO; height = screenWidth(); width = screenHeight();
     }
-    _institutions = [NSMutableArray array];
+    _institutions = [NSMutableArray arrayWithArray:[Institution MR_findAll]];
     [self loadInstitutions];
     [self registerForKeyboardNotifications];
     
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"blackRemove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
+    
+    [self.searchBar setPlaceholder:@"Search for your institution"];
+    //reset the search bar font
+    for (id subview in [self.searchBar.subviews.firstObject subviews]){
+        if ([subview isKindOfClass:[UITextField class]]){
+            UITextField *searchTextField = (UITextField*)subview;
+            [searchTextField setTextColor:[UIColor blackColor]];
+            [searchTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+            searchTextField.keyboardAppearance = UIKeyboardAppearanceDark;
+            break;
+        }
+    }
+    self.searchBar.delegate = self;
+    [self.searchBar setSearchBarStyle:UISearchBarStyleMinimal];
+    self.tableView.tableHeaderView = self.searchBar;
 }
 
 - (void)loadInstitutions {
@@ -55,15 +71,16 @@
             }
             [institution populateFromDictionary:dict];
         }
-        [self.tableView reloadData];
-        NSLog(@"Success fetching institutions: %@",_institutions);
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [self.tableView reloadData];
+        }];
+        
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to load institutions: %@",error.description);
     }];
 }
 
 #pragma mark - Table view data source
-
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
@@ -74,9 +91,46 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFInstitutionSearchCell *cell = [tableView dequeueReusableCellWithIdentifier:@"InstitutionCell"];
+    [cell setBackgroundColor:[UIColor clearColor]];
     Institution *institution = _institutions[indexPath.row];
     [cell configureForInstitution:institution];
+
+    if ([_currentUser.institutions containsObject:institution]){
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    } else {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
     return cell;
+}
+
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [parameters setObject:searchBar.text forKey:@"search"];
+    [manager GET:@"institutions" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success searching: %@",responseObject);
+        for (id dict in [responseObject objectForKey:@"institutions"]){
+            Institution *institution = [Institution MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"]];
+            if (!institution){
+                institution = [Institution MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [institution populateFromDictionary:dict];
+        }
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            _institutions = [Institution MR_findAll].mutableCopy;
+            [self.tableView reloadData];
+        }];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed searching for institutions: %@",error.description);
+    }];
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    Institution *institution = _institutions[indexPath.row];
+    NSLog(@"Institution selected: %@",institution.name);
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(institutionSelected:)]){
+        [self.searchDelegate institutionSelected:institution];
+    }
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 /*
@@ -123,8 +177,19 @@
 }
 */
 
-- (void)registerForKeyboardNotifications
-{
+- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
+    [searchBar setShowsCancelButton:YES animated:YES];
+}
+
+- (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
+    [searchBar setShowsCancelButton:NO animated:YES];
+}
+
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+    [self dismiss];
+}
+
+- (void)registerForKeyboardNotifications {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
                                                  name:UIKeyboardWillShowNotification object:nil];
@@ -134,25 +199,23 @@
                                                  name:UIKeyboardWillHideNotification object:nil];
 }
 
-- (void)keyboardWillShow:(NSNotification *)note
-{
-    NSDictionary* info = [note userInfo];
-    NSTimeInterval duration = [info[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
-    UIViewAnimationOptions curve = [info[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
-    NSValue *keyboardValue = info[UIKeyboardFrameBeginUserInfoKey];
-    CGFloat keyboardHeight = keyboardValue.CGRectValue.size.height;
-    [UIView animateWithDuration:duration
-                          delay:0
-                        options:curve | UIViewAnimationOptionBeginFromCurrentState
-                     animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
-                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
-                     }
-                     completion:nil];
+- (void)keyboardWillShow:(NSNotification *)note {
+//    NSDictionary* info = [note userInfo];
+//    NSTimeInterval duration = [info[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+//    UIViewAnimationOptions curve = [info[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
+//    NSValue *keyboardValue = info[UIKeyboardFrameBeginUserInfoKey];
+//    CGFloat keyboardHeight = keyboardValue.CGRectValue.size.height;
+//    [UIView animateWithDuration:duration
+//                          delay:0
+//                        options:curve | UIViewAnimationOptionBeginFromCurrentState
+//                     animations:^{
+//                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
+//                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
+//                     }
+//                     completion:nil];
 }
 
-- (void)keyboardWillHide:(NSNotification *)note
-{
+- (void)keyboardWillHide:(NSNotification *)note {
     NSDictionary* info = [note userInfo];
     NSTimeInterval duration = [info[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationOptions curve = [info[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
@@ -160,8 +223,8 @@
                           delay:0
                         options:curve | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
-                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, 0, 0);
+                         //self.tableView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
+                         //self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, 0, 0);
                      }
                      completion:nil];
 }

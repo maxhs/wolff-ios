@@ -32,16 +32,12 @@
     UIView *clearFrame = [[UIView alloc] initWithFrame:self.frame];
     [clearFrame setBackgroundColor:[UIColor clearColor]];
     self.backgroundView = clearFrame;
+    [self.textLabel setText:@""];
     
     [_label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
     [_label setTextColor:[UIColor whiteColor]];
     [_label setText:@""];
     
-    [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansItalic] size:0]];
-    [self.textLabel setTextColor:[UIColor whiteColor]];
-    [self.textLabel setText:@""];
-    [self.textLabel setTextAlignment:NSTextAlignmentCenter];
-
     [_tableLabel setTextColor:[UIColor whiteColor]];
     [_pieceCountLabel setTextColor:[UIColor colorWithWhite:1 alpha:.33]];
     

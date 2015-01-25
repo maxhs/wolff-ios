@@ -100,7 +100,6 @@
         } completion:^(BOOL finished) {
             [blurredButton removeFromSuperview];
             [transitionContext completeTransition:YES];
-            NSLog(@"toView from slideshowFocusAnimator? %@",toView);
         }];
     }
 }

@@ -13,6 +13,7 @@
 #import "Institution+helper.h"
 #import "Favorite+helper.h"
 #import "Location+helper.h"
+#import <SDWebImage/UIImageView+WebCache.h>
 #import <SDWebImage/UIButton+WebCache.h>
 #import "WFTablesViewController.h"
 #import "WFAlert.h"
@@ -20,10 +21,12 @@
 #import "WFSlideshowFocusAnimator.h"
 #import "WFLoginAnimator.h"
 #import "WFLoginViewController.h"
+#import "WFFlagViewController.h"
 
-@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate> {
+@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, UIActionSheetDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
+    BOOL iOS8;
     NSDateFormatter *dateFormatter;
     User *_currentUser;
     Favorite *_favorite;
@@ -36,6 +39,8 @@
     UIView *saveContainerView;
     UIButton *saveButton;
     UIImageView *navBarShadowView;
+    CGFloat rowHeight;
+    CGFloat textViewWidth;
 }
 @property (strong, nonatomic) UIPopoverController *popover;
 @end
@@ -46,16 +51,22 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    if (SYSTEM_VERSION >= 8.f){
+        iOS8 = YES;
+    } else {
+        iOS8 = NO;
+    }
     self.automaticallyAdjustsScrollViewInsets = NO;
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     }
+    rowHeight = 60.f;
+    textViewWidth = self.view.frame.size.width - 160.f; // 160.f is a spacer
     editMode = NO;
     [self setupDateFormatter];
     [self registerForKeyboardNotifications];
-    
     [self loadArtMetadata];
 }
 
@@ -75,13 +86,21 @@
 }
 
 - (void)setupHeader {
+    self.tableView.tableHeaderView = _topImageContainerView;
+    
     [_imageButton setBackgroundColor:kSlideBackgroundColor];
     _imageButton.imageView.contentMode = UIViewContentModeScaleAspectFill;
     _imageButton.imageView.layer.cornerRadius = 3.f;
     _imageButton.imageView.layer.backgroundColor = [UIColor clearColor].CGColor;
-    self.tableView.tableHeaderView = _topImageContainerView;
-    [_imageButton setAlpha:0.0];
-    [_imageButton sd_setImageWithURL:[NSURL URLWithString:_photo.largeImageUrl] forState:UIControlStateNormal placeholderImage:nil/*[UIImage imageNamed:@"transparentIcon"]*/ completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+    
+    if (!_imageButton.imageView.image){
+        [_imageButton setAlpha:0.0];
+    }
+    
+    [[SDWebImageManager sharedManager] downloadImageWithURL:[NSURL URLWithString:_photo.mediumImageUrl] options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+        [_progressIndicator setProgress:((CGFloat)receivedSize / (CGFloat)expectedSize)];
+    } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+        [_imageButton setImage:image forState:UIControlStateNormal];
         [UIView animateWithDuration:.23 animations:^{
             [_imageButton setBackgroundColor:[UIColor whiteColor]];
             [_imageButton setAlpha:1.0];
@@ -99,8 +118,8 @@
 
 - (void)setPostedCredit {
     if (_photo.user){
-        [_postedByButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
-        [_postedByButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+        [_postedByButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+        [_postedByButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
         [_postedByButton setTitle:[NSString stringWithFormat:@"Posted: %@",_photo.user.fullName] forState:UIControlStateNormal];
         [_postedByButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
         [_postedByButton setHidden:NO];
@@ -110,7 +129,7 @@
 }
 
 - (void)setUpButtons {
-    [_flagButton addTarget:self action:@selector(flag) forControlEvents:UIControlEventTouchUpInside];
+    [_flagButton addTarget:self action:@selector(presentFlagActionSheet) forControlEvents:UIControlEventTouchUpInside];
     [_flagButton setImage:[UIImage imageNamed:@"flag"] forState:UIControlStateNormal];
     [_flagButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.023]];
     [_flagButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
@@ -133,7 +152,7 @@
         
         saveButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [saveContainerView addSubview:saveButton];
-        [saveButton setFrame:CGRectMake(20, 13, saveContainerView.frame.size.width-40, 44)];
+        [saveButton setFrame:CGRectMake(10, 13, saveContainerView.frame.size.width-20, 44)];
         [saveButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
         [saveButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [saveButton addTarget:self action:@selector(saveMetadata) forControlEvents:UIControlEventTouchUpInside];
@@ -204,13 +223,23 @@
     [self.tableView reloadData];
     if (editMode){
         CGRect newViewFrame = originalViewFrame;
-        newViewFrame.origin.y = 10;
-        newViewFrame.origin.x -= 100;
-        newViewFrame.size.width += 200;
+        if (iOS8){
+            newViewFrame.origin.y = 10;
+            newViewFrame.origin.x -= 100;
+            newViewFrame.size.width += 200;
+        } else {
+            newViewFrame.origin.x = 10;
+            newViewFrame.origin.y -= 100;
+            newViewFrame.size.height += 200;
+        }
         self.tableView.tableFooterView = saveContainerView;
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self.view setFrame:newViewFrame];
-            [saveButton setFrame:CGRectMake(20, 13, newViewFrame.size.width-40, 44)];
+            if (iOS8){
+                [saveButton setFrame:CGRectMake(20, 13, newViewFrame.size.width-40, 44)];
+            } else {
+                [saveButton setFrame:CGRectMake(20, 13, newViewFrame.size.height-40, 44)];
+            }
         } completion:^(BOOL finished) {
             
         }];
@@ -230,22 +259,22 @@
         } completion:^(BOOL finished) {
             [self.tableView setBackgroundColor:[UIColor clearColor]];
         }];
-        
     }
 }
 
 - (void)loginSuccessful {
-    NSLog(@"Login successful");
+    NSLog(@"Login Successful.");
+    [self setUpButtons];
 }
 
 - (void)showProfile {
-    NSLog(@"Should be showing profile");
+    NSLog(@"Should be showing profile.");
 }
 
 - (void)loadArtMetadata {
-    [manager GET:[NSString stringWithFormat:@"arts/%@",_photo.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success fetching metadata: %@",responseObject);
-        [_photo populateFromDictionary:[responseObject objectForKey:@"art"]];
+    [manager GET:[NSString stringWithFormat:@"photos/%@",_photo.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success fetching metadata: %@",responseObject);
+        [_photo populateFromDictionary:[responseObject objectForKey:@"photo"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [self setupHeader];
             [self.tableView reloadData];
@@ -281,6 +310,11 @@
 
 #pragma mark - Table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    if (iOS8){
+        textViewWidth = self.view.frame.size.width - 160.f; // 160.f is a spacer
+    } else {
+        textViewWidth = self.view.frame.size.height - 160.f; // 160.f is a spacer
+    }
     return 1;
 }
 
@@ -293,7 +327,7 @@
     [cell setDefaultStyle:editMode];
     cell.textView.delegate = self;
     [cell.textView setKeyboardAppearance:UIKeyboardAppearanceDark];
-    
+
     switch (indexPath.row) {
         case 0:
             [cell.label setText:@"TITLE"];
@@ -346,6 +380,19 @@
             break;
         case 4:
         {
+            [cell.label setText:@"ICONOGRAPHY"];
+            NSString *icons = [_photo.art iconsToSentence];
+            if (icons.length){
+                [cell.textView setText:icons];
+            } else {
+                [cell.textView setText:@"N/A"];
+                [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+                [cell.textView setTextColor:[UIColor lightGrayColor]];
+            }
+        }
+            break;
+        case 5:
+        {
             [cell.label setText:@"LOCATION"];
             NSString *locations = [_photo.art locationsToSentence];
             
@@ -358,22 +405,9 @@
             }
         }
             break;
-        case 5:
-        {
-            [cell.label setText:@"ICONOGRAPHY"];
-            NSString *icons = [_photo.art iconsToSentence];
-            if (icons.length){
-                [cell.textView setText:icons];
-            } else {
-                [cell.textView setText:@"N/A"];
-                [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
-                [cell.textView setTextColor:[UIColor lightGrayColor]];
-            }
-        }
-            break;
         case 6:
-            [cell.label setText:@"LICENSE"];
-            [cell.textView setText:@"Public Domain"];
+            [cell.label setText:@"CREDIT"];
+            [cell.textView setText:(_photo.credit.length ? _photo.credit : _photo.user.fullName)];
             break;
         case 7:
             [cell.label setText:@"NOTES"];
@@ -390,14 +424,56 @@
         default:
             break;
     }
+    
+    if (indexPath.row != 7){
+        [cell.textView sizeToFit];
+        CGRect textViewRect = cell.textView.frame;
+        textViewRect.size.width = textViewWidth;
+        CGFloat comparisonHeight = cell.frame.size.height > rowHeight ? cell.frame.size.height : rowHeight;
+        textViewRect.origin.y = comparisonHeight/2-textViewRect.size.height/2;
+        [cell.textView setFrame:textViewRect];
+    }
+    
     return cell;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.row == 7) {
+    if (indexPath.row == 3){
+        UITextView *sizingTextView = [[UITextView alloc] init];
+        [sizingTextView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+        [sizingTextView setText:_photo.art.materialsToSentence];
+        CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
+        CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
+        sizingTextView = nil;
+        return newRowHeight;
+    } else if (indexPath.row == 4){
+        UITextView *sizingTextView = [[UITextView alloc] init];
+        [sizingTextView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+        [sizingTextView setText:_photo.art.iconsToSentence];
+        CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
+        CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
+        sizingTextView = nil;
+        return newRowHeight;
+    } else if (indexPath.row == 5){
+        UITextView *sizingTextView = [[UITextView alloc] init];
+        [sizingTextView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+        [sizingTextView setText:_photo.art.locationsToSentence];
+        CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
+        CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
+        sizingTextView = nil;
+        return newRowHeight;
+    } else if (indexPath.row == 6){
+        UITextView *sizingTextView = [[UITextView alloc] init];
+        [sizingTextView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+        [sizingTextView setText:_photo.credit];
+        CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
+        CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
+        sizingTextView = nil;
+        return newRowHeight;
+    } else if (indexPath.row == 7) {
         return 100;
     } else {
-        return 54;
+        return rowHeight;
     }
 }
 
@@ -472,18 +548,52 @@
     }];
 }
 
+- (void)presentFlagActionSheet {
+    UIActionSheet *flagActionSheet = [[UIActionSheet alloc] initWithTitle:[NSString stringWithFormat:@"Why do you want to flag \"%@\"?",_photo.art.title] delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Inappropriate", @"Copyright", @"Incorrect metadata", nil];
+    
+    flagActionSheet.tintColor = kElectricBlue;
+    [flagActionSheet showInView:self.view];
+}
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Inappropriate"]){
+        NSLog(@"should be flagging");
+        [self flag];
+    } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Copyright"]) {
+        WFFlagViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Flag"];
+        [vc setCopyright:YES];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        [self presentViewController:nav animated:YES completion:^{
+            
+        }];
+    } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Incorrect metadata"]) {
+        WFFlagViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Flag"];
+        [vc setCopyright:NO];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        [self presentViewController:nav animated:YES completion:^{
+            
+        }];
+    }
+}
+
 - (void)flag {
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:_photo.identifier forKey:@"photo_id"];
+    [parameters setObject:_photo.art.identifier forKey:@"art_id"];
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     }
+    [parameters setObject:@1 forKey:@"code"];
     [manager POST:[NSString stringWithFormat:@"flags"] parameters:@{@"flag":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success creating a flag for %@, %@",_photo.identifier, responseObject);
         [WFAlert show:@"Flagged" withTime:2.3f];
         if (self.popover){
             [self.popover dismissPopoverAnimated:YES];
         }
+        if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(artFlagged:)]){
+            [self.metadataDelegate artFlagged:_photo.art];
+        }
+        [self dismiss];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to create a flag: %@",error.description);
         [WFAlert show:@"Sorry, but something went wrong while trying to flag this art. Please try again soon." withTime:3.3f];
@@ -493,8 +603,7 @@
     }];
 }
 
-- (void)registerForKeyboardNotifications
-{
+- (void)registerForKeyboardNotifications {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
                                                  name:UIKeyboardWillShowNotification object:nil];

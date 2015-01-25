@@ -12,10 +12,13 @@
 @interface WFSlideshowSlideCell : UICollectionViewCell
 @property (weak, nonatomic) IBOutlet UIView *containerView1;
 @property (weak, nonatomic) IBOutlet UIImageView *artImageView1;
+@property (weak, nonatomic) IBOutlet UIProgressView *progressView1;
 @property (weak, nonatomic) IBOutlet UIView *containerView2;
 @property (weak, nonatomic) IBOutlet UIImageView *artImageView2;
+@property (weak, nonatomic) IBOutlet UIProgressView *progressView2;
 @property (weak, nonatomic) IBOutlet UIView *containerView3;
 @property (weak, nonatomic) IBOutlet UIImageView *artImageView3;
+@property (weak, nonatomic) IBOutlet UIProgressView *progressView3;
 
 - (void)configureForPhotos:(NSMutableOrderedSet*)photos inSlide:(Slide*)slide;
 @end

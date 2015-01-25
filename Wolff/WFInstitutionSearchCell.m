@@ -7,12 +7,13 @@
 //
 
 #import "WFInstitutionSearchCell.h"
+#import "Constants.h"
 
 @implementation WFInstitutionSearchCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    // Initialization code
+    [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

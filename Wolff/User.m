@@ -19,7 +19,7 @@
 @dynamic lastName;
 @dynamic phone;
 @dynamic bio;
-@dynamic institution;
+@dynamic institutions;
 @dynamic lightTables;
 @dynamic ownedTables;
 @dynamic admin;
@@ -35,5 +35,6 @@
 @dynamic comments;
 @dynamic notifications;
 @dynamic photos;
+@dynamic alternates;
 
 @end

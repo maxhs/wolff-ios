@@ -15,6 +15,7 @@
 
 @property (nonatomic, retain) NSNumber * identifier;
 @property (nonatomic, retain) NSString * name;
+@property (nonatomic, retain) NSString * blurb;
 @property (nonatomic, retain) NSOrderedSet *users;
 @property (nonatomic, retain) NSOrderedSet *arts;
 @property (nonatomic, retain) NSSet *locations;

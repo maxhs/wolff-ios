@@ -13,7 +13,7 @@
 
 @implementation Slideshow (helper)
 - (void)populateFromDictionary:(NSDictionary *)dictionary{
-    NSLog(@"Slideshow helper: %@",dictionary);
+    //NSLog(@"Slideshow helper: %@",dictionary);
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }

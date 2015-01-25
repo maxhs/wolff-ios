@@ -10,6 +10,7 @@
 #import "Institution+helper.h"
 #import "Slideshow+helper.h"
 #import "Table+helper.h"
+#import "Alternate+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation User (helper)
@@ -19,8 +20,12 @@
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }
-    if ([dictionary objectForKey:@"mobile_token"] && [dictionary objectForKey:@"mobile_token"] != [NSNull null]){
-        self.mobileToken = [dictionary objectForKey:@"mobile_token"];
+    if ([dictionary objectForKey:@"mobile_tokens"] && [dictionary objectForKey:@"mobile_tokens"] != [NSNull null]){
+        for (id dict in [dictionary objectForKey:@"mobile_tokens"]){
+            if ([[dict objectForKey:@"device_type"] isEqualToNumber:@2]){
+                self.mobileToken = [dict objectForKey:@"token"];
+            }
+        }
     }
     if ([dictionary objectForKey:@"first_name"] && [dictionary objectForKey:@"first_name"] != [NSNull null]){
         self.firstName = [dictionary objectForKey:@"first_name"];
@@ -113,14 +118,18 @@
         self.lightTables = set;
     }
     
-    if ([dictionary objectForKey:@"institution"] && [dictionary objectForKey:@"institution"] != [NSNull null]){
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"institution"] objectForKey:@"id"]];
-        Institution *institution = [Institution MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-        if (!institution){
-            institution = [Institution MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    if ([dictionary objectForKey:@"institutions"] && [dictionary objectForKey:@"institutions"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"institutions"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Institution *institution = [Institution MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!institution){
+                institution = [Institution MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [institution populateFromDictionary:dict];
+            [set addObject:institution];
         }
-        [institution populateFromDictionary:[dictionary objectForKey:@"institution"]];
-        self.institution = institution;
+        self.institutions = set;
     }
     
     if ([dictionary objectForKey:@"favorites"] && [dictionary objectForKey:@"favorites"] != [NSNull null]){
@@ -150,6 +159,20 @@
         }
         self.photos = set;
     }
+    
+    if ([dictionary objectForKey:@"alternates"] && [dictionary objectForKey:@"alternates"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"alternates"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Alternate *alternate = [Alternate MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!alternate){
+                alternate = [Alternate MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [alternate populateFromDictionary:dict];
+            [set addObject:alternate];
+        }
+        self.alternates = set;
+    }
 }
 
 - (NSString*) fullName {
@@ -166,6 +189,13 @@
     }
 }
 
+- (Institution*)institution {
+    if (self.institutions.count){
+        return self.institutions.firstObject;
+    } else {
+        return nil;
+    }
+}
 
 - (Favorite *)getFavoriteArt:(Art *)art {
     __block Favorite *favorite = nil;
@@ -200,6 +230,18 @@
     NSMutableOrderedSet *lightTables = [NSMutableOrderedSet orderedSetWithOrderedSet:self.lightTables];
     [lightTables removeObject:lightTable];
     self.lightTables = lightTables;
+}
+
+- (void)addInstitution:(Institution *)institution {
+    NSMutableOrderedSet *institutions = [NSMutableOrderedSet orderedSetWithOrderedSet:self.institutions];
+    [institutions addObject:institution];
+    self.institutions = institutions;
+}
+
+- (void)removeInstitution:(Institution *)institution {
+    NSMutableOrderedSet *institutions = [NSMutableOrderedSet orderedSetWithOrderedSet:self.institutions];
+    [institutions removeObject:institution];
+    self.institutions = institutions;
 }
 
 - (void)removeSlideshow:(Slideshow *)slideshow {

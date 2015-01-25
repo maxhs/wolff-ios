@@ -49,7 +49,6 @@
     }
     
     if (self.presenting) {
-        fromViewController.view.userInteractionEnabled = NO;
         
         UIButton *blurredButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [blurredButton setBackgroundImage:[self blurredSnapshotForWindow:[transitionContext.containerView window]]  forState:UIControlStateNormal];
@@ -62,23 +61,21 @@
         [blurredButton setAlpha:0.0];
         [blurredButton setTag:kBlurredBackgroundConstant];
         
-        CGRect toEndFrame;
-        if (iOS8){
-            [toView setFrame:CGRectMake(width, 0, width-(width/2), height)];
-            [toViewController setPreferredContentSize:CGSizeMake((width/2), height)];
-            toEndFrame = toView.frame;
-            toEndFrame.origin.x -= width/2;
-        } else {
-            [toView setFrame:CGRectMake(0, -height, height, width-(width/2))];
-            [toViewController setPreferredContentSize:CGSizeMake((width/2), height)];
-            toEndFrame = toView.frame;
-            toEndFrame.origin.x = 0; toEndFrame.origin.y = 0;
-        }
-
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView insertSubview:blurredButton belowSubview:toView];
         
+        CGRect toEndFrame;
+        if (iOS8){
+            [toView setFrame:CGRectMake(width, 0, width-(width/2), height)];
+            toEndFrame = toView.frame;
+            toEndFrame.origin.x -= width/2;
+        } else {
+            [toView setFrame:CGRectMake(0, width, height, width-(width/2))];
+            toEndFrame = toView.frame;
+            toEndFrame.origin.x = 0; toEndFrame.origin.y = width/2;
+        }
+
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [blurredButton setAlpha:1.0];
             [toView setFrame:toEndFrame];
@@ -88,13 +85,16 @@
     }
     else {
         UIImageView *blurredButton = (UIImageView*)[transitionContext.containerView viewWithTag:kBlurredBackgroundConstant];
-        toViewController.view.userInteractionEnabled = YES;
         
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
         
         CGRect fromEndFrame = fromView.frame;
-        fromEndFrame.origin.x = width;
+        if (iOS8){
+            fromEndFrame.origin.x = width;
+        } else {
+            fromEndFrame.origin.y = width;
+        }
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
             [blurredButton setAlpha:0.0];

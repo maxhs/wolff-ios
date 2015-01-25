@@ -46,8 +46,6 @@
 
 - (void)prepareForReuse {
     [super prepareForReuse];
-    //[self.landscapeArtImageView setAlpha:0.f];
-    //[self.portraitArtImageView setAlpha:0.f];
 }
 
 - (UIImage *)getRasterizedImageCopy {

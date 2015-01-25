@@ -11,8 +11,9 @@
 #import "Table+helper.h"
 
 @protocol WFMetadataDelegate <NSObject>
-
 @optional
+- (void)artFlagged:(Art*)art;
+- (void)photoFlagged:(Photo*)photo;
 - (void)favoritedPhoto:(Photo*)photo;
 - (void)droppedPhoto:(Photo*)photo toLightTable:(Table*)lightTable;
 @end
@@ -21,6 +22,7 @@
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UIView *topImageContainerView;
+@property (weak, nonatomic) IBOutlet UIProgressView *progressIndicator;
 @property (weak, nonatomic) IBOutlet UIButton *imageButton;
 @property (weak, nonatomic) IBOutlet UIButton *postedByButton;
 @property (weak, nonatomic) IBOutlet UIButton *creditButton;

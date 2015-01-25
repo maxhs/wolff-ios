@@ -102,11 +102,9 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     if (_photos.count == 0){
         [_noResultsPrompt setHidden:NO];
-        [tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
-        return 1;
+        return 0;
     } else {
         [_noResultsPrompt setHidden:YES];
-        //[tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
         return 2;
     }
 }

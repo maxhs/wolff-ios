@@ -71,9 +71,9 @@
     } else {
         // no slide, this means this is a new slide prompt cell
         [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
-        [_addPrompt setFont:[UIFont fontWithName:kMuseoSansThin size:43]];
+        [_addPrompt setFont:[UIFont fontWithName:kLatoHairline size:63]];
         [_addPrompt setHidden:NO];
-        [_addPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.23]];
+        [_addPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.33]];
         [_addPrompt setNumberOfLines:0];
         [_slideNumberLabel setText:@""];
         [_artImageView1 setImage:nil];

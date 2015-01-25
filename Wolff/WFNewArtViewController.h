@@ -24,6 +24,8 @@
 @property (weak, nonatomic) IBOutlet UIButton *dismissButton;
 @property (weak, nonatomic) IBOutlet UIButton *submitButton;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (weak, nonatomic) IBOutlet UISwitch *creditSwitch;
+@property (weak, nonatomic) IBOutlet UITextField *creditTextField;
 @property (weak, nonatomic) id<WFNewArtDelegate> artDelegate;
 - (void)dismiss;
 @end

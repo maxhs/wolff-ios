@@ -52,7 +52,15 @@
     if ([dictionary objectForKey:@"credit"] && [dictionary objectForKey:@"credit"] != [NSNull null]){
         self.credit = [dictionary objectForKey:@"credit"];
     }
-    if ([dictionary objectForKey:@"art"] && [dictionary objectForKey:@"art"] != [NSNull null]){
+    if ([dictionary objectForKey:@"art_id"] && [dictionary objectForKey:@"art_id"] != [NSNull null]){
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"art_id"]];
+        Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!art){
+            art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        art.identifier = [dictionary objectForKey:@"art_id"];
+        self.art = art;
+    } else if ([dictionary objectForKey:@"art"] && [dictionary objectForKey:@"art"] != [NSNull null]){
         NSDictionary *dict = [dictionary objectForKey:@"art"];
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
         Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -62,16 +70,15 @@
         [art populateFromDictionary:dict];
         self.art = art;
     }
-    if ([dictionary objectForKey:@"art_id"] && [dictionary objectForKey:@"art_id"] != [NSNull null]){
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"art_id"]];
-        Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-        if (!art){
-            art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    if ([dictionary objectForKey:@"user_id"] && [dictionary objectForKey:@"user_id"] != [NSNull null]){
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"user_id"]];
+        User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!user){
+            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
         }
-        art.identifier = [dictionary objectForKey:@"art_id"];
-        self.art = art;
-    }
-    if ([dictionary objectForKey:@"user"] && [dictionary objectForKey:@"user"] != [NSNull null]){
+        user.identifier = [dictionary objectForKey:@"user_id"];
+        self.user = user;
+    } else if ([dictionary objectForKey:@"user"] && [dictionary objectForKey:@"user"] != [NSNull null]){
         NSDictionary *dict = [dictionary objectForKey:@"user"];
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
         User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];

@@ -28,6 +28,7 @@
 @property (strong, nonatomic) AFHTTPRequestOperationManager *manager;
 @property (strong, nonatomic) User *currentUser;
 @property (weak, nonatomic) id<WFLoginDelegate> loginDelegate;
+@property BOOL connected;
 
 - (void)connectWithParameters:(NSMutableDictionary*)parameters;
 - (void)setUserDefaults;

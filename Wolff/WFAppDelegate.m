@@ -9,15 +9,21 @@
 #import "WFAppDelegate.h"
 #import <Mixpanel/Mixpanel.h>
 #import <Crashlytics/Crashlytics.h>
+#import <SDWebImage/SDImageCache.h>
+#import "WFAlert.h"
 
 @implementation WFAppDelegate
 @synthesize manager = _manager;
+@synthesize connected = _connected;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [Crashlytics startWithAPIKey:@"fdf66a0a10b6fc2a0f7052c9758873dc992773d5"];
     [MagicalRecord setShouldDeleteStoreOnModelMismatch:YES];
     [MagicalRecord setupAutoMigratingCoreDataStack];
     
+//    SDImageCache *imageCache = [SDImageCache sharedImageCache];
+//    [imageCache clearMemory];
+//    [imageCache clearDisk];
     
     [Mixpanel sharedInstanceWithToken:MIXPANEL_TOKEN];
     Mixpanel *mixpanel = [Mixpanel sharedInstance];
@@ -26,7 +32,8 @@
     _manager = [[AFHTTPRequestOperationManager manager] initWithBaseURL:[NSURL URLWithString:kApiBaseUrl]];
     [_manager.requestSerializer setAuthorizationHeaderFieldWithUsername:@"wolff_mobile" password:@"0fd11d82b574e0b13fc66b6227c4925c"];
     [_manager.requestSerializer setValue:(IDIOM == IPAD) ? @"2" : @"1" forHTTPHeaderField:@"device_type"];
-
+    
+    [self setupConnectionObserver];
     // automatically log the user in if they
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken]){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken] forKey:@"mobile_token"];
@@ -37,6 +44,25 @@
     [self customizeAppearance];
     
     return YES;
+}
+
+- (void)setupConnectionObserver {
+    [[AFNetworkReachabilityManager sharedManager] startMonitoring];
+    [[AFNetworkReachabilityManager sharedManager] setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
+        switch (status) {
+            case AFNetworkReachabilityStatusReachableViaWWAN:
+            case AFNetworkReachabilityStatusReachableViaWiFi:
+                NSLog(@"Connected");
+                _connected = YES;
+                break;
+            case AFNetworkReachabilityStatusNotReachable:
+            default:
+                NSLog(@"Not online");
+                _connected = NO;
+                [self offlineNotification];
+                break;
+        }
+    }];
 }
 
 - (void)hackForPreloadingKeyboard {
@@ -62,9 +88,9 @@
                 _currentUser = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [_currentUser populateFromDictionary:userDict];
-            [self setUserDefaults];
-            
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+            
+            [self setUserDefaults];
             
             if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(loginSuccessful)]) {
                 [self.loginDelegate loginSuccessful];
@@ -75,7 +101,9 @@
     
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         [ProgressHUD dismiss];
-        if ([operation.responseString isEqualToString:kNoEmail]){
+        if (!_connected) {
+            [self offlineNotification];
+        } else if ([operation.responseString isEqualToString:kNoEmail]){
             if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(incorrectEmail)]) {
                 [self.loginDelegate incorrectEmail];
             }
@@ -84,7 +112,8 @@
                 [self.loginDelegate incorrectPassword];
             }
         } else if ([operation.responseString isEqualToString:kInvalidToken]){
-            
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"LoggedOut" object:nil];
+            [self logout];
         } else {
             [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to log you in." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
         }
@@ -112,8 +141,11 @@
     [[UIBarButtonItem appearance] setTintColor:[UIColor whiteColor]];
     [[UINavigationBar appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kMuseoSansLight size:21]}];
     [[UIBarButtonItem appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kMuseoSansLight size:18]} forState:UIControlStateNormal];
+    
     [[UISwitch appearance] setTintColor:kSaffronColor];
     [[UISwitch appearance] setOnTintColor:kSaffronColor];
+    [[UIProgressView appearance] setTintColor:[UIColor colorWithWhite:.5 alpha:.3]];
+    [[UIProgressView appearance] setTrackTintColor:[UIColor colorWithWhite:.5 alpha:.15]];
     
     [self.window setBackgroundColor:[UIColor blackColor]];
     [self.window setTintColor:[UIColor blackColor]];
@@ -140,13 +172,18 @@
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 }
 
+- (void)offlineNotification {
+    [WFAlert show:@"Your device appears to have gone offline." withTime:2.7f];
+}
+
 - (void)logout {
     //[self cleanAndResetDB];
     NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
     [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
     [NSUserDefaults resetStandardUserDefaults];
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kExistingUser];
-    [[NSUserDefaults standardUserDefaults] synchronize];    
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
     [ProgressHUD dismiss];
 }
 

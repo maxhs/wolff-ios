@@ -14,8 +14,11 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     [self setBackgroundColor:[UIColor clearColor]];
-    [self.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [self.label setTextColor:[UIColor colorWithWhite:.7 alpha:.7]];
+    [_headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+    [_headerLabel setTextColor:[UIColor colorWithWhite:0 alpha:.9]];
+    
+    [self.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
+    [self.label setTextColor:[UIColor colorWithWhite:0 alpha:.23]];
     
     [self.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [self.textField setBackgroundColor:kTextFieldBackground];
@@ -25,16 +28,15 @@
     UIView *paddingView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 7, 20)];
     self.textField.leftView = paddingView;
     self.textField.leftViewMode = UITextFieldViewModeAlways;
+    [self.textField setTintColor:[UIColor blackColor]];
     
     [_joinButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [_joinButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     _joinButton.layer.cornerRadius = 14.f;
     _joinButton.clipsToBounds = YES;
-    [_joinButton setBackgroundColor:[UIColor blackColor]];
-}
-
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
-    [super setSelected:selected animated:animated];
+    [_joinButton setUserInteractionEnabled:YES];
+    [_joinButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+    _joinButton.enabled = NO;
 }
 
 @end

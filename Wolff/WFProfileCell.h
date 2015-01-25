@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface WFProfileCell : UITableViewCell
-
+@interface WFProfileCell : UICollectionViewCell
+@property (weak, nonatomic) IBOutlet UIButton *userPhotoButton;
+@property (weak, nonatomic) IBOutlet UILabel *nameLabel;
+@property (weak, nonatomic) IBOutlet UILabel *institutionLabel;
 @end

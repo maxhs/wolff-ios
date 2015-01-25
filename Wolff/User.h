@@ -9,8 +9,6 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Institution;
-
 @interface User : NSManagedObject
 
 @property (nonatomic, retain) NSDate * createdDate;
@@ -28,7 +26,7 @@
 @property (nonatomic, retain) NSString * avatarSmall;
 @property (nonatomic, retain) NSString * avatarMedium;
 @property (nonatomic, retain) NSString * avatarLarge;
-@property (nonatomic, retain) Institution *institution;
+@property (nonatomic, retain) NSOrderedSet *institutions;
 @property (nonatomic, retain) NSOrderedSet *lightTables;
 @property (nonatomic, retain) NSOrderedSet *ownedTables;
 @property (nonatomic, retain) NSOrderedSet *arts;
@@ -37,6 +35,7 @@
 @property (nonatomic, retain) NSOrderedSet *comments;
 @property (nonatomic, retain) NSOrderedSet *notifications;
 @property (nonatomic, retain) NSOrderedSet *photos;
+@property (nonatomic, retain) NSOrderedSet *alternates;
 
 @end
 

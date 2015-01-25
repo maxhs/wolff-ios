@@ -34,8 +34,10 @@
     
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"right"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
-    [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.02]];
+    [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.03]];
     self.navigationItem.title = _slideshow.title;
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
+    
     [self setupDateFormatter];
     UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.tableView.frame];
     [backgroundToolbar setTranslucent:YES];
@@ -93,7 +95,7 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 5;
+    return 6;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -169,6 +171,18 @@
                 [cell.textLabel setText:locations];
             } else {
                 [cell.textLabel setText:@"No locations listed"];
+                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
+                [cell.textLabel setTextColor:[UIColor lightGrayColor]];
+            }
+        }
+            break;
+        case 5:
+        {
+            NSString *credit = photo.credit.length ? photo.credit : photo.user.fullName;
+            if (credit.length){
+                [cell.textLabel setText:credit];
+            } else {
+                [cell.textLabel setText:@"N/A"];
                 [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
                 [cell.textLabel setTextColor:[UIColor lightGrayColor]];
             }

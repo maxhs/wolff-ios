@@ -14,7 +14,7 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     [self.textLabel setTextColor:[UIColor blackColor]];
-    [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     self.backgroundColor = [UIColor clearColor];
 }
 

@@ -14,6 +14,7 @@
 #import "WFSlideMetadataAnimator.h"
 #import "WFSlideMetadataViewController.h"
 #import "WFArtMetadataViewController.h"
+#import "WFUtilities.h"
 
 @interface WFComparisonViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UIGestureRecognizerDelegate, UIViewControllerTransitioningDelegate> {
     UIBarButtonItem *dismissButton;
@@ -46,6 +47,7 @@
     CGFloat width;
     CGFloat height;
     BOOL iOS8;
+    UIImageView *navBarShadowView;
 }
 
 @end
@@ -57,12 +59,12 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.automaticallyAdjustsScrollViewInsets = NO;
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
-    
     metadataButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"info"] style:UIBarButtonItemStylePlain target:self action:@selector(showMetadata)];
-    
     self.navigationItem.rightBarButtonItem = metadataButton;
+    navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     
     if (SYSTEM_VERSION >= 8.f){
         iOS8 = YES; width = screenWidth(); height = screenHeight();
@@ -96,12 +98,12 @@
     }
     
     if(!_doubleTapGesture2){
+        _doubleTapGesture1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
+        _doubleTapGesture1.numberOfTapsRequired = 2;
         _doubleTapGesture2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
         _doubleTapGesture2.numberOfTapsRequired = 2;
         _doubleTapGesture3 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
         _doubleTapGesture3.numberOfTapsRequired = 2;
-        _doubleTapGesture1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(reset)];
-        _doubleTapGesture1.numberOfTapsRequired = 2;
     }
     
     /*[_rotationGesture2 requireGestureRecognizerToFail:_panGesture2];
@@ -113,6 +115,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self.collectionView reloadData];
+    [navBarShadowView setHidden:YES];
     // this is the global reset gesture
     [self.view addGestureRecognizer:_doubleTapGesture1];
 }
@@ -133,11 +136,8 @@
 - (void)handlePan:(UIPanGestureRecognizer*)gestureRecognizer {
     CGPoint translation = [gestureRecognizer translationInView:self.view];
     CGPoint newPoint = CGPointMake(gestureRecognizer.view.center.x + translation.x, gestureRecognizer.view.center.y + translation.y);
-    if (newPoint.x > 0){
-        gestureRecognizer.view.center = newPoint;
-    }
+    gestureRecognizer.view.center = newPoint;
     [gestureRecognizer setTranslation:CGPointMake(0, 0) inView:self.view];
-    
 }
 
 - (void)adjustAnchorPointForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
@@ -196,7 +196,7 @@
 }
 
 - (void)handleTap:(UITapGestureRecognizer*)gestureRecognizer {
-    [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+    [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.87 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         gestureRecognizer.view.transform = CGAffineTransformIdentity;
         if (gestureRecognizer == _doubleTapGesture1){
             [gestureRecognizer.view setFrame:originalFrame1];
@@ -212,11 +212,7 @@
 }
 
 - (void)reset {
-    [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.7 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        
-        artImageView1.transform = CGAffineTransformIdentity;
-        artImageView2.transform = CGAffineTransformIdentity;
-        artImageView3.transform = CGAffineTransformIdentity;
+    [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.87 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         [artImageView1 setFrame:originalFrame1];
         [artImageView2 setFrame:originalFrame2];
         [artImageView3 setFrame:originalFrame3];
@@ -286,13 +282,13 @@
                                                                       sourceController:(UIViewController *)source {
     WFSlideMetadataAnimator *animator = [WFSlideMetadataAnimator new];
     animator.presenting = YES;
+    animator.orientation = self.interfaceOrientation;
     return animator;
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
-    
-    
     WFSlideMetadataAnimator *animator = [WFSlideMetadataAnimator new];
+    animator.orientation = self.interfaceOrientation;
     return animator;
 }
 

@@ -12,6 +12,7 @@
 
 @required
 - (void)showSettings;
+- (void)showProfile;
 - (void)logout;
 @end
 

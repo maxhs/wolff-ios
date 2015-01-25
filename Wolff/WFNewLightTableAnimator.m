@@ -21,7 +21,7 @@
 
 @implementation WFNewLightTableAnimator
 - (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext {
-    return .75f;
+    return kDefaultAnimationDuration;
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
@@ -48,54 +48,43 @@
         toView = toViewController.view;
     }
     
+    [transitionContext.containerView addSubview:fromView];
+    [transitionContext.containerView addSubview:toView];
+    
     if (self.presenting) {
-        UIButton *darkBackground = [UIButton buttonWithType:UIButtonTypeCustom];
-        [darkBackground setBackgroundColor:[UIColor colorWithWhite:.1 alpha:.5]];
-        [darkBackground setAlpha:0.0];
-        [darkBackground setFrame:[UIScreen mainScreen].bounds];
-        [darkBackground setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-        [darkBackground setTag:kDarkBackgroundConstant];
-        [darkBackground addTarget:(WFDismissableNavigationController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-        
-        CGRect newArtFrame;
+
         if (iOS8){
-            CGRect newArtStartFrame = CGRectMake(width*.1, 0, width*.8, height);
+            CGRect newArtStartFrame = CGRectMake(0, height, width, height);
             toViewController.view.frame = newArtStartFrame;
-            newArtFrame = CGRectMake(width*.1, 0, width*.8, height);
         } else {
-            CGRect newArtStartFrame = CGRectMake(0, 0, height, width);
+            CGRect newArtStartFrame = CGRectMake(0, width, height, width);
             toViewController.view.frame = newArtStartFrame;
-            newArtFrame = CGRectMake(0, 0, height, width);
         }
-        
-        [transitionContext.containerView addSubview:fromView];
-        [transitionContext.containerView addSubview:darkBackground];
-        [transitionContext.containerView addSubview:toView];
+        CGRect newArtFrame = mainScreen;
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            toViewController.view.frame = newArtFrame;
-            [darkBackground setAlpha:1.0];
+            toView.frame = newArtFrame;
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
         
     } else {
         
-        UIButton *darkBackground = (UIButton*)[transitionContext.containerView viewWithTag:kDarkBackgroundConstant];
-        
-        toViewController.view.userInteractionEnabled = YES;
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
         
-        NSTimeInterval outDuration = [self transitionDuration:transitionContext]*.7;
-        [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.8 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            if (iOS8){
-                fromViewController.view.transform = CGAffineTransformMakeScale(.87, .87);
-            }
-            [fromViewController.view setAlpha:0.0];
-            [darkBackground setAlpha:0.0];
+        CGRect newLightTableFrame = fromView.frame;
+        if (iOS8){
+            newLightTableFrame.origin.y += height;
+        } else {
+            [fromView setFrame:mainScreen];
+            newLightTableFrame.origin.y -= width;
+            newLightTableFrame.origin.x -= height;
+        }
+        
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            [fromViewController.view setFrame:newLightTableFrame];
         } completion:^(BOOL finished) {
-            [darkBackground removeFromSuperview];
             [transitionContext completeTransition:YES];
         }];
     }

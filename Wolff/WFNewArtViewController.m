@@ -192,7 +192,7 @@
     [cell.textField setKeyboardAppearance:UIKeyboardAppearanceDark];
     switch (indexPath.row) {
         case 0:
-            [cell.label setText:@"TITLE"];
+            [cell.label setText:@"TITLE *"];
             [cell.textField setPlaceholder:@"Art title"];
             [cell.textField setReturnKeyType:UIReturnKeyNext];
             titleTextField = cell.textField;

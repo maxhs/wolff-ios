@@ -99,7 +99,7 @@
     
     if (label == nil) {
         label = [[UILabel alloc] initWithFrame:CGRectZero];
-        label.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0];
+        label.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansThin] size:0];
         [label setTextColor:[UIColor whiteColor]];
         label.backgroundColor = [UIColor clearColor];
         label.textAlignment = NSTextAlignmentCenter;
@@ -112,7 +112,7 @@
 
 -(UIImage *)blurredSnapshotForWindow {
     UIGraphicsBeginImageContextWithOptions(mainScreen.size, NO, [UIScreen mainScreen].scale);
-    [window drawViewHierarchyInRect:mainScreen afterScreenUpdates:NO];
+    [window drawViewHierarchyInRect:mainScreen afterScreenUpdates:YES];
     UIImage *snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
     UIImage *blurredSnapshotImage = [snapshotImage applyDarkEffect];
     UIGraphicsEndImageContext();

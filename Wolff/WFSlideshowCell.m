@@ -34,10 +34,21 @@
     [_scrollView setUserInteractionEnabled:NO];
     [self.contentView addGestureRecognizer:_scrollView.panGestureRecognizer];
     _scrollView.delegate = self;
+    
+    [self.textLabel setTextColor:[UIColor whiteColor]];
+}
+
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    [self.textLabel setText:@""];
+    [_slideshowLabel setText:@""];
+    [_iconImageView setImage:nil];
 }
 
 - (void)configureForSlideshow:(Slideshow *)slideshow {
     _slideshow = slideshow;
+    [self.textLabel setText:@""];
+    
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
         [_actionButton setTitle:@"Delete" forState:UIControlStateNormal];
         [_actionButton setBackgroundColor:[UIColor redColor]];

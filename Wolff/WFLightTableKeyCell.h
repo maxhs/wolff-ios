@@ -8,7 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface WFLightTableKeyCell : UITableViewCell
+@interface WFLightTableKeyCell : UICollectionViewCell
+@property (weak, nonatomic) IBOutlet UILabel *headerLabel;
 @property (weak, nonatomic) IBOutlet UILabel *label;
 @property (weak, nonatomic) IBOutlet UITextField *textField;
 @property (weak, nonatomic) IBOutlet UIButton *joinButton;

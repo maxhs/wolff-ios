@@ -13,4 +13,5 @@
 - (void)populateFromDictionary:(NSDictionary*)dict;
 - (void)addPhoto:(Photo*)photo;
 - (void)removePhoto:(Photo*)photo;
+- (void)replacePhotoAtIndex:(NSInteger)index withPhoto:(Photo*)photo;
 @end

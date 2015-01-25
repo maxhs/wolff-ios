@@ -19,7 +19,7 @@
 
 @property (strong, nonatomic) NSMutableOrderedSet *photos;
 @property (strong, nonatomic) NSNumber *tableId;
-@property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UIButton *dismissButton;
 @property (weak, nonatomic) id<WFLightTableDelegate>lightTableDelegate;
 @property BOOL showKey;

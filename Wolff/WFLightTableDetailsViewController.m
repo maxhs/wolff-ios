@@ -17,7 +17,7 @@
 
 #define kLightTableDescriptionPlaceholder @"Describe your light table..."
 
-@interface WFLightTableDetailsViewController () < UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UITextViewDelegate> {
+@interface WFLightTableDetailsViewController () < UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UITextFieldDelegate, UITextViewDelegate> {
     BOOL iOS8;
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
@@ -27,11 +27,14 @@
     UITextField *titleTextField;
     UITextField *tableKeyTextField;
     UITextField *confirmTableKeyTextField;
+    UIButton *joinButton;
+    UIButton *actionButton;
     UITextView *descriptionTextView;
     UIBarButtonItem *dismissBarButton;
     UIImageView *navBarShadowView;
     Table *_table;
     CGFloat topInset;
+    CGFloat keyboardHeight;
 }
 
 @end
@@ -41,6 +44,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.automaticallyAdjustsScrollViewInsets = NO;
     if (SYSTEM_VERSION >= 8.f){
         iOS8 = YES; width = screenWidth(); height = screenHeight();
     } else {
@@ -48,20 +52,19 @@
     }
     
     [self.view setBackgroundColor:[UIColor clearColor]];
-    [self.tableView setBackgroundColor:[UIColor clearColor]];
+    [self.collectionView setBackgroundColor:[UIColor clearColor]];
+    keyboardHeight = 0.f;
+    
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     [self.navigationController.navigationBar setBarStyle:UIBarStyleDefault];
     [self.navigationController.navigationBar setTintColor:[UIColor blackColor]];
     UIToolbar *backgroundView = [[UIToolbar alloc] initWithFrame:self.view.frame];
     [backgroundView setTranslucent:YES];
-    [backgroundView setBarStyle:UIBarStyleBlackTranslucent];
-    [self.tableView setBackgroundView:backgroundView];
-    [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.03]];
-//    topInset = 200.f;
-//    self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+    [backgroundView setBarStyle:UIBarStyleDefault];
+    [self.collectionView setBackgroundView:backgroundView];
     
-    dismissBarButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    dismissBarButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"blackRemove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissBarButton;
     dismissBarButton.tintColor = [UIColor blackColor];
     [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
@@ -87,7 +90,6 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     navBarShadowView.hidden = YES;
-    [self setUpFooterView];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -95,38 +97,9 @@
     [titleTextField becomeFirstResponder];
 }
 
+#pragma mark - Collection view data source
 
-- (void)setUpFooterView {
-    UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 120)];
-    [footerView setBackgroundColor:[UIColor clearColor]];
-    
-    CGFloat originX = 20;
-    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(originX, 7, self.view.frame.size.width-(originX*2), 37)];
-    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [headerLabel setTextColor:[UIColor colorWithWhite:.7 alpha:.7]];
-    [headerLabel setText:@"The table key is like a password for your light table. Invite others to your light table by sharing this key."];
-    headerLabel.numberOfLines = 0;
-    [footerView addSubview:headerLabel];
-    
-    UIButton *submitButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [submitButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [submitButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [submitButton setTitle:@"CREATE" forState:UIControlStateNormal];
-    [submitButton addTarget:self action:@selector(createLightTable) forControlEvents:UIControlEventTouchUpInside];
-    
-    [submitButton setFrame:CGRectMake(width*.2, headerLabel.frame.origin.y + headerLabel.frame.size.height+17, width*.4, 44)];
-    [submitButton setBackgroundColor:[UIColor blackColor]];
-    submitButton.layer.cornerRadius = 14.f;
-    submitButton.clipsToBounds = YES;
-    
-    [footerView addSubview:submitButton];
-    
-    self.tableView.tableFooterView = footerView;
-}
-
-#pragma mark - Table view data source
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
     if (_showKey){
         return 2;
     } else {
@@ -134,115 +107,94 @@
     }
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if (section == 0 && _showKey){
-        return 1;
-    } else {
-        return 4;
-    }
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    return 1;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 0 && _showKey){
-        WFLightTableKeyCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LightTableKeyCell" forIndexPath:indexPath];
-        [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+- (UICollectionViewCell*)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0){
+        WFLightTableDetailsCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LightTableDetailsCell" forIndexPath:indexPath];
         [cell setBackgroundColor:[UIColor clearColor]];
         
+        [cell.actionButton setTitle:@"CREATE" forState:UIControlStateNormal];
+        [cell.actionButton setUserInteractionEnabled:YES];
+        [cell.actionButton addTarget:self action:@selector(post) forControlEvents:UIControlEventTouchUpInside];
+        cell.titleTextField.delegate = self;
+        cell.keyTextField.delegate = self;
+        cell.confirmKeyTextField.delegate = self;
+        
+        titleTextField = cell.titleTextField;
+        [cell.titleTextField setPlaceholder:@"e.g. Mesopotamian Pots"];
+        [cell.titleTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
+        [cell.titleTextField setReturnKeyType:UIReturnKeyNext];
+
+        cell.textView.delegate = self;
+        [cell.textView setHidden:NO];
+        descriptionTextView = cell.textView;
+        if (_table && _table.tableDescription.length){
+            [cell.textView setText:_table.tableDescription];
+            [cell.textView setTextColor:[UIColor blackColor]];
+        } else {
+            [cell.textView setText:kLightTableDescriptionPlaceholder];
+            [cell.textView setTextColor:kPlaceholderTextColor];
+        }
+        cell.textView.delegate = self;
+        [cell.textView setReturnKeyType:UIReturnKeyDefault];
+
+        tableKeyTextField = cell.keyTextField;
+        [cell.keyTextField setPlaceholder:@"Your light table key"];
+        [cell.keyTextField setReturnKeyType:UIReturnKeyNext];
+
+        confirmTableKeyTextField = cell.confirmKeyTextField;
+        [cell.confirmKeyTextField setPlaceholder:@"Confirm table key"];
+        [cell.confirmKeyTextField setReturnKeyType:UIReturnKeyGo];
+        
+        actionButton = cell.actionButton;
+        return cell;
+    } else {
+        WFLightTableKeyCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LightTableKeyCell" forIndexPath:indexPath];
+        [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.03]];
         [cell.label setText:@"TABLE KEY"];
         [cell.textField setPlaceholder:@"The key code for the light table code you'd like to join"];
+        cell.textField.delegate = self;
         [cell.joinButton setTitle:@"JOIN" forState:UIControlStateNormal];
-        [cell.joinButton setUserInteractionEnabled:YES];
         [cell.joinButton addTarget:self action:@selector(joinLightTable) forControlEvents:UIControlEventTouchUpInside];
-        CGFloat originY = cell.textField.frame.origin.y + cell.textField.frame.size.height + 14.f;
-        [cell.joinButton setFrame:CGRectMake(width*.2, originY, width*.4, 44)]; //takes into account
+        joinButton = cell.joinButton;
         joinTableTextField = cell.textField;
         return cell;
-    } else {
-        WFLightTableDetailsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LightTableDetailsCell" forIndexPath:indexPath];
-        if (!iOS8){
-            [cell setBackgroundColor:[UIColor clearColor]];
-        }
-        [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
-        cell.textField.delegate = self;
-        switch (indexPath.row) {
-            case 0:
-                [cell.label setText:@"TITLE"];
-                titleTextField = cell.textField;
-                [cell.textField setPlaceholder:@"e.g. Mesopotamian Pots"];
-                [cell.textField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
-                [cell.textField setReturnKeyType:UIReturnKeyNext];
-                break;
-            case 1:
-            {
-                [cell.label setText:@"DESCRIPTION"];
-                [cell.textView setHidden:NO];
-                [cell.textField setHidden:YES];
-                descriptionTextView = cell.textView;
-                if (_table && _table.tableDescription.length){
-                    [cell.textView setText:_table.tableDescription];
-                    [cell.textView setTextColor:[UIColor blackColor]];
-                } else {
-                    [cell.textView setText:kLightTableDescriptionPlaceholder];
-                    [cell.textView setTextColor:kPlaceholderTextColor];
-                }
-                cell.textView.delegate = self;
-                [cell.textView setReturnKeyType:UIReturnKeyDefault];
-            }
-                break;
-            case 2:
-                [cell.label setText:@"TABLE KEY"];
-                tableKeyTextField = cell.textField;
-                [cell.textField setPlaceholder:@"Your light table key"];
-                [cell.textField setReturnKeyType:UIReturnKeyNext];
-                break;
-            case 3:
-                confirmTableKeyTextField = cell.textField;
-                [cell.textField setPlaceholder:@"Confirm table key"];
-                [cell.textField setReturnKeyType:UIReturnKeyGo];
-                break;
-                
-            default:
-                break;
-        }
-        return cell;
     }
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 0 && _showKey){
-        return 160;
-    } else {
-        if (indexPath.row == 1){
-            return 88;
-        } else {
-            return 44;
-        }
-    }
+#pragma mark – UICollectionViewDelegateFlowLayout
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    return CGSizeMake(width/2,height);
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    return 60;
+- (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
+    return UIEdgeInsetsMake(0, 0, 0, 0);
 }
 
-- (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 44)];
-    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 10, tableView.frame.size.width-10, 34)];
-    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
-    [headerLabel setTextColor:[UIColor colorWithWhite:1 alpha:.27]];
-    if (section == 0 && _showKey){
-        [headerLabel setText:@"JOIN A LIGHT TABLE"];
-    } else {
-        [headerLabel setText:@"LIGHT TABLE DETAILS"];
-    }
-    [headerLabel setTextAlignment:NSTextAlignmentCenter];
-    [headerView addSubview:headerLabel];
-    
-    return headerView;
+- (void)post {
+    [self createLightTable];
 }
 
 - (void)createLightTable {
     [self.view endEditing:YES];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    
+    if (tableKeyTextField.text.length){
+        if ([tableKeyTextField.text isEqualToString:confirmTableKeyTextField.text]){
+            [parameters setObject:tableKeyTextField.text forKey:@"code"];
+        } else {
+            [WFAlert show:@"Please ensure that your light table keys match before continuing." withTime:3.3f];
+            return;
+        }
+    } else {
+        [WFAlert show:@"Please ensure you've added a light table key before continuing." withTime:3.3f];
+        return;
+    }
+    
     if (titleTextField.text.length){
         [parameters setObject:titleTextField.text forKey:@"name"];
     } else {
@@ -255,17 +207,7 @@
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"owner_id"];
     }
-    if (tableKeyTextField.text.length){
-        if ([tableKeyTextField.text isEqualToString:confirmTableKeyTextField.text]){
-            [parameters setObject:tableKeyTextField.text forKey:@"code"];
-        } else {
-            [WFAlert show:@"Please ensure that your light table keys match before continuing." withTime:3.3f];
-            return;
-        }
-    } else {
-        [WFAlert show:@"Please ensure you've added a light table key before continuing." withTime:3.3f];
-        return;
-    }
+    
     NSMutableArray *photoIds = [NSMutableArray arrayWithCapacity:_photos.count];
     for (Photo *photo in _photos){
         [photoIds addObject:photo.identifier];
@@ -345,10 +287,9 @@
         [textView setTextColor:[UIColor blackColor]];
     }
     if (textView == descriptionTextView) {
-        if (_showKey){
-            [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:1] atScrollPosition:UITableViewScrollPositionTop animated:YES];
-        }
+        
     }
+    
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView {
@@ -359,19 +300,7 @@
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
-    if (textField == titleTextField){
-        if (_showKey){
-            [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1] atScrollPosition:UITableViewScrollPositionTop animated:YES];
-        }
-    } else if (textField == tableKeyTextField){
-        if (_showKey){
-            [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:1] atScrollPosition:UITableViewScrollPositionTop animated:YES];
-        }
-    } else if (textField == confirmTableKeyTextField){
-        if (_showKey){
-            [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:3 inSection:1] atScrollPosition:UITableViewScrollPositionTop animated:YES];
-        }
-    }
+    
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField {
@@ -385,10 +314,47 @@
         } else if (textField == tableKeyTextField) {
             [confirmTableKeyTextField becomeFirstResponder];
         } else if (textField == confirmTableKeyTextField) {
-            //[self connect];
+            [self createLightTable];
         }
         return NO;
     } else {
+        if (textField == joinTableTextField){
+            NSString *newText = [joinTableTextField.text stringByReplacingCharactersInRange:range withString:string];
+            if (newText.length){
+                [joinButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.23]];
+                joinButton.enabled = YES;
+            } else {
+                [joinButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+                joinButton.enabled = NO;
+            }
+        } else if (textField == confirmTableKeyTextField){
+            NSString *newText = [confirmTableKeyTextField.text stringByReplacingCharactersInRange:range withString:string];
+            if (titleTextField.text.length && [tableKeyTextField.text isEqualToString:newText]){
+                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.23]];
+                actionButton.enabled = YES;
+            } else {
+                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+                actionButton.enabled = NO;
+            }
+        } else if (textField == tableKeyTextField){
+            NSString *newText = [tableKeyTextField.text stringByReplacingCharactersInRange:range withString:string];
+            if (titleTextField.text.length && [confirmTableKeyTextField.text isEqualToString:newText]){
+                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.23]];
+                actionButton.enabled = YES;
+            } else {
+                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+                actionButton.enabled = NO;
+            }
+        } else if (textField == titleTextField){
+            NSString *newText = [titleTextField.text stringByReplacingCharactersInRange:range withString:string];
+            if (newText.length && tableKeyTextField.text.length && [confirmTableKeyTextField.text isEqualToString:tableKeyTextField.text]){
+                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.23]];
+                actionButton.enabled = YES;
+            } else {
+                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+                actionButton.enabled = NO;
+            }
+        }
         return YES;
     }
 }
@@ -397,52 +363,7 @@
     [self.view endEditing:YES];
 }
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
-
-- (void)registerForKeyboardNotifications
-{
+- (void)registerForKeyboardNotifications {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
                                                  name:UIKeyboardWillShowNotification object:nil];
@@ -458,32 +379,35 @@
     UIViewAnimationOptions curve = [info[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
     NSValue *keyboardValue = info[UIKeyboardFrameEndUserInfoKey];
     CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
-    CGFloat keyboardHeight = convertedKeyboardFrame.size.height;
+    keyboardHeight = convertedKeyboardFrame.size.height;
+    
     [UIView animateWithDuration:duration
                           delay:0
                         options:curve | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
-                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
-                     }
-                     completion:nil];
+                         //self.collectionView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
+                         //self.collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
+                     } completion:^(BOOL finished) {
+                     
+                     }];
 }
 
 - (void)keyboardWillHide:(NSNotification *)note {
     NSDictionary* info = [note userInfo];
     NSTimeInterval duration = [info[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationOptions curve = [info[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
+    NSValue *keyboardValue = info[UIKeyboardFrameEndUserInfoKey];
+    CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
+    keyboardHeight = convertedKeyboardFrame.size.height;
+
     [UIView animateWithDuration:duration
                           delay:0
                         options:curve | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
-                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, 0, 0);
-                     }
-                     completion:nil];
+                         //self.collectionView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
+                         //self.collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, 0, 0);
+                     } completion:nil];
 }
-
-
 
 - (void)dismiss {
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{

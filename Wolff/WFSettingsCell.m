@@ -22,22 +22,29 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    [self.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [self.textField setKeyboardAppearance:UIKeyboardAppearanceDark];
+    [_textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [_textField setKeyboardAppearance:UIKeyboardAppearanceDark];
     [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [_settingsSwitch setHidden:YES];
+    [_actionButton setHidden:YES];
+    [_actionButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
+    [_actionButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    _actionButton.layer.cornerRadius = 7.f;
+    _actionButton.clipsToBounds = YES;
+    [_actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.23]];
 }
 
 - (void)prepareForReuse {
     [super prepareForReuse];
     [self.textField setText:@""];
     [self.textLabel setText:@""];
+    [_settingsSwitch setHidden:YES];
+    [self.textField setUserInteractionEnabled:YES];
+    [_actionButton setHidden:YES];
 }
 
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated
-{
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
-
-    // Configure the view for the selected state
 }
 
 @end

@@ -435,7 +435,7 @@
                     CGFloat lowerBounds = cell.frame.origin.y;
                     CGFloat upperBounds = cell.frame.origin.y + cell.frame.size.height;
                     CGFloat bottomOfSlides = cell.frame.size.height * _slideshow.slides.count;
-                    NSLog(@"Bottom of slides: %f, new loc y: %f",bottomOfSlides,loc.y);
+                    //NSLog(@"Bottom of slides: %f, new loc y: %f",bottomOfSlides,loc.y);
                     if (loc.y > bottomOfSlides){
                         // this means we should add a new slide
                         Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
@@ -445,12 +445,19 @@
                         *stop = YES;
                         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                             [self.tableView reloadData];
+                            [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
                         }];
                         
-                    } else if (loc.y < upperBounds && loc.y > lowerBounds){
+                    } else if (loc.y < upperBounds && loc.y > lowerBounds && selectedPhoto){
                         Slide *slide = [_slideshow.slides objectAtIndex:idx];
-                        if (selectedPhoto){
-                            [slide addPhoto:selectedPhoto];
+                        if (loc.x > -(kSidebarWidth/2) || slide.photos.count == 1){
+                            if (slide.photos.count > 1){
+                                [slide replacePhotoAtIndex:1 withPhoto:selectedPhoto];
+                            } else {
+                                [slide addPhoto:selectedPhoto];
+                            }
+                        } else {
+                            [slide replacePhotoAtIndex:0 withPhoto:selectedPhoto];
                         }
                         [self.tableView reloadData];
                         *stop = YES;

@@ -12,6 +12,7 @@
 #import "WFSlideMetadataViewController.h"
 #import "WFSlideMetadataAnimator.h"
 #import "WFUtilities.h"
+#import "WFSlideshowTitleCell.h"
 
 @interface WFSlideshowViewController () <UIToolbarDelegate, UIViewControllerTransitioningDelegate, UIGestureRecognizerDelegate> {
     CGFloat width;
@@ -47,6 +48,8 @@
     UITapGestureRecognizer *_doubleTapGesture1;
     UITapGestureRecognizer *_doubleTapGesture2;
     UITapGestureRecognizer *_doubleTapGesture3;
+    UIScreenEdgePanGestureRecognizer *rightScreenEdgePanGesture;
+    UIScreenEdgePanGestureRecognizer *leftScreenEdgePanGesture;
     CGFloat lastScale;
     CGRect originalFrame1;
     CGRect originalFrame2;
@@ -81,13 +84,18 @@
     
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
+    [_bottomToolbar setTintColor:[UIColor whiteColor]];
     [self setUpNavBar];
+
     barsVisible = YES;
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     toolBarShadowView = [WFUtilities findNavShadow:self.bottomToolbar];
     [_bottomToolbar setBarStyle:UIBarStyleBlackTranslucent];
     [_bottomToolbar setTranslucent:YES];
+    
+    [_collectionView setDelaysContentTouches:NO];
+    [_collectionView setCanCancelContentTouches:NO];
     
     _panGesture1 = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     _panGesture1.delegate = self;
@@ -103,11 +111,22 @@
     _pinchGesture3 = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
     _pinchGesture3.delegate = self;
     
+    rightScreenEdgePanGesture = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(screenEdgePan:)];
+    rightScreenEdgePanGesture.edges = UIRectEdgeRight;
+    [self.view addGestureRecognizer:rightScreenEdgePanGesture];
+    leftScreenEdgePanGesture = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(screenEdgePan:)];
+    leftScreenEdgePanGesture.edges = UIRectEdgeLeft;
+    [self.view addGestureRecognizer:leftScreenEdgePanGesture];
+    
+//    [_panGesture1 requireGestureRecognizerToFail:_collectionView.panGestureRecognizer];
+//    [_panGesture1 requireGestureRecognizerToFail:_collectionView.panGestureRecognizer];
+//    [_panGesture1 requireGestureRecognizerToFail:_collectionView.panGestureRecognizer];
+    
     /*_rotateGesture1 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
     _rotateGesture2 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
     _rotateGesture3 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];*/
     
-    _doubleTapGesture1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(reset)];
+    _doubleTapGesture1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     _doubleTapGesture1.numberOfTapsRequired = 2;
     _doubleTapGesture2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     _doubleTapGesture2.numberOfTapsRequired = 2;
@@ -117,18 +136,18 @@
     singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTap:)];
     singleTap.delegate = self;
     singleTap.numberOfTapsRequired = 1;
+    [_collectionView addGestureRecognizer:singleTap];
     [singleTap requireGestureRecognizerToFail:_doubleTapGesture1];
     [singleTap requireGestureRecognizerToFail:_doubleTapGesture2];
     [singleTap requireGestureRecognizerToFail:_doubleTapGesture3];
-    [self.view addGestureRecognizer:singleTap];
     
-    _collectionView.canCancelContentTouches = YES;
-    _collectionView.delaysContentTouches = NO;
     [_slideshowTitleButtonItem setTitle:_slideshow.title];
     currentPage = 1+_startIndex;
     [_collectionView setContentOffset:CGPointMake(width*_startIndex, 0) animated:NO];
     
     [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
+    [_slideNumberButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
+    [_slideshowTitleButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
 }
 
 - (void)setUpNavBar {
@@ -168,83 +187,87 @@
                                                                       sourceController:(UIViewController *)source {
     WFSlideMetadataAnimator *animator = [WFSlideMetadataAnimator new];
     animator.presenting = YES;
+    animator.orientation = self.interfaceOrientation;
     return animator;
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
     WFSlideMetadataAnimator *animator = [WFSlideMetadataAnimator new];
+    animator.orientation = self.interfaceOrientation;
     return animator;
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    CGPoint offset = scrollView.contentOffset;
-    offset.y = 0;
-    [_collectionView setContentOffset:offset];
-    
     CGFloat pageWidth = scrollView.frame.size.width;
     float fractionalPage = scrollView.contentOffset.x / pageWidth;
     NSInteger page = lround(fractionalPage)+1; // offset since we're starting on page 1
     if (currentPage != page) {
         currentPage = page;
         [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
-        currentSlide = _slideshow.slides[currentPage-1];
+        currentSlide = _slideshow.slides[currentPage-2]; // offset by 2 because the index starts at 0, not 1, and there's always a title slide
     }
 }
 
 #pragma mark <UICollectionViewDataSource>
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
-    return 1;
+    return 2;
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return _slideshow.slides.count;
+    if (section == 0) return 1;
+    else return _slideshow.slides.count;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
-    currentSlide = _slideshow.slides[indexPath.item];
-    [cell configureForPhotos:currentSlide.photos.mutableCopy inSlide:currentSlide];
-   
-    // set/reset gesture recognizers
-    if (currentSlide.photos.count == 1){
-        artImageView1 = cell.artImageView1;
-        containerView1 = cell.containerView1;
-        [artImageView1 addGestureRecognizer:_panGesture1];
-        [artImageView1 addGestureRecognizer:_pinchGesture1];
-        [artImageView1 addGestureRecognizer:_doubleTapGesture1];
-        //[artImageView1 addGestureRecognizer:_rotateGesture1];
-        
+    if (indexPath.section == 0){
+        WFSlideshowTitleCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"TitleCell" forIndexPath:indexPath];
+        [cell configureForSlideshow:_slideshow];
+        return cell;
     } else {
-        artImageView2 = cell.artImageView2;
-        containerView2 = cell.containerView2;
-        [artImageView2 addGestureRecognizer:_panGesture2];
-        [artImageView2 addGestureRecognizer:_pinchGesture2];
-        [artImageView2 addGestureRecognizer:_doubleTapGesture2];
-        //[artImageView2 addGestureRecognizer:_rotateGesture2];
+        WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
+        currentSlide = _slideshow.slides[indexPath.item];
+        [cell configureForPhotos:currentSlide.photos.mutableCopy inSlide:currentSlide];
+       
+        // set/reset gesture recognizers
+        if (currentSlide.photos.count == 1){
+            artImageView1 = cell.artImageView1;
+            containerView1 = cell.containerView1;
+            [artImageView1 addGestureRecognizer:_panGesture1];
+            [artImageView1 addGestureRecognizer:_pinchGesture1];
+            [artImageView1 addGestureRecognizer:_doubleTapGesture1];
+            
+        } else {
+            artImageView2 = cell.artImageView2;
+            containerView2 = cell.containerView2;
+            [artImageView2 addGestureRecognizer:_panGesture2];
+            [artImageView2 addGestureRecognizer:_pinchGesture2];
+            [artImageView2 addGestureRecognizer:_doubleTapGesture2];
+            
+            artImageView3 = cell.artImageView3;
+            containerView3 = cell.containerView3;
+            [artImageView3 addGestureRecognizer:_panGesture3];
+            [artImageView3 addGestureRecognizer:_pinchGesture3];
+            [artImageView3 addGestureRecognizer:_doubleTapGesture3];
+        }
         
-        artImageView3 = cell.artImageView3;
-        containerView3 = cell.containerView3;
-        [artImageView3 addGestureRecognizer:_panGesture3];
-        [artImageView3 addGestureRecognizer:_pinchGesture3];
-        [artImageView3 addGestureRecognizer:_doubleTapGesture3];
-        //[artImageView3 addGestureRecognizer:_rotateGesture3];
+        if (!originalsAreSet){
+            originalFrame1 = cell.artImageView1.frame;
+            originalFrame2 = cell.artImageView2.frame;
+            originalFrame3 = cell.artImageView3.frame;
+            originalsAreSet = YES;
+        }
+        
+    //    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_panGesture1];
+    //    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_panGesture2];
+    //    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_panGesture3];
+    //    
+    //    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_pinchGesture1];
+    //    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_pinchGesture2];
+    //    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_pinchGesture3];
+        
+        return cell;
     }
-    
-    if (!originalsAreSet){
-        originalFrame1 = cell.artImageView1.frame;
-        originalFrame2 = cell.artImageView2.frame;
-        originalFrame3 = cell.artImageView3.frame;
-        originalsAreSet = YES;
-    }
-    
-    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_panGesture1];
-    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_panGesture2];
-    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_panGesture3];
-    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_pinchGesture1];
-    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_pinchGesture2];
-    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_pinchGesture3];
-    return cell;
 }
 
 - (IBAction)nextSlide:(id)sender {
@@ -329,7 +352,12 @@
         gestureRecognizer.view.center = newPoint;
     }
     [gestureRecognizer setTranslation:CGPointMake(0, 0) inView:self.view];
-    
+}
+
+- (void)screenEdgePan:(UIScreenEdgePanGestureRecognizer*)gestureRecognizer {
+    if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
+        //NSLog(@"done panning from right");
+    }
 }
 
 - (void)handleRotation:(UIRotationGestureRecognizer*)gestureRecognizer {
@@ -402,24 +430,20 @@
     }];
 }
 
-- (void)reset {
-    [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.7 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        artImageView1.transform = CGAffineTransformIdentity;
-        artImageView2.transform = CGAffineTransformIdentity;
-        artImageView3.transform = CGAffineTransformIdentity;
-        [artImageView1 setFrame:originalFrame1];
-        [artImageView2 setFrame:originalFrame2];
-        [artImageView3 setFrame:originalFrame3];
-    } completion:^(BOOL finished) {
-        
-    }];
-}
+//- (void)reset {
+//    [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.7 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+//        artImageView1.transform = CGAffineTransformIdentity;
+//        artImageView2.transform = CGAffineTransformIdentity;
+//        artImageView3.transform = CGAffineTransformIdentity;
+//        [artImageView1 setFrame:originalFrame1];
+//        [artImageView2 setFrame:originalFrame2];
+//        [artImageView3 setFrame:originalFrame3];
+//    } completion:^(BOOL finished) {
+//        
+//    }];
+//}
 
-#pragma mark -
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
-    return YES;
-}
-
+#pragma mark - Gesture Recognizer Delegate
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     //NSLog(@"simultaneously recognize");
     return YES;
@@ -433,13 +457,6 @@
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
         
     }];
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-    if ([UIDevice currentDevice].systemVersion.floatValue >= 8.f) {
-        self.navigationController.hidesBarsOnTap = NO;
-    }
 }
 
 - (void)didReceiveMemoryWarning {

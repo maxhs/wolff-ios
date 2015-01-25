@@ -53,4 +53,11 @@
     self.photos = photos;
 }
 
+- (void)replacePhotoAtIndex:(NSInteger)index withPhoto:(Photo *)photo {
+    NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
+    [photos removeObjectAtIndex:index];
+    [photos insertObject:photo atIndex:index];
+    self.photos = photos;
+}
+
 @end

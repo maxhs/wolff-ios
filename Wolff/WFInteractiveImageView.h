@@ -13,7 +13,6 @@
 
 @optional
 - (void)longPressGesture:(id)imageView;
-
 @end
 
 @interface WFInteractiveImageView : UIImageView

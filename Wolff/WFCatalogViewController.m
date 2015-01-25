@@ -38,8 +38,11 @@
 #import "WFLightTableDetailsViewController.h"
 #import "WFWalkthroughViewController.h"
 #import "WFWalkthroughAnimator.h"
+#import "WFProfileAnimator.h"
+#import "WFProfileViewController.h"
 #import "WFSlideshowCell.h"
 #import "WFAlert.h"
+#import "WFUtilities.h"
 
 @interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, WFLightTableDelegate, WFSlideshowCellDelegate, WFLightTableCellDelegate, UIGestureRecognizerDelegate> {
     WFAppDelegate *delegate;
@@ -78,6 +81,7 @@
     BOOL settings;
     BOOL newArt;
     BOOL newUser;
+    BOOL profile;
     BOOL newLightTableTransition;
     BOOL notificationsBool;
     BOOL groupBool;
@@ -109,6 +113,7 @@
     WFSearchResultsViewController *searchResultsVc;
     NSString *searchText;
     UIButton *resetButton;
+    UIImageView *navBarShadowView;
 }
 @property (weak, nonatomic) IBOutlet UIView *comparisonContainerView;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
@@ -131,6 +136,7 @@
     } else {
         iOS8 = NO; width = screenHeight(); height = screenWidth();
     }
+    navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     
@@ -169,6 +175,7 @@
     [self setUpSearch];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loginSuccessful) name:@"LoginSuccessful" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loggedOut) name:@"LoggedOut" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didHideEditMenu:) name:UIMenuControllerDidHideMenuNotification object:nil];
 }
@@ -199,6 +206,7 @@
         [self.tableView addSubview:tableViewRefresh];
     }
     [self loadPhotos];
+    navBarShadowView.hidden = YES;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -244,26 +252,33 @@
 
 - (void)setUpNavBar {
     homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    homeButton.frame = CGRectMake(0.0, 0.0, 54.0, 44.0);
+    homeButton.frame = CGRectMake(14.0, 0.0, 66.0, 44.0);
+    [homeButton setBackgroundColor:[UIColor colorWithWhite:.23 alpha:.23]];
     [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
-    [homeButton addTarget:self action:@selector(goHome) forControlEvents:UIControlEventTouchUpInside];
+    [homeButton addTarget:self action:@selector(resetCatalog) forControlEvents:UIControlEventTouchUpInside];
     homeBarButton = [[UIBarButtonItem alloc] initWithCustomView:homeButton];
     
-    slideshowsButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    slideshowsButton.frame = CGRectMake(10.0, 0.0, 54.0, 44.0);
-    [slideshowsButton setImage:[UIImage imageNamed:@"whiteSlideshow"] forState:UIControlStateNormal];
-    [slideshowsButton setImage:[UIImage imageNamed:@"saffronSlideshow"] forState:UIControlStateSelected];
-    [slideshowsButton addTarget:self action:@selector(showSlideshows) forControlEvents:UIControlEventTouchUpInside];
-    slideshowsBarButton = [[UIBarButtonItem alloc] initWithCustomView:slideshowsButton];
     
     tablesButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [tablesButton setImage:[UIImage imageNamed:@"whiteTables"] forState:UIControlStateNormal];
     [tablesButton setImage:[UIImage imageNamed:@"blueTables"] forState:UIControlStateSelected];
-    tablesButton.frame = CGRectMake(10.0, 0.0, 44.0, 44.0);
+    tablesButton.frame = CGRectMake(8.0, 0.0, 58.0, 44.0);
+    tablesButton.contentEdgeInsets = UIEdgeInsetsMake(0, 8, 0, 0);
     [tablesButton addTarget:self action:@selector(showLightTables) forControlEvents:UIControlEventTouchUpInside];
     lightTablesButton = [[UIBarButtonItem alloc] initWithCustomView:tablesButton];
     
-    self.navigationItem.leftBarButtonItems = @[homeBarButton, lightTablesButton,slideshowsBarButton];
+    slideshowsButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    slideshowsButton.frame = CGRectMake(0.0, 0.0, 74.0, 44.0);
+    [slideshowsButton setImage:[UIImage imageNamed:@"whiteSlideshow"] forState:UIControlStateNormal];
+    [slideshowsButton setImage:[UIImage imageNamed:@"saffronSlideshow"] forState:UIControlStateSelected];
+    [slideshowsButton addTarget:self action:@selector(showSlideshows) forControlEvents:UIControlEventTouchUpInside];
+    slideshowsButton.contentEdgeInsets = UIEdgeInsetsMake(0, 6, 0, 22);
+    slideshowsBarButton = [[UIBarButtonItem alloc] initWithCustomView:slideshowsButton];
+    
+    UIBarButtonItem *negativeButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
+    negativeButton.width = -20.f;
+    
+    self.navigationItem.leftBarButtonItems = @[negativeButton, homeBarButton, lightTablesButton,slideshowsBarButton];
     
     refreshButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"refresh"] style:UIBarButtonItemStylePlain target:self action:@selector(refreshCollectionView:)];
     addButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"plus"] style:UIBarButtonItemStylePlain target:self action:@selector(add)];
@@ -311,10 +326,6 @@
     self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
 }
 
-- (void)goHome {
-    NSLog(@"should be resetting");
-}
-
 - (void)configureSelectedButton {
     if (_selectedPhotos.count){
         [selectedLabel setText:[NSString stringWithFormat:@"%lu",(unsigned long)_selectedPhotos.count]];
@@ -334,6 +345,13 @@
     [self loadUser];
 }
 
+- (void)loggedOut {
+    // reset the views now that we're logged out
+    [self setUpNavBar];
+    [self.tableView reloadData];
+    _currentUser = nil;
+}
+
 - (void)loadPhotos {
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:@20 forKey:@"count"];
@@ -343,13 +361,13 @@
     } else {
         [ProgressHUD show:@"Loading art..."];
     }
-    if (searching){
+    if (searching && searchText && searchText.length){
         [parameters setObject:searchText forKey:@"search"];
     }
     if (!loading){
         loading = YES;
         [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"load photos success: %@", responseObject);
+            //NSLog(@"load photos success: %@", responseObject);
             NSLog(@"photos count: %lu",(unsigned long)[[responseObject objectForKey:@"photos"] count]);
             if ([[responseObject objectForKey:@"photos"] count]){
                 canLoadMorePhotos = YES;
@@ -360,12 +378,10 @@
                         photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
                     }
                     [photo populateFromDictionary:dict];
-                    if (![_photos containsObject:photo]){
-                        [_photos addObject:photo];
-                    }
+                    [_photos addObject:photo];
                 }
                 [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                    //NSLog(@"Done saving photo: %u",success);
+                    //NSLog(@"Done saving photos: %u",success);
                 }];
             } else {
                 canLoadMorePhotos = NO;
@@ -484,8 +500,10 @@
             case 1:
                 if (_tables.count){
                     return _tables.count;
-                } else {
+                } else if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
                     return 1;
+                } else {
+                    return 0;
                 }
                 break;
             case 2:
@@ -510,15 +528,17 @@
             if (!loading && _slideshows.count == 0){
                 [cell.slideshowLabel setText:@"No Slideshows"];
                 [cell.slideshowLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+                [cell.imageView setImage:nil];
+                [cell.textLabel setText:@""];
             } else {
                 Slideshow *slideshow = _slideshows[indexPath.row];
                 [cell configureForSlideshow:slideshow];
             }
             
         } else {
-            [cell.iconImageView setImage:[UIImage imageNamed:@"whitePlus"]];
-            [cell.slideshowLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
-            [cell.slideshowLabel setText:@"New Slideshow"];
+            [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
+            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
+            [cell.textLabel setText:@"New Slideshow"];
             [cell.scrollView setScrollEnabled:NO];
         }
         return cell;
@@ -553,13 +573,11 @@
                 cell.selectionStyle = UITableViewCellSelectionStyleNone;
                 if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
                     [cell.label setText:@"No Light Tables"];
-                    [cell.textLabel setText:@""];
+                    [cell.label setTextAlignment:NSTextAlignmentLeft];
+                    [cell.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
                 } else {
-                    [cell.textLabel setText:@"Sign in to create a light table"];
-                    [cell.label setText:@""];
+                    [cell.label setText:@"Sign in to create a light table"];
                 }
-                
-                [cell.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
             }
             [cell.iconImageView setImage:nil];
             
@@ -631,7 +649,6 @@
         }];
     }
     
-    NSLog(@"what's the index path to remove? %@",indexPathToRemove);
     if (indexPathToRemove) {
         [self.tableView beginUpdates];
         [_tables removeObject:lightTable];
@@ -647,10 +664,11 @@
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         
     }];
-
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    searching = NO;
+    
     if (slideshowSidebarMode){
         if (indexPath.section == 0){
             Slideshow *slideshow = _slideshows[indexPath.row];
@@ -670,6 +688,7 @@
                 if (_currentUser.lightTables.count){
                     Table *table = _currentUser.lightTables[indexPath.row];
                     [self showTable:table];
+                    [self setHomeAsReset];
                 }
             } else {
                 [self showLogin];
@@ -891,7 +910,6 @@
 }
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath{
-    UICollectionReusableView *reusableview = nil;
     if (kind == UICollectionElementKindSectionHeader) {
         WFCatalogHeaderView *headerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"HeaderView" forIndexPath:indexPath];
         
@@ -903,34 +921,38 @@
         } else if (showFavorites) {
             [headerView.headerLabel setText:@"My Favorites"];
         } else if (searching) {
-            [headerView.headerLabel setText:[NSString stringWithFormat:@"Search results for: %@",searchText]];
+            if (searchText.length){
+                [headerView.headerLabel setText:[NSString stringWithFormat:@"Search results for: %@",searchText]];
+            } else {
+                [headerView.headerLabel setText:@""];
+            }
             [headerView.headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
         }
         
         [headerView.headerLabel setTextColor:[UIColor blackColor]];
         resetButton = headerView.resetButton;
         [headerView.resetButton addTarget:self action:@selector(resetCatalog) forControlEvents:UIControlEventTouchUpInside];
-        reusableview = headerView;
+        return headerView;
+    } else {
+        return nil;
     }
-    
-    if (kind == UICollectionElementKindSectionFooter) {
-        UICollectionReusableView *footerview = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:@"FooterView" forIndexPath:indexPath];
-        reusableview = footerview;
-    }
-    
-    return reusableview;
 }
 
 - (void)resetCatalog {
     [self resetArtBooleans];
+    //[_filteredPhotos removeAllObjects];
     dispatch_async(dispatch_get_main_queue(), ^(void){
+        if (tableIsVisible){
+            [self showSidebar];
+        }
+        searchText = @"";
         searching = NO;
-        [_filteredPhotos removeAllObjects];
         [_noSearchResultsLabel setHidden:YES];
         [self.searchBar setText:@""];
         [self.searchBar resignFirstResponder];
         [self.view endEditing:YES];
         [self.collectionView reloadData];
+        [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
     });
 }
 
@@ -966,7 +988,7 @@
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    if (scrollView == _collectionView){
+    if (scrollView == _collectionView && !searching){
         float bottomEdge = scrollView.contentOffset.y + scrollView.frame.size.height;
         if (bottomEdge >= scrollView.contentSize.height) {
             // at the bottom of the scrollView
@@ -980,6 +1002,7 @@
 - (void)doubleTap:(UITapGestureRecognizer*)gestureRecognizer {
     CGPoint loc = [gestureRecognizer locationInView:self.collectionView];
     NSIndexPath *selectedIndexPath = [_collectionView indexPathForItemAtPoint:loc];
+    if (!selectedIndexPath) return;
     
     Photo *photo;
     if (showPrivate){
@@ -989,7 +1012,9 @@
     } else if (showFavorites){
         photo = _favorites[selectedIndexPath.item];
     } else if (searching){
-        photo = _filteredPhotos[selectedIndexPath.item];
+        if (_filteredPhotos.count){
+            photo = _filteredPhotos[selectedIndexPath.item];
+        }
     } else {
         photo = _photos[selectedIndexPath.item];
     }
@@ -1054,7 +1079,7 @@
 - (void)longPressed:(UILongPressGestureRecognizer*)gestureRecognizer {
     CGPoint loc = [gestureRecognizer locationInView:self.collectionView];
     
-    if (showFavorites){
+    if (showFavorites && indexPathForFavoriteToRemove){
         //trying to interact with a favorite
         if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
             [self becomeFirstResponder];
@@ -1070,7 +1095,7 @@
             [menuController setMenuVisible:YES animated:YES];
         }
         return;
-    } else if (showLightTable){
+    } else if (showLightTable && indexPathForLightTableArtToRemove){
         //trying to interact with a light table piece
         if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
             [self becomeFirstResponder];
@@ -1110,21 +1135,25 @@
             } else if (showFavorites){
                 photo = _favorites[self.startIndex.item];
             } else if (searching){
-                photo = _filteredPhotos[self.startIndex.item];
+                if (_filteredPhotos.count){
+                    photo = _filteredPhotos[self.startIndex.item];
+                }
             } else {
                 photo = _photos[self.startIndex.item];
             }
-            self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:photo];
-            [cell.contentView setAlpha:0.23f];
-        
-            [self.view addSubview:self.draggingView];
-            UIView *piece = gestureRecognizer.view;
-            CGPoint locationInView = [gestureRecognizer locationInView:piece];
-            CGPoint locationInSuperview = [gestureRecognizer locationInView:piece.superview];
             
-            self.draggingView.center = CGPointMake(locationInView.x / piece.bounds.size.width, locationInView.y / piece.bounds.size.height);
-            self.draggingView.center = locationInSuperview;
+            if (photo){
+                self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:photo];
+                [cell.contentView setAlpha:0.23f];
             
+                [self.view addSubview:self.draggingView];
+                UIView *piece = gestureRecognizer.view;
+                CGPoint locationInView = [gestureRecognizer locationInView:piece];
+                CGPoint locationInSuperview = [gestureRecognizer locationInView:piece.superview];
+                
+                self.draggingView.center = CGPointMake(locationInView.x / piece.bounds.size.width, locationInView.y / piece.bounds.size.height);
+                self.draggingView.center = locationInSuperview;
+            }
         }
     }
     
@@ -1135,35 +1164,41 @@
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
         // comparison mode
         // 128 is half the width of an art slide, since the point we're grabbing is a center point, not the origin
-        if (loc.x < (kSidebarWidth - 128) && loc.y > (_comparisonContainerView.frame.origin.y - 128)){
-            if (comparison1){
-                comparison2 = [[WFInteractiveImageView alloc] initWithFrame:CGRectMake(comparison1.frame.size.width+comparison1.frame.origin.x+10, 10, 125, 130) andPhoto:self.draggingView.photo];
-                comparison2.imageViewDelegate = self;
-                [comparison2 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.photo.mediumImageUrl]];
-                comparison2.layer.cornerRadius = 3.f;
-                comparison2.clipsToBounds = YES;
-                
-                comparison2LongPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(comparisonTap:)];
-                comparison2LongPress.minimumPressDuration = .23f;
-                [comparison2 addGestureRecognizer:comparison2LongPress];
-                [comparison2 setUserInteractionEnabled:YES];
-                
-                [_comparisonContainerView addSubview:comparison2];
-                [comparisonTap requireGestureRecognizerToFail:comparison2LongPress];
-                
-            } else {
+        if (loc.x < 0 && loc.y > (_comparisonContainerView.frame.origin.y - 128)){
+            NSLog(@"loc x: %f",loc.x);
+            if (!comparison1) {
                 comparison1 = [[WFInteractiveImageView alloc] initWithFrame:CGRectMake(10, 10, 125, 130) andPhoto:self.draggingView.photo];
                 comparison1.imageViewDelegate = self;
-                [comparison1 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.photo.mediumImageUrl]];
-                comparison1.layer.cornerRadius = 3.f;
-                comparison1.clipsToBounds = YES;
+                comparison1.contentMode = UIViewContentModeScaleAspectFit;
+                [comparison1 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.photo.slideImageUrl]];
                 
                 comparison1LongPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(comparisonTap:)];
-                comparison1LongPress.minimumPressDuration = .23f;
+                comparison1LongPress.minimumPressDuration = .14f;
                 [comparison1 addGestureRecognizer:comparison1LongPress];
                 [comparison1 setUserInteractionEnabled:YES];
                 [_comparisonContainerView addSubview:comparison1];
                 [comparisonTap requireGestureRecognizerToFail:comparison1LongPress];
+            } else {
+        
+                if (!comparison2){
+                    comparison2 = [[WFInteractiveImageView alloc] initWithFrame:CGRectMake(comparison1.frame.size.width+comparison1.frame.origin.x+10, 10, 125, 130) andPhoto:self.draggingView.photo];
+                    comparison2.contentMode = UIViewContentModeScaleAspectFit;
+                    comparison2.imageViewDelegate = self;
+                    comparison2LongPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(comparisonTap:)];
+                    comparison2LongPress.minimumPressDuration = .14f;
+                    [comparison2 addGestureRecognizer:comparison2LongPress];
+                    [comparison2 setUserInteractionEnabled:YES];
+                    
+                    [_comparisonContainerView addSubview:comparison2];
+                    [comparisonTap requireGestureRecognizerToFail:comparison2LongPress];
+                }
+            }
+            if (loc.x < -(kSidebarWidth/2)){
+                [comparison1 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.photo.slideImageUrl]];
+                [comparison1 setPhoto:self.draggingView.photo];
+            } else {
+                [comparison2 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.photo.slideImageUrl]];
+                [comparison2 setPhoto:self.draggingView.photo];
             }
             [self resetComparisonLabel];
             [self resetDraggingView];
@@ -1255,12 +1290,14 @@
             resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeComparison2:)];
         }
         
-        UIMenuController *menuController = [UIMenuController sharedMenuController];
-        [menuController setMenuItems:@[resetMenuItem]];
-        CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
-        CGRect menuLocation = CGRectMake(location.x, location.y, 0, 0);
-        [menuController setTargetRect:menuLocation inView:[gestureRecognizer view]];
-        [menuController setMenuVisible:YES animated:YES];
+        if (resetMenuItem){
+            UIMenuController *menuController = [UIMenuController sharedMenuController];
+            [menuController setMenuItems:@[resetMenuItem]];
+            CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
+            CGRect menuLocation = CGRectMake(location.x, location.y, 0, 0);
+            [menuController setTargetRect:menuLocation inView:[gestureRecognizer view]];
+            [menuController setMenuVisible:YES animated:YES];
+        }
     }
 }
 
@@ -1310,21 +1347,14 @@
     } else if (showFavorites){
         photo = _favorites[indexPath.item];
     } else if (searching){
-        photo = _filteredPhotos[indexPath.item];
+        if (_filteredPhotos.count){
+            photo = _filteredPhotos[indexPath.item];
+        }
     } else {
         photo = _photos[indexPath.item];
     }
     
-    if (searching && tableIsVisible){
-        if ([_selectedPhotos containsObject:photo]){
-            [_selectedPhotos removeObject:photo];
-        } else {
-            [_selectedPhotos addObject:photo];
-        }
-        [collectionView reloadItemsAtIndexPaths:@[indexPath]];
-        [selectedLabel setText:[NSString stringWithFormat:@"%lu",(unsigned long)_selectedPhotos.count]];
-        [self configureSelectedButton];
-    } else {
+    if (photo){
         [self showMetadata:photo];
     }
 }
@@ -1340,6 +1370,41 @@
     
     [self presentViewController:vc animated:YES completion:^{
         
+    }];
+}
+
+#pragma mark - Metadata Delegate
+- (void)photoFlagged:(Photo *)photo {
+    
+}
+
+- (void)artFlagged:(Art*)art {
+    for (Photo *photo in art.photos){
+        [self removePhoto:photo];
+    }
+    [art MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    [_collectionView reloadData];
+}
+
+- (void)removePhoto:(Photo*)photo {
+    if ([_selectedPhotos containsObject:photo]){
+        [_selectedPhotos removeObject:photo];
+    }
+    if ([_photos containsObject:photo]){
+        [_photos removeObject:photo];
+    }
+    [_currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
+        if (favorite.photo == photo){
+            [_favorites removeObject:photo];
+            [favorite MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            *stop = YES;
+        }
+    }];
+    [_tables enumerateObjectsUsingBlock:^(Table *lightTable, NSUInteger idx, BOOL *stop) {
+        if ([lightTable.photos containsObject:photo]){
+            [lightTable removePhoto:photo];
+        }
     }];
 }
 
@@ -1377,7 +1442,7 @@
     }
     searchResultsVc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SearchResults"];
     [searchResultsVc setPhotos:_selectedPhotos.array.mutableCopy];
-    CGFloat selectedHeight = _selectedPhotos.count*80.f > 640.f ? 640 : (_selectedPhotos.count+1)*80.f;
+    CGFloat selectedHeight = _selectedPhotos.count*80.f > 684.f ? 684.f : (_selectedPhotos.count*80.f)+44.f;
     searchResultsVc.preferredContentSize = CGSizeMake(420, selectedHeight);
     searchResultsVc.searchDelegate = self;
     self.popover = [[UIPopoverController alloc] initWithContentViewController:searchResultsVc];
@@ -1419,6 +1484,7 @@
     notificationsBool = NO;
     groupBool = NO;
     newUser = NO;
+    profile = NO;
 }
 
 - (void)showSettings {
@@ -1440,11 +1506,31 @@
     }
 }
 
+- (void)showProfile {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        if (self.popover){
+            [self.popover dismissPopoverAnimated:YES];
+        }
+        [self resetTransitionBooleans];
+        profile = YES;
+        WFProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Profile"];
+        [vc setUser:_currentUser];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        [self presentViewController:nav animated:YES completion:^{
+            
+        }];
+    } else {
+        [self showLogin];
+    }
+}
+
 - (void)logout {
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
-    [WFAlert show:@"You've been successfully logged out. See you again real soon!" withTime:2.7f];
+    [WFAlert show:kLogoutMessage withTime:2.7f];
     _currentUser = nil;
     [self setUpNavBar];
     [self loadPhotos];
@@ -1525,15 +1611,6 @@
 }
 
 - (void)showSidebar {
-//    if (self.searchBar.isFirstResponder){
-//        dispatch_async(dispatch_get_main_queue(), ^(void){
-//            [self.searchBar resignFirstResponder];
-//            searching = NO;
-//        });
-//    }
-
-    [_collectionView.collectionViewLayout invalidateLayout];
-    
     if (tableIsVisible){
         tableIsVisible = NO;
         //hide the light table sidebar
@@ -1547,12 +1624,19 @@
             _comparisonContainerView.transform = CGAffineTransformIdentity;
             resetButton.transform = CGAffineTransformIdentity;
             [_collectionView setFrame:collectionFrame];
-            [_collectionView performBatchUpdates:^{
+            
+            if (_filteredPhotos.count && searching){
+                [_collectionView performBatchUpdates:^{
+                    [_collectionView reloadData];
+                } completion:^(BOOL finished) {
+                
+                }];
+            } else {
                 [_collectionView reloadData];
-            } completion:^(BOOL finished) { }];
+            }
             
         } completion:^(BOOL finished) {
-            
+        
         }];
     } else {
         tableIsVisible = YES;
@@ -1570,24 +1654,19 @@
             _tableView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
             _comparisonContainerView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
             resetButton.transform = CGAffineTransformMakeTranslation(-kSidebarWidth, 0);
-            [_collectionView setFrame:collectionFrame];
             
-            if (iOS8){
+            if (_filteredPhotos.count){
                 [_collectionView performBatchUpdates:^{
                     [_collectionView reloadData];
                 } completion:^(BOOL finished) {
-                
+                    [_collectionView setFrame:collectionFrame];
                 }];
+            } else {
+                [_collectionView setFrame:collectionFrame];
+                [_collectionView reloadData];
             }
-            
         } completion:^(BOOL finished) {
-            if (!iOS8){
-                [_collectionView performBatchUpdates:^{
-                    [_collectionView reloadData];
-                } completion:^(BOOL finished) {
-                    
-                }];
-            }
+            
         }];
     }
 }
@@ -1628,6 +1707,10 @@
         WFWalkthroughAnimator *animator = [WFWalkthroughAnimator new];
         animator.presenting = YES;
         return animator;
+    } else if (profile) {
+        WFProfileAnimator *animator = [WFProfileAnimator new];
+        animator.presenting = YES;
+        return animator;
     } else {
         WFSlideshowAnimator *animator = [WFSlideshowAnimator new];
         animator.presenting = YES;
@@ -1661,6 +1744,9 @@
     } else if (newUser) {
         WFWalkthroughAnimator *animator = [WFWalkthroughAnimator new];
         return animator;
+    } else if (profile) {
+        WFProfileAnimator *animator = [WFProfileAnimator new];
+        return animator;
     } else {
         WFSlideshowAnimator *animator = [WFSlideshowAnimator new];
         return animator;
@@ -1672,14 +1758,20 @@
     searching = NO;
 }
 
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    [searchBar endEditing:YES];
+    searchText = searchBar.text;
+    [self loadPhotos];
+}
+
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
     [self.searchBar endEditing:YES];
+    searchText = @"";
     searching = NO;
 }
 
 - (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
-    NSLog(@"ended editing");
-    searching = NO;
+    
 }
 
 - (void)dismiss {
@@ -1714,6 +1806,11 @@
     if (!_filteredPhotos) _filteredPhotos = [NSMutableArray arrayWithArray:_photos];
     searching = YES;
     if (self.popover) [self.popover dismissPopoverAnimated:YES];
+    [self setHomeAsReset];
+}
+
+- (void)setHomeAsReset {
+    [homeButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
 }
 
 - (void)searchDidSelectPhoto:(Photo *)photo {
@@ -1722,13 +1819,11 @@
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)text {
     searchText = text;
-    //NSLog(@"Search text did change: %@, %d",searchText, searchText.length);
     if (searchText.length){
         searching = YES;
         [self filterContentForSearchText:searchText scope:nil];
     } else {
         dispatch_async(dispatch_get_main_queue(), ^(void){
-            NSLog(@"setting searching to no");
             [self.searchBar resignFirstResponder];
             searching = NO;
             [_noSearchResultsLabel setHidden:YES];
@@ -1762,7 +1857,6 @@
 
 #pragma mark - WFSearchDelegate methods
 - (void)lightTableFromSelected {
-    NSLog(@"Light table selected with %lu slides",(unsigned long)_selectedPhotos.count);
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
@@ -1770,7 +1864,6 @@
 }
 
 - (void)slideShowFromSelected {
-    NSLog(@"Slideshow selected with %lu slides",(unsigned long)_selectedPhotos.count);
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
@@ -1807,10 +1900,15 @@
     return YES;
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    if (tableViewRefresh.isRefreshing){
+        [tableViewRefresh endRefreshing];
+    }
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end

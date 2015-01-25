@@ -14,6 +14,8 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     [self.imageView setAlpha:0.0];
+    [self.imageView setContentMode:UIViewContentModeScaleAspectFill];
+    //self.imageView.clipsToBounds = YES;
 }
 
 - (void)prepareForReuse {
@@ -31,7 +33,7 @@
 
 - (void)configureForPhoto:(Photo *)photo {
     if (photo.thumbImageUrl.length){
-        [self.imageView sd_setImageWithURL:[NSURL URLWithString:photo.thumbImageUrl]  placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        [self.imageView sd_setImageWithURL:[NSURL URLWithString:photo.thumbImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.23 animations:^{
                 [self.imageView setAlpha:1.0];
             }];
