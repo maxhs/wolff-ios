@@ -110,8 +110,11 @@
     
     [_slideshowTitleButtonItem setTitle:_slideshow.title];
     currentPage = _startIndex + 1;
-    CGFloat startOffset = _startIndex != 0 ? _startIndex + 1 : 0;
-    [_collectionView setContentOffset:CGPointMake(width*startOffset, 0) animated:NO]; // offset by 1 because of the title slide
+    if (_startIndex == 0){
+        [_previousButton setEnabled:NO];
+    } else {
+        [_collectionView setContentOffset:CGPointMake(width*(_startIndex + 1), 0) animated:NO]; // offset by 1 because of the title slide
+    }
     
     [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
     [_slideNumberButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
@@ -182,7 +185,21 @@
         [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
         if (currentPage > 1){
             currentSlide = _slideshow.slides[currentPage-2]; // offset by 2 because the index starts at 0, not 1, and there's always a title slide
+            
+            currentPage-1 == _slideshow.slides.count ? [_nextButton setEnabled:NO] : [_nextButton setEnabled:YES];
+            [_previousButton setEnabled:YES];
+            // ensure the ivars are set to the ACTIVE cell
+            WFSlideshowSlideCell *cell = (WFSlideshowSlideCell*)[_collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:currentPage-2 inSection:1]];
+            
+            containerView1 = cell.containerView1;
+            containerView2 = cell.containerView2;
+            containerView3 = cell.containerView3;
+            artImageView1 = cell.artImageView1;
+            artImageView2 = cell.artImageView2;
+            artImageView3 = cell.artImageView3;
+            //
         } else {
+            [_previousButton setEnabled:NO];
             currentSlide = nil;
         }
     }
@@ -209,19 +226,14 @@
         currentSlide = _slideshow.slides[indexPath.item];
         [cell configureForPhotos:currentSlide.photos.mutableCopy inSlide:currentSlide];
        
-        artImageView1 = cell.artImageView1;
-        containerView1 = cell.containerView1;
-        artImageView1.center = containerView1.center;
-        
-        artImageView2 = cell.artImageView2;
-        containerView2 = cell.containerView2;
-        artImageView2.center = containerView2.center;
-        
-        artImageView3 = cell.artImageView3;
-        containerView3 = cell.containerView3;
-        CGPoint adjustedCenter3 = containerView3.center;
-        adjustedCenter3.x -= containerView3.frame.size.width;
-        artImageView3.center = adjustedCenter3;
+        if (!artImageView1){
+            artImageView1 = cell.artImageView1;
+            containerView1 = cell.containerView1;
+            artImageView2 = cell.artImageView2;
+            containerView2 = cell.containerView2;
+            artImageView3 = cell.artImageView3;
+            containerView3 = cell.containerView3;
+        }
         return cell;
     }
 }
@@ -229,7 +241,7 @@
 - (IBAction)nextSlide:(id)sender {
     CGPoint contentOffset = _collectionView.contentOffset;
     contentOffset.x += width;
-    if (currentPage < _slideshow.slides.count){
+    if (currentPage-1 <= _slideshow.slides.count){
         [_collectionView setContentOffset:contentOffset animated:YES];
     }
 }
@@ -435,16 +447,16 @@
     }
     
     if (view){
-        
-        //reset the anchor point to center
-        view.layer.anchorPoint = CGPointMake(0.5f,0.5f);
-        
         [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            
             if (view == artImageView1){
                 if (artImageView1.moved){
-                    [view setCenter:containerView1.center];
                     view.transform = CGAffineTransformIdentity;
-                    [artImageView1 setMoved:YES];
+                    CGRect newFrame = artImageView1.frame;
+                    newFrame.origin.x = (containerView1.frame.size.width-newFrame.size.width) / 2;
+                    newFrame.origin.y = (containerView1.frame.size.height-newFrame.size.height) / 2;
+                    [artImageView1 setFrame:newFrame];
+                    [artImageView1 setMoved:NO];
                 } else {
                     CGPoint absoluteCenterPoint;
                     absoluteCenterPoint.x = width - absolutePoint.x;
@@ -455,9 +467,11 @@
                 }
             } else if (view == artImageView2){
                 if (artImageView2.moved){
-                    CGPoint adjustedCenterPoint = containerView2.center;
-                    [view setCenter:adjustedCenterPoint];
                     view.transform = CGAffineTransformIdentity;
+                    CGRect newFrame = artImageView2.frame;
+                    newFrame.origin.x = (containerView2.frame.size.width-newFrame.size.width) / 2;
+                    newFrame.origin.y = (containerView2.frame.size.height-newFrame.size.height) / 2;
+                    [artImageView2 setFrame:newFrame];
                     [artImageView2 setMoved:NO];
                 } else {
                     CGPoint absolutePoint2 = [gestureRecognizer locationInView:containerView2];
@@ -469,10 +483,11 @@
                 }
             } else if (view == artImageView3){
                 if (artImageView3.moved){
-                    CGPoint adjustedCenterPoint = containerView3.center;
-                    adjustedCenterPoint.x -= containerView3.frame.size.width;
-                    [view setCenter:adjustedCenterPoint];
                     view.transform = CGAffineTransformIdentity;
+                    CGRect newFrame = artImageView3.frame;
+                    newFrame.origin.x = (containerView3.frame.size.width-newFrame.size.width) / 2;
+                    newFrame.origin.y = (containerView3.frame.size.height-newFrame.size.height) / 2;
+                    [artImageView3 setFrame:newFrame];
                     [artImageView3 setMoved:NO];
                 } else {
                     CGPoint absolutePoint3 = [gestureRecognizer locationInView:containerView3];

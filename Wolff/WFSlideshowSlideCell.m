@@ -19,11 +19,15 @@
 
 @implementation WFSlideshowSlideCell
 @synthesize slide = _slide;
+
 - (void)awakeFromNib {
     [super awakeFromNib];
     [_artImageView1 setAlpha:0.f];
     [_artImageView2 setAlpha:0.f];
     [_artImageView3 setAlpha:0.f];
+    [_artImageView1 setMoved:NO];
+    [_artImageView2 setMoved:NO];
+    [_artImageView3 setMoved:NO];
 }
 
 - (void)prepareForReuse {

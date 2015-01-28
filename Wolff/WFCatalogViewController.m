@@ -458,16 +458,19 @@
 
 - (void)newArtAdded:(Art *)art {
     if ([art.privateArt isEqualToNumber:@NO]){
-        NSMutableArray *indexPathArray = [NSMutableArray array];
-        [art.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
-            [_photos insertObject:photo atIndex:0];
-            [indexPathArray addObject:[NSIndexPath indexPathForItem:0 inSection:0]];
-        }];
-        [self.collectionView performBatchUpdates:^{
-            [_collectionView insertItemsAtIndexPaths:indexPathArray];
-        } completion:^(BOOL finished) {
-            
-        }];
+        //don't animate the changes if the user is looking at a light table, their private art, their favorites, or searching.
+        if (!showFavorites && !showLightTable && !searching && !showPrivate){
+            [_collectionView performBatchUpdates:^{
+                NSMutableArray *indexPathArray = [NSMutableArray array];
+                for (Photo *photo in art.photos){
+                    [_photos insertObject:photo atIndex:0];
+                    [indexPathArray addObject:[NSIndexPath indexPathForItem:0 inSection:0]];
+                }
+                [_collectionView insertItemsAtIndexPaths:indexPathArray];
+            } completion:^(BOOL finished) {
+                
+            }];
+        }
     }
 }
 
@@ -476,7 +479,6 @@
 }
 
 #pragma mark - Table view data source
-
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     _tables = _tables ? _currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:_currentUser.lightTables.array];
     _slideshows = _slideshows ? _currentUser.slideshows.array.mutableCopy : [NSMutableArray arrayWithArray:_currentUser.slideshows.array];
@@ -667,6 +669,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     searching = NO;
+    [_noSearchResultsLabel setHidden:YES];
     if (slideshowSidebarMode){
         if (indexPath.section == 0){
             Slideshow *slideshow = _slideshows[indexPath.row];
@@ -690,8 +693,6 @@
             }
         } else if (indexPath.section == 2){
             [self newLightTable];
-        } else {
-            
         }
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -699,38 +700,26 @@
 
 - (void)deleteSlideshow:(Slideshow*)slideshow {
     NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_slideshows indexOfObject:slideshow] inSection:0];
-    if (slideshow && ![slideshow.identifier isEqualToNumber:@0] && [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-        [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            [self.tableView beginUpdates];
-            [_slideshows removeObject:slideshow];
-            if (_slideshows.count){
-                [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
-            } else {
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
-            }
-            [self.tableView endUpdates];
-            
-            [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                
-            }];
-            NSLog(@"Success deleting this slideshow: %@",responseObject);
-        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Failed to delete this slideshow: %@",error.description);
-        }];
-    } else {
-        [self.tableView beginUpdates];
-        [_slideshows removeObject:slideshow];
+
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success deleting this slideshow: %@",responseObject);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed to delete this slideshow: %@",error.description);
+    }];
+
+    [self.tableView beginUpdates];
+    [_slideshows removeObject:slideshow];
+    [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    if (indexPathToRemove && _slideshows.count){
         [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
-        [self.tableView endUpdates];
-        
-        [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            
-        }];
+    } else {
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
     }
+    [self.tableView endUpdates];
+    
 }
 
 - (void)removeSlideshow:(Slideshow *)slideshow {
@@ -816,9 +805,7 @@
 - (void)newLightTable {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
-        
         (_selectedPhotos.count) ? [vc setPhotos:_selectedPhotos] : [vc setShowKey:YES];
-        NSLog(@"selected photos? %d",vc.photos.count);
         vc.lightTableDelegate = self;
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             vc.modalPresentationStyle = UIModalPresentationCustom;
@@ -939,6 +926,7 @@
 - (void)resetCatalog {
     if (tableIsVisible || searching || showFavorites || showLightTable || showPrivate){
         dispatch_async(dispatch_get_main_queue(), ^(void){
+            [self resetArtBooleans];
             if (tableIsVisible){
                 [self showSidebar];
             }
@@ -952,7 +940,7 @@
             [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
         });
     }
-    [self resetArtBooleans];
+    
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -1872,7 +1860,7 @@
         if (photoIds.count){
             [manager PATCH:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:@{@"light_table":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
                 NSLog(@"Success bulk adding photos to a light table: %@",responseObject);
-                NSString *photoCount = _selectedPhotos.count == 1 ? @"1 photo" : [NSString stringWithFormat:@"%d photos",_selectedPhotos.count];
+                NSString *photoCount = _selectedPhotos.count == 1 ? @"1 photo" : [NSString stringWithFormat:@"%lu photos",(unsigned long)_selectedPhotos.count];
                 [WFAlert show:[NSString stringWithFormat:@"%@ added to %@",photoCount, lightTable.name] withTime:3.3f];
             } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                 NSLog(@"Failed to add selected to a light table: %@",error.description);
