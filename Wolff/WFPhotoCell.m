@@ -41,6 +41,7 @@
     _slideContainerView.layer.shadowOffset = CGSizeMake(1.3f, 1.7f);
     _slideContainerView.layer.shadowRadius = 1.3f;
     _slideContainerView.clipsToBounds = NO;
+    _slideContainerView.layer.rasterizationScale = [UIScreen mainScreen].scale;
     _slideContainerView.layer.shouldRasterize = YES;
 }
 

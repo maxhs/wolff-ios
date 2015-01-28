@@ -17,7 +17,7 @@
 @end
 
 @interface WFSlideshowsViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
-
+@property BOOL slideshowShareMode;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) id<WFSlideshowDelegate> slideshowDelegate;
 

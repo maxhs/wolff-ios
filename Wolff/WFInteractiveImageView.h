@@ -18,6 +18,7 @@
 @interface WFInteractiveImageView : UIImageView
 
 @property (strong, nonatomic) Photo *photo;
+@property BOOL moved;
 @property (weak, nonatomic) id<WFImageViewDelegate>imageViewDelegate;
 - (id)initWithImage:(UIImage*)image andPhoto:(Photo*)photo;
 - (id)initWithFrame:(CGRect)frame andPhoto:(Photo*)photo;

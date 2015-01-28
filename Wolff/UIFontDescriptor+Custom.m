@@ -20,18 +20,18 @@ NSString *const ANUIFontTextStyleCaption4 = @"ANUIFontTextStyleCaption4";
     dispatch_once(&onceToken, ^{
         fontSizeTable = @{
                           UIFontTextStyleHeadline: @{
-                                  UIContentSizeCategoryAccessibilityExtraExtraExtraLarge: @43,
-                                  UIContentSizeCategoryAccessibilityExtraExtraLarge: @43,
-                                  UIContentSizeCategoryAccessibilityExtraLarge: @39,
-                                  UIContentSizeCategoryAccessibilityLarge: @38,
-                                  UIContentSizeCategoryAccessibilityMedium: @37,
-                                  UIContentSizeCategoryExtraExtraExtraLarge: @41,
-                                  UIContentSizeCategoryExtraExtraLarge: @40,
-                                  UIContentSizeCategoryExtraLarge: @39,
-                                  UIContentSizeCategoryLarge: @38,
-                                  UIContentSizeCategoryMedium: @37,
-                                  UIContentSizeCategorySmall: @36,
-                                  UIContentSizeCategoryExtraSmall: @35},
+                                  UIContentSizeCategoryAccessibilityExtraExtraExtraLarge: @45,
+                                  UIContentSizeCategoryAccessibilityExtraExtraLarge: @45,
+                                  UIContentSizeCategoryAccessibilityExtraLarge: @41,
+                                  UIContentSizeCategoryAccessibilityLarge: @40,
+                                  UIContentSizeCategoryAccessibilityMedium: @39,
+                                  UIContentSizeCategoryExtraExtraExtraLarge: @45,
+                                  UIContentSizeCategoryExtraExtraLarge: @44,
+                                  UIContentSizeCategoryExtraLarge: @43,
+                                  UIContentSizeCategoryLarge: @42,
+                                  UIContentSizeCategoryMedium: @41,
+                                  UIContentSizeCategorySmall: @40,
+                                  UIContentSizeCategoryExtraSmall: @39},
                           
                           UIFontTextStyleSubheadline: @{
                                   UIContentSizeCategoryAccessibilityExtraExtraExtraLarge: @31,

@@ -230,7 +230,7 @@
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         [ProgressHUD dismiss];
         if ([operation.responseString isEqualToString:kExistingLightTable]){
-            [WFAlert show:@"There's already a light table using that key code. Please choose another."  withTime:3.3f];
+            [WFAlert show:@"Sorry, but there's already another light table using that key code.\n\nPlease choose another."  withTime:3.3f];
         } else {
             NSLog(@"Error creating a light table: %@",error.description);
         }

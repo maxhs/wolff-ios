@@ -8,7 +8,7 @@
 
 #import "WFTablesAnimator.h"
 #import "Constants.h"
-#import "WFTablesViewController.h"
+#import "WFLightTablesViewController.h"
 
 @interface WFTablesAnimator () {
     CGFloat width;
@@ -56,7 +56,7 @@
         //[blurredButton setBackgroundImage:[self blurredSnapshotForWindow:[transitionContext.containerView window]]  forState:UIControlStateNormal];
         
         //this is a little fragile, since if the view hierarchy changes, this will break
-        [blurredButton addTarget:(WFTablesViewController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+        [blurredButton addTarget:(WFLightTablesViewController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         [blurredButton setFrame:mainScreen];
         [blurredButton setAlpha:0.0];
         [blurredButton setBackgroundColor:[UIColor blackColor]];

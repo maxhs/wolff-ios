@@ -122,7 +122,7 @@
             }
         }
         
-        [UIView animateWithDuration:kMediumAnimationDuration delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [fromView setFrame:fromEndFrame];
             [removeButton setAlpha:0.0];
         } completion:^(BOOL finished) {

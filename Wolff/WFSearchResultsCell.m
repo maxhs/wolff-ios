@@ -43,6 +43,9 @@
         [self.artistLabel setTextColor:[UIColor lightGrayColor]];
     }
     NSURL *artUrl = [NSURL URLWithString:photo.thumbImageUrl];
+    self.imageTile.contentMode = UIViewContentModeScaleAspectFill;
+    self.imageTile.clipsToBounds = YES;
+    
     [self.imageTile sd_setImageWithURL:artUrl placeholderImage:nil options:0 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
         [UIView animateWithDuration:.23f animations:^{
             [self.imageTile setAlpha:1.0];

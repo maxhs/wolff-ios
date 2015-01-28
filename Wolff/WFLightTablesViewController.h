@@ -1,5 +1,5 @@
 //
-//  WFTablesViewController.h
+//  WFLightTablesViewController.h
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 12/13/14.
@@ -15,11 +15,12 @@
 @optional
 -(void)userDidPan:(UIScreenEdgePanGestureRecognizer *)gestureRecognizer;
 -(void)lightTableSelected:(NSNumber*)lightTableId;
-
+-(void)batchFavorite;
 @end
 
-@interface WFTablesViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+@interface WFLightTablesViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 
+@property BOOL slideshowShareMode;
 @property (strong, nonatomic) Slideshow *slideshow;
 @property (strong, nonatomic) NSMutableArray *lightTables;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;

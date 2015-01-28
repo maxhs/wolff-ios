@@ -17,7 +17,6 @@
     NSMutableOrderedSet *_selectedAssets;
     UIImageView *focusImageView;
     UIBarButtonItem *selectButton;
-    UIBarButtonItem *cancelButton;
     UIBarButtonItem *doneButton;
     UIBarButtonItem *backButton;
     BOOL selectMode;
@@ -48,11 +47,11 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 
     selectMode = YES;
     
-    cancelButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel)];
+    backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
     doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(done)];
     
-    self.navigationItem.leftBarButtonItem = doneButton;
-    self.navigationItem.rightBarButtonItem = cancelButton;
+    self.navigationItem.rightBarButtonItem = doneButton;
+    self.navigationItem.leftBarButtonItem = backButton;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -63,8 +62,8 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 - (void)toggleSelectMode {
     selectMode ? (selectMode = NO) : (selectMode = YES);
     if (selectMode){
-        self.navigationItem.rightBarButtonItem = cancelButton;
-        self.navigationItem.leftBarButtonItem = doneButton;
+        self.navigationItem.leftBarButtonItem = backButton;
+        self.navigationItem.rightBarButtonItem = doneButton;
     } else {
         self.navigationItem.rightBarButtonItem = selectButton;
         self.navigationItem.leftBarButtonItem = backButton;
@@ -189,11 +188,8 @@ static NSString * const reuseIdentifier = @"PhotoCell";
     }];
 }
 
-- (void) cancel {
-    //[self toggleSelectMode];
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+- (void)back {
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)done {

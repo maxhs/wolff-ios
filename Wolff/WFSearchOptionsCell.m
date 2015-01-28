@@ -37,10 +37,10 @@
     [self.textLabel setTextColor:[UIColor darkGrayColor]];
     [self.textLabel setTextAlignment:NSTextAlignmentCenter];
     
-    UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.frame];
-    [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
-    backgroundToolbar.translucent = YES;
-    [self setBackgroundView:backgroundToolbar];
+    _backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.frame];
+    [_backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
+    _backgroundToolbar.translucent = YES;
+    [self setBackgroundView:_backgroundToolbar];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

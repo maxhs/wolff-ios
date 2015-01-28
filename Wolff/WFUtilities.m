@@ -21,4 +21,53 @@
     }
     return nil;
 }
++ (NSDate*)parseDate:(id)value {
+    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    [dateFormat setDateFormat:@"yyyy-mm-dd"];
+    NSDate *theDate;
+    NSError *error;
+    if (![dateFormat getObjectValue:&theDate forString:value range:nil error:&error]) {
+        NSLog(@"Date '%@' could not be parsed: %@", value, error);
+    }
+    return theDate;
+}
+
++ (NSDate*)parseDateTime:(id)value {
+    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    [dateFormat setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSSZ"];
+    NSDate *theDate;
+    NSError *error;
+    if (![dateFormat getObjectValue:&theDate forString:value range:nil error:&error]) {
+        NSLog(@"Date '%@' could not be parsed: %@", value, error);
+    }
+    return theDate;
+}
+
++ (NSString*)parseDateReturnString:(id)value {
+    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    [dateFormat setDateFormat:@"yyyy-MM-dd"];
+    NSDate *theDate;
+    NSError *error;
+    if (![dateFormat getObjectValue:&theDate forString:value range:nil error:&error]) {
+        NSLog(@"Date '%@' could not be parsed: %@", value, error);
+    }
+    NSDateFormatter *stringFormatter = [[NSDateFormatter alloc] init];
+    [stringFormatter setDateStyle:NSDateFormatterMediumStyle];
+    
+    return [stringFormatter stringFromDate:theDate];
+}
+
++ (NSString*)parseDateTimeReturnString:(id)value {
+    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    [dateFormat setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSSZ"];
+    NSDate *theDate;
+    NSError *error;
+    if (![dateFormat getObjectValue:&theDate forString:value range:nil error:&error]) {
+        NSLog(@"Date '%@' could not be parsed: %@", value, error);
+    }
+    NSDateFormatter *stringFormatter = [[NSDateFormatter alloc] init];
+    [stringFormatter setDateStyle:NSDateFormatterShortStyle];
+    [stringFormatter setTimeStyle:NSDateFormatterShortStyle];
+    return [stringFormatter stringFromDate:theDate];
+}
 @end

@@ -21,10 +21,12 @@
 @property (nonatomic, retain) NSNumber * textPermission;
 @property (nonatomic, retain) NSNumber * pushPermission;
 @property (nonatomic, retain) NSString * lastName;
+@property (nonatomic, retain) NSString * location;
+@property (nonatomic, retain) NSString * prefix;
+@property (nonatomic, retain) NSString * url;
 @property (nonatomic, retain) NSString * phone;
 @property (nonatomic, retain) NSString * bio;
 @property (nonatomic, retain) NSString * avatarSmall;
-@property (nonatomic, retain) NSString * avatarMedium;
 @property (nonatomic, retain) NSString * avatarLarge;
 @property (nonatomic, retain) NSOrderedSet *institutions;
 @property (nonatomic, retain) NSOrderedSet *lightTables;

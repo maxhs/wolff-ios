@@ -13,7 +13,7 @@
 #import "WFSlideMetadataAnimator.h"
 #import "WFUtilities.h"
 #import "WFSlideshowTitleCell.h"
-
+#import "WFInteractiveImageView.h"
 @interface WFSlideshowViewController () <UIToolbarDelegate, UIViewControllerTransitioningDelegate, UIGestureRecognizerDelegate> {
     CGFloat width;
     CGFloat height;
@@ -26,35 +26,23 @@
     CGFloat topInset;
     UITapGestureRecognizer *singleTap;
     BOOL barsVisible;
-    BOOL originalsAreSet;
     Slide *currentSlide;
     
     //slideshow ivars
-    UIImageView *artImageView1;
-    UIImageView *artImageView2;
-    UIImageView *artImageView3;
+    WFInteractiveImageView *artImageView1;
+    WFInteractiveImageView *artImageView2;
+    WFInteractiveImageView *artImageView3;
     UIView *containerView1;
     UIView *containerView2;
     UIView *containerView3;
-    UIPanGestureRecognizer *_panGesture1;
-    UIPanGestureRecognizer *_panGesture2;
-    UIPanGestureRecognizer *_panGesture3;
-    /*UIRotationGestureRecognizer *_rotateGesture1;
-    UIRotationGestureRecognizer *_rotateGesture2;
-    UIRotationGestureRecognizer *_rotateGesture3;*/
-    UIPinchGestureRecognizer *_pinchGesture1;
-    UIPinchGestureRecognizer *_pinchGesture2;
-    UIPinchGestureRecognizer *_pinchGesture3;
-    UITapGestureRecognizer *_doubleTapGesture1;
-    UITapGestureRecognizer *_doubleTapGesture2;
-    UITapGestureRecognizer *_doubleTapGesture3;
+    UIPanGestureRecognizer *_panGesture;
+    UIPinchGestureRecognizer *_pinchGesture;
+    UITapGestureRecognizer *_doubleTapGesture;
     UIScreenEdgePanGestureRecognizer *rightScreenEdgePanGesture;
     UIScreenEdgePanGestureRecognizer *leftScreenEdgePanGesture;
     CGFloat lastScale;
-    CGRect originalFrame1;
-    CGRect originalFrame2;
-    CGRect originalFrame3;
     CGPoint lastPoint;
+    NSTimer *titleTimer;
     
     NSInteger currentPage;
     UIImageView *navBarShadowView;
@@ -71,15 +59,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        iOS8 = YES;
-        width = screenWidth();
-        height = screenHeight();
+    if (SYSTEM_VERSION >= 8.f){
+        iOS8 = YES; width = screenWidth(); height = screenHeight();
     } else {
-        iOS8 = NO;
-        width = screenHeight();
-        height = screenWidth();
+        iOS8 = NO; width = screenHeight(); height = screenWidth();
     }
     
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
@@ -93,23 +76,16 @@
     toolBarShadowView = [WFUtilities findNavShadow:self.bottomToolbar];
     [_bottomToolbar setBarStyle:UIBarStyleBlackTranslucent];
     [_bottomToolbar setTranslucent:YES];
-    
     [_collectionView setDelaysContentTouches:NO];
     [_collectionView setCanCancelContentTouches:NO];
     
-    _panGesture1 = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    _panGesture1.delegate = self;
-    _panGesture2 = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    _panGesture2.delegate = self;
-    _panGesture3 = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    _panGesture3.delegate = self;
+    _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+    _panGesture.delegate = self;
+    [self.view addGestureRecognizer:_panGesture];
     
-    _pinchGesture1 = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-    _pinchGesture1.delegate = self;
-    _pinchGesture2 = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-    _pinchGesture2.delegate = self;
-    _pinchGesture3 = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-    _pinchGesture3.delegate = self;
+    _pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
+    _pinchGesture.delegate = self;
+    [self.view addGestureRecognizer:_pinchGesture];
     
     rightScreenEdgePanGesture = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(screenEdgePan:)];
     rightScreenEdgePanGesture.edges = UIRectEdgeRight;
@@ -118,32 +94,24 @@
     leftScreenEdgePanGesture.edges = UIRectEdgeLeft;
     [self.view addGestureRecognizer:leftScreenEdgePanGesture];
     
-//    [_panGesture1 requireGestureRecognizerToFail:_collectionView.panGestureRecognizer];
-//    [_panGesture1 requireGestureRecognizerToFail:_collectionView.panGestureRecognizer];
-//    [_panGesture1 requireGestureRecognizerToFail:_collectionView.panGestureRecognizer];
-    
-    /*_rotateGesture1 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
-    _rotateGesture2 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
-    _rotateGesture3 = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];*/
-    
-    _doubleTapGesture1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
-    _doubleTapGesture1.numberOfTapsRequired = 2;
-    _doubleTapGesture2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
-    _doubleTapGesture2.numberOfTapsRequired = 2;
-    _doubleTapGesture3 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
-    _doubleTapGesture3.numberOfTapsRequired = 2;
+    _doubleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTap:)];
+    _doubleTapGesture.numberOfTapsRequired = 2;
+    [self.view addGestureRecognizer:_doubleTapGesture];
     
     singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTap:)];
     singleTap.delegate = self;
     singleTap.numberOfTapsRequired = 1;
     [_collectionView addGestureRecognizer:singleTap];
-    [singleTap requireGestureRecognizerToFail:_doubleTapGesture1];
-    [singleTap requireGestureRecognizerToFail:_doubleTapGesture2];
-    [singleTap requireGestureRecognizerToFail:_doubleTapGesture3];
+    
+    // require to fail methods
+    [singleTap requireGestureRecognizerToFail:_doubleTapGesture];
+    [_panGesture requireGestureRecognizerToFail:rightScreenEdgePanGesture];
+    [_panGesture requireGestureRecognizerToFail:leftScreenEdgePanGesture];
     
     [_slideshowTitleButtonItem setTitle:_slideshow.title];
-    currentPage = 1+_startIndex;
-    [_collectionView setContentOffset:CGPointMake(width*_startIndex, 0) animated:NO];
+    currentPage = _startIndex + 1;
+    CGFloat startOffset = _startIndex != 0 ? _startIndex + 1 : 0;
+    [_collectionView setContentOffset:CGPointMake(width*startOffset, 0) animated:NO]; // offset by 1 because of the title slide
     
     [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
     [_slideNumberButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
@@ -166,16 +134,24 @@
     [toolBarShadowView setHidden:YES];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    titleTimer = [[NSTimer alloc] init];
+    titleTimer = [NSTimer scheduledTimerWithTimeInterval:0.7f target:self selector:@selector(hideBars) userInfo:nil repeats:NO];
+}
+
 - (void)showMetadata {
-    WFSlideMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideMetadata"];
-    [vc setSlide:currentSlide];
-    [vc setSlideshow:_slideshow];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    if (currentPage > 1){
+        WFSlideMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideMetadata"];
+        [vc setSlide:currentSlide];
+        [vc setSlideshow:_slideshow];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        [self presentViewController:nav animated:YES completion:^{
+            
+        }];
+    }
 }
 
 - (void)goFullScreen {
@@ -204,7 +180,11 @@
     if (currentPage != page) {
         currentPage = page;
         [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
-        currentSlide = _slideshow.slides[currentPage-2]; // offset by 2 because the index starts at 0, not 1, and there's always a title slide
+        if (currentPage > 1){
+            currentSlide = _slideshow.slides[currentPage-2]; // offset by 2 because the index starts at 0, not 1, and there's always a title slide
+        } else {
+            currentSlide = nil;
+        }
     }
 }
 
@@ -229,43 +209,19 @@
         currentSlide = _slideshow.slides[indexPath.item];
         [cell configureForPhotos:currentSlide.photos.mutableCopy inSlide:currentSlide];
        
-        // set/reset gesture recognizers
-        if (currentSlide.photos.count == 1){
-            artImageView1 = cell.artImageView1;
-            containerView1 = cell.containerView1;
-            [artImageView1 addGestureRecognizer:_panGesture1];
-            [artImageView1 addGestureRecognizer:_pinchGesture1];
-            [artImageView1 addGestureRecognizer:_doubleTapGesture1];
-            
-        } else {
-            artImageView2 = cell.artImageView2;
-            containerView2 = cell.containerView2;
-            [artImageView2 addGestureRecognizer:_panGesture2];
-            [artImageView2 addGestureRecognizer:_pinchGesture2];
-            [artImageView2 addGestureRecognizer:_doubleTapGesture2];
-            
-            artImageView3 = cell.artImageView3;
-            containerView3 = cell.containerView3;
-            [artImageView3 addGestureRecognizer:_panGesture3];
-            [artImageView3 addGestureRecognizer:_pinchGesture3];
-            [artImageView3 addGestureRecognizer:_doubleTapGesture3];
-        }
+        artImageView1 = cell.artImageView1;
+        containerView1 = cell.containerView1;
+        artImageView1.center = containerView1.center;
         
-        if (!originalsAreSet){
-            originalFrame1 = cell.artImageView1.frame;
-            originalFrame2 = cell.artImageView2.frame;
-            originalFrame3 = cell.artImageView3.frame;
-            originalsAreSet = YES;
-        }
+        artImageView2 = cell.artImageView2;
+        containerView2 = cell.containerView2;
+        artImageView2.center = containerView2.center;
         
-    //    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_panGesture1];
-    //    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_panGesture2];
-    //    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_panGesture3];
-    //    
-    //    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_pinchGesture1];
-    //    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_pinchGesture2];
-    //    [_collectionView.panGestureRecognizer requireGestureRecognizerToFail:_pinchGesture3];
-        
+        artImageView3 = cell.artImageView3;
+        containerView3 = cell.containerView3;
+        CGPoint adjustedCenter3 = containerView3.center;
+        adjustedCenter3.x -= containerView3.frame.size.width;
+        artImageView3.center = adjustedCenter3;
         return cell;
     }
 }
@@ -329,12 +285,7 @@
 #pragma mark - Handle Gestures
 - (void)singleTap:(UIGestureRecognizer*)gestureRecognizer {
     if (barsVisible){
-        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            self.navigationController.navigationBar.transform = CGAffineTransformMakeTranslation(0, -self.navigationController.navigationBar.frame.size.height);
-            self.bottomToolbar.transform = CGAffineTransformMakeTranslation(0, self.bottomToolbar.frame.size.height);
-        } completion:^(BOOL finished) {
-            barsVisible = NO;
-        }];
+        [self hideBars];
     } else {
         [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             self.navigationController.navigationBar.transform = CGAffineTransformIdentity;
@@ -345,13 +296,46 @@
     }
 }
 
+- (void)hideBars {
+    [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        self.navigationController.navigationBar.transform = CGAffineTransformMakeTranslation(0, -self.navigationController.navigationBar.frame.size.height);
+        self.bottomToolbar.transform = CGAffineTransformMakeTranslation(0, self.bottomToolbar.frame.size.height);
+    } completion:^(BOOL finished) {
+        barsVisible = NO;
+        if (titleTimer){
+            [titleTimer invalidate];
+            titleTimer = nil;
+        }
+    }];
+}
+
+
 - (void)handlePan:(UIPanGestureRecognizer*)gestureRecognizer {
-    CGPoint translation = [gestureRecognizer translationInView:self.view];
-    CGPoint newPoint = CGPointMake(gestureRecognizer.view.center.x + translation.x, gestureRecognizer.view.center.y + translation.y);
-    if (newPoint.x > 0){
-        gestureRecognizer.view.center = newPoint;
+    CGPoint fullTranslation = [gestureRecognizer locationInView:self.view];
+    CGPoint translation = [gestureRecognizer translationInView:_collectionView];
+    NSIndexPath *indexPathForGesture = [_collectionView indexPathForItemAtPoint:[gestureRecognizer locationInView:_collectionView]];
+    UIView *view = nil;
+    if (indexPathForGesture && indexPathForGesture.section > 0){
+        WFSlideshowSlideCell *cell = (WFSlideshowSlideCell*)[_collectionView cellForItemAtIndexPath:indexPathForGesture];
+        if (cell.slide.photos.count == 1){
+            view = cell.artImageView1;
+        } else if (cell.slide.photos.count > 1){
+            if (fullTranslation.x < width/2){
+                view = cell.artImageView2;
+            } else {
+                view = cell.artImageView3;
+            }
+        }
     }
-    [gestureRecognizer setTranslation:CGPointMake(0, 0) inView:self.view];
+    
+    CGPoint newPoint = CGPointMake(view.center.x + translation.x, view.center.y + translation.y);
+    if (newPoint.x > 0){
+        view.center = newPoint;
+    }
+    [gestureRecognizer setTranslation:CGPointMake(0, 0) inView:_collectionView];
+    
+    //offset
+    [(WFInteractiveImageView*)view setMoved:YES];
 }
 
 - (void)screenEdgePan:(UIScreenEdgePanGestureRecognizer*)gestureRecognizer {
@@ -360,92 +344,153 @@
     }
 }
 
-- (void)handleRotation:(UIRotationGestureRecognizer*)gestureRecognizer {
-    [self adjustAnchorPointForGestureRecognizer:gestureRecognizer];
-    
-    if ([gestureRecognizer state] == UIGestureRecognizerStateBegan || [gestureRecognizer state] == UIGestureRecognizerStateChanged) {
-        [gestureRecognizer view].transform = CGAffineTransformRotate([[gestureRecognizer view] transform], [gestureRecognizer rotation]);
-        [gestureRecognizer setRotation:0];
-    }
-}
+//- (void)handleRotation:(UIRotationGestureRecognizer*)gestureRecognizer {
+//    [self adjustAnchorPointForGestureRecognizer:gestureRecognizer];
+//    
+//    if ([gestureRecognizer state] == UIGestureRecognizerStateBegan || [gestureRecognizer state] == UIGestureRecognizerStateChanged) {
+//        [gestureRecognizer view].transform = CGAffineTransformRotate([[gestureRecognizer view] transform], [gestureRecognizer rotation]);
+//        [gestureRecognizer setRotation:0];
+//    }
+//}
 
-- (void)adjustAnchorPointForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
+- (void)adjustAnchorPointForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer forView:(UIView*)piece {
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
-        UIView *piece = gestureRecognizer.view;
         CGPoint locationInView = [gestureRecognizer locationInView:piece];
         CGPoint locationInSuperview = [gestureRecognizer locationInView:piece.superview];
-        
         piece.layer.anchorPoint = CGPointMake(locationInView.x / piece.bounds.size.width, locationInView.y / piece.bounds.size.height);
         piece.center = locationInSuperview;
     }
 }
 
 - (void)handlePinch:(UIPinchGestureRecognizer*)gestureRecognizer {
-    [self adjustAnchorPointForGestureRecognizer:gestureRecognizer];
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
         lastScale = gestureRecognizer.scale;
+        [_collectionView setScrollEnabled:NO];
     }
     
-    const CGFloat kMaxScale = CGFLOAT_MAX;
-    if (gestureRecognizer.state == UIGestureRecognizerStateBegan || gestureRecognizer.state == UIGestureRecognizerStateChanged) {
-        CGFloat currentScale = [[gestureRecognizer.view.layer valueForKeyPath:@"transform.scale"] floatValue];
-        const CGFloat kMinScale = .5;
-        CGFloat newScale = 1 -  (lastScale - gestureRecognizer.scale);
-        newScale = MIN(newScale, kMaxScale / currentScale);
-        newScale = MAX(newScale, kMinScale / currentScale);
-        CGAffineTransform transform = CGAffineTransformScale(gestureRecognizer.view.transform, newScale, newScale);
-        gestureRecognizer.view.transform = transform;
-    }
-    lastScale = gestureRecognizer.scale;  // Store the previous scale factor for the next pinch gesture call
+    CGPoint pointInView = [gestureRecognizer locationInView:self.view];
+    CGPoint gesturePoint = [gestureRecognizer locationInView:_collectionView];
+    NSIndexPath *indexPathForGesture = [_collectionView indexPathForItemAtPoint:gesturePoint];
     
-    if (gestureRecognizer.state == UIGestureRecognizerStateEnded && lastScale < 1.f) {
-        CGFloat currentScale = [[gestureRecognizer.view.layer valueForKeyPath:@"transform.scale"] floatValue];
-        const CGFloat kMinScale = 1.0;
-        CGFloat newScale = 1 -  (lastScale - gestureRecognizer.scale);
-        newScale = MIN(newScale, kMaxScale / currentScale);
-        newScale = MAX(newScale, kMinScale / currentScale);
-        CGAffineTransform transform = CGAffineTransformScale(gestureRecognizer.view.transform, newScale, newScale);
+    UIView *view = nil;
+    if (indexPathForGesture && indexPathForGesture.section > 0){
+        WFSlideshowSlideCell *cell = (WFSlideshowSlideCell*)[_collectionView cellForItemAtIndexPath:indexPathForGesture];
+        if (cell.slide.photos.count == 1){
+            view = cell.artImageView1;
+        } else if (cell.slide.photos.count > 1){
+            view = pointInView.x < width/2 ? cell.artImageView2 : cell.artImageView3;
+        }
         
-        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.5 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            gestureRecognizer.view.transform = transform;
+        //offset
+        [(WFInteractiveImageView*)view setMoved:YES];
+        [self adjustAnchorPointForGestureRecognizer:gestureRecognizer forView:view];
+        
+        const CGFloat kMaxScale = CGFLOAT_MAX;
+        if (gestureRecognizer.state == UIGestureRecognizerStateBegan || gestureRecognizer.state == UIGestureRecognizerStateChanged) {
+            CGFloat currentScale = [[view.layer valueForKeyPath:@"transform.scale"] floatValue];
+            const CGFloat kMinScale = .5;
+            CGFloat newScale = 1 -  (lastScale - gestureRecognizer.scale);
+            newScale = MIN(newScale, kMaxScale / currentScale);
+            newScale = MAX(newScale, kMinScale / currentScale);
+            CGAffineTransform transform = CGAffineTransformScale(view.transform, newScale, newScale);
+            view.transform = transform;
+        }
+        lastScale = gestureRecognizer.scale;  // Store the previous scale factor for the next pinch gesture call
+        
+        if (gestureRecognizer.state == UIGestureRecognizerStateEnded && lastScale < 1.f) {
+            CGFloat currentScale = [[view.layer valueForKeyPath:@"transform.scale"] floatValue];
+            const CGFloat kMinScale = 1.0;
+            CGFloat newScale = 1 -  (lastScale - gestureRecognizer.scale);
+            newScale = MIN(newScale, kMaxScale / currentScale);
+            newScale = MAX(newScale, kMinScale / currentScale);
+            CGAffineTransform transform = CGAffineTransformScale(view.transform, newScale, newScale);
+            
+            [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.5 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                view.transform = transform;
+            } completion:^(BOOL finished) {
+                lastScale = gestureRecognizer.scale;  // Store the previous scale factor for the next pinch gesture call
+            }];
+        }
+    }
+    
+    if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
+        [_collectionView setScrollEnabled:YES];
+    }
+}
+
+- (void)doubleTap:(UITapGestureRecognizer*)gestureRecognizer {
+    CGPoint absolutePoint = [gestureRecognizer locationInView:self.view];
+    //NSLog(@"absolute point double tapped: %f, %f",absolutePoint.x, absolutePoint.y);
+    NSIndexPath *indexPathForGesture = [_collectionView indexPathForItemAtPoint:[gestureRecognizer locationInView:_collectionView]];
+    UIView *view = nil;
+    
+    if (indexPathForGesture && indexPathForGesture.section > 0){
+        WFSlideshowSlideCell *cell = (WFSlideshowSlideCell*)[_collectionView cellForItemAtIndexPath:indexPathForGesture];
+        CGPoint tappedPoint = [gestureRecognizer locationInView:self.view];
+        if (cell.slide.photos.count == 1){
+            view = cell.artImageView1;
+        } else {
+            view = tappedPoint.x < width/2 ? cell.artImageView2 : cell.artImageView3;
+        }
+    }
+    
+    if (view){
+        
+        //reset the anchor point to center
+        view.layer.anchorPoint = CGPointMake(0.5f,0.5f);
+        
+        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            if (view == artImageView1){
+                if (artImageView1.moved){
+                    [view setCenter:containerView1.center];
+                    view.transform = CGAffineTransformIdentity;
+                    [artImageView1 setMoved:YES];
+                } else {
+                    CGPoint absoluteCenterPoint;
+                    absoluteCenterPoint.x = width - absolutePoint.x;
+                    absoluteCenterPoint.y = height - absolutePoint.y;
+                    view.center = absoluteCenterPoint;
+                    view.transform = CGAffineTransformMakeScale(1.77f, 1.77f);
+                    [artImageView1 setMoved:YES];
+                }
+            } else if (view == artImageView2){
+                if (artImageView2.moved){
+                    CGPoint adjustedCenterPoint = containerView2.center;
+                    [view setCenter:adjustedCenterPoint];
+                    view.transform = CGAffineTransformIdentity;
+                    [artImageView2 setMoved:NO];
+                } else {
+                    CGPoint absolutePoint2 = [gestureRecognizer locationInView:containerView2];
+                    absolutePoint2.x = containerView2.frame.size.width - absolutePoint2.x;
+                    absolutePoint2.y = containerView2.frame.size.height - absolutePoint2.y;
+                    view.center = absolutePoint2;
+                    view.transform = CGAffineTransformMakeScale(1.77f, 1.77f);
+                    [artImageView2 setMoved:YES];
+                }
+            } else if (view == artImageView3){
+                if (artImageView3.moved){
+                    CGPoint adjustedCenterPoint = containerView3.center;
+                    adjustedCenterPoint.x -= containerView3.frame.size.width;
+                    [view setCenter:adjustedCenterPoint];
+                    view.transform = CGAffineTransformIdentity;
+                    [artImageView3 setMoved:NO];
+                } else {
+                    CGPoint absolutePoint3 = [gestureRecognizer locationInView:containerView3];
+                    absolutePoint3.x = containerView3.frame.size.width - absolutePoint3.x;
+                    absolutePoint3.y = containerView3.frame.size.height - absolutePoint3.y;
+                    view.center = absolutePoint3;
+                    view.transform = CGAffineTransformMakeScale(1.77f, 1.77f);
+                    [artImageView3 setMoved:YES];
+                }
+            }
         } completion:^(BOOL finished) {
-            lastScale = gestureRecognizer.scale;  // Store the previous scale factor for the next pinch gesture call
+            
         }];
     }
 }
 
-- (void)handleTap:(UITapGestureRecognizer*)sender {
-    [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        sender.view.transform = CGAffineTransformIdentity;
-        if (sender == _doubleTapGesture1){
-            [sender.view setFrame:originalFrame1];
-        } else if (sender == _doubleTapGesture2){
-            [sender.view setFrame:originalFrame2];
-        } else {
-            [sender.view setFrame:originalFrame3];
-        }
-        
-    } completion:^(BOOL finished) {
-        
-    }];
-}
-
-//- (void)reset {
-//    [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.7 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-//        artImageView1.transform = CGAffineTransformIdentity;
-//        artImageView2.transform = CGAffineTransformIdentity;
-//        artImageView3.transform = CGAffineTransformIdentity;
-//        [artImageView1 setFrame:originalFrame1];
-//        [artImageView2 setFrame:originalFrame2];
-//        [artImageView3 setFrame:originalFrame3];
-//    } completion:^(BOOL finished) {
-//        
-//    }];
-//}
-
 #pragma mark - Gesture Recognizer Delegate
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    //NSLog(@"simultaneously recognize");
     return YES;
 }
 

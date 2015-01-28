@@ -12,6 +12,15 @@
 #import "Table+helper.h"
 #import "Alternate+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
+#import "WFUtilities.h"
+
+typedef enum {
+    WFPrefixMr = 1,
+    WFPrefixMrs = 2,
+    WFPrefixMs = 3,
+    WFPrefixDr = 4,
+    WFPrefixProf = 5,
+} WFUserPrefix;
 
 @implementation User (helper)
 
@@ -27,6 +36,9 @@
             }
         }
     }
+    if ([dictionary objectForKey:@"created_at"] && [dictionary objectForKey:@"created_at"] != [NSNull null]) {
+        self.createdDate = [WFUtilities parseDateTime:[dictionary objectForKey:@"created_at"]];
+    }
     if ([dictionary objectForKey:@"first_name"] && [dictionary objectForKey:@"first_name"] != [NSNull null]){
         self.firstName = [dictionary objectForKey:@"first_name"];
     }
@@ -36,6 +48,38 @@
     if ([dictionary objectForKey:@"bio"] && [dictionary objectForKey:@"bio"] != [NSNull null]){
         self.bio = [dictionary objectForKey:@"bio"];
     }
+    if ([dictionary objectForKey:@"location"] && [dictionary objectForKey:@"location"] != [NSNull null]){
+        self.location = [dictionary objectForKey:@"location"];
+    }
+    if ([dictionary objectForKey:@"url"] && [dictionary objectForKey:@"url"] != [NSNull null]){
+        self.url = [dictionary objectForKey:@"url"];
+    }
+    if ([dictionary objectForKey:@"prefix"] && [dictionary objectForKey:@"prefix"] != [NSNull null]){
+        switch ([(NSNumber*)[dictionary objectForKey:@"prefix"] integerValue]) {
+            case 0:
+                self.prefix = @"";
+                break;
+            case 1:
+                self.prefix = @"Mr.";
+                break;
+            case 2:
+                self.prefix = @"Mrs.";
+                break;
+            case 3:
+                self.prefix = @"Ms.";
+                break;
+            case 4:
+                self.prefix = @"Dr.";
+                break;
+            case 5:
+                self.prefix = @"Prof.";
+                break;
+                
+            default:
+                break;
+        }
+    } else self.prefix = @"";
+    
     if ([dictionary objectForKey:@"email"] && [dictionary objectForKey:@"email"] != [NSNull null]){
         self.email = [dictionary objectForKey:@"email"];
     }
@@ -50,9 +94,6 @@
     }
     if ([dictionary objectForKey:@"avatar_small"] && [dictionary objectForKey:@"avatar_small"] != [NSNull null]) {
         self.avatarSmall = [dictionary objectForKey:@"avatar_small"];
-    }
-    if ([dictionary objectForKey:@"avatar_medium"] && [dictionary objectForKey:@"avatar_medium"] != [NSNull null]) {
-        self.avatarMedium = [dictionary objectForKey:@"avatar_medium"];
     }
     if ([dictionary objectForKey:@"avatar_large"] && [dictionary objectForKey:@"avatar_large"] != [NSNull null]) {
         self.avatarLarge = [dictionary objectForKey:@"avatar_large"];
@@ -100,11 +141,40 @@
         }
         self.slideshows = set;
     }
+    if ([dictionary objectForKey:@"public_slideshows"] && [dictionary objectForKey:@"public_slideshows"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshows];
+        for (id dict in [dictionary objectForKey:@"public_slideshows"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!slideshow){
+                slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [slideshow populateFromDictionary:dict];
+            [set addObject:slideshow];
+        }
+        self.slideshows = set;
+    }
     
     if ([dictionary objectForKey:@"light_tables"] && [dictionary objectForKey:@"light_tables"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         //NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithOrderedSet:self.lightTables];
         for (id dict in [dictionary objectForKey:@"light_tables"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Table *table = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (table){
+                
+            } else {
+                table = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [table populateFromDictionary:dict];
+            [set addObject:table];
+        }
+        self.lightTables = set;
+    }
+    
+    if ([dictionary objectForKey:@"public_light_tables"] && [dictionary objectForKey:@"public_light_tables"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"public_light_tables"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Table *table = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (table){
@@ -142,6 +212,12 @@
             }
             [favorite populateFromDictionary:dict];
             [set addObject:favorite];
+        }
+        for (Favorite *favorite in self.favorites){
+            if (![set containsObject:favorite]){
+                NSLog(@"deleting a favorite: %@",favorite.photo.art.title);
+                [favorite MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
         }
         self.favorites = set;
     }
@@ -218,6 +294,18 @@
         }
     }];
     return favorite;
+}
+
+- (void)addFavorite:(Favorite *)favorite {
+    NSMutableOrderedSet *favorites = [NSMutableOrderedSet orderedSetWithOrderedSet:self.favorites];
+    [favorites addObject:favorite];
+    self.favorites = favorites;
+}
+
+- (void)removeFavorite:(Favorite *)favorite {
+    NSMutableOrderedSet *favorites = [NSMutableOrderedSet orderedSetWithOrderedSet:self.favorites];
+    [favorites removeObject:favorite];
+    self.favorites = favorites;
 }
 
 - (void)addLightTable:(Table *)lightTable {

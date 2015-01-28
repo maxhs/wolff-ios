@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "WFTablesViewController.h"
+#import "WFLightTablesViewController.h"
 
 @interface WFGroupsInteractor : UIPercentDrivenInteractiveTransition <WFLightTablesDelegate>
 

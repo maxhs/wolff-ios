@@ -26,6 +26,12 @@
     // set edit mode to NO by default
     [self setDefaultStyle:NO];
     [self setBackgroundColor:[UIColor whiteColor]];
+    [_privateSwitch setHidden:YES];
+}
+
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    [_privateSwitch setHidden:YES];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

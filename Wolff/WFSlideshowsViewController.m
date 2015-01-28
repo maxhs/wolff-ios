@@ -34,8 +34,24 @@
     [refreshControl addTarget:self action:@selector(handleRefresh) forControlEvents:UIControlEventValueChanged];
     [_tableView addSubview:refreshControl];
     
+    _tableView.rowHeight = 54.f;
     [_tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.1]];
-    [_tableView setBackgroundColor:[UIColor blackColor]];
+    [_tableView setBackgroundColor:[UIColor clearColor]];
+    [self.view setBackgroundColor:[UIColor clearColor]];
+    self.title = @"Your Slideshows";
+    
+    UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
+    self.navigationItem.leftBarButtonItem = backButton;
+}
+
+- (void)back {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    CGFloat contentSizeHeight = _currentUser.slideshows.count ? 54.f*(_currentUser.slideshows.count+1) : 54.f * 2;
+    [self setPreferredContentSize:CGSizeMake(420, contentSizeHeight)];
 }
 
 - (void)handleRefresh {
@@ -72,6 +88,8 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0){
+        return 1;
+    } else {
         if (!loading && _currentUser.slideshows.count == 0){
             return 1;
             [tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
@@ -79,20 +97,25 @@
             [tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
             return _currentUser.slideshows.count;
         }
-    } else {
-        return 1;
     }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideshowCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideshowCell" forIndexPath:indexPath];
     if (indexPath.section == 0){
+        [cell.imageView setImage:[UIImage imageNamed:@"plus"]];
+        [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
+        [cell.textLabel setText:@"New Slideshow"];
+        [cell.textLabel setTextAlignment:NSTextAlignmentLeft];
+    } else {
         [cell.imageView setImage:nil];
         if (!loading && _currentUser.slideshows.count == 0){
             [cell.textLabel setText:@"No Slideshows"];
+            [cell.textLabel setTextAlignment:NSTextAlignmentCenter];
             [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
         } else {
             Slideshow *slideshow = _currentUser.slideshows[indexPath.row];
+            [cell.textLabel setTextAlignment:NSTextAlignmentLeft];
             if (slideshow.title.length){
                 [cell.textLabel setText:slideshow.title];
                 [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
@@ -101,37 +124,26 @@
                 [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];
             }
         }
-        
-    } else {
-        [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
-        [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
-        [cell.textLabel setText:@"New Slideshow"];
     }
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0){
-        if (indexPath.row < _currentUser.slideshows.count){
-            if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(slideshowSelected:)]) {
-                Slideshow *slideshow = _currentUser.slideshows[indexPath.row];
-                [self.slideshowDelegate slideshowSelected:slideshow];
-            }
-        }
-    } else {
         if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(newSlideshow)]) {
             [self.slideshowDelegate newSlideshow];
+        }
+    } else {
+        if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(slideshowSelected:)]) {
+            Slideshow *slideshow = _currentUser.slideshows[indexPath.row];
+            [self.slideshowDelegate slideshowSelected:slideshow];
         }
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 0){
-        return YES;
-    } else {
-        return NO;
-    }
+    return NO;
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -187,7 +199,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
     if (section == 0){
-        return 34;
+        return 0;
     } else {
         return 0;
     }

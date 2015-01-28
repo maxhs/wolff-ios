@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 @interface WFSearchOptionsCell : UITableViewCell
-
+@property (strong, nonatomic) UIToolbar *backgroundToolbar;
 @property (weak, nonatomic) IBOutlet UIButton *lightTableButton;
 @property (weak, nonatomic) IBOutlet UIButton *slideShowButton;
 @property (weak, nonatomic) IBOutlet UIButton *clearSelectedButton;

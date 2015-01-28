@@ -14,7 +14,13 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     [self setBackgroundColor:[UIColor clearColor]];
-    [_tableLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kLato] size:0]];
+    [_tableLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+}
+
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    [self.textLabel setText:@""];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

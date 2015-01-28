@@ -14,8 +14,8 @@
 @end
 
 @implementation WFInteractiveImageView
-
 @synthesize photo = _photo;
+@synthesize moved = _moved;
 
 /*
 // Only override drawRect: if you perform custom drawing.
@@ -32,12 +32,14 @@
 
 - (void)awakeFromNib {
     [self setupGestures];
+    _moved = NO;
 }
 
 - (id)initWithFrame:(CGRect)frame andPhoto:(Photo *)photo {
     self = [super initWithFrame:frame];
     if (self) {
         _photo = photo;
+        _moved = NO;
         [self setupGestures];
     }
     return self;
@@ -47,6 +49,7 @@
     self = [super initWithImage:image];
     if (self) {
         _photo = photo;
+        _moved = NO;
         [self setupGestures];
     }
     return self;

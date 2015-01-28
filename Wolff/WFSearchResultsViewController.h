@@ -9,14 +9,18 @@
 #import <UIKit/UIKit.h>
 #import "Art+helper.h"
 #import "Photo+helper.h"
+#import "Slideshow+helper.h"
+#import "Table+helper.h"
 
 @protocol WFSearchDelegate <NSObject>
 - (void)searchDidSelectPhoto:(Photo *)photo;
 - (void)endSearch;
 @optional
 - (void)removeAllSelected;
-- (void)lightTableFromSelected;
-- (void)slideShowFromSelected;
+- (void)batchFavorite;
+- (void)newLightTableForSelected;
+- (void)lightTableForSelected:(Table*)lightTable;
+- (void)slideshowForSelected:(Slideshow*)slideshow;
 @end
 
 @interface WFSearchResultsViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
@@ -27,6 +31,7 @@
 @property (weak, nonatomic) IBOutlet UILabel *noResultsPrompt;
 @property (strong, nonatomic) NSMutableArray *photos;
 @property (weak, nonatomic) id<WFSearchDelegate> searchDelegate;
+@property CGFloat originalPopoverHeight;
 @property BOOL shouldShowSearchBar;
 @property BOOL shouldShowTiles;
 

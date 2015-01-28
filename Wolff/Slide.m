@@ -15,6 +15,9 @@
 
 @dynamic title;
 @dynamic identifier;
+@dynamic rectString1;
+@dynamic rectString2;
+@dynamic rectString3;
 @dynamic slideshow;
 @dynamic photos;
 @dynamic caption;

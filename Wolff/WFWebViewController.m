@@ -17,11 +17,11 @@
 
 @implementation WFWebViewController
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
     backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
     self.navigationItem.leftBarButtonItem = backButton;
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     NSURLRequest *requestObj = [NSURLRequest requestWithURL:_url];
     [_webView loadRequest:requestObj];
 }
@@ -46,7 +46,9 @@
 
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
     if (error){
+        [ProgressHUD dismiss];
         [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to load. Please try again soon." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
+        NSLog(@"what was the error: %@",error.description);
     }
 }
 

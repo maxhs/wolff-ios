@@ -35,7 +35,7 @@
     [self loadGroups];
     
     cancelButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
-    self.navigationItem.leftBarButtonItem = cancelButton;
+    self.navigationItem.rightBarButtonItem = cancelButton;
     
     UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.view.frame];
     [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];

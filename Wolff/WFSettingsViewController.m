@@ -28,6 +28,7 @@
     UITextField *phoneTextField;
     UITextField *institutionTextField;
     UITextField *alternateTextField;
+    UITextField *locationTextField;
     UIImageView *navBarShadowView;
     BOOL iOS8;
     BOOL editing;
@@ -110,6 +111,18 @@
     if (emailTextField.text.length && ![emailTextField.text isEqualToString:_currentUser.email]){
         [parameters setObject:emailTextField.text forKey:@"email"];
     }
+    if (locationTextField.text.length && ![locationTextField.text isEqualToString:_currentUser.location]){
+        [parameters setObject:locationTextField.text forKey:@"location"];
+    }
+    if (phoneTextField.text.length && ![phoneTextField.text isEqualToString:_currentUser.phone]){
+        [parameters setObject:phoneTextField.text forKey:@"phone"];
+    }
+    if (firstNameTextField.text.length && ![firstNameTextField.text isEqualToString:_currentUser.firstName]){
+        [parameters setObject:firstNameTextField.text forKey:@"first_name"];
+    }
+    if (lastNameTextField.text.length && ![lastNameTextField.text isEqualToString:_currentUser.lastName]){
+        [parameters setObject:lastNameTextField.text forKey:@"last_name"];
+    }
     NSMutableArray *institutionIds = [NSMutableArray arrayWithCapacity:_currentUser.institutions.count];
     for (Institution *institution in _currentUser.institutions){
         [institutionIds addObject:institution.identifier];
@@ -138,7 +151,7 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch (section) {
         case 0:
-            return 4;
+            return 5;
             break;
         case 1:
             // manage institutions
@@ -188,11 +201,11 @@
                 phoneTextField = cell.textField;
                 break;
             case 4:
-                [cell.textField setText:_currentUser.institution.name];
-                [cell.textField setPlaceholder:@"Affiliated institution (if any)"];
-                institutionTextField = cell.textField;
+                [cell.textField setText:_currentUser.location];
+                [cell.textField setPlaceholder:@"Your location (e.g. Berlin, New York City, Byzantium)"];
+                locationTextField = cell.textField;
                 break;
-                
+
             default:
                 break;
         }

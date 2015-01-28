@@ -21,7 +21,7 @@
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "WFSettingsAnimator.h"
 #import "WFTablesAnimator.h"
-#import "WFTablesViewController.h"
+#import "WFLightTablesViewController.h"
 #import "WFNotificationsViewController.h"
 #import "WFMenuViewController.h"
 #import "WFNewArtAnimator.h"
@@ -59,8 +59,8 @@
     CGFloat width;
     CGFloat height;
     NSMutableArray *_photos;
-    NSMutableArray *_privatePhotos;
-    NSMutableArray *_favorites;
+    NSMutableOrderedSet *_privatePhotos;
+    NSMutableOrderedSet *_favoritePhotos;
     NSMutableArray *_filteredPhotos;
     NSMutableArray *_tables;
     NSMutableArray *_slideshows;
@@ -141,8 +141,8 @@
     manager = delegate.manager;
     
     _photos = [NSMutableArray array];
-    _privatePhotos = [NSMutableArray array];
-    _favorites = [NSMutableArray array];
+    _privatePhotos = [NSMutableOrderedSet orderedSet];
+    _favoritePhotos = [NSMutableOrderedSet orderedSet];
     
     if (!_selectedPhotos) _selectedPhotos = [NSMutableOrderedSet orderedSet];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"art.privateArt = %@",@NO];
@@ -219,6 +219,7 @@
         double delayInSeconds = .23f;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [ProgressHUD dismiss];
             newUser = YES;
             WFWalkthroughViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Walkthrough"];
             vc.modalPresentationStyle = UIModalPresentationCustom;
@@ -253,11 +254,10 @@
 - (void)setUpNavBar {
     homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
     homeButton.frame = CGRectMake(14.0, 0.0, 66.0, 44.0);
-    [homeButton setBackgroundColor:[UIColor colorWithWhite:.23 alpha:.23]];
+    [homeButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1975f]];
     [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
     [homeButton addTarget:self action:@selector(resetCatalog) forControlEvents:UIControlEventTouchUpInside];
     homeBarButton = [[UIBarButtonItem alloc] initWithCustomView:homeButton];
-    
     
     tablesButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [tablesButton setImage:[UIImage imageNamed:@"whiteTables"] forState:UIControlStateNormal];
@@ -403,13 +403,13 @@
             
             [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"art.privateArt == %@ && art.user.identifier == %@", @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
                 
                 //set up private photos and favorites
-                _privatePhotos = [Photo MR_findAllWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
+                NSPredicate *privatePredicate = [NSPredicate predicateWithFormat:@"art.privateArt == %@ && art.user.identifier == %@", @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+                _privatePhotos = [Photo MR_findAllWithPredicate:privatePredicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
                 [_currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
-                    if (favorite.photo && ![_favorites containsObject:favorite.photo]) {
-                        [_favorites addObject:favorite.photo];
+                    if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
+                        [_favoritePhotos addObject:favorite.photo];
                     }
                 }];
                 
@@ -478,6 +478,9 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    _tables = _tables ? _currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:_currentUser.lightTables.array];
+    _slideshows = _slideshows ? _currentUser.slideshows.array.mutableCopy : [NSMutableArray arrayWithArray:_currentUser.slideshows.array];
+    
     if (slideshowSidebarMode){
         return 2;
     } else {
@@ -521,10 +524,10 @@
         WFSlideshowCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideshowCell" forIndexPath:indexPath];
         cell.delegate = self;
         [cell setBackgroundColor:[UIColor clearColor]];
-        
         if (indexPath.section == 0){
-            [cell.iconImageView setImage:nil];
+            cell.tintColor = [UIColor whiteColor];
             [cell.scrollView setScrollEnabled:YES];
+            [cell.contentView addGestureRecognizer:cell.scrollView.panGestureRecognizer];
             if (!loading && _slideshows.count == 0){
                 [cell.slideshowLabel setText:@"No Slideshows"];
                 [cell.slideshowLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
@@ -541,6 +544,10 @@
             [cell.textLabel setText:@"New Slideshow"];
             [cell.scrollView setScrollEnabled:NO];
         }
+        
+        // ensure the labels are the right color. this cell is also being used on the Slideshows view, and the label text there is black
+        [cell.textLabel setTextColor:[UIColor whiteColor]];
+        [cell.slideshowLabel setTextColor:[UIColor whiteColor]];
         return cell;
     } else {
         WFMainTableCell *cell = (WFMainTableCell *)[tableView dequeueReusableCellWithIdentifier:@"MainCell"];
@@ -600,20 +607,17 @@
     }
     if (lightTable && ![lightTable.identifier isEqualToNumber:@0]){
         [manager DELETE:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            
-            // remove light table from data source
-            [_tables removeObject:lightTable];
+        
             [self.tableView beginUpdates];
-            if (_tables.count){
-                [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
-            } else {
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
-            }
-            [self.tableView endUpdates];
-            
+            [_tables removeObject:lightTable];
             [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-    
+                if (_tables.count && indexPathToRemove){
+                    [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
+                } else {
+                    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
+                }
+                [self.tableView endUpdates];
             }];
             NSLog(@"Success deleting this light table: %@",responseObject);
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -637,7 +641,6 @@
 }
 
 - (void)leaveLightTable:(Table *)lightTable {
-
     NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_tables indexOfObject:lightTable] inSection:1];
     if (![lightTable.identifier isEqualToNumber:@0]){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
@@ -649,26 +652,21 @@
         }];
     }
     
-    if (indexPathToRemove) {
-        [self.tableView beginUpdates];
-        [_tables removeObject:lightTable];
-        if (_tables.count){
+    [self.tableView beginUpdates];
+    [_tables removeObject:lightTable];
+    [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        if (_tables.count && indexPathToRemove){
             [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
         } else {
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
         }
         [self.tableView endUpdates];
-    }
-    
-    [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        
     }];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     searching = NO;
-    
     if (slideshowSidebarMode){
         if (indexPath.section == 0){
             Slideshow *slideshow = _slideshows[indexPath.row];
@@ -678,11 +676,8 @@
         }
     } else {
         if (indexPath.section == 0){
-            if (indexPath.row == 0){
-                [self showPrivateArt];
-            } else {
-                [self showFavorites];
-            }
+            [self setHomeAsReset];
+            indexPath.row == 0 ? [self showPrivateArt] : [self showFavorites];
         } else if (indexPath.section == 1){
             if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
                 if (_currentUser.lightTables.count){
@@ -805,7 +800,7 @@
         [ProgressHUD show:@"Loading table..."];
         loading = YES;
         [manager GET:[NSString stringWithFormat:@"light_tables/%@",table.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success loading light table: %@",responseObject);
+            //NSLog(@"Success loading light table: %@",responseObject);
             [table populateFromDictionary:[responseObject objectForKey:@"table"]];
             [self.collectionView reloadData];
             [self endRefresh];
@@ -821,14 +816,11 @@
 - (void)newLightTable {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
-        if (_selectedPhotos.count){
-            [vc setPhotos:_selectedPhotos];
-        } else {
-            [vc setShowKey:YES];
-        }
+        
+        (_selectedPhotos.count) ? [vc setPhotos:_selectedPhotos] : [vc setShowKey:YES];
+        NSLog(@"selected photos? %d",vc.photos.count);
         vc.lightTableDelegate = self;
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            //WFDismissableNavigationController *nav = [[WFDismissableNavigationController alloc] initWithRootViewController:vc];
             vc.modalPresentationStyle = UIModalPresentationCustom;
             vc.transitioningDelegate = self;
             [self resetTransitionBooleans];
@@ -892,7 +884,7 @@
     } else if (showLightTable){
         return _table.photos.count;
     } else if (showFavorites){
-        return _favorites.count;
+        return _favoritePhotos.count;
     } else if (searching){
         if (_filteredPhotos.count > 0) {
             [_noSearchResultsLabel setHidden:YES];
@@ -907,6 +899,14 @@
 
 - (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
     return 1;
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
+    if (showFavorites || showLightTable || showPrivate || searching){
+        return CGSizeMake(collectionView.frame.size.width, 54);
+    } else {
+        return CGSizeMake(1, 0);
+    }
 }
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath{
@@ -930,8 +930,6 @@
         }
         
         [headerView.headerLabel setTextColor:[UIColor blackColor]];
-        resetButton = headerView.resetButton;
-        [headerView.resetButton addTarget:self action:@selector(resetCatalog) forControlEvents:UIControlEventTouchUpInside];
         return headerView;
     } else {
         return nil;
@@ -939,29 +937,22 @@
 }
 
 - (void)resetCatalog {
-    [self resetArtBooleans];
-    //[_filteredPhotos removeAllObjects];
-    dispatch_async(dispatch_get_main_queue(), ^(void){
-        if (tableIsVisible){
-            [self showSidebar];
-        }
-        searchText = @"";
-        searching = NO;
-        [_noSearchResultsLabel setHidden:YES];
-        [self.searchBar setText:@""];
-        [self.searchBar resignFirstResponder];
-        [self.view endEditing:YES];
-        [self.collectionView reloadData];
-        [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
-    });
-}
-
-- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
-    if (showFavorites || showLightTable || showPrivate || searching){
-        return CGSizeMake(collectionView.frame.size.width, 54);
-    } else {
-        return CGSizeMake(1, 0);
+    if (tableIsVisible || searching || showFavorites || showLightTable || showPrivate){
+        dispatch_async(dispatch_get_main_queue(), ^(void){
+            if (tableIsVisible){
+                [self showSidebar];
+            }
+            searchText = @"";
+            searching = NO;
+            [_noSearchResultsLabel setHidden:YES];
+            [self.searchBar setText:@""];
+            [self.searchBar resignFirstResponder];
+            [self.view endEditing:YES];
+            [self.collectionView reloadData];
+            [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
+        });
     }
+    [self resetArtBooleans];
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -972,7 +963,7 @@
     } else if (showLightTable){
         photo = _table.photos[indexPath.item];
     } else if (showFavorites){
-        photo = _favorites[indexPath.item];
+        photo = _favoritePhotos[indexPath.item];
     } else if (searching){
         photo = _filteredPhotos[indexPath.item];
     } else {
@@ -1010,7 +1001,7 @@
     } else if (showLightTable){
         photo = _table.photos[selectedIndexPath.item];
     } else if (showFavorites){
-        photo = _favorites[selectedIndexPath.item];
+        photo = _favoritePhotos[selectedIndexPath.item];
     } else if (searching){
         if (_filteredPhotos.count){
             photo = _filteredPhotos[selectedIndexPath.item];
@@ -1041,8 +1032,8 @@
 }
 
 - (void)removeFavorite:(UIMenuController*)menuController {
-    Art *art = _favorites[indexPathForFavoriteToRemove.item];
-    [_favorites removeObject:art];
+    Art *art = _favoritePhotos[indexPathForFavoriteToRemove.item];
+    [_favoritePhotos removeObject:art];
     [_collectionView deleteItemsAtIndexPaths:@[indexPathForFavoriteToRemove]];
 }
 
@@ -1133,7 +1124,7 @@
             } else if (showLightTable){
                 photo = _table.photos[self.startIndex.item];
             } else if (showFavorites){
-                photo = _favorites[self.startIndex.item];
+                photo = _favoritePhotos[self.startIndex.item];
             } else if (searching){
                 if (_filteredPhotos.count){
                     photo = _filteredPhotos[self.startIndex.item];
@@ -1308,6 +1299,7 @@
     } completion:^(BOOL finished) {
         [comparison1 removeFromSuperview];
         comparison1 = nil;
+        [self resetComparisonLabel];
     }];
 }
 
@@ -1318,6 +1310,7 @@
     } completion:^(BOOL finished) {
         [comparison2 removeFromSuperview];
         comparison2 = nil;
+        [self resetComparisonLabel];
     }];
 }
 
@@ -1345,7 +1338,7 @@
     } else if (showLightTable){
         photo = _table.photos[indexPath.item];
     } else if (showFavorites){
-        photo = _favorites[indexPath.item];
+        photo = _favoritePhotos[indexPath.item];
     } else if (searching){
         if (_filteredPhotos.count){
             photo = _filteredPhotos[indexPath.item];
@@ -1396,7 +1389,7 @@
     }
     [_currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
         if (favorite.photo == photo){
-            [_favorites removeObject:photo];
+            [_favoritePhotos removeObject:photo];
             [favorite MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
             *stop = YES;
         }
@@ -1409,7 +1402,7 @@
 }
 
 - (void)favoritedPhoto:(Photo *)photo {
-    [_favorites addObject:photo];
+    [_favoritePhotos addObject:photo];
 }
 
 - (void)droppedPhoto:(Photo*)photo toLightTable:(Table*)lightTable {
@@ -1442,10 +1435,13 @@
     }
     searchResultsVc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SearchResults"];
     [searchResultsVc setPhotos:_selectedPhotos.array.mutableCopy];
-    CGFloat selectedHeight = _selectedPhotos.count*80.f > 684.f ? 684.f : (_selectedPhotos.count*80.f)+44.f;
+    CGFloat selectedHeight = _selectedPhotos.count*80.f > 640.f ? 640.f : (_selectedPhotos.count*80.f); // don't need to offset by 44 because iOS is already adding a scrolView offset for us
     searchResultsVc.preferredContentSize = CGSizeMake(420, selectedHeight);
     searchResultsVc.searchDelegate = self;
-    self.popover = [[UIPopoverController alloc] initWithContentViewController:searchResultsVc];
+    [searchResultsVc setOriginalPopoverHeight:selectedHeight];
+    UINavigationController *selectedNav = [[UINavigationController alloc] initWithRootViewController:searchResultsVc];
+    selectedNav.preferredContentSize = CGSizeMake(420, selectedHeight);
+    self.popover = [[UIPopoverController alloc] initWithContentViewController:selectedNav];
     self.popover.delegate = self;
     [self.popover presentPopoverFromBarButtonItem:selectedBarButtonItem permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
@@ -1856,18 +1852,131 @@
 }
 
 #pragma mark - WFSearchDelegate methods
-- (void)lightTableFromSelected {
+- (void)lightTableForSelected:(Table *)lightTable {
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
+    for (Photo *photo in _selectedPhotos){
+        [lightTable addPhoto:photo];
+    }
+    
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+
+        __block NSMutableSet *photoIds = [NSMutableSet set];
+        [lightTable.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
+            [photoIds addObject:photo.identifier];
+        }];
+        if (tableIsVisible && !slideshowSidebarMode){
+            [self.tableView reloadData];
+        }
+        if (photoIds.count){
+            [manager PATCH:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:@{@"light_table":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                NSLog(@"Success bulk adding photos to a light table: %@",responseObject);
+                NSString *photoCount = _selectedPhotos.count == 1 ? @"1 photo" : [NSString stringWithFormat:@"%d photos",_selectedPhotos.count];
+                [WFAlert show:[NSString stringWithFormat:@"%@ added to %@",photoCount, lightTable.name] withTime:3.3f];
+            } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                NSLog(@"Failed to add selected to a light table: %@",error.description);
+            }];
+        }
+    }];
+}
+
+- (void)newLightTableForSelected {
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
     [self newLightTable];
+//    Table *newLightTable = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+//    for (Photo *photo in _selectedPhotos){
+//        [newLightTable addPhoto:photo];
+//    }
+//    
+//    if (tableIsVisible && !slideshowSidebarMode){
+//        [self.tableView reloadData];
+//    }
+//    
+//    __block NSMutableSet *photoIds = [NSMutableSet set];
+//    [newLightTable.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
+//        [photoIds addObject:photo.identifier];
+//    }];
+//    if (photoIds.count){
+//        [ProgressHUD show:@"Creating your light table..."];
+//        [manager POST:@"light_tables" parameters:@{@"light_table":@{@"photo_ids":photoIds, @"owner_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+//            NSLog(@"Success bulk adding photos to a NEW light table: %@",responseObject);
+//            [newLightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
+//            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+//                [WFAlert show:@"New light table created." withTime:2.7f];
+//                [ProgressHUD dismiss];
+//            }];
+//        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+//            [ProgressHUD dismiss];
+//            [WFAlert show:@"Sorry, but something went wrong while trying to create your light table. Please try again soon." withTime:2.7f];
+//            NSLog(@"Failed to create a new light table from selected: %@",error.description);
+//        }];
+//    }
 }
 
-- (void)slideShowFromSelected {
+- (void)slideshowForSelected:(Slideshow *)slideshow {
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
-    [self newSlideshow];
+    for (Photo *photo in _selectedPhotos){
+        [slideshow addPhoto:photo];
+    }
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        if (tableIsVisible && slideshowSidebarMode){
+            [self.tableView reloadData];
+        }
+        __block NSMutableArray *photoIds = [NSMutableArray array];
+        [slideshow.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
+            [photoIds addObject:photo.identifier];
+        }];
+        if (photoIds.count){
+            NSLog(@"should be synching this slideshow");
+            [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:@{@"slideshow":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                NSLog(@"Success dropping photos into slideshow: %@",responseObject);
+                
+            } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                
+            }];
+        }
+    }];
+}
+
+- (void)batchFavorite {
+    NSLog(@"Batch favoriting for current user: %@",_currentUser.fullName);
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
+    
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && _currentUser){
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+        NSMutableArray *photoIds = [NSMutableArray arrayWithCapacity:_selectedPhotos.count];
+        for (Photo *photo in _selectedPhotos){
+            [photoIds addObject:photo.identifier];
+            Favorite *favorite = [Favorite MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            favorite.photo = photo;
+            [_favoritePhotos addObject:photo];
+            [_currentUser addFavorite:favorite];
+        }
+    
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            NSLog(@"Done locally saving batch favorites: %u",success);
+        }];
+        
+        if (photoIds.count){
+            [parameters setObject:photoIds forKey:@"photo_ids"];
+            [manager POST:@"favorites/batch" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                NSLog(@"Success batch favoriting: %@",responseObject);
+                [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
+            } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                NSLog(@"Failed to batch favorite: %@",error.description);
+            }];
+        }
+    } else {
+        [self showLogin];
+    }
 }
 
 - (void)endSearch {

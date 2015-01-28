@@ -11,14 +11,21 @@
 #import "WFSearchResultsCell.h"
 #import "WFSearchCollectionCell.h"
 #import "WFSearchOptionsCell.h"
+#import "WFSlideshowsViewController.h"
+#import "WFLightTablesViewController.h"
 
-@interface WFSearchResultsViewController () <UISearchBarDelegate> {
+@interface WFSearchResultsViewController () <UISearchBarDelegate, WFLightTablesDelegate, WFSlideshowDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     NSMutableArray *_filteredPhotos;
     NSMutableOrderedSet *selectedPhotos;
     NSString *searchText;
     BOOL searching;
+    UIToolbar *backgroundToolbar;
+    UIBarButtonItem *lightTableButton;
+    UIBarButtonItem *slideshowButton;
+    UIButton *clearButton;
+    UIBarButtonItem *clearBarButton;
 }
 
 @end
@@ -26,13 +33,14 @@
 @implementation WFSearchResultsViewController
 
 @synthesize photos = _photos;
+@synthesize originalPopoverHeight = _originalPopoverHeight;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self.view setBackgroundColor:[UIColor clearColor]];
     [_tableView setBackgroundColor:[UIColor clearColor]];
     [_tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
-
+    _tableView.rowHeight = 80.f;
     [_collectionView setBackgroundColor:[UIColor blackColor]];
     
     // show full tile view if it's a real search
@@ -50,6 +58,8 @@
         [self.collectionView reloadData];
     } else {
         // this means we're actually looking at selected slides
+        [self setPreferredContentSize:CGSizeMake(420, _originalPopoverHeight)];
+        [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
         [_noResultsPrompt setText:@"Nothing selected..."];
         [_collectionView setHidden:YES];
         [_tableView setHidden:NO];
@@ -58,6 +68,23 @@
     }
 
     [_noResultsPrompt setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+    
+    lightTableButton  = [[UIBarButtonItem alloc] initWithTitle:@"+   light table" style:UIBarButtonItemStylePlain target:self action:@selector(lightTableAction)];
+    [lightTableButton setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0], NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
+    UIBarButtonItem *flexibleSpace1 = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+    slideshowButton  = [[UIBarButtonItem alloc] initWithTitle:@"+   slideshow" style:UIBarButtonItemStylePlain target:self action:@selector(slideShowAction)];
+    [slideshowButton setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0], NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
+    UIBarButtonItem *flexibleSpace2 = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+    
+    clearButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [clearButton setFrame:CGRectMake(0, 0, 80.f, 44.f)];
+    [clearButton setImage:[UIImage imageNamed:@"miniRemove"] forState:UIControlStateNormal];
+    [clearButton setTitle:@"   clear" forState:UIControlStateNormal];
+    [clearButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0]];
+    [clearButton addTarget:self action:@selector(removeSelected) forControlEvents:UIControlEventTouchUpInside];
+    [clearButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    clearBarButton = [[UIBarButtonItem alloc] initWithCustomView:clearButton];
+    [self.navigationItem setLeftBarButtonItems:@[lightTableButton, flexibleSpace1, slideshowButton, flexibleSpace2, clearBarButton]];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -90,6 +117,20 @@
     } else {
         [self.searchBar setHidden:YES];
     }
+    if (self.view.alpha != 1.0){
+        [UIView animateWithDuration:.23 animations:^{
+            [self.view setAlpha:1.0];
+        }];
+    }
+    [self.navigationController setPreferredContentSize:CGSizeMake(420, _originalPopoverHeight)];
+    
+    //hide the navigation bar if there are no photos so that we can see the no photos prompt
+    if (!_photos.count){
+        [self.navigationController setNavigationBarHidden:YES];
+    } else {
+        [self.navigationController setNavigationBarHidden:NO animated:YES];
+    }
+    [self.tableView reloadData];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -105,63 +146,23 @@
         return 0;
     } else {
         [_noResultsPrompt setHidden:YES];
-        return 2;
+        return 1;
     }
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if (section == 0){
-        return 1;
+    if (searching){
+        return _filteredPhotos.count;
     } else {
-        if (searching){
-            return _filteredPhotos.count;
-        } else {
-            return _photos.count;
-        }
+        return _photos.count;
     }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 0){
-        
-        WFSearchOptionsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SearchOptionsCell" forIndexPath:indexPath];
-        [cell.textLabel setText:@""];
-        [cell.lightTableButton setHidden:NO];
-        [cell.lightTableButton addTarget:self action:@selector(lightTableAction) forControlEvents:UIControlEventTouchUpInside];
-        //[cell.lightTableButton setImage:[UIImage imageNamed:@"whitePlus"] forState:UIControlStateNormal];
-        [cell.lightTableButton setTitle:@"+   light table" forState:UIControlStateNormal];
-        [cell.lightTableButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:0.f]];
-        
-        [cell.slideShowButton setHidden:NO];
-        //[cell.slideShowButton setImage:[UIImage imageNamed:@"whitePlus"] forState:UIControlStateNormal];
-        [cell.slideShowButton setTitle:@"+   slideshow" forState:UIControlStateNormal];
-        [cell.slideShowButton addTarget:self action:@selector(slideShowAction) forControlEvents:UIControlEventTouchUpInside];
-        [cell.slideShowButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.02f]];
-        
-        [cell.clearSelectedButton setHidden:NO];
-        [cell.cancelXImageView setImage:[UIImage imageNamed:@"remove"]];
-        CGPoint centerPoint = cell.clearSelectedButton.center;
-        CGRect cancelXFrame = cell.cancelXImageView.frame;
-        cancelXFrame.origin.x = centerPoint.x-40;
-        [cell.cancelXImageView setFrame:cancelXFrame];
-        [cell.clearSelectedButton setTitle:@"   clear" forState:UIControlStateNormal];
-        [cell.clearSelectedButton addTarget:self action:@selector(removeSelected) forControlEvents:UIControlEventTouchUpInside];
-        [cell.clearSelectedButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.04f]];
-        return cell;
-    } else {
-        WFSearchResultsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SearchCell" forIndexPath:indexPath];
-        Photo *photo = searching ? _filteredPhotos[indexPath.row] : _photos[indexPath.row];
-        [cell configureForPhoto:photo];
-        return cell;
-    }
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 0){
-        return 44.f;
-    } else {
-        return 80.f;
-    }
+    WFSearchResultsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SearchCell" forIndexPath:indexPath];
+    Photo *photo = searching ? _filteredPhotos[indexPath.row] : _photos[indexPath.row];
+    [cell configureForPhoto:photo];
+    return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -177,14 +178,56 @@
 }
 
 - (void)lightTableAction {
-    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(lightTableFromSelected)]) {
-        [self.searchDelegate lightTableFromSelected];
-    }
+    [self performSegueWithIdentifier:@"LightTables" sender:self];
 }
 
 - (void)slideShowAction {
-    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(slideShowFromSelected)]) {
-        [self.searchDelegate slideShowFromSelected];
+    [self performSegueWithIdentifier:@"Slideshows" sender:self];
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    [super prepareForSegue:segue sender:sender];
+    if ([segue.identifier isEqualToString:@"LightTables"]){
+        WFLightTablesViewController *vc = [segue destinationViewController];
+        vc.lightTableDelegate = self;
+    } else if ([segue.identifier isEqualToString:@"Slideshows"]){
+        WFSlideshowsViewController *vc = [segue destinationViewController];
+        vc.slideshowDelegate = self;
+    }
+}
+
+- (void)lightTableSelected:(NSNumber *)lightTableId {
+    Table *lightTable;
+    if ([lightTableId isEqualToNumber:@0]){
+        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(newLightTableForSelected)]) {
+            [self.searchDelegate newLightTableForSelected];
+        }
+    } else {
+        lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(lightTableForSelected:)]) {
+            [self.searchDelegate lightTableForSelected:lightTable];
+        }
+    }
+}
+
+- (void)batchFavorite {
+    NSLog(@"should be batch favoriting");
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(batchFavorite)]){
+        [self.searchDelegate batchFavorite];
+    }
+}
+
+- (void)newSlideshow {
+    Slideshow *slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(slideshowSelected:)]) {
+        [self.searchDelegate slideshowForSelected:slideshow];
+    }
+}
+
+- (void)slideshowSelected:(Slideshow *)slideshow {
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(slideshowSelected:)]) {
+        [self.searchDelegate slideshowForSelected:slideshow];
     }
 }
 
@@ -320,49 +363,12 @@
     }
 }
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
+- (void)viewWillDisappear:(BOOL)animated {
+    [UIView animateWithDuration:.23 animations:^{
+        [self.view setAlpha:0.0];
+    }];
+    [super viewWillDisappear:animated];
 }
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

@@ -10,5 +10,4 @@
 
 @interface WFCatalogHeaderView : UICollectionReusableView
 @property (weak, nonatomic) IBOutlet UILabel *headerLabel;
-@property (weak, nonatomic) IBOutlet UIButton *resetButton;
 @end

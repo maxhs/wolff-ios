@@ -41,7 +41,7 @@
     [self setupSlideContainer];
     _art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
     [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-    [_submitButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:1]];
+    [_submitButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
     [_submitButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     [_submitButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_submitButton addTarget:self action:@selector(post) forControlEvents:UIControlEventTouchUpInside];
@@ -64,11 +64,6 @@
     [_slideContainerView setBackgroundColor:kSlideBackgroundColor];
     _slideContainerView.layer.cornerRadius = 14.f;
     _slideContainerView.layer.backgroundColor = [UIColor colorWithWhite:1 alpha:.23].CGColor;
-//    _slideContainerView.layer.shadowColor = [UIColor colorWithWhite:.5 alpha:1].CGColor;
-//    _slideContainerView.layer.shadowOpacity = .4f;
-//    _slideContainerView.layer.shadowOffset = CGSizeMake(1.3f, 1.7f);
-//    _slideContainerView.layer.shadowRadius = 1.3f;
-//    
     _slideContainerView.clipsToBounds = NO;
     
     [_addPhotoButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];

@@ -20,6 +20,7 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define SYSTEM_VERSION     [[[UIDevice currentDevice] systemVersion] floatValue]
 
 #define kSidebarWidth 280.f
+#define kFastAnimationDuration .23f
 #define kDefaultAnimationDuration .77f
 #define kMediumAnimationDuration 1.4f
 #define kSlowAnimationDuration 2.3f
@@ -78,7 +79,7 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kNoLightTable @"No light table"
 #define kExistingUser @"ExistingUser"
 #define kExistingLightTable @"Existing light table"
-
+#define kUserUrlPlaceholder @"e.g. affiliation website, academia.edu, linkedin"
 #define kSlideBackgroundColor [UIColor colorWithWhite:.95f alpha:1]
 #define kSlideShadowColor [UIColor colorWithWhite:.4 alpha:1]
 #define kSaffronColor [UIColor colorWithRed:244.f/255.f green:196.f/255.f blue:48.f/255.f alpha:1.f]

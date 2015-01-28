@@ -15,6 +15,9 @@
 
 @property (nonatomic, retain) NSString * title;
 @property (nonatomic, retain) NSString * caption;
+@property (nonatomic, retain) NSString * rectString1;
+@property (nonatomic, retain) NSString * rectString2;
+@property (nonatomic, retain) NSString * rectString3;
 @property (nonatomic, retain) NSNumber * identifier;
 @property (nonatomic, retain) NSNumber * index;
 @property (nonatomic, retain) Slideshow *slideshow;

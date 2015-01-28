@@ -11,4 +11,8 @@
 
 @interface WFUtilities : NSObject
 + (UIImageView *)findNavShadow:(UIView *)view;
++ (NSDate*)parseDate:(id)value;
++ (NSDate*)parseDateTime:(id)value;
++ (NSString*)parseDateReturnString:(id)value;
++ (NSString*)parseDateTimeReturnString:(id)value;
 @end

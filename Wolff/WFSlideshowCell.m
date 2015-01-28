@@ -32,10 +32,11 @@
     
     [_scrollView setContentSize:CGSizeMake(kSidebarWidth+100, self.contentView.frame.size.height)];
     [_scrollView setUserInteractionEnabled:NO];
-    [self.contentView addGestureRecognizer:_scrollView.panGestureRecognizer];
     _scrollView.delegate = self;
+    [self.textLabel setTextColor:[UIColor blackColor]];
     
-    [self.textLabel setTextColor:[UIColor whiteColor]];
+    [_iconImageView setImage:nil];
+    [self.imageView setImage:nil];
 }
 
 - (void)prepareForReuse {
@@ -43,6 +44,7 @@
     [self.textLabel setText:@""];
     [_slideshowLabel setText:@""];
     [_iconImageView setImage:nil];
+    [self.imageView setImage:nil];
 }
 
 - (void)configureForSlideshow:(Slideshow *)slideshow {
@@ -63,7 +65,7 @@
     if (slideshow.title.length){
         [_slideshowLabel setText:slideshow.title];
         [_slideshowLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansItalic] size:0]];
-        [_slideshowLabel setTextColor:[UIColor whiteColor]];
+        [_slideshowLabel setTextColor:[UIColor blackColor]];
     } else {
         [_slideshowLabel setText:@"No name..."];
         [_slideshowLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];

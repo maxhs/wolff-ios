@@ -20,6 +20,8 @@
 - (Institution*)institution;
 - (Favorite *)getFavoriteArt:(Art*)art;
 - (Favorite *)getFavoritePhoto:(Photo*)photo;
+- (void)addFavorite:(Favorite*)favorite;
+- (void)removeFavorite:(Favorite*)favorite;
 - (void)addLightTable:(Table*)lightTable;
 - (void)removeLightTable:(Table*)lightTable;
 - (void)addInstitution:(Institution*)institution;

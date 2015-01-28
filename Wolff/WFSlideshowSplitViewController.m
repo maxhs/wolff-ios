@@ -23,7 +23,7 @@
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "WFSaveMenuViewController.h"
 #import "WFAlert.h"
-#import "WFTablesViewController.h"
+#import "WFLightTablesViewController.h"
 #import <QuartzCore/QuartzCore.h>
 
 @interface WFSlideshowSplitViewController () <UIViewControllerTransitioningDelegate, WFSearchDelegate,WFSlideshowSettingsDelegate, UIPopoverControllerDelegate,  UITextFieldDelegate, UIAlertViewDelegate, WFImageViewDelegate, WFSaveSlideshowDelegate, WFLightTablesDelegate> {
@@ -105,12 +105,15 @@
     [_longPressRecognizer addTarget:self action:@selector(longPressed:)];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didHideEditMenu:) name:UIMenuControllerDidHideMenuNotification object:nil];
+    //NSLog(@"Does the slideshow have a light table? %@",_slideshow.tables);
 }
+
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     // manually set the top inset
     topInset = self.navigationController.navigationBar.frame.size.height;
     self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+    [self.tableView setContentOffset:CGPointMake(0, -topInset)];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -261,7 +264,6 @@
         [_slideshow removeSlide:activeSlide];
         [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
-        //[self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
         [self.tableView endUpdates];
      
         activeSlide = nil;
@@ -372,13 +374,13 @@
     }];
 }
 
-- (void)longPressed:(UILongPressGestureRecognizer*)sender {
-    CGPoint loc = [sender locationInView:self.collectionView];
+- (void)longPressed:(UILongPressGestureRecognizer*)gestureRecognizer {
+    CGPoint loc = [gestureRecognizer locationInView:self.collectionView];
     CGFloat heightInScreen = fmodf((loc.y-self.collectionView.contentOffset.y), CGRectGetHeight(self.collectionView.frame));
     CGFloat hoverOffset = kSidebarWidth;
     CGPoint locInScreen = CGPointMake( loc.x-self.collectionView.contentOffset.x+hoverOffset, heightInScreen );
     
-    if (sender.state == UIGestureRecognizerStateBegan) {
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
         NSLog(@"loc start: x %f and y: %f",loc.x, loc.y);
         if (loc.x < 0){
             self.startIndex = [self.tableView indexPathForRowAtPoint:loc];
@@ -419,37 +421,39 @@
         }
     }
     
-    if (sender.state == UIGestureRecognizerStateChanged) {
+    if (gestureRecognizer.state == UIGestureRecognizerStateChanged) {
         self.draggingView.center = locInScreen;
     }
     
-    if (sender.state == UIGestureRecognizerStateEnded) {
+    if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
         NSLog(@"ended loc: %f, %f",loc.x,loc.y);
         if (selectedPhoto){
             if (loc.x < 0){
-                NSLog(@"content offset y: %f",_tableView.contentOffset.y);
-                loc.y += _tableView.contentOffset.y + 44.f; //the original offset
-                //cell was dropped in the left sidebar
-                NSArray *visibleCells = self.tableView.visibleCells;
-                [visibleCells enumerateObjectsUsingBlock:^(WFSlideTableCell *cell, NSUInteger idx, BOOL *stop) {
-                    CGFloat lowerBounds = cell.frame.origin.y;
-                    CGFloat upperBounds = cell.frame.origin.y + cell.frame.size.height;
-                    CGFloat bottomOfSlides = cell.frame.size.height * _slideshow.slides.count;
-                    //NSLog(@"Bottom of slides: %f, new loc y: %f",bottomOfSlides,loc.y);
-                    if (loc.y > bottomOfSlides){
+                CGPoint tableViewPoint = [gestureRecognizer locationInView:_tableView];
+                NSLog(@"tableViewPoint %f, %f",tableViewPoint.x, tableViewPoint.y);
+                
+                NSIndexPath *indexPathForSlideCell = [_tableView indexPathForRowAtPoint:tableViewPoint];
+
+                if (indexPathForSlideCell){
+                    
+                    //cell was dropped in the left sidebar
+                    if (indexPathForSlideCell.section == 1){
                         // this means we should add a new slide
+                        
                         Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
                         [slide addPhoto:selectedPhoto];
                         [slide setIndex:@(_slideshow.slides.count)];
+                        [self.tableView beginUpdates];
                         [_slideshow addSlide:slide];
-                        *stop = YES;
+                        [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:_slideshow.slides.count-1 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
+                        [self.tableView endUpdates];
                         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                            [self.tableView reloadData];
                             [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+
                         }];
-                        
-                    } else if (loc.y < upperBounds && loc.y > lowerBounds && selectedPhoto){
-                        Slide *slide = [_slideshow.slides objectAtIndex:idx];
+                    } else {
+                        //WFSlideTableCell *cell = (WFSlideTableCell*)[_tableView cellForRowAtIndexPath:indexPathForSlideCell];
+                        Slide *slide = [_slideshow.slides objectAtIndex:indexPathForSlideCell.row];
                         if (loc.x > -(kSidebarWidth/2) || slide.photos.count == 1){
                             if (slide.photos.count > 1){
                                 [slide replacePhotoAtIndex:1 withPhoto:selectedPhoto];
@@ -459,12 +463,14 @@
                         } else {
                             [slide replacePhotoAtIndex:0 withPhoto:selectedPhoto];
                         }
-                        [self.tableView reloadData];
-                        *stop = YES;
+                        [self.tableView reloadRowsAtIndexPaths:@[indexPathForSlideCell] withRowAnimation:UITableViewRowAnimationAutomatic];
+                        //[self.tableView reloadData];
                         [self endPressAnimation];
                         return;
                     }
-                }];
+                    
+                }
+    
             } else {
                 NSLog(@"Art slide was not dropped on the left sidebar");
             }
@@ -549,11 +555,11 @@
 }
 
 - (void)enableOfflineMode {
-    NSLog(@"Should enable offline mode");
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
         self.popover = nil;
     }
+    [WFAlert show:@"We're still working on these feature.\n\nBut don't worry, you can still save all your slideshows to the cloud." withTime:3.7f];
 }
 
 - (void)save {
@@ -603,25 +609,30 @@
         [parameters setObject:slideObject forKey:[NSString stringWithFormat:@"slides[%lu]",(unsigned long)idx]];
     }];
     
+    [ProgressHUD show:@"Saving..."];
     if ([_slideshow.identifier isEqualToNumber:@0]){
-        [manager POST:[NSString stringWithFormat:@"slideshows"] parameters:@{@"slideshow":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [manager POST:[NSString stringWithFormat:@"slideshows"] parameters:@{@"slideshow":parameters,@"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success creating a slideshow: %@",responseObject);
             [_slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [WFAlert show:@"Slideshow saved!" withTime:2.3f];
+                [WFAlert show:@"Slideshow saved" withTime:2.3f];
+                [ProgressHUD dismiss];
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to create a slideshow: %@",error.description);
+            [ProgressHUD dismiss];
         }];
     } else {
-        [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",_slideshow.identifier] parameters:@{@"slideshow":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",_slideshow.identifier] parameters:@{@"slideshow":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success saving a slideshow: %@",responseObject);
             [_slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [WFAlert show:@"Slideshow saved!" withTime:2.3f];
+                [WFAlert show:@"Slideshow saved" withTime:2.3f];
+                [ProgressHUD dismiss];
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to save a slideshow: %@",error.description);
+            [ProgressHUD dismiss];
         }];
     }
 }
@@ -640,8 +651,9 @@
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
-    WFTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tables"];
+    WFLightTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTables"];
     vc.lightTableDelegate = self;
+    vc.slideshowShareMode = YES;
     [vc setSlideshow:_slideshow];
     [vc setLightTables:_currentUser.lightTables.array.mutableCopy];
     CGFloat vcHeight = _currentUser.lightTables.count*54.f > 260.f ? 260 : (_currentUser.lightTables.count)*54.f;

@@ -8,7 +8,7 @@
 
 #import "WFGroupsInteractor.h"
 #import "Constants.h"
-#import "WFTablesViewController.h"
+#import "WFLightTablesViewController.h"
 
 @interface WFGroupsInteractor () <UIViewControllerAnimatedTransitioning, UIViewControllerTransitioningDelegate, UIViewControllerInteractiveTransitioning, UIDynamicAnimatorDelegate>
 
@@ -63,7 +63,7 @@
             if (location.x < CGRectGetMidX(recognizer.view.bounds)) {
                 NSLog(@"presenting");
                 self.presenting = YES;
-                WFTablesViewController *viewController = [[WFTablesViewController alloc] initWithPanTarget:self];
+                WFLightTablesViewController *viewController = [[WFLightTablesViewController alloc] initWithPanTarget:self];
                 viewController.modalPresentationStyle = UIModalPresentationCustom;
                 viewController.transitioningDelegate = self;
                 [self.parentViewController presentViewController:viewController animated:YES completion:nil];
@@ -101,7 +101,7 @@
 -(void)presentMenu {
     self.presenting = YES;
     
-    WFTablesViewController *viewController = [[WFTablesViewController alloc] initWithPanTarget:self];
+    WFLightTablesViewController *viewController = [[WFLightTablesViewController alloc] initWithPanTarget:self];
     viewController.modalPresentationStyle = UIModalPresentationCustom;
     viewController.transitioningDelegate = self;
     

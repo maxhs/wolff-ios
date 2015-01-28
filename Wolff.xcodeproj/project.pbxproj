@@ -20,7 +20,7 @@
 		5026DF541A3B470A000CD26F /* Interval.m in Sources */ = {isa = PBXBuildFile; fileRef = 5026DF531A3B470A000CD26F /* Interval.m */; };
 		5026DF571A3B473E000CD26F /* Interval+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 5026DF561A3B473E000CD26F /* Interval+helper.m */; };
 		5026DF5A1A3CBE80000CD26F /* WFGroupsInteractor.m in Sources */ = {isa = PBXBuildFile; fileRef = 5026DF591A3CBE80000CD26F /* WFGroupsInteractor.m */; };
-		5026DF5D1A3CC0C0000CD26F /* WFTablesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5026DF5C1A3CC0C0000CD26F /* WFTablesViewController.m */; };
+		5026DF5D1A3CC0C0000CD26F /* WFLightTablesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5026DF5C1A3CC0C0000CD26F /* WFLightTablesViewController.m */; };
 		5026DF601A3CC4D1000CD26F /* WFTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 5026DF5F1A3CC4D1000CD26F /* WFTableCell.m */; };
 		5026DF631A3CCB80000CD26F /* WFTablesAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = 5026DF621A3CCB80000CD26F /* WFTablesAnimator.m */; };
 		5026DF701A3D1F62000CD26F /* blackRemove.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6A1A3D1F62000CD26F /* blackRemove.png */; };
@@ -38,6 +38,13 @@
 		503CD5951A715D7300F4FF85 /* WFFlagCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 503CD5941A715D7300F4FF85 /* WFFlagCell.m */; };
 		503CD5981A72BF2B00F4FF85 /* WFSlideshowTitleCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 503CD5971A72BF2B00F4FF85 /* WFSlideshowTitleCell.m */; };
 		503CD59B1A74C6E800F4FF85 /* WFProfileAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = 503CD59A1A74C6E800F4FF85 /* WFProfileAnimator.m */; };
+		503CD59E1A76F83600F4FF85 /* WFPhotoTileCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 503CD59D1A76F83600F4FF85 /* WFPhotoTileCell.m */; };
+		503CD5A81A77203A00F4FF85 /* miniRemove.png in Resources */ = {isa = PBXBuildFile; fileRef = 503CD5A51A77203A00F4FF85 /* miniRemove.png */; };
+		503CD5A91A77203A00F4FF85 /* miniRemove@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 503CD5A61A77203A00F4FF85 /* miniRemove@2x.png */; };
+		503CD5AA1A77203A00F4FF85 /* miniRemove@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 503CD5A71A77203A00F4FF85 /* miniRemove@3x.png */; };
+		503CD5B41A773A6900F4FF85 /* whiteLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 503CD5B11A773A6900F4FF85 /* whiteLogo.png */; };
+		503CD5B51A773A6900F4FF85 /* whiteLogo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 503CD5B21A773A6900F4FF85 /* whiteLogo@2x.png */; };
+		503CD5B61A773A6900F4FF85 /* whiteLogo@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 503CD5B31A773A6900F4FF85 /* whiteLogo@3x.png */; };
 		504926241A58DFB9000C6FD9 /* infoCircle.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926211A58DFB9000C6FD9 /* infoCircle.png */; };
 		504926251A58DFB9000C6FD9 /* infoCircle@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926221A58DFB9000C6FD9 /* infoCircle@2x.png */; };
 		504926261A58DFB9000C6FD9 /* infoCircle@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 504926231A58DFB9000C6FD9 /* infoCircle@3x.png */; };
@@ -201,7 +208,7 @@
 		50DB44451A56211D00856174 /* transparentIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44421A56211D00856174 /* transparentIcon@2x.png */; };
 		50DB44461A56211D00856174 /* transparentIcon@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44431A56211D00856174 /* transparentIcon@3x.png */; };
 		50DB44491A564A2900856174 /* WFProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB44481A564A2900856174 /* WFProfileViewController.m */; };
-		50DB444C1A564EB600856174 /* WFProfileCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB444B1A564EB600856174 /* WFProfileCell.m */; };
+		50DB444C1A564EB600856174 /* WFProfileHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB444B1A564EB600856174 /* WFProfileHeader.m */; };
 		50DB444F1A56570C00856174 /* WFNewLightTableAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB444E1A56570C00856174 /* WFNewLightTableAnimator.m */; };
 		50DB44531A57054500856174 /* people.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44501A57054500856174 /* people.png */; };
 		50DB44541A57054500856174 /* people@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44511A57054500856174 /* people@2x.png */; };
@@ -366,8 +373,8 @@
 		5026DF561A3B473E000CD26F /* Interval+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "Interval+helper.m"; sourceTree = "<group>"; };
 		5026DF581A3CBE80000CD26F /* WFGroupsInteractor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFGroupsInteractor.h; sourceTree = "<group>"; };
 		5026DF591A3CBE80000CD26F /* WFGroupsInteractor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFGroupsInteractor.m; sourceTree = "<group>"; };
-		5026DF5B1A3CC0C0000CD26F /* WFTablesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFTablesViewController.h; sourceTree = "<group>"; };
-		5026DF5C1A3CC0C0000CD26F /* WFTablesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFTablesViewController.m; sourceTree = "<group>"; };
+		5026DF5B1A3CC0C0000CD26F /* WFLightTablesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFLightTablesViewController.h; sourceTree = "<group>"; };
+		5026DF5C1A3CC0C0000CD26F /* WFLightTablesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFLightTablesViewController.m; sourceTree = "<group>"; };
 		5026DF5E1A3CC4D1000CD26F /* WFTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFTableCell.h; sourceTree = "<group>"; };
 		5026DF5F1A3CC4D1000CD26F /* WFTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFTableCell.m; sourceTree = "<group>"; };
 		5026DF611A3CCB80000CD26F /* WFTablesAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFTablesAnimator.h; sourceTree = "<group>"; };
@@ -393,6 +400,14 @@
 		503CD5971A72BF2B00F4FF85 /* WFSlideshowTitleCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideshowTitleCell.m; sourceTree = "<group>"; };
 		503CD5991A74C6E800F4FF85 /* WFProfileAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFProfileAnimator.h; sourceTree = "<group>"; };
 		503CD59A1A74C6E800F4FF85 /* WFProfileAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFProfileAnimator.m; sourceTree = "<group>"; };
+		503CD59C1A76F83600F4FF85 /* WFPhotoTileCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFPhotoTileCell.h; sourceTree = "<group>"; };
+		503CD59D1A76F83600F4FF85 /* WFPhotoTileCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFPhotoTileCell.m; sourceTree = "<group>"; };
+		503CD5A51A77203A00F4FF85 /* miniRemove.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = miniRemove.png; sourceTree = "<group>"; };
+		503CD5A61A77203A00F4FF85 /* miniRemove@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "miniRemove@2x.png"; sourceTree = "<group>"; };
+		503CD5A71A77203A00F4FF85 /* miniRemove@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "miniRemove@3x.png"; sourceTree = "<group>"; };
+		503CD5B11A773A6900F4FF85 /* whiteLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteLogo.png; sourceTree = "<group>"; };
+		503CD5B21A773A6900F4FF85 /* whiteLogo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "whiteLogo@2x.png"; sourceTree = "<group>"; };
+		503CD5B31A773A6900F4FF85 /* whiteLogo@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "whiteLogo@3x.png"; sourceTree = "<group>"; };
 		504926211A58DFB9000C6FD9 /* infoCircle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = infoCircle.png; sourceTree = "<group>"; };
 		504926221A58DFB9000C6FD9 /* infoCircle@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "infoCircle@2x.png"; sourceTree = "<group>"; };
 		504926231A58DFB9000C6FD9 /* infoCircle@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "infoCircle@3x.png"; sourceTree = "<group>"; };
@@ -591,8 +606,8 @@
 		50DB44431A56211D00856174 /* transparentIcon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "transparentIcon@3x.png"; sourceTree = "<group>"; };
 		50DB44471A564A2900856174 /* WFProfileViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFProfileViewController.h; sourceTree = "<group>"; };
 		50DB44481A564A2900856174 /* WFProfileViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFProfileViewController.m; sourceTree = "<group>"; };
-		50DB444A1A564EB600856174 /* WFProfileCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFProfileCell.h; sourceTree = "<group>"; };
-		50DB444B1A564EB600856174 /* WFProfileCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFProfileCell.m; sourceTree = "<group>"; };
+		50DB444A1A564EB600856174 /* WFProfileHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFProfileHeader.h; sourceTree = "<group>"; };
+		50DB444B1A564EB600856174 /* WFProfileHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFProfileHeader.m; sourceTree = "<group>"; };
 		50DB444D1A56570C00856174 /* WFNewLightTableAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNewLightTableAnimator.h; sourceTree = "<group>"; };
 		50DB444E1A56570C00856174 /* WFNewLightTableAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFNewLightTableAnimator.m; sourceTree = "<group>"; };
 		50DB44501A57054500856174 /* people.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = people.png; sourceTree = "<group>"; };
@@ -850,8 +865,8 @@
 			children = (
 				50DB02241A5A7285005A4E2F /* WFLightTableDetailsViewController.h */,
 				50DB02251A5A7285005A4E2F /* WFLightTableDetailsViewController.m */,
-				5026DF5B1A3CC0C0000CD26F /* WFTablesViewController.h */,
-				5026DF5C1A3CC0C0000CD26F /* WFTablesViewController.m */,
+				5026DF5B1A3CC0C0000CD26F /* WFLightTablesViewController.h */,
+				5026DF5C1A3CC0C0000CD26F /* WFLightTablesViewController.m */,
 			);
 			name = "Light Tables";
 			sourceTree = "<group>";
@@ -1175,6 +1190,12 @@
 			isa = PBXGroup;
 			children = (
 				F28C780618E1E4950088B4C9 /* Images.xcassets */,
+				503CD5B11A773A6900F4FF85 /* whiteLogo.png */,
+				503CD5B21A773A6900F4FF85 /* whiteLogo@2x.png */,
+				503CD5B31A773A6900F4FF85 /* whiteLogo@3x.png */,
+				503CD5A51A77203A00F4FF85 /* miniRemove.png */,
+				503CD5A61A77203A00F4FF85 /* miniRemove@2x.png */,
+				503CD5A71A77203A00F4FF85 /* miniRemove@3x.png */,
 				50CEAAE51A6DD3FB0040E8EF /* homeIcon.png */,
 				50CEAAE61A6DD3FB0040E8EF /* homeIcon@2x.png */,
 				50CEAAE71A6DD3FB0040E8EF /* homeIcon@3x.png */,
@@ -1346,6 +1367,8 @@
 			children = (
 				F2CE0571198E85850061DB94 /* WFPhotoCell.h */,
 				F2CE0572198E85850061DB94 /* WFPhotoCell.m */,
+				503CD59C1A76F83600F4FF85 /* WFPhotoTileCell.h */,
+				503CD59D1A76F83600F4FF85 /* WFPhotoTileCell.m */,
 				F2CE05B919913ECC0061DB94 /* WFMainTableCell.h */,
 				F2CE05BA19913ECC0061DB94 /* WFMainTableCell.m */,
 				50DB43F11A53C72D00856174 /* WFSlideshowCell.h */,
@@ -1360,8 +1383,8 @@
 				F2CE0581198E937B0061DB94 /* WFArtMetadataCell.m */,
 				5049263C1A593262000C6FD9 /* WFSlideMetadataCell.h */,
 				5049263D1A593262000C6FD9 /* WFSlideMetadataCell.m */,
-				50DB444A1A564EB600856174 /* WFProfileCell.h */,
-				50DB444B1A564EB600856174 /* WFProfileCell.m */,
+				50DB444A1A564EB600856174 /* WFProfileHeader.h */,
+				50DB444B1A564EB600856174 /* WFProfileHeader.m */,
 				F2CE058B198EAA730061DB94 /* WFSlideTableCell.h */,
 				F2CE058C198EAA730061DB94 /* WFSlideTableCell.m */,
 				F2CE0596198EAB7A0061DB94 /* WFSettingsCell.h */,
@@ -1533,11 +1556,13 @@
 				508DC99E1A5B836800B1C008 /* alert.png in Resources */,
 				50DB44971A58C40200856174 /* transparentIconWhite.png in Resources */,
 				508DC9601A5B764100B1C008 /* whiteTables@2x.png in Resources */,
+				503CD5B41A773A6900F4FF85 /* whiteLogo.png in Resources */,
 				505D3BBA1A66129300CD70DE /* favorite@2x.png in Resources */,
 				505D3B701A64AECA00CD70DE /* slideshow.png in Resources */,
 				505D3BC11A6630C800CD70DE /* walkthrough1.jpg in Resources */,
 				505D3B571A64ABA300CD70DE /* blueTables@3x.png in Resources */,
 				50DB44711A5867C100856174 /* cloud@2x.png in Resources */,
+				503CD5B51A773A6900F4FF85 /* whiteLogo@2x.png in Resources */,
 				50952EA31A47FE3300485831 /* edit@2x.png in Resources */,
 				F2A9580319E220F100A3B471 /* icon-120.png in Resources */,
 				F2A957FB19E220F100A3B471 /* icon-40.png in Resources */,
@@ -1558,6 +1583,7 @@
 				50952E991A47FD8100485831 /* flag.png in Resources */,
 				50DB44721A5867C100856174 /* cloud@3x.png in Resources */,
 				505D3BB41A660FCD00CD70DE /* lock@3x.png in Resources */,
+				503CD5A91A77203A00F4FF85 /* miniRemove@2x.png in Resources */,
 				50DB44551A57054500856174 /* people@3x.png in Resources */,
 				5026DF721A3D1F63000CD26F /* blackRemove@3x.png in Resources */,
 				50952EA51A47FE3300485831 /* share.png in Resources */,
@@ -1614,6 +1640,7 @@
 				50FB5F7D1A3F2AA8004D6062 /* tables@3x.png in Resources */,
 				50DB43D41A537AC500856174 /* dropToLightTable@2x.png in Resources */,
 				50952E891A47F70E00485831 /* MuseoSans-500italic.ttf in Resources */,
+				503CD5A81A77203A00F4FF85 /* miniRemove.png in Resources */,
 				50952E8C1A47F70E00485831 /* MuseoSans-900.ttf in Resources */,
 				F2A9580C19E222FC00A3B471 /* icon-180.png in Resources */,
 				50DB44081A546A8B00856174 /* blueCheck@2x.png in Resources */,
@@ -1648,6 +1675,7 @@
 				501473F71A3EA136000422B8 /* lightbulb@2x.png in Resources */,
 				501473F51A3EA136000422B8 /* image@3x.png in Resources */,
 				50952E8F1A47F99400485831 /* MuseoSans-500.ttf in Resources */,
+				503CD5B61A773A6900F4FF85 /* whiteLogo@3x.png in Resources */,
 				50DB446E1A5867C100856174 /* wrench@2x.png in Resources */,
 				F2A9580419E220F100A3B471 /* icon-144.png in Resources */,
 				50DB44391A5503FC00856174 /* cloudUpload@2x.png in Resources */,
@@ -1664,6 +1692,7 @@
 				508DC9431A5B702200B1C008 /* settings@3x.png in Resources */,
 				50DB44131A54705B00856174 /* whiteLock@3x.png in Resources */,
 				505D3B9E1A65D4E800CD70DE /* walkthrough3@2x.jpg in Resources */,
+				503CD5AA1A77203A00F4FF85 /* miniRemove@3x.png in Resources */,
 				50DB44141A54705B00856174 /* whiteFavorite.png in Resources */,
 				505D3BB21A660FCD00CD70DE /* lock.png in Resources */,
 				50DB44091A546A8B00856174 /* blueCheck.png in Resources */,
@@ -1818,7 +1847,7 @@
 				50DB443D1A55B73200856174 /* WFSearchCollectionCell.m in Sources */,
 				503CD59B1A74C6E800F4FF85 /* WFProfileAnimator.m in Sources */,
 				50DB43C91A53694C00856174 /* WFMenuCell.m in Sources */,
-				5026DF5D1A3CC0C0000CD26F /* WFTablesViewController.m in Sources */,
+				5026DF5D1A3CC0C0000CD26F /* WFLightTablesViewController.m in Sources */,
 				F2CE05A3198FCD180061DB94 /* WFSlideshowAnimator.m in Sources */,
 				502460CD1A67B4600082635E /* WFSlideshowCell.m in Sources */,
 				F2139D81193A56BE00EE5C96 /* ProgressHUD.m in Sources */,
@@ -1829,6 +1858,7 @@
 				F2CE0582198E937B0061DB94 /* WFArtMetadataCell.m in Sources */,
 				50DB44011A545DA700856174 /* WFAssetGroupPickerController.m in Sources */,
 				F20FB2FB1A24DF580007C905 /* Citation+helper.m in Sources */,
+				503CD59E1A76F83600F4FF85 /* WFPhotoTileCell.m in Sources */,
 				F20FB30D1A24F09B0007C905 /* Movement+helper.m in Sources */,
 				50DB022C1A5A7BE3005A4E2F /* WFDismissibaleNavigationController.m in Sources */,
 				50D7A9D11A622E5C007FE14C /* WFWalkthroughViewController.m in Sources */,
@@ -1845,7 +1875,7 @@
 				50DB44251A54C04800856174 /* WFSearchResultsViewController.m in Sources */,
 				F2CE0595198EAB280061DB94 /* WFSettingsViewController.m in Sources */,
 				50952E7B1A478EA100485831 /* WFMenuViewController.m in Sources */,
-				50DB444C1A564EB600856174 /* WFProfileCell.m in Sources */,
+				50DB444C1A564EB600856174 /* WFProfileHeader.m in Sources */,
 				503CD5981A72BF2B00F4FF85 /* WFSlideshowTitleCell.m in Sources */,
 				F2CE05B219911A9A0061DB94 /* Slideshow+helper.m in Sources */,
 				50DB43EA1A53946A00856174 /* WFNewArtAnimator.m in Sources */,

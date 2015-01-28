@@ -80,7 +80,7 @@
     
     [ProgressHUD show:@"Logging in..."];
     [_manager POST:[NSString stringWithFormat:@"%@/sessions",kApiBaseUrl] parameters:@{@"user":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success connecting: %@",responseObject);
+        //NSLog(@"Success connecting: %@",responseObject);
         if ([responseObject objectForKey:@"user"]){
             NSDictionary *userDict = [responseObject objectForKey:@"user"];
             _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[userDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -139,8 +139,8 @@
     }*/
     [[UINavigationBar appearance] setBarStyle:UIBarStyleBlackTranslucent];
     [[UIBarButtonItem appearance] setTintColor:[UIColor whiteColor]];
-    [[UINavigationBar appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kMuseoSansLight size:21]}];
-    [[UIBarButtonItem appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kMuseoSansLight size:18]} forState:UIControlStateNormal];
+    [[UINavigationBar appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kMuseoSansLight size:20]}];
+    [[UIBarButtonItem appearance] setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithName:kMuseoSansSemibold size:15]} forState:UIControlStateNormal];
     
     [[UISwitch appearance] setTintColor:kSaffronColor];
     [[UISwitch appearance] setOnTintColor:kSaffronColor];

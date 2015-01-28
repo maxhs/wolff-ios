@@ -15,13 +15,15 @@
 #import "Location+helper.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 #import <SDWebImage/UIButton+WebCache.h>
-#import "WFTablesViewController.h"
+#import "WFLightTablesViewController.h"
 #import "WFAlert.h"
 #import "WFComparisonViewController.h"
 #import "WFSlideshowFocusAnimator.h"
 #import "WFLoginAnimator.h"
 #import "WFLoginViewController.h"
 #import "WFFlagViewController.h"
+#import "WFProfileAnimator.h"
+#import "WFProfileViewController.h"
 
 @interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, UIActionSheetDelegate> {
     WFAppDelegate *delegate;
@@ -32,9 +34,11 @@
     Favorite *_favorite;
     BOOL editMode;
     BOOL login;
+    BOOL profile;
     CGFloat keyboardHeight;
     UITextView *titleTextView;
     UITextView *notesTextView;
+    UISwitch *privateSwitch;
     CGRect originalViewFrame;
     UIView *saveContainerView;
     UIButton *saveButton;
@@ -67,7 +71,7 @@
     editMode = NO;
     [self setupDateFormatter];
     [self registerForKeyboardNotifications];
-    [self loadArtMetadata];
+    [self loadPhotoMetadata];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -123,6 +127,7 @@
         [_postedByButton setTitle:[NSString stringWithFormat:@"Posted: %@",_photo.user.fullName] forState:UIControlStateNormal];
         [_postedByButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
         [_postedByButton setHidden:NO];
+        [_postedByButton.titleLabel setNumberOfLines:0];
     } else {
         [_postedByButton setHidden:YES];
     }
@@ -153,13 +158,12 @@
         saveButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [saveContainerView addSubview:saveButton];
         [saveButton setFrame:CGRectMake(10, 13, saveContainerView.frame.size.width-20, 44)];
-        [saveButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+        [saveButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0]];
         [saveButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [saveButton addTarget:self action:@selector(saveMetadata) forControlEvents:UIControlEventTouchUpInside];
         [saveButton setTitle:@"SAVE" forState:UIControlStateNormal];
         saveButton.layer.cornerRadius = 7.f;
-        saveButton.layer.borderColor = [UIColor darkGrayColor].CGColor;
-        saveButton.layer.borderWidth = .5f;
+        [saveButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
         
     } else {
         [_editButton setHidden:YES];
@@ -181,7 +185,7 @@
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
-    WFTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tables"];
+    WFLightTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTables"];
     vc.lightTableDelegate = self;
     [vc setLightTables:_currentUser.lightTables.array.mutableCopy];
     CGFloat vcHeight = _currentUser.lightTables.count*54.f > 260.f ? 260 : (_currentUser.lightTables.count)*54.f;
@@ -268,12 +272,19 @@
 }
 
 - (void)showProfile {
-    NSLog(@"Should be showing profile.");
+    WFProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Profile"];
+    [vc setUser:_photo.user];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
 }
 
-- (void)loadArtMetadata {
+- (void)loadPhotoMetadata {
     [manager GET:[NSString stringWithFormat:@"photos/%@",_photo.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success fetching metadata: %@",responseObject);
+        //NSLog(@"Success fetching metadata: %@",responseObject);
         [_photo populateFromDictionary:[responseObject objectForKey:@"photo"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [self setupHeader];
@@ -293,17 +304,21 @@
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:_photo.art.title forKey:@"title"];
     [parameters setObject:_photo.art.notes forKey:@"notes"];
-    [manager PATCH:[NSString stringWithFormat:@"arts/%@",_photo.identifier] parameters:@{@"art":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [parameters setObject:@(privateSwitch.isOn) forKey:@"private"];
+    [manager PATCH:[NSString stringWithFormat:@"arts/%@",_photo.art.identifier] parameters:@{@"art":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success saving metadata: %@",responseObject);
-        [_photo populateFromDictionary:[responseObject objectForKey:@"art"]];
+        [_photo.art populateFromDictionary:[responseObject objectForKey:@"art"]];
+        
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [ProgressHUD dismiss];
+            [WFAlert show:@"Saved" withTime:2.3f];
         }];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error saving metadata: %@",error.description);
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [ProgressHUD dismiss];
+            [WFAlert show:@"Something went wrong while trying to save your changes. Please try again soon." withTime:3.3f];
         }];
     }];
 }
@@ -319,7 +334,11 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 8;
+    if (editMode){
+        return 9;
+    } else {
+        return 8;
+    }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -416,9 +435,17 @@
             CGRect notesRect = cell.textView.frame;
             CGFloat cellHeight = cell.frame.size.height;
             CGFloat minHeight = cellHeight-14 > 86 ? cellHeight-14 : 86;
+            notesRect.origin.y = 12.f;
             notesRect.size.height = minHeight;
             [cell.textView setFrame:notesRect];
             [cell.textView setText:_photo.art.notes];
+            break;
+        case 8:
+            [cell.label setText:@"PRIVATE"];
+            [cell.privateSwitch setHidden:NO];
+            privateSwitch = cell.privateSwitch;
+            [privateSwitch setOn:_photo.art.privateArt.boolValue];
+            [cell.textView setHidden:YES];
             break;
             
         default:
@@ -471,7 +498,7 @@
         sizingTextView = nil;
         return newRowHeight;
     } else if (indexPath.row == 7) {
-        return 100;
+        return 124;
     } else {
         return rowHeight;
     }
@@ -486,7 +513,7 @@
             _favorite = [Favorite MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             [_favorite populateFromDictionary:[responseObject objectForKey:@"favorite"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [_favoriteButton setTitle:@"  Favorited!" forState:UIControlStateNormal];
+                [_favoriteButton setTitle:@"   Favorited!" forState:UIControlStateNormal];
                 [_favoriteButton removeTarget:nil
                                        action:NULL
                              forControlEvents:UIControlEventAllEvents];
@@ -557,22 +584,23 @@
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
     if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Inappropriate"]){
-        NSLog(@"should be flagging");
         [self flag];
     } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Copyright"]) {
-        WFFlagViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Flag"];
+        [self flag];
+        /*WFFlagViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Flag"];
         [vc setCopyright:YES];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         [self presentViewController:nav animated:YES completion:^{
             
-        }];
+        }];*/
     } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Incorrect metadata"]) {
-        WFFlagViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Flag"];
+        [self flag];
+        /*WFFlagViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Flag"];
         [vc setCopyright:NO];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         [self presentViewController:nav animated:YES completion:^{
             
-        }];
+        }];*/
     }
 }
 
@@ -663,6 +691,10 @@
         WFLoginAnimator *animator = [WFLoginAnimator new];
         animator.presenting = YES;
         return animator;
+    } else if (profile){
+        WFProfileAnimator *animator = [WFProfileAnimator new];
+        animator.presenting = YES;
+        return animator;
     } else {
         WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
         animator.presenting = YES;
@@ -671,9 +703,11 @@
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
-    
     if (login){
         WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
+        return animator;
+    } else if (profile){
+        WFProfileAnimator *animator = [WFProfileAnimator new];
         return animator;
     } else {
         WFLoginAnimator *animator = [WFLoginAnimator new];

@@ -22,10 +22,12 @@
 @dynamic institutions;
 @dynamic lightTables;
 @dynamic ownedTables;
+@dynamic url;
+@dynamic prefix;
+@dynamic location;
 @dynamic admin;
 @dynamic arts;
 @dynamic avatarSmall;
-@dynamic avatarMedium;
 @dynamic avatarLarge;
 @dynamic pushPermission;
 @dynamic emailPermission;

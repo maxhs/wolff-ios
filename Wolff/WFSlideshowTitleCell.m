@@ -16,8 +16,8 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     [_titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleHeadline forFont:kMuseoSansThin] size:0]];
-    [_authorLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]];
-    [_institutionLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]];
+    [_authorLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+    [_institutionLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
     [_wolffLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSans] size:0]];
 }
 
@@ -25,6 +25,8 @@
     [_titleLabel setText:slideshow.title];
     [_authorLabel setText:slideshow.user.fullName];
     [_institutionLabel setText:slideshow.user.institution.name];
+    [_wolffLabel setTextColor:[UIColor colorWithWhite:1 alpha:.77f]];
+    [_wolffIcon setAlpha:.77f];
 }
 
 @end
