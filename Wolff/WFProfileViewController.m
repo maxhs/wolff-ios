@@ -71,10 +71,13 @@
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     }
     [manager GET:[NSString stringWithFormat:@"users/%@",_user.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success loading user details: %@",responseObject);
+        //NSLog(@"Success loading user details: %@",responseObject);
         [_user populateFromDictionary:[responseObject objectForKey:@"user"]];
-        self.title = _user.fullName;
-        [_collectionView reloadData];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            self.title = _user.fullName;
+            [_collectionView reloadData];
+        }];
+       
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to load user details: %@",error.description);
     }];
@@ -187,7 +190,8 @@
 
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+    NSLog(@"profile dismiss");
+    [self dismissViewControllerAnimated:YES completion:^{
         
     }];
 }

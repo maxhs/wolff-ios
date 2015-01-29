@@ -32,19 +32,36 @@
 
 - (void)prepareForReuse {
     [super prepareForReuse];
-    [_artImageView1 setAlpha:0.f];
-    [_artImageView1 setImage:nil];
-    [_artImageView1 setMoved:NO];
-    [_artImageView2 setAlpha:0.f];
-    [_artImageView2 setImage:nil];
-    [_artImageView2 setMoved:NO];
-    [_artImageView3 setAlpha:0.f];
-    [_artImageView3 setImage:nil];
-    [_artImageView3 setMoved:NO];
     
     [_progressView1 setAlpha:1.0];
+    [_progressView1 setHidden:NO];
     [_progressView2 setAlpha:1.0];
+    [_progressView2 setHidden:NO];
     [_progressView3 setAlpha:1.0];
+    [_progressView3 setHidden:NO];
+    
+    [self recenterView:_artImageView1];
+    [self recenterView:_artImageView2];
+    [self recenterView:_artImageView3];
+}
+
+- (void)recenterView:(WFInteractiveImageView*)viewToRecenter{
+    [viewToRecenter setAlpha:0.f];
+    [viewToRecenter setImage:nil];
+    
+    viewToRecenter.transform = CGAffineTransformIdentity;
+    CGRect newFrame = viewToRecenter.frame;
+    if (viewToRecenter == _artImageView1){
+        newFrame.origin.x = (_containerView1.frame.size.width-newFrame.size.width) / 2;
+        newFrame.origin.y = (_containerView1.frame.size.height-newFrame.size.height) / 2;
+    } else if (viewToRecenter == _artImageView2){
+        newFrame.origin.x = (_containerView2.frame.size.width-newFrame.size.width) / 2;
+        newFrame.origin.y = (_containerView2.frame.size.height-newFrame.size.height) / 2;
+    } else if (viewToRecenter == _artImageView3){
+        newFrame.origin.x = (_containerView3.frame.size.width-newFrame.size.width) / 2;
+        newFrame.origin.y = (_containerView3.frame.size.height-newFrame.size.height) / 2;
+    }
+    [viewToRecenter setFrame:newFrame];
 }
 
 - (void)configureForPhotos:(NSMutableOrderedSet *)photos inSlide:(Slide *)slide{
@@ -57,6 +74,10 @@
         [_containerView1 setHidden:NO];
         [_containerView2 setHidden:YES];
         [_containerView3 setHidden:YES];
+        if (slide.rectString1.length){
+            CGRect savedFrame = CGRectFromString(slide.rectString1);
+            [_artImageView1 setFrame:savedFrame];
+        }
         Photo *photo = (Photo*)[photos firstObject];
         NSURL *art1thumbUrl = [NSURL URLWithString:photo.thumbImageUrl];
         NSURL *art1originalUrl = [NSURL URLWithString:photo.originalImageUrl];
@@ -73,6 +94,9 @@
                     [_artImageView1 setAlpha:1.0];
                     [_progressView1 setAlpha:1.0];
                 }];
+            }
+            if (!slide.originalRectString1.length){
+                slide.originalRectString1 = NSStringFromCGRect(_artImageView1.frame);
             }
         }];
         [[SDWebImageManager sharedManager] downloadImageWithURL:art1originalUrl options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
@@ -96,6 +120,15 @@
         [_containerView2 setHidden:NO];
         [_containerView3 setHidden:NO];
         
+        if (slide.rectString2.length){
+            CGRect savedFrame = CGRectFromString(slide.rectString2);
+            [_artImageView2 setFrame:savedFrame];
+        }
+        if (slide.rectString3.length){
+            CGRect savedFrame = CGRectFromString(slide.rectString3);
+            [_artImageView3 setFrame:savedFrame];
+        }
+        
         Photo *photo2 = (Photo*)photos[0];
         NSURL *art2thumbUrl = [NSURL URLWithString:photo2.thumbImageUrl];
         NSURL *art2originalUrl = [NSURL URLWithString:photo2.originalImageUrl];
@@ -112,6 +145,9 @@
                     [_artImageView2 setAlpha:1.0];
                     [_progressView2 setAlpha:1.0];
                 }];
+            }
+            if (!slide.originalRectString2.length){
+                slide.originalRectString2 = NSStringFromCGRect(_artImageView2.frame);
             }
         }];
         
@@ -147,6 +183,9 @@
                     [_artImageView3 setAlpha:1.0];
                     [_progressView3 setAlpha:1.0];
                 }];
+            }
+            if (!slide.originalRectString3.length){
+                slide.originalRectString3 = NSStringFromCGRect(_artImageView3.frame);
             }
         }];
         

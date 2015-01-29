@@ -15,6 +15,9 @@
 
 @property (nonatomic, retain) NSString * title;
 @property (nonatomic, retain) NSString * caption;
+@property (nonatomic, retain) NSString * originalRectString1;
+@property (nonatomic, retain) NSString * originalRectString2;
+@property (nonatomic, retain) NSString * originalRectString3;
 @property (nonatomic, retain) NSString * rectString1;
 @property (nonatomic, retain) NSString * rectString2;
 @property (nonatomic, retain) NSString * rectString3;

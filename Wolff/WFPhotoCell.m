@@ -50,7 +50,9 @@
 }
 
 - (UIImage *)getRasterizedImageCopy {
-    CGSize size = self.frame.size; size.width+=10; size.height+=10;
+    CGSize size = self.frame.size;
+    size.width += 10;
+    size.height += 10;
     UIGraphicsBeginImageContextWithOptions(size, self.isOpaque, 0.0);
     [self.layer renderInContext:UIGraphicsGetCurrentContext()];
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();

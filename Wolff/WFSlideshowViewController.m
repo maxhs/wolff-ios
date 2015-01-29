@@ -326,9 +326,9 @@
     CGPoint fullTranslation = [gestureRecognizer locationInView:self.view];
     CGPoint translation = [gestureRecognizer translationInView:_collectionView];
     NSIndexPath *indexPathForGesture = [_collectionView indexPathForItemAtPoint:[gestureRecognizer locationInView:_collectionView]];
-    UIView *view = nil;
+    UIView *view = nil; WFSlideshowSlideCell *cell;
     if (indexPathForGesture && indexPathForGesture.section > 0){
-        WFSlideshowSlideCell *cell = (WFSlideshowSlideCell*)[_collectionView cellForItemAtIndexPath:indexPathForGesture];
+        cell = (WFSlideshowSlideCell*)[_collectionView cellForItemAtIndexPath:indexPathForGesture];
         if (cell.slide.photos.count == 1){
             view = cell.artImageView1;
         } else if (cell.slide.photos.count > 1){
@@ -346,8 +346,17 @@
     }
     [gestureRecognizer setTranslation:CGPointMake(0, 0) inView:_collectionView];
     
-    //offset
+    //offset and/or save pre-position
     [(WFInteractiveImageView*)view setMoved:YES];
+    if (cell){
+        if (view == cell.artImageView1){
+            [currentSlide setRectString1:NSStringFromCGRect(cell.artImageView1.frame)];
+        } else if (view == cell.artImageView2){
+            [currentSlide setRectString2:NSStringFromCGRect(cell.artImageView2.frame)];
+        } else if (view == cell.artImageView3){
+            [currentSlide setRectString3:NSStringFromCGRect(cell.artImageView3.frame)];
+        }
+    }
 }
 
 - (void)screenEdgePan:(UIScreenEdgePanGestureRecognizer*)gestureRecognizer {
@@ -384,9 +393,9 @@
     CGPoint gesturePoint = [gestureRecognizer locationInView:_collectionView];
     NSIndexPath *indexPathForGesture = [_collectionView indexPathForItemAtPoint:gesturePoint];
     
-    UIView *view = nil;
+    UIView *view = nil; WFSlideshowSlideCell *cell;
     if (indexPathForGesture && indexPathForGesture.section > 0){
-        WFSlideshowSlideCell *cell = (WFSlideshowSlideCell*)[_collectionView cellForItemAtIndexPath:indexPathForGesture];
+        cell = (WFSlideshowSlideCell*)[_collectionView cellForItemAtIndexPath:indexPathForGesture];
         if (cell.slide.photos.count == 1){
             view = cell.artImageView1;
         } else if (cell.slide.photos.count > 1){
@@ -428,6 +437,18 @@
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
         [_collectionView setScrollEnabled:YES];
     }
+    if (cell){
+        if (view == cell.artImageView1){
+            [currentSlide setRectString1:NSStringFromCGRect(cell.artImageView1.frame)];
+            [cell.artImageView1 setMoved:YES];
+        } else if (view == cell.artImageView2){
+            [currentSlide setRectString2:NSStringFromCGRect(cell.artImageView2.frame)];
+            [cell.artImageView2 setMoved:YES];
+        } else if (view == cell.artImageView3){
+            [currentSlide setRectString3:NSStringFromCGRect(cell.artImageView3.frame)];
+            [cell.artImageView3 setMoved:YES];
+        }
+    }
 }
 
 - (void)doubleTap:(UITapGestureRecognizer*)gestureRecognizer {
@@ -455,7 +476,7 @@
                     CGRect newFrame = artImageView1.frame;
                     newFrame.origin.x = (containerView1.frame.size.width-newFrame.size.width) / 2;
                     newFrame.origin.y = (containerView1.frame.size.height-newFrame.size.height) / 2;
-                    [artImageView1 setFrame:newFrame];
+                    [artImageView1 setFrame:CGRectFromString(currentSlide.originalRectString1)];
                     [artImageView1 setMoved:NO];
                 } else {
                     CGPoint absoluteCenterPoint;
@@ -471,7 +492,7 @@
                     CGRect newFrame = artImageView2.frame;
                     newFrame.origin.x = (containerView2.frame.size.width-newFrame.size.width) / 2;
                     newFrame.origin.y = (containerView2.frame.size.height-newFrame.size.height) / 2;
-                    [artImageView2 setFrame:newFrame];
+                    [artImageView2 setFrame:CGRectFromString(currentSlide.originalRectString2)];
                     [artImageView2 setMoved:NO];
                 } else {
                     CGPoint absolutePoint2 = [gestureRecognizer locationInView:containerView2];
@@ -487,14 +508,14 @@
                     CGRect newFrame = artImageView3.frame;
                     newFrame.origin.x = (containerView3.frame.size.width-newFrame.size.width) / 2;
                     newFrame.origin.y = (containerView3.frame.size.height-newFrame.size.height) / 2;
-                    [artImageView3 setFrame:newFrame];
+                    [artImageView3 setFrame:CGRectFromString(currentSlide.originalRectString3)];
                     [artImageView3 setMoved:NO];
                 } else {
+                    view.transform = CGAffineTransformMakeScale(1.77f, 1.77f);
                     CGPoint absolutePoint3 = [gestureRecognizer locationInView:containerView3];
                     absolutePoint3.x = containerView3.frame.size.width - absolutePoint3.x;
                     absolutePoint3.y = containerView3.frame.size.height - absolutePoint3.y;
                     view.center = absolutePoint3;
-                    view.transform = CGAffineTransformMakeScale(1.77f, 1.77f);
                     [artImageView3 setMoved:YES];
                 }
             }
@@ -516,6 +537,13 @@
 - (void)dismiss {
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
         
+    }];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        NSLog(@"Saving slideshow: %u",success);
     }];
 }
 

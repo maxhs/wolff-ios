@@ -187,6 +187,9 @@
         <attribute name="caption" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="originalRectString1" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="originalRectString2" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="originalRectString3" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="rectString1" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="rectString2" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="rectString3" optional="YES" attributeType="String" syncable="YES"/>
@@ -268,7 +271,7 @@
         <element name="Movement" positionX="324" positionY="387" width="128" height="88"/>
         <element name="Notification" positionX="288" positionY="342" width="128" height="240"/>
         <element name="Photo" positionX="279" positionY="324" width="128" height="343"/>
-        <element name="Slide" positionX="297" positionY="315" width="128" height="180"/>
+        <element name="Slide" positionX="297" positionY="315" width="128" height="225"/>
         <element name="Slideshow" positionX="288" positionY="306" width="128" height="195"/>
         <element name="Table" positionX="288" positionY="270" width="128" height="223"/>
         <element name="User" positionX="261" positionY="189" width="128" height="450"/>

@@ -114,7 +114,7 @@
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
     CGFloat endedAtX = scrollView.contentOffset.x;
-    if (endedAtX > (width * 2.25)) {
+    if (endedAtX > (width * 2.14)) {
         [self dismiss];
     }
 }

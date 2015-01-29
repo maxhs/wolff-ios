@@ -156,7 +156,7 @@
     [self setUpTableView];
     [self setUpGestureRecognizers];
     
-    [_comparisonContainerView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1f]];
+    [_comparisonContainerView setBackgroundColor:[UIColor colorWithWhite:0 alpha:.9f]];
     _dragForComparisonLabel.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansThin] size:0];
     [_dragForComparisonLabel setTextColor:[UIColor colorWithWhite:.7f alpha:.6f]];
     
@@ -399,11 +399,10 @@
     if (_currentUser && !loading){
         loading = YES;
         [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            //NSLog(@"Success getting user art: %@", responseObject);
-            
+            //NSLog(@"Success getting user dashboard: %@", responseObject);
             [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
+            
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                
                 //set up private photos and favorites
                 NSPredicate *privatePredicate = [NSPredicate predicateWithFormat:@"art.privateArt == %@ && art.user.identifier == %@", @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
                 _privatePhotos = [Photo MR_findAllWithPredicate:privatePredicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
@@ -1920,13 +1919,16 @@
             [photoIds addObject:photo.identifier];
         }];
         if (photoIds.count){
-            NSLog(@"should be synching this slideshow");
-            [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:@{@"slideshow":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                NSLog(@"Success dropping photos into slideshow: %@",responseObject);
-                
-            } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                
-            }];
+            if ([slideshow.identifier isEqualToNumber:@0]){
+                [self newSlideshow];
+            } else {
+                NSLog(@"should be synching an existing slideshow");
+                [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:@{@"slideshow":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                    NSLog(@"Success dropping photos into slideshow: %@",responseObject);
+                } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                    
+                }];
+            }
         }
     }];
 }

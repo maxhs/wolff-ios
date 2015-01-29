@@ -707,6 +707,7 @@
         WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
         return animator;
     } else if (profile){
+        NSLog(@"profile animator dismiss");
         WFProfileAnimator *animator = [WFProfileAnimator new];
         return animator;
     } else {

@@ -15,6 +15,9 @@
 
 @dynamic title;
 @dynamic identifier;
+@dynamic originalRectString1;
+@dynamic originalRectString2;
+@dynamic originalRectString3;
 @dynamic rectString1;
 @dynamic rectString2;
 @dynamic rectString3;

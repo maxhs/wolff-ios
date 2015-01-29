@@ -39,6 +39,9 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFMenuCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MenuCell" forIndexPath:indexPath];
+    UIView *selectedView = [[UIView alloc] initWithFrame:cell.frame];
+    [selectedView setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+    cell.selectedBackgroundView = selectedView;
     
     switch (indexPath.row) {
         /*case 0:

@@ -42,7 +42,7 @@
     [_tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     _tableView.rowHeight = 80.f;
     [_collectionView setBackgroundColor:[UIColor blackColor]];
-    
+    [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     // show full tile view if it's a real search
     if (!_photos.count && _shouldShowTiles){
         _photos = [Photo MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
