@@ -341,9 +341,7 @@
     }
     
     CGPoint newPoint = CGPointMake(view.center.x + translation.x, view.center.y + translation.y);
-    if (newPoint.x > 0){
-        view.center = newPoint;
-    }
+    view.center = newPoint;
     [gestureRecognizer setTranslation:CGPointMake(0, 0) inView:_collectionView];
     
     //offset and/or save pre-position
@@ -473,10 +471,8 @@
             if (view == artImageView1){
                 if (artImageView1.moved){
                     view.transform = CGAffineTransformIdentity;
-                    CGRect newFrame = artImageView1.frame;
-                    newFrame.origin.x = (containerView1.frame.size.width-newFrame.size.width) / 2;
-                    newFrame.origin.y = (containerView1.frame.size.height-newFrame.size.height) / 2;
                     [artImageView1 setFrame:CGRectFromString(currentSlide.originalRectString1)];
+                    [currentSlide setRectString1:@""];
                     [artImageView1 setMoved:NO];
                 } else {
                     CGPoint absoluteCenterPoint;
@@ -489,10 +485,8 @@
             } else if (view == artImageView2){
                 if (artImageView2.moved){
                     view.transform = CGAffineTransformIdentity;
-                    CGRect newFrame = artImageView2.frame;
-                    newFrame.origin.x = (containerView2.frame.size.width-newFrame.size.width) / 2;
-                    newFrame.origin.y = (containerView2.frame.size.height-newFrame.size.height) / 2;
                     [artImageView2 setFrame:CGRectFromString(currentSlide.originalRectString2)];
+                    [currentSlide setRectString2:@""];
                     [artImageView2 setMoved:NO];
                 } else {
                     CGPoint absolutePoint2 = [gestureRecognizer locationInView:containerView2];
@@ -505,10 +499,8 @@
             } else if (view == artImageView3){
                 if (artImageView3.moved){
                     view.transform = CGAffineTransformIdentity;
-                    CGRect newFrame = artImageView3.frame;
-                    newFrame.origin.x = (containerView3.frame.size.width-newFrame.size.width) / 2;
-                    newFrame.origin.y = (containerView3.frame.size.height-newFrame.size.height) / 2;
                     [artImageView3 setFrame:CGRectFromString(currentSlide.originalRectString3)];
+                    [currentSlide setRectString3:@""];
                     [artImageView3 setMoved:NO];
                 } else {
                     view.transform = CGAffineTransformMakeScale(1.77f, 1.77f);
