@@ -19,6 +19,7 @@
 
 @implementation WFSlideshowSlideCell
 @synthesize slide = _slide;
+@synthesize photos = _photos;
 
 - (void)awakeFromNib {
     [super awakeFromNib];
@@ -32,7 +33,9 @@
 
 - (void)prepareForReuse {
     [super prepareForReuse];
-    
+    [self resetVisibility:_artImageView1];
+    [self resetVisibility:_artImageView2];
+    [self resetVisibility:_artImageView3];
     [_progressView1 setAlpha:1.0];
     [_progressView1 setHidden:NO];
     [_progressView2 setAlpha:1.0];
@@ -45,10 +48,12 @@
     [self recenterView:_artImageView3];
 }
 
+- (void)resetVisibility:(WFInteractiveImageView*)view {
+    [view setAlpha:0.f];
+    [view setImage:nil];
+}
+
 - (void)recenterView:(WFInteractiveImageView*)viewToRecenter{
-    [viewToRecenter setAlpha:0.f];
-    [viewToRecenter setImage:nil];
-    
     viewToRecenter.transform = CGAffineTransformIdentity;
     CGRect newFrame = viewToRecenter.frame;
     if (viewToRecenter == _artImageView1){
@@ -61,11 +66,15 @@
         newFrame.origin.x = (_containerView3.frame.size.width-newFrame.size.width) / 2;
         newFrame.origin.y = (_containerView3.frame.size.height-newFrame.size.height) / 2;
     }
-    [viewToRecenter setFrame:newFrame];
+    if (newFrame.origin.x && newFrame.origin.y && newFrame.size.width > 0 && newFrame.size.height > 0){
+        [viewToRecenter setFrame:newFrame];
+    }
 }
 
 - (void)configureForPhotos:(NSMutableOrderedSet *)photos inSlide:(Slide *)slide{
     if (slide) _slide = slide;
+    _photos = photos;
+    
     [_artImageView1 setUserInteractionEnabled:YES];
     [_artImageView2 setUserInteractionEnabled:YES];
     [_artImageView3 setUserInteractionEnabled:YES];

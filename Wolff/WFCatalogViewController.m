@@ -43,6 +43,7 @@
 #import "WFSlideshowCell.h"
 #import "WFAlert.h"
 #import "WFUtilities.h"
+#import "WFSlideshowViewController.h"
 
 @interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, WFLightTableDelegate, WFSlideshowCellDelegate, WFLightTableCellDelegate, UIGestureRecognizerDelegate> {
     WFAppDelegate *delegate;
@@ -87,7 +88,7 @@
     BOOL groupBool;
     BOOL tableIsVisible;
     BOOL canLoadMorePhotos;
-    
+    BOOL showSlideshow;
     BOOL showPrivate;
     BOOL showFavorites;
     BOOL showLightTable;
@@ -198,7 +199,7 @@
     [super viewWillAppear:animated];
     _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     if (_currentUser){
-        [self loadUser];
+        [self loadUserDashboard];
         if (!tableViewRefresh){
             tableViewRefresh = [[UIRefreshControl alloc] init];
             [tableViewRefresh addTarget:self action:@selector(refreshTableView:) forControlEvents:UIControlEventValueChanged];
@@ -234,7 +235,7 @@
 - (void)refreshTableView:(UIRefreshControl*)refreshControl {
     if (_currentUser){
         [ProgressHUD show:@"Refreshing..."];
-        [self loadUser];
+        [self loadUserDashboard];
     }
 }
 
@@ -342,7 +343,7 @@
 - (void)loginSuccessful {
     _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     [self setUpNavBar];
-    [self loadUser];
+    [self loadUserDashboard];
 }
 
 - (void)loggedOut {
@@ -395,11 +396,11 @@
     }
 }
 
-- (void)loadUser {
+- (void)loadUserDashboard {
     if (_currentUser && !loading){
         loading = YES;
         [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            //NSLog(@"Success getting user dashboard: %@", responseObject);
+            NSLog(@"Success getting user dashboard: %@", responseObject);
             [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
             
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -411,9 +412,6 @@
                         [_favoritePhotos addObject:favorite.photo];
                     }
                 }];
-                
-                _tables = _tables ? _currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:_currentUser.lightTables.array];
-                _slideshows = _slideshows ? _currentUser.slideshows.array.mutableCopy : [NSMutableArray arrayWithArray:_currentUser.slideshows.array];
 
                 [self.tableView reloadData];
                 [self endRefresh];
@@ -480,7 +478,7 @@
 #pragma mark - Table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     _tables = _tables ? _currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:_currentUser.lightTables.array];
-    _slideshows = _slideshows ? _currentUser.slideshows.array.mutableCopy : [NSMutableArray arrayWithArray:_currentUser.slideshows.array];
+    _slideshows = _slideshows ? [Slideshow MR_findAll].mutableCopy : [NSMutableArray arrayWithArray:[Slideshow MR_findAll]];
     
     if (slideshowSidebarMode){
         return 2;
@@ -552,11 +550,8 @@
         return cell;
     } else {
         WFMainTableCell *cell = (WFMainTableCell *)[tableView dequeueReusableCellWithIdentifier:@"MainCell"];
+        [cell setBackgroundColor:[UIColor clearColor]];
         cell.delegate = self;
-        
-        if (!iOS8){
-            [cell awakeFromNib];
-        }
         
         if (indexPath.section == 0){
             [cell.scrollView setScrollEnabled:NO];
@@ -641,6 +636,20 @@
     }
 }
 
+- (void)editLightTable:(Table *)lightTable {
+    NSLog(@"should be editing a light table");
+    WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
+    [vc setTableId:lightTable.identifier];
+    vc.lightTableDelegate = self;
+    vc.modalPresentationStyle = UIModalPresentationCustom;
+    vc.transitioningDelegate = self;
+    [self resetTransitionBooleans];
+    newLightTableTransition = YES;
+    [self presentViewController:vc animated:YES completion:^{
+        
+    }];
+}
+
 - (void)leaveLightTable:(Table *)lightTable {
     NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_tables indexOfObject:lightTable] inSection:1];
     if (![lightTable.identifier isEqualToNumber:@0]){
@@ -672,7 +681,19 @@
     if (slideshowSidebarMode){
         if (indexPath.section == 0){
             Slideshow *slideshow = _slideshows[indexPath.row];
-            [self slideshowSelected:slideshow];
+            if ([slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+                [self slideshowSelected:slideshow];
+            } else {
+                NSLog(@"Play someone else's slideshow");
+                WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
+                [vc setSlideshow:slideshow];
+                UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+                vc.transitioningDelegate = self;
+                vc.modalPresentationStyle = UIModalPresentationCustom;
+                [self presentViewController:nav animated:YES completion:^{
+                    
+                }];
+            }
         } else {
             [self newSlideshow];
         }
@@ -699,7 +720,7 @@
 
 - (void)deleteSlideshow:(Slideshow*)slideshow {
     NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_slideshows indexOfObject:slideshow] inSection:0];
-
+    NSLog(@"index path to remove: %@",indexPathToRemove);
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -712,30 +733,28 @@
     [_slideshows removeObject:slideshow];
     [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    _slideshows = [Slideshow MR_findAll].mutableCopy;
     if (indexPathToRemove && _slideshows.count){
         [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
     } else {
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
     }
     [self.tableView endUpdates];
-    
 }
 
 - (void)removeSlideshow:(Slideshow *)slideshow {
     NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_slideshows indexOfObject:slideshow] inSection:0];
     [self.tableView beginUpdates];
     [_slideshows removeObject:slideshow];
+    [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    _slideshows = [Slideshow MR_findAll].mutableCopy;
     if (_slideshows.count){
         [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
     } else {
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
     }
     [self.tableView endUpdates];
-    
-    [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        
-    }];
 }
 
 - (void)resetArtBooleans {
@@ -1398,11 +1417,35 @@
     }
 }
 
+- (void)removedPhoto:(Photo *)photo fromLightTable:(Table *)lightTable {
+    //ensure the photo has ACTUALLY been removed from the light table
+    [lightTable removePhoto:photo];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    
+    if (!slideshowSidebarMode && tableIsVisible){
+        [self.tableView reloadData];
+    }
+    
+    if (showLightTable && [lightTable.identifier isEqualToNumber:_table.identifier]){
+        [_collectionView reloadData];
+    }
+}
+
 - (void)dismissMetadata {
     [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
-#pragma mark - Custom Transitions 
+
+- (void)photoDeleted:(NSNumber *)photoId {
+    NSLog(@"photo deleted");
+    if (!showLightTable && !showFavorites && !showPrivate){
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"art.privateArt = %@",@NO];
+        _photos = [Photo MR_findAllSortedBy:@"createdDate" ascending:NO withPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
+        [_collectionView reloadData];
+    }
+}
+
+#pragma mark - Custom Transitions
 - (void)showLogin {
     WFLoginViewController *login = [[self storyboard] instantiateViewControllerWithIdentifier:@"Login"];
     delegate.loginDelegate = self;
@@ -1468,6 +1511,7 @@
     groupBool = NO;
     newUser = NO;
     profile = NO;
+    showSlideshow = NO;
 }
 
 - (void)showSettings {
@@ -1682,7 +1726,7 @@
         WFLoginAnimator *animator = [WFLoginAnimator new];
         animator.presenting = YES;
         return animator;
-    } else if (comparison) {
+    } else if (comparison || showSlideshow) {
         WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
         animator.presenting = YES;
         return animator;
@@ -1721,7 +1765,7 @@
     } else if (_login) {
         WFLoginAnimator *animator = [WFLoginAnimator new];
         return animator;
-    } else if (comparison) {
+    } else if (comparison || showSlideshow) {
         WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
         return animator;
     } else if (newUser) {

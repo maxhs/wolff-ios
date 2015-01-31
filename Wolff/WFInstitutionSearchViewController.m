@@ -19,6 +19,9 @@
     CGFloat width;
     CGFloat height;
     NSMutableArray *_institutions;
+    NSMutableArray *_filteredInstitutions;
+    NSString *searchText;
+    BOOL searching;
     UIBarButtonItem *dismissButton;
 }
 
@@ -39,6 +42,7 @@
         iOS8 = NO; height = screenWidth(); width = screenHeight();
     }
     _institutions = [NSMutableArray arrayWithArray:[Institution MR_findAll]];
+    _filteredInstitutions = [NSMutableArray array];
     [self loadInstitutions];
     [self registerForKeyboardNotifications];
     
@@ -86,7 +90,11 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _institutions.count;
+    if (searching){
+        return _filteredInstitutions.count;
+    } else {
+        return _institutions.count;
+    }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -187,6 +195,37 @@
 
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
     [self dismiss];
+}
+
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)text {
+    searchText = text;
+    if (searchText.length){
+        searching = YES;
+        [self filterContentForSearchText:searchText scope:nil];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^(void){
+            [self.searchBar resignFirstResponder];
+            searching = NO;
+            [self.tableView reloadData];
+        });
+    }
+}
+
+- (void)filterContentForSearchText:(NSString*)text scope:(NSString*)scope {
+    //NSLog(@"search text: %@",text);
+    if (text.length) {
+        [_filteredInstitutions removeAllObjects];
+        for (Institution *institution in _institutions){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF contains[cd] %@", text];
+            if([predicate evaluateWithObject:institution.name]) {
+                [_filteredInstitutions addObject:institution];
+            }
+        }
+    } else {
+        _filteredInstitutions = [NSMutableArray arrayWithArray:_institutions];
+    }
+    
+    [self.tableView reloadData];
 }
 
 - (void)registerForKeyboardNotifications {

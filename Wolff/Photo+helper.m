@@ -10,6 +10,7 @@
 #import "Art+helper.h"
 #import "User+helper.h"
 #import "Icon+helper.h"
+#import "Table+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Photo (helper)
@@ -100,6 +101,19 @@
             [set addObject:icon];
         }
         self.icons = set;
+    }
+    if ([dictionary objectForKey:@"light_tables"] && [dictionary objectForKey:@"light_tables"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"light_tables"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Table *lightTable = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!lightTable){
+                lightTable = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [lightTable populateFromDictionary:dict];
+            [set addObject:lightTable];
+        }
+        self.tables = set;
     }
 }
 

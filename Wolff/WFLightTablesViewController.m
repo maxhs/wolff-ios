@@ -24,6 +24,7 @@
 @synthesize lightTables = _lightTables;
 @synthesize slideshow = _slideshow;
 @synthesize slideshowShareMode = _slideshowShareMode;
+@synthesize photo = _photo;
 
 -(id)initWithPanTarget:(id<WFLightTablesDelegate>)lightTableDelegate {
     self = [super initWithNibName:nil bundle:nil];
@@ -52,7 +53,7 @@
     manager = delegate.manager;
     
     _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
-    _lightTables = [NSMutableArray arrayWithArray:_currentUser.lightTables.array.mutableCopy];
+    
     self.title = @"Your Light Tables";
     
     UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
@@ -85,7 +86,6 @@
             [lightTable populateFromDictionary:dict];
             [_currentUser addLightTable:lightTable];
         }
-        _lightTables = [NSMutableArray arrayWithArray:_currentUser.lightTables.array.mutableCopy];
         [self.tableView reloadData];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error getting groups: %@",error.description);
@@ -96,8 +96,12 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     if (_slideshowShareMode){
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"owner.identifier = %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+        _lightTables = [Table MR_findAllSortedBy:@"name" ascending:YES withPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
+        [self setPreferredContentSize:CGSizeMake(420, (54.f*_lightTables.count)+34.f)];
         return 1;
     } else {
+        _lightTables = [NSMutableArray arrayWithArray:_currentUser.lightTables.array.mutableCopy];
         return 2;
     }
 }
@@ -125,6 +129,12 @@
         [cell configureForTable:table];
         if (_slideshow){
             if ([_slideshow.tables containsObject:table]){
+                cell.accessoryType = UITableViewCellAccessoryCheckmark;
+            } else {
+                cell.accessoryType = UITableViewCellAccessoryNone;
+            }
+        } else if (_photo){
+            if ([table.photos containsObject:_photo]){
                 cell.accessoryType = UITableViewCellAccessoryCheckmark;
             } else {
                 cell.accessoryType = UITableViewCellAccessoryNone;
@@ -158,19 +168,29 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableSelected:)]){
-        if (indexPath.section == 0){
-            if (indexPath.row == 0){
-                NSLog(@"selecting a new light table");
+    
+    if (indexPath.section == 0 && !_slideshowShareMode){
+        if (indexPath.row == 0){
+            if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableSelected:)]){
                 [self.lightTableDelegate lightTableSelected:@0];
-                
-            } else {
-                NSLog(@"should be favoriting");
-                [self favorite];
             }
         } else {
-            Table *lightTable = (Table*)_lightTables[indexPath.row];
-            [self.lightTableDelegate lightTableSelected:lightTable.identifier];
+            [self favorite];
+        }
+    } else {
+        Table *lightTable = (Table*)_lightTables[indexPath.row];
+        if (_slideshow && [_slideshow.tables containsObject:lightTable]){
+            if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableDeselected:)]){
+                [self.lightTableDelegate lightTableDeselected:lightTable.identifier];
+            }
+        } else {
+            if (_photo && [lightTable.photos containsObject:_photo]){
+                if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(undropPhotoFromLightTable:)]){
+                    [self.lightTableDelegate undropPhotoFromLightTable:lightTable.identifier];
+                }
+            } else if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableSelected:)]){
+                [self.lightTableDelegate lightTableSelected:lightTable.identifier];
+            }
         }
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];

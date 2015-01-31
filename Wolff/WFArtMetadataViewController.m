@@ -25,7 +25,7 @@
 #import "WFProfileAnimator.h"
 #import "WFProfileViewController.h"
 
-@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, UIActionSheetDelegate> {
+@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, UIActionSheetDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     BOOL iOS8;
@@ -151,6 +151,12 @@
         [_editButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
         [_editButton setHidden:NO];
         
+        [_deleteButton addTarget:self action:@selector(confirmDeletion) forControlEvents:UIControlEventTouchUpInside];
+        [_deleteButton setImage:[UIImage imageNamed:@"trash"] forState:UIControlStateNormal];
+        [_deleteButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.023]];
+        [_deleteButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+        [_deleteButton setHidden:NO];
+        
         saveContainerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.frame.size.width, 70)];
         [saveContainerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
         [saveContainerView setBackgroundColor:[UIColor whiteColor]];
@@ -167,6 +173,7 @@
         
     } else {
         [_editButton setHidden:YES];
+        [_deleteButton setHidden:YES];
     }
     
     [_favoriteButton setImage:[UIImage imageNamed:@"favorite"] forState:UIControlStateNormal];
@@ -187,12 +194,13 @@
     }
     WFLightTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTables"];
     vc.lightTableDelegate = self;
+    [vc setPhoto:_photo];
     [vc setLightTables:_currentUser.lightTables.array.mutableCopy];
     CGFloat vcHeight = _currentUser.lightTables.count*54.f > 260.f ? 260 : (_currentUser.lightTables.count)*54.f;
-    vc.preferredContentSize = CGSizeMake(270, vcHeight+34.f); // add the header height
+    vc.preferredContentSize = CGSizeMake(420, vcHeight+34.f); // add the header height
     self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
     self.popover.delegate = self;
-    [self.popover presentPopoverFromRect:CGRectMake(_dropToTableButton.center.x,_dropToTableButton.center.y+_dropToTableButton.frame.size.height/2,1,1) inView:self.view permittedArrowDirections:UIPopoverArrowDirectionLeft animated:YES];
+    [self.popover presentPopoverFromRect:CGRectMake(_dropToTableButton.center.x,(_dropToTableButton.center.y+_dropToTableButton.frame.size.height/2)+ 23,1,1) inView:self.view permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES]; // added 23 points to the popover rect to make the arrow look nicerp 
 }
 
 - (void)lightTableSelected:(NSNumber *)lightTableId {
@@ -218,6 +226,36 @@
             }
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to drop metadata photo to light table: %@",error.description);
+        }];
+    }
+}
+
+- (void)undropPhotoFromLightTable:(NSNumber *)lightTableId {
+    if (self.popover) [self.popover dismissPopoverAnimated:YES];
+    
+    //refetch the light table
+    Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
+    [lightTable removePhoto:_photo];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    [self setUpButtons];
+    
+    //ensure we're playing with a real light table first
+    if (![lightTable.identifier isEqualToNumber:@0]){
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        [parameters setObject:_photo.identifier forKey:@"photo_id"];
+        [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success UNdropping metadata photo to light table: %@",responseObject);
+            if ([responseObject objectForKey:@"success"] && [[responseObject objectForKey:@"success"] isEqualToNumber:@1]){
+                if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(removedPhoto:fromLightTable:)]){
+                    [self.metadataDelegate removedPhoto:_photo fromLightTable:lightTable];
+                }
+            } else {
+                [WFAlert show:@"Something went wrong while trying to drop this art to your light table. Please try again soon" withTime:3.3f];
+            }
+            [ProgressHUD dismiss];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to drop metadata photo to light table: %@",error.description);
+            [ProgressHUD dismiss];
         }];
     }
 }
@@ -629,6 +667,36 @@
             [self.popover dismissPopoverAnimated:YES];
         }
     }];
+}
+
+- (void)confirmDeletion {
+    [[[UIAlertView alloc] initWithTitle:@"Please confirm" message:@"Are you sure you want to delete this art? This can not be undone." delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Delete", nil] show];
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Delete"] && [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        [ProgressHUD show:@"Deleting..."];
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+        [manager DELETE:[NSString stringWithFormat:@"photos/%@",_photo.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success deleting photo: %@",responseObject);
+            NSNumber *photoId = _photo.identifier;
+            [_photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                [ProgressHUD dismiss];
+                if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(photoDeleted:)]){
+                    [self.metadataDelegate photoDeleted:photoId];
+                }
+                [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+                    [WFAlert show:@"Art expunged" withTime:2.7f];
+                }];
+            }];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to delete a photo: %@",error.description);
+            [WFAlert show:@"Sorry, but something went wrong while trying to remove this art.\n\nMaybe this is the Universe saying something..." withTime:3.3f];
+            [ProgressHUD dismiss];
+        }];
+    }
 }
 
 - (void)registerForKeyboardNotifications {

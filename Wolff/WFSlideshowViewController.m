@@ -127,7 +127,9 @@
     
     fullScreenButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(goFullScreen)];
     metadataButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"info"] style:UIBarButtonItemStylePlain target:self action:@selector(showMetadata)];
-    self.navigationItem.rightBarButtonItems = @[metadataButton/*, fullScreenButton*/];
+    if (currentPage > 1){
+        self.navigationItem.rightBarButtonItems = @[metadataButton];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -135,6 +137,7 @@
     topInset = _collectionView.contentInset.top;
     [navBarShadowView setHidden:YES];
     [toolBarShadowView setHidden:YES];
+    [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -185,20 +188,20 @@
         [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
         if (currentPage > 1){
             currentSlide = _slideshow.slides[currentPage-2]; // offset by 2 because the index starts at 0, not 1, and there's always a title slide
-            
+            self.navigationItem.rightBarButtonItem = metadataButton;
             currentPage-1 == _slideshow.slides.count ? [_nextButton setEnabled:NO] : [_nextButton setEnabled:YES];
             [_previousButton setEnabled:YES];
+            
             // ensure the ivars are set to the ACTIVE cell
             WFSlideshowSlideCell *cell = (WFSlideshowSlideCell*)[_collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:currentPage-2 inSection:1]];
-            
             containerView1 = cell.containerView1;
             containerView2 = cell.containerView2;
             containerView3 = cell.containerView3;
             artImageView1 = cell.artImageView1;
             artImageView2 = cell.artImageView2;
             artImageView3 = cell.artImageView3;
-            //
         } else {
+            self.navigationItem.rightBarButtonItem = nil;
             [_previousButton setEnabled:NO];
             currentSlide = nil;
         }
@@ -320,7 +323,6 @@
         }
     }];
 }
-
 
 - (void)handlePan:(UIPanGestureRecognizer*)gestureRecognizer {
     CGPoint fullTranslation = [gestureRecognizer locationInView:self.view];
@@ -475,11 +477,11 @@
                     [currentSlide setRectString1:@""];
                     [artImageView1 setMoved:NO];
                 } else {
+                    view.transform = CGAffineTransformMakeScale(3.f, 3.f);
                     CGPoint absoluteCenterPoint;
                     absoluteCenterPoint.x = width - absolutePoint.x;
                     absoluteCenterPoint.y = height - absolutePoint.y;
                     view.center = absoluteCenterPoint;
-                    view.transform = CGAffineTransformMakeScale(1.77f, 1.77f);
                     [artImageView1 setMoved:YES];
                 }
             } else if (view == artImageView2){
@@ -493,7 +495,7 @@
                     absolutePoint2.x = containerView2.frame.size.width - absolutePoint2.x;
                     absolutePoint2.y = containerView2.frame.size.height - absolutePoint2.y;
                     view.center = absolutePoint2;
-                    view.transform = CGAffineTransformMakeScale(1.77f, 1.77f);
+                    view.transform = CGAffineTransformMakeScale(3.f, 3.f);
                     [artImageView2 setMoved:YES];
                 }
             } else if (view == artImageView3){
@@ -503,7 +505,7 @@
                     [currentSlide setRectString3:@""];
                     [artImageView3 setMoved:NO];
                 } else {
-                    view.transform = CGAffineTransformMakeScale(1.77f, 1.77f);
+                    view.transform = CGAffineTransformMakeScale(3.f, 3.f);
                     CGPoint absolutePoint3 = [gestureRecognizer locationInView:containerView3];
                     absolutePoint3.x = containerView3.frame.size.width - absolutePoint3.x;
                     absolutePoint3.y = containerView3.frame.size.height - absolutePoint3.y;
@@ -534,6 +536,7 @@
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
+    [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         NSLog(@"Saving slideshow: %u",success);
     }];

@@ -12,6 +12,7 @@
 
 @interface WFSlideshowSlideCell : UICollectionViewCell
 @property (strong, nonatomic) Slide *slide;
+@property (strong, nonatomic) NSMutableOrderedSet *photos;
 @property (weak, nonatomic) IBOutlet UIView *containerView1;
 @property (weak, nonatomic) IBOutlet WFInteractiveImageView *artImageView1;
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView1;
@@ -23,4 +24,6 @@
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView3;
 
 - (void)configureForPhotos:(NSMutableOrderedSet*)photos inSlide:(Slide*)slide;
+- (void)recenterView:(WFInteractiveImageView*)viewToRecenter;
+
 @end

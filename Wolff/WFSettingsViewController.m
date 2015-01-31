@@ -27,11 +27,17 @@
     UITextField *lastNameTextField;
     UITextField *phoneTextField;
     UITextField *institutionTextField;
+    NSString *password;
+    NSString *confirmPassword;
+    UITextField *passwordTextField;
+    UITextField *confirmPasswordTextField;
     UITextField *alternateTextField;
     UITextField *locationTextField;
     UIImageView *navBarShadowView;
     BOOL iOS8;
     BOOL editing;
+    BOOL changingPassword;
+    NSIndexPath *indexPathToRemoveInstitution;
     NSIndexPath *indexPathToDeleteAlternate;
 }
 @property (strong, nonatomic) UIPopoverController *popover;
@@ -67,6 +73,7 @@
     [_tableView setBackgroundView:backgroundToolbar];
     [self registerForKeyboardNotifications];
     [self setUpNavigationButtons];
+    changingPassword = NO;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -107,7 +114,16 @@
 }
 
 - (void)saveSettings {
+    BOOL passwordChanged = NO;
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    if (passwordTextField.text.length && confirmPasswordTextField.text && [confirmPasswordTextField.text isEqualToString:passwordTextField.text]){
+        [parameters setObject:passwordTextField.text forKey:@"password"];
+        [parameters setObject:passwordTextField.text forKey:@"password_confirmation"];
+        passwordChanged = YES;
+    }
+    password = @"";
+    confirmPassword = @"";
+    
     if (emailTextField.text.length && ![emailTextField.text isEqualToString:_currentUser.email]){
         [parameters setObject:emailTextField.text forKey:@"email"];
     }
@@ -129,15 +145,24 @@
     }
     [parameters setObject:institutionIds forKey:@"institution_ids"];
     
+    [ProgressHUD show:@"Saving..."];
     [manager PATCH:[NSString stringWithFormat:@"users/%@",_currentUser.identifier] parameters:@{@"user":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success saving user settings: %@",responseObject);
         [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            [WFAlert show:@"Settings saved" withTime:2.7f];
+            if (passwordChanged){
+                [WFAlert show:@"You successfully changed your password and updated your settings." withTime:3.3f];
+            } else {
+                [WFAlert show:@"Settings saved" withTime:2.7f];
+            }
+            [ProgressHUD dismiss];
+            changingPassword = NO;
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
         }];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to save user settings: %@",error.description);
+        [ProgressHUD dismiss];
         [[[UIAlertView alloc] initWithTitle:@"Uh oh" message:@"Something went wrong while trying to save your settings. Please try again soon." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
     }];
 }
@@ -151,7 +176,11 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch (section) {
         case 0:
-            return 5;
+            if (changingPassword){
+                return 7;
+            } else {
+                return 6;
+            }
             break;
         case 1:
             // manage institutions
@@ -204,6 +233,18 @@
                 [cell.textField setText:_currentUser.location];
                 [cell.textField setPlaceholder:@"Your location (e.g. Berlin, New York City, Byzantium)"];
                 locationTextField = cell.textField;
+                break;
+            case 5:
+                [cell.textField setText:password];
+                [cell.textField setPlaceholder:@"Your password (only required if changing)"];
+                passwordTextField = cell.textField;
+                [passwordTextField setSecureTextEntry:YES];
+                break;
+            case 6:
+                [cell.textField setText:confirmPassword];
+                [cell.textField setPlaceholder:@"Confirm the above new password by typing it again"];
+                confirmPasswordTextField = cell.textField;
+                [confirmPasswordTextField setSecureTextEntry:YES];
                 break;
 
             default:
@@ -317,7 +358,7 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 1 && indexPath.row > 0){
+    if (indexPath.section == 1 && indexPath.row == _currentUser.institutions.count){
         WFSettingsCell *cell = (WFSettingsCell*)[_tableView cellForRowAtIndexPath:indexPath];
         [self showInstitutionSearchFromRect:cell.frame];
     }
@@ -352,7 +393,7 @@
     if (institution){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-        [manager POST:[NSString stringWithFormat:@"institutions/%@",institution.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [manager POST:[NSString stringWithFormat:@"institutions/%@/add_user",institution.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success creating institution user: %@",responseObject);
             [self.tableView beginUpdates];
             [institution addUser:_currentUser];
@@ -363,7 +404,6 @@
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failure creating institution user: %@",error.description);
         }];
-        
     }
 }
 
@@ -408,7 +448,9 @@
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 2 && indexPath.row != _currentUser.alternates.count){
+    if (indexPath.section == 1 && indexPath.row != _currentUser.institutions.count) {
+        return YES;
+    } else if (indexPath.section == 2 && indexPath.row != _currentUser.alternates.count){
         return YES;
     } else {
         return NO;
@@ -417,9 +459,30 @@
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete){
-        indexPathToDeleteAlternate = indexPath;
-        [self deleteAlternate];
+        if (indexPath.section == 1){
+            indexPathToRemoveInstitution = indexPath;
+            [self removeInstitution];
+        } else if (indexPath.section == 2){
+            indexPathToDeleteAlternate = indexPath;
+            [self deleteAlternate];
+        }
     }
+}
+
+- (void)removeInstitution {
+    Institution *institution = _currentUser.institutions[indexPathToRemoveInstitution.row];
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    [manager DELETE:[NSString stringWithFormat:@"institutions/%@/remove_user",institution.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success removing an institution: %@",responseObject);
+        [self.tableView beginUpdates];
+        [_currentUser removeInstitution:institution];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+        [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemoveInstitution] withRowAnimation:UITableViewRowAnimationAutomatic];
+        [self.tableView endUpdates];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed to remove an institutiuon: %@",error.description);
+    }];
 }
 
 - (void)deleteAlternate {
@@ -466,6 +529,29 @@
 
 - (void)textFieldDidEndEditing:(UITextField *)textField {
     self.navigationItem.rightBarButtonItem = saveButton;
+    if (textField == passwordTextField){
+        password = passwordTextField.text;
+        if (passwordTextField.text.length > 4){
+            if (!changingPassword){
+                changingPassword = YES;
+                [self.tableView beginUpdates];
+                NSIndexPath *indexPathToAdd = [NSIndexPath indexPathForRow:6 inSection:0];
+                [self.tableView insertRowsAtIndexPaths:@[indexPathToAdd] withRowAnimation:UITableViewRowAnimationAutomatic];
+                [self.tableView endUpdates];
+                [confirmPasswordTextField becomeFirstResponder];
+            }
+        } else {
+            if (changingPassword){
+                changingPassword = NO;
+                [self.tableView beginUpdates];
+                NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:6 inSection:0];
+                [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
+                [self.tableView endUpdates];
+            }
+        }
+    } else if (textField == confirmPasswordTextField) {
+        confirmPassword = confirmPasswordTextField.text;
+    }
 }
 
 - (void)doneEditing {

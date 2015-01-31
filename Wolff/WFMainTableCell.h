@@ -13,6 +13,7 @@
 @protocol WFLightTableCellDelegate <NSObject>
 - (void)deleteLightTable:(Table*)lightTable;
 - (void)leaveLightTable:(Table*)lightTable;
+- (void)editLightTable:(Table*)lightTable;
 @end
 
 @interface WFMainTableCell : UITableViewCell <UIScrollViewDelegate>
@@ -23,6 +24,7 @@
 @property (weak, nonatomic) IBOutlet UILabel *pieceCountLabel;
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (weak, nonatomic) IBOutlet UIButton *actionButton;
+@property (weak, nonatomic) IBOutlet UIButton *editButton;
 @property (weak, nonatomic) id<WFLightTableCellDelegate> delegate;
 - (void)configureForTable:(Table*)lightTable;
 

@@ -79,6 +79,13 @@
     }
     if (!_table){
         // TO DO find table from the internet
+        [manager GET:[NSString stringWithFormat:@"light_tables/%@",_tableId] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success loading table from internet: %@",responseObject);
+            [_table populateFromDictionary:[responseObject objectForKey:@"light_table"]];
+            [_collectionView reloadData];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to get light table from API: %@",error.description);
+        }];
     }
     
     if (_photos.count){
@@ -128,6 +135,10 @@
         [cell.titleTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
         [cell.titleTextField setReturnKeyType:UIReturnKeyNext];
 
+        if (_table) {
+            [cell.titleTextField setText:_table.name];
+        }
+        
         cell.textView.delegate = self;
         [cell.textView setHidden:NO];
         descriptionTextView = cell.textView;

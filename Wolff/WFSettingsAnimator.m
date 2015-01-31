@@ -27,12 +27,10 @@
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES;
-        width = screenWidth(); height = screenHeight();
+        iOS8 = YES; width = screenWidth(); height = screenHeight();
         mainScreen = [UIScreen mainScreen].bounds;
     } else {
-        iOS8 = NO;
-        width = screenHeight(); height = screenWidth();
+        iOS8 = NO; width = screenHeight(); height = screenWidth();
         mainScreen = CGRectMake(0, 0, height, width);
     }
     // Grab the from and to view controllers from the context
@@ -45,7 +43,8 @@
         fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
         toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     } else {
-        fromView = fromViewController.view; toView = toViewController.view;
+        fromView = fromViewController.view;
+        toView = toViewController.view;
     }
     
     if (self.presenting) {

@@ -77,6 +77,7 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kNoPresentation @"No Presentation"
 #define kIncorrectLightTableCode @"Incorrect light table code"
 #define kNoLightTable @"No light table"
+#define kNotAuthorized @"Not authorized"
 #define kExistingUser @"ExistingUser"
 #define kExistingLightTable @"Existing light table"
 #define kUserUrlPlaceholder @"e.g. affiliation website, academia.edu, linkedin"

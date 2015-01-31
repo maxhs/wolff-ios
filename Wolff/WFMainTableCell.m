@@ -49,6 +49,10 @@
     [_actionButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_actionButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     
+    [_editButton setBackgroundColor:kElectricBlue];
+    [_editButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_editButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    
     //ensure that the scrollView can actually scroll
     [_scrollView setContentSize:CGSizeMake(kSidebarWidth+100, self.contentView.frame.size.height)];
     [_scrollView setUserInteractionEnabled:NO];
@@ -58,6 +62,7 @@
 
 - (void)prepareForReuse {
     [super prepareForReuse];
+    [self setBackgroundColor:[UIColor clearColor]];
     [_pieceCountLabel setText:@""];
     [_tableLabel setText:@""];
     [_label setText:@""];
@@ -74,6 +79,10 @@
         [_actionButton setTitle:@"Delete" forState:UIControlStateNormal];
         [_actionButton setBackgroundColor:[UIColor redColor]];
         [_actionButton addTarget:self action:@selector(deleteLightTable) forControlEvents:UIControlEventTouchUpInside];
+        [_editButton setHidden:NO];
+        
+        //readjust the scrollView depending on if the user should see the edit button
+        [_scrollView setContentSize:CGSizeMake(kSidebarWidth+200, self.contentView.frame.size.height)];
     } else {
         [_actionButton setTitle:@"Remove" forState:UIControlStateNormal];
         [_actionButton setBackgroundColor:kSaffronColor];
@@ -82,6 +91,10 @@
         _actionButton.titleLabel.layer.shadowRadius = 2.3f;
         _actionButton.titleLabel.layer.shadowOpacity = .5f;
         _actionButton.titleLabel.layer.shadowOffset = CGSizeMake(.3f, .3f);
+        [_editButton setHidden:YES];
+        
+        //readjust the scrollView depending on if the user should see the edit button
+        [_scrollView setContentSize:CGSizeMake(kSidebarWidth+100, self.contentView.frame.size.height)];
     }
     
     //set up the title
@@ -111,6 +124,12 @@
 - (void)deleteLightTable {
     if (self.delegate && [self.delegate respondsToSelector:@selector(deleteLightTable:)]){
         [self.delegate deleteLightTable:_lightTable];
+    }
+}
+
+- (void)editLightTable {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(editLightTable:)]){
+        [self.delegate editLightTable:_lightTable];
     }
 }
 

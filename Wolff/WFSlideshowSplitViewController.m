@@ -49,6 +49,7 @@
     UIAlertView *titlePrompt;
     UIAlertView *artImageViewPrompt;
     
+    NSNumber *_lightTableId;
     NSIndexPath *activeIndexPath;
     Slide *activeSlide;
     WFInteractiveImageView *activeImageView;
@@ -71,7 +72,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     if (IDIOM == IPAD){
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        if (SYSTEM_VERSION >= 8.f){
             width = screenWidth();
             height = screenHeight();
         } else {
@@ -256,7 +257,6 @@
 
 - (void)removeArt:(UIMenuController*)menuController {
     [activeSlide removePhoto:activeImageView.photo];
-    NSLog(@"active slide index: %@",activeSlide.index);
     if (activeSlide.photos.count){
         [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
     } else {
@@ -591,7 +591,6 @@
     for (Photo *photo in _slideshow.photos){
         [slideshowPhotos addObject:photo.identifier];
     }
-    NSLog(@"slideshow photos: %@",slideshowPhotos);
     [parameters setObject:slideshowPhotos forKey:@"photo_ids"];
     
     [_slideshow.slides enumerateObjectsUsingBlock:^(Slide *slide, NSUInteger idx, BOOL *stop) {
@@ -599,8 +598,6 @@
         if (slide && ![slide.identifier isEqualToNumber:@0]){
             [slideObject setObject:slide.identifier forKey:@"slide_id"];
         }
-        
-        NSLog(@"art count %lu for slide index %@",(unsigned long)slide.photos.count, slide.index);
         NSMutableArray *artIds = [NSMutableArray arrayWithCapacity:slide.photos.count];
         [slide.photos enumerateObjectsUsingBlock:^(Art *art, NSUInteger idx, BOOL *stop) {
             [artIds addObject:art.identifier];
@@ -615,8 +612,13 @@
             NSLog(@"Success creating a slideshow: %@",responseObject);
             [_slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [WFAlert show:@"Slideshow saved" withTime:2.3f];
-                [ProgressHUD dismiss];
+                if (_lightTableId){
+                    [self lightTableSelected:_lightTableId];
+                } else {
+                    [WFAlert show:@"Slideshow saved" withTime:2.3f];
+                    [ProgressHUD dismiss];
+                }
+                
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to create a slideshow: %@",error.description);
@@ -657,7 +659,7 @@
     [vc setSlideshow:_slideshow];
     [vc setLightTables:_currentUser.lightTables.array.mutableCopy];
     CGFloat vcHeight = _currentUser.lightTables.count*54.f > 260.f ? 260 : (_currentUser.lightTables.count)*54.f;
-    vc.preferredContentSize = CGSizeMake(270, vcHeight + 34.f); // add the header height
+    vc.preferredContentSize = CGSizeMake(420, vcHeight + 34.f); // add the header height
     self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
     self.popover.delegate = self;
     [self.popover presentPopoverFromBarButtonItem:shareButton permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
@@ -668,18 +670,69 @@
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
+    
+    if ([_slideshow.identifier isEqualToNumber:@0]){
+        _lightTableId = lightTableId;
+        [self save];
+        return;
+    } else {
+        if (lightTable.identifier && ![lightTable.identifier isEqualToNumber:@0]){
+            [self shareToLightTable:lightTable];
+        } else {
+            [lightTable addSlideshow:_slideshow];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                [WFAlert show:[NSString stringWithFormat:@"Dropped to \"%@\"",lightTable.name] withTime:2.7f];
+            }];
+        }
+    }
+}
+
+- (void)lightTableDeselected:(NSNumber *)lightTableId {
+    Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
+    if (lightTable.identifier && ![lightTable.identifier isEqualToNumber:@0]){
+        [lightTable removeSlideshow:_slideshow];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+        [parameters setObject:_slideshow.identifier forKey:@"slideshow_id"];
+        [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove_slideshow",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success removing slideshow from light table: %@",responseObject);
+            [WFAlert show:[NSString stringWithFormat:@"\"%@\" removed from \"%@\"",_slideshow.title, lightTable.name] withTime:3.3f];
+            [ProgressHUD dismiss];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to remove slideshow from light table: %@",error.description);
+            [WFAlert show:@"Sorry, but something went wrong while trying to unshare this slideshow.\n\nPlease try again soon." withTime:3.3f];
+            [ProgressHUD dismiss];
+        }];
+    } else {
+        [lightTable removeSlideshow:_slideshow];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [WFAlert show:[NSString stringWithFormat:@"\"%@\" removed",lightTable.name] withTime:2.7f];
+        }];
+    }
+}
+
+- (void)shareToLightTable:(Table*)lightTable {
     [lightTable addSlideshow:_slideshow];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        [WFAlert show:[NSString stringWithFormat:@"Dropped to \"%@\"",lightTable.name] withTime:2.7f];
+       
     }];
-    
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     [parameters setObject:_slideshow.identifier forKey:@"slideshow_id"];
     [manager POST:[NSString stringWithFormat:@"light_tables/%@/add_slideshow",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success adding slideshow to light table: %@",responseObject);
+        [WFAlert show:[NSString stringWithFormat:@"\"%@\" dropped to \"%@\"",_slideshow.title, lightTable.name] withTime:3.3f];
+        [ProgressHUD dismiss];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to add slideshow to light table: %@",error.description);
+        [WFAlert show:@"Sorry, but something went wrong while trying to share this slideshow.\n\nPlease try again soon." withTime:3.3f];
+        [ProgressHUD dismiss];
     }];
 }
 

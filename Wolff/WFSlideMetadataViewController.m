@@ -11,8 +11,10 @@
 #import "WFArtMetadataCell.h"
 #import "WFSlideMetadataCell.h"
 #import "WFUtilities.h"
+#import "WFProfileAnimator.h"
+#import "WFProfileViewController.h"
 
-@interface WFSlideMetadataViewController () <UITableViewDataSource, UITableViewDelegate> {
+@interface WFSlideMetadataViewController () <UITableViewDataSource, UITableViewDelegate, UIViewControllerTransitioningDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     UIBarButtonItem *dismissButton;
@@ -245,52 +247,47 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.row == 5) {
+        NSArray *photosArray = _photos.count ? _photos.array : _slide.photos.array;
+        Photo *photo;
+        if (photosArray.count > 1){
+            photo = indexPath.section == 0 ? photosArray.firstObject : photosArray[1];
+        } else {
+            photo = photosArray.firstObject;
+        }
+        if (photo.user){
+            [self showProfile:photo.user];
+        }
+    }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
+- (void)showProfile:(User*)user {
+    [ProgressHUD show:[NSString stringWithFormat:@"Fetching %@...",user.fullName]];
+    WFProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Profile"];
+    [vc setUser:user];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self presentViewController:nav animated:YES completion:^{
+        [ProgressHUD dismiss];
+    }];
 }
-*/
 
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
+#pragma mark Dismiss & Transition Methods
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
+                                                                  presentingController:(UIViewController *)presenting
+                                                                      sourceController:(UIViewController *)source {
+    WFProfileAnimator *animator = [WFProfileAnimator new];
+    animator.presenting = YES;
+    return animator;
 }
-*/
 
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
+    
+    WFProfileAnimator *animator = [WFProfileAnimator new];
+    return animator;
 }
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 - (void)dismiss {
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
