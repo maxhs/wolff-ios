@@ -19,6 +19,7 @@
 @dynamic privateTable;
 @dynamic name;
 @dynamic tableDescription;
+@dynamic code;
 @dynamic discussions;
 @dynamic photos;
 @dynamic slideshows;

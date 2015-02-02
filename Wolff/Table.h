@@ -18,6 +18,7 @@
 @property (nonatomic, retain) NSNumber * privateTable;
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic, retain) NSString * tableDescription;
+@property (nonatomic, retain) NSString * code;
 @property (nonatomic, retain) NSOrderedSet *discussions;
 @property (nonatomic, retain) NSOrderedSet *slideshows;
 @property (nonatomic, retain) NSOrderedSet *photos;

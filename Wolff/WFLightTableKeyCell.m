@@ -35,7 +35,7 @@
     _joinButton.layer.cornerRadius = 14.f;
     _joinButton.clipsToBounds = YES;
     [_joinButton setUserInteractionEnabled:YES];
-    [_joinButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+    [_joinButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.077]];
     _joinButton.enabled = NO;
 }
 

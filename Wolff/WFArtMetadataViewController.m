@@ -204,10 +204,10 @@
 }
 
 - (void)lightTableSelected:(NSNumber *)lightTableId {
-    if (self.popover) [self.popover dismissPopoverAnimated:YES];
-    
     //refetch the light table
     Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
+    [lightTable addPhoto:_photo];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     
     //ensure we're playing with a real light table first
     if (![lightTable.identifier isEqualToNumber:@0]){
@@ -216,8 +216,7 @@
         [manager POST:[NSString stringWithFormat:@"light_tables/%@/add",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success dropping metadata photo to light table: %@",responseObject);
             if ([responseObject objectForKey:@"success"] && [[responseObject objectForKey:@"success"] isEqualToNumber:@1]){
-                [lightTable addPhoto:_photo];
-                [[NSManagedObjectContext MR_defaultContext] MR_saveOnlySelfAndWait];
+                
                 if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(droppedPhoto:toLightTable:)]){
                     [self.metadataDelegate droppedPhoto:_photo toLightTable:lightTable];
                 }
@@ -231,8 +230,6 @@
 }
 
 - (void)undropPhotoFromLightTable:(NSNumber *)lightTableId {
-    if (self.popover) [self.popover dismissPopoverAnimated:YES];
-    
     //refetch the light table
     Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
     [lightTable removePhoto:_photo];
@@ -577,7 +574,7 @@
             [_favorite MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
             _favorite = nil;
             
-            [_favoriteButton setTitle:@"   Add to favorites" forState:UIControlStateNormal];
+            [_favoriteButton setTitle:@"    Add to favorites" forState:UIControlStateNormal];
             [_favoriteButton removeTarget:nil
                                    action:NULL
                          forControlEvents:UIControlEventAllEvents];

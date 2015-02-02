@@ -75,11 +75,7 @@
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     CGFloat contentOffsetX = scrollView.contentOffset.x;
-    //NSLog(@"action button origin x: %f",_actionButton.frame.origin.x);
-    //NSLog(@"content offset x: %f",contentOffsetX);
-    //if (_actionButton.frame.origin.x >= 219.f){
     _actionButton.transform = CGAffineTransformMakeTranslation(-contentOffsetX, 0);
-    //}
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
@@ -88,13 +84,13 @@
 
 - (void)deleteShow {
     if (self.delegate && [self.delegate respondsToSelector:@selector(deleteSlideshow:)]){
-        [self.delegate deleteSlideshow:_slideshow];
+        [self.delegate deleteSlideshow:_slideshow.identifier];
     }
 }
 
 - (void)removeShow {
     if (self.delegate && [self.delegate respondsToSelector:@selector(removeSlideshow:)]){
-        [self.delegate removeSlideshow:_slideshow];
+        [self.delegate removeSlideshow:_slideshow.identifier];
     }
 }
 

@@ -208,6 +208,10 @@
     }
     [self loadPhotos];
     navBarShadowView.hidden = YES;
+    
+    if (tableIsVisible){
+        [self.tableView reloadData];
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -344,6 +348,9 @@
     _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     [self setUpNavBar];
     [self loadUserDashboard];
+    if (tableIsVisible){
+        [self.tableView reloadData];
+    }
 }
 
 - (void)loggedOut {
@@ -400,7 +407,7 @@
     if (_currentUser && !loading){
         loading = YES;
         [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success getting user dashboard: %@", responseObject);
+            //NSLog(@"Success getting user dashboard: %@", responseObject);
             [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
             
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -477,12 +484,15 @@
 
 #pragma mark - Table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    _tables = _tables ? _currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:_currentUser.lightTables.array];
-    _slideshows = _slideshows ? [Slideshow MR_findAll].mutableCopy : [NSMutableArray arrayWithArray:[Slideshow MR_findAll]];
-    
     if (slideshowSidebarMode){
+        _slideshows = [NSMutableArray arrayWithArray:[Slideshow MR_findAll]];
+        NSSortDescriptor *alphabeticalSlideshowSort = [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES];
+        [_slideshows sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalSlideshowSort]];
         return 2;
     } else {
+        _tables = _tables ? _currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:_currentUser.lightTables.array];
+        NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
+        [_tables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
         return 3;
     }
 }
@@ -595,7 +605,8 @@
     }
 }
 
-- (void)deleteLightTable:(Table*)lightTable {
+- (void)deleteLightTable:(NSNumber*)lightTableId {
+    Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
     NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_tables indexOfObject:lightTable] inSection:1];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
@@ -636,8 +647,8 @@
     }
 }
 
-- (void)editLightTable:(Table *)lightTable {
-    NSLog(@"should be editing a light table");
+- (void)editLightTable:(NSNumber *)lightTableId {
+    Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
     WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
     [vc setTableId:lightTable.identifier];
     vc.lightTableDelegate = self;
@@ -650,7 +661,8 @@
     }];
 }
 
-- (void)leaveLightTable:(Table *)lightTable {
+- (void)leaveLightTable:(NSNumber *)lightTableId {
+    Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
     NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_tables indexOfObject:lightTable] inSection:1];
     if (![lightTable.identifier isEqualToNumber:@0]){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
@@ -665,14 +677,13 @@
     [self.tableView beginUpdates];
     [_tables removeObject:lightTable];
     [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        if (_tables.count && indexPathToRemove){
-            [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
-        } else {
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
-        }
-        [self.tableView endUpdates];
-    }];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    if (_tables.count && indexPathToRemove && indexPathToRemove.row != NSNotFound){
+        [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
+    } else {
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
+    [self.tableView endUpdates];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -703,8 +714,8 @@
             indexPath.row == 0 ? [self showPrivateArt] : [self showFavorites];
         } else if (indexPath.section == 1){
             if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-                if (_currentUser.lightTables.count){
-                    Table *table = _currentUser.lightTables[indexPath.row];
+                if (_tables.count){
+                    Table *table = _tables[indexPath.row];
                     [self showTable:table];
                     [self setHomeAsReset];
                 }
@@ -718,9 +729,10 @@
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
-- (void)deleteSlideshow:(Slideshow*)slideshow {
+- (void)deleteSlideshow:(NSNumber*)slideshowId {
+    NSLog(@"slideshow id? %@",slideshowId);
+    Slideshow *slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:slideshowId inContext:[NSManagedObjectContext MR_defaultContext]];
     NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_slideshows indexOfObject:slideshow] inSection:0];
-    NSLog(@"index path to remove: %@",indexPathToRemove);
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -729,27 +741,28 @@
         NSLog(@"Failed to delete this slideshow: %@",error.description);
     }];
 
-    [self.tableView beginUpdates];
-    [_slideshows removeObject:slideshow];
     [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    _slideshows = [Slideshow MR_findAll].mutableCopy;
-    if (indexPathToRemove && _slideshows.count){
+    
+    [self.tableView beginUpdates];
+    if (indexPathToRemove && indexPathToRemove.row != NSNotFound && _slideshows.count){
         [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
     } else {
-        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
+        _slideshows = [NSMutableArray arrayWithArray:[Slideshow MR_findAll]];
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
     }
     [self.tableView endUpdates];
 }
 
-- (void)removeSlideshow:(Slideshow *)slideshow {
+- (void)removeSlideshow:(NSNumber *)slideshowId {
+    Slideshow *slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:slideshowId inContext:[NSManagedObjectContext MR_defaultContext]];
     NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_slideshows indexOfObject:slideshow] inSection:0];
-    [self.tableView beginUpdates];
-    [_slideshows removeObject:slideshow];
     [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    _slideshows = [Slideshow MR_findAll].mutableCopy;
-    if (_slideshows.count){
+    
+    [self.tableView beginUpdates];
+    _slideshows = [NSMutableArray arrayWithArray:[Slideshow MR_findAll]];
+    if (indexPathToRemove && indexPathToRemove.row != NSNotFound && _slideshows.count){
         [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
     } else {
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -804,7 +817,8 @@
 
 - (void)loadLightTable:(Table*)table {
     if (!loading && table && ![table.identifier isEqualToNumber:@0]){
-        [ProgressHUD show:@"Loading table..."];
+        NSString *title = table.name.length ? [NSString stringWithFormat:@"\"%@\"",table.name] : @"\"table without a name\"";
+        [ProgressHUD show:[NSString stringWithFormat:@"Loading %@",title]];
         loading = YES;
         [manager GET:[NSString stringWithFormat:@"light_tables/%@",table.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success loading light table: %@",responseObject);
@@ -1798,7 +1812,11 @@
 }
 
 - (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
-    
+    if (!searchBar.text.length) {
+        searching = NO;
+        [self resetArtBooleans];
+        [self setHomeAsHome];
+    }
 }
 
 - (void)dismiss {
@@ -1840,23 +1858,18 @@
     [homeButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
 }
 
+- (void)setHomeAsHome {
+    [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
+}
+
 - (void)searchDidSelectPhoto:(Photo *)photo {
     NSLog(@"Search did select art: %@",photo.art.title);
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)text {
     searchText = text;
-    if (searchText.length){
-        searching = YES;
-        [self filterContentForSearchText:searchText scope:nil];
-    } else {
-        dispatch_async(dispatch_get_main_queue(), ^(void){
-            [self.searchBar resignFirstResponder];
-            searching = NO;
-            [_noSearchResultsLabel setHidden:YES];
-            [self.collectionView reloadData];
-        });
-    }
+    searching = YES;
+    [self filterContentForSearchText:searchText scope:nil];
 }
 
 - (void)filterContentForSearchText:(NSString*)text scope:(NSString*)scope {

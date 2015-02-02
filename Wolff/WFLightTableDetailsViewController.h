@@ -21,6 +21,7 @@
 @property (strong, nonatomic) NSNumber *tableId;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UIButton *dismissButton;
+@property (weak, nonatomic) IBOutlet UIButton *scrollBackButton;
 @property (weak, nonatomic) id<WFLightTableDelegate>lightTableDelegate;
 @property BOOL showKey;
 - (void)dismiss;

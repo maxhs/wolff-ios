@@ -11,9 +11,9 @@
 #import "Table+helper.h"
 
 @protocol WFLightTableCellDelegate <NSObject>
-- (void)deleteLightTable:(Table*)lightTable;
-- (void)leaveLightTable:(Table*)lightTable;
-- (void)editLightTable:(Table*)lightTable;
+- (void)deleteLightTable:(NSNumber*)lightTableId;
+- (void)leaveLightTable:(NSNumber*)lightTableId;
+- (void)editLightTable:(NSNumber*)lightTableId;
 @end
 
 @interface WFMainTableCell : UITableViewCell <UIScrollViewDelegate>

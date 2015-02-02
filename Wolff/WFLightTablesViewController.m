@@ -64,8 +64,14 @@
     [super viewWillAppear:animated];
     [self setUpFooter];
     [self loadLightTables];
-    if (!_slideshowShareMode){
-        [self setPreferredContentSize:CGSizeMake(420, 54.f*(_lightTables.count+2))];
+    if (_slideshowShareMode){
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"owner.identifier = %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+        _lightTables = [Table MR_findAllSortedBy:@"name" ascending:YES withPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
+        [self setPreferredContentSize:CGSizeMake(420, (54.f*_lightTables.count)+34.f)];
+    } else {
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"owner.identifier = %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+        _lightTables = [Table MR_findAllSortedBy:@"name" ascending:YES withPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
+        [self setPreferredContentSize:CGSizeMake(420, 54.f*(_lightTables.count+1))];
     }
 }
 
@@ -101,14 +107,15 @@
         [self setPreferredContentSize:CGSizeMake(420, (54.f*_lightTables.count)+34.f)];
         return 1;
     } else {
-        _lightTables = [NSMutableArray arrayWithArray:_currentUser.lightTables.array.mutableCopy];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"owner.identifier = %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+        _lightTables = [Table MR_findAllSortedBy:@"name" ascending:YES withPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
         return 2;
     }
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0 && !_slideshowShareMode){
-        return 2;
+        return 1;
     } else {
         return _lightTables.count;
     }
@@ -182,14 +189,17 @@
         if (_slideshow && [_slideshow.tables containsObject:lightTable]){
             if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableDeselected:)]){
                 [self.lightTableDelegate lightTableDeselected:lightTable.identifier];
+                [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
             }
         } else {
             if (_photo && [lightTable.photos containsObject:_photo]){
                 if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(undropPhotoFromLightTable:)]){
                     [self.lightTableDelegate undropPhotoFromLightTable:lightTable.identifier];
+                    [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
                 }
             } else if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableSelected:)]){
                 [self.lightTableDelegate lightTableSelected:lightTable.identifier];
+                [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
             }
         }
     }

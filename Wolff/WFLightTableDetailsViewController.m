@@ -14,6 +14,7 @@
 #import "Photo+helper.h"
 #import "WFAlert.h"
 #import "WFLightTableKeyCell.h"
+#import "WFLightTableContentsCell.h"
 
 #define kLightTableDescriptionPlaceholder @"Describe your light table..."
 
@@ -32,7 +33,7 @@
     UITextView *descriptionTextView;
     UIBarButtonItem *dismissBarButton;
     UIImageView *navBarShadowView;
-    Table *_table;
+    Table *_lightTable;
     CGFloat topInset;
     CGFloat keyboardHeight;
 }
@@ -73,24 +74,21 @@
     self.title = @"New Light Table";
     
     if (!_tableId || [_tableId isEqualToNumber:@0]){
-        _table = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        _lightTable = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
     } else {
-        _table = [Table MR_findFirstByAttribute:@"identifier" withValue:_tableId inContext:[NSManagedObjectContext MR_defaultContext]];
+        _lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:_tableId inContext:[NSManagedObjectContext MR_defaultContext]];
     }
-    if (!_table){
-        // TO DO find table from the internet
+    if (!_lightTable){
         [manager GET:[NSString stringWithFormat:@"light_tables/%@",_tableId] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success loading table from internet: %@",responseObject);
-            [_table populateFromDictionary:[responseObject objectForKey:@"light_table"]];
+            [_lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
             [_collectionView reloadData];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to get light table from API: %@",error.description);
         }];
     }
-    
-    if (_photos.count){
-        NSLog(@"Should be pre-seeding table with %lu image objects",(unsigned long)_photos.count);
-    }
+
+    [_scrollBackButton addTarget:self action:@selector(scrollBack) forControlEvents:UIControlEventTouchUpInside];
     [self registerForKeyboardNotifications];
 }
 
@@ -107,15 +105,23 @@
 #pragma mark - Collection view data source
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
-    if (_showKey){
-        return 2;
-    } else {
-        return 1;
-    }
+    return 2;
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return 1;
+    if (_showKey){
+        return 1;
+    } else {
+        if (section == 0){
+            return 1;
+        } else if (_lightTable) {
+            [_scrollBackButton setHidden:NO];
+            return _lightTable.photos.count;
+        } else {
+            [_scrollBackButton setHidden:YES];
+            return 1;
+        }
+    }
 }
 
 - (UICollectionViewCell*)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -123,9 +129,14 @@
         WFLightTableDetailsCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LightTableDetailsCell" forIndexPath:indexPath];
         [cell setBackgroundColor:[UIColor clearColor]];
         
-        [cell.actionButton setTitle:@"CREATE" forState:UIControlStateNormal];
-        [cell.actionButton setUserInteractionEnabled:YES];
+        if (_lightTable){
+            [cell.actionButton setTitle:@"SAVE" forState:UIControlStateNormal];
+        } else {
+            [cell.actionButton setTitle:@"CREATE" forState:UIControlStateNormal];
+        }
+        
         [cell.actionButton addTarget:self action:@selector(post) forControlEvents:UIControlEventTouchUpInside];
+        [cell.actionButton setUserInteractionEnabled:YES];
         cell.titleTextField.delegate = self;
         cell.keyTextField.delegate = self;
         cell.confirmKeyTextField.delegate = self;
@@ -135,15 +146,17 @@
         [cell.titleTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
         [cell.titleTextField setReturnKeyType:UIReturnKeyNext];
 
-        if (_table) {
-            [cell.titleTextField setText:_table.name];
+        if (_lightTable) {
+            [cell.titleTextField setText:_lightTable.name];
+            [cell.keyTextField setText:_lightTable.code];
+            [cell.confirmKeyTextField setText:_lightTable.code];
         }
         
         cell.textView.delegate = self;
         [cell.textView setHidden:NO];
         descriptionTextView = cell.textView;
-        if (_table && _table.tableDescription.length){
-            [cell.textView setText:_table.tableDescription];
+        if (_lightTable && _lightTable.tableDescription.length){
+            [cell.textView setText:_lightTable.tableDescription];
             [cell.textView setTextColor:[UIColor blackColor]];
         } else {
             [cell.textView setText:kLightTableDescriptionPlaceholder];
@@ -163,16 +176,23 @@
         actionButton = cell.actionButton;
         return cell;
     } else {
-        WFLightTableKeyCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LightTableKeyCell" forIndexPath:indexPath];
-        [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.03]];
-        [cell.label setText:@"TABLE KEY"];
-        [cell.textField setPlaceholder:@"The key code for the light table code you'd like to join"];
-        cell.textField.delegate = self;
-        [cell.joinButton setTitle:@"JOIN" forState:UIControlStateNormal];
-        [cell.joinButton addTarget:self action:@selector(joinLightTable) forControlEvents:UIControlEventTouchUpInside];
-        joinButton = cell.joinButton;
-        joinTableTextField = cell.textField;
-        return cell;
+        if (_showKey){
+            WFLightTableKeyCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LightTableKeyCell" forIndexPath:indexPath];
+            [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.03]];
+            [cell.label setText:@"TABLE KEY"];
+            [cell.textField setPlaceholder:@"The key code for the light table code you'd like to join"];
+            cell.textField.delegate = self;
+            [cell.joinButton setTitle:@"JOIN" forState:UIControlStateNormal];
+            [cell.joinButton addTarget:self action:@selector(joinLightTable) forControlEvents:UIControlEventTouchUpInside];
+            joinButton = cell.joinButton;
+            joinTableTextField = cell.textField;
+            return cell;
+        } else {
+            WFLightTableContentsCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LightTableContentsCell" forIndexPath:indexPath];
+            Photo *photo = _lightTable.photos[indexPath.item];
+            [cell configureForPhoto:photo];
+            return cell;
+        }
     }
 }
 
@@ -186,31 +206,58 @@
     return UIEdgeInsetsMake(0, 0, 0, 0);
 }
 
-- (void)post {
-    [self createLightTable];
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    if (scrollView.contentOffset.x >= width && _scrollBackButton.alpha == 0.f){
+        [self animateScrollButton];
+    } else if (_scrollBackButton.alpha == 1.f && scrollView.contentOffset.x < width){
+        [self animateScrollButton];
+    }
 }
 
-- (void)createLightTable {
+- (void)animateScrollButton {
+    if (_scrollBackButton.alpha == 0.f){
+        [UIView animateWithDuration:.23 animations:^{
+           [_scrollBackButton setAlpha:1.f];
+        }];
+    } else {
+        [UIView animateWithDuration:.23 animations:^{
+            [_scrollBackButton setAlpha:0.f];
+        }];
+    }
+}
+
+- (void)scrollBack {
+    [_collectionView setContentOffset:CGPointZero animated:YES];
+}
+
+- (void)post {
+    if (_lightTable){
+        [self saveLightTable];
+    } else {
+        [self createLightTable];
+    }
+}
+
+- (NSMutableDictionary*)generateParameters {
     [self.view endEditing:YES];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    
     if (tableKeyTextField.text.length){
         if ([tableKeyTextField.text isEqualToString:confirmTableKeyTextField.text]){
             [parameters setObject:tableKeyTextField.text forKey:@"code"];
         } else {
             [WFAlert show:@"Please ensure that your light table keys match before continuing." withTime:3.3f];
-            return;
+            return nil;
         }
     } else {
         [WFAlert show:@"Please ensure you've added a light table key before continuing." withTime:3.3f];
-        return;
+        return nil;
     }
     
     if (titleTextField.text.length){
         [parameters setObject:titleTextField.text forKey:@"name"];
     } else {
         [WFAlert show:@"Please make sure you've included a name for your light table before continuing." withTime:3.3f];
-        return;
+        return nil;
     }
     if (descriptionTextView.text.length){
         [parameters setObject:descriptionTextView.text forKey:@"description"];
@@ -225,14 +272,22 @@
     }
     [parameters setObject:photoIds forKey:@"photo_ids"];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_ids"];
-    [ProgressHUD show:@"Creating light table..."];
+    return parameters;
+}
+
+- (void)createLightTable {
+    NSMutableDictionary *parameters = [self generateParameters];
+    if (parameters == nil){
+        return;
+    }
+    [ProgressHUD show:[NSString stringWithFormat:@"Creating \"%@\"",titleTextField.text]];
     [manager POST:@"light_tables" parameters:@{@"light_table":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success creating a light table: %@", responseObject);
-        [_table populateFromDictionary:[responseObject objectForKey:@"light_table"]];
+        [_lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            [WFAlert show:[NSString stringWithFormat:@"\"%@\" successfully created!",_table.name] withTime:2.7f];
+            [WFAlert show:[NSString stringWithFormat:@"\"%@\" successfully created",_lightTable.name] withTime:2.7f];
             if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(didCreateLightTable:)]){
-                [self.lightTableDelegate didCreateLightTable:_table];
+                [self.lightTableDelegate didCreateLightTable:_lightTable];
             }
             [self dismiss];
             [ProgressHUD dismiss];
@@ -248,6 +303,45 @@
     }];
 }
 
+- (void)saveLightTable {
+    [self.view endEditing:YES];
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    if (titleTextField.text.length){
+        [parameters setObject:titleTextField.text forKey:@"name"];
+    } else {
+        [WFAlert show:@"Please make sure you've included a name for your light table before continuing." withTime:3.3f];
+        return;
+    }
+    if (descriptionTextView.text.length){
+        [parameters setObject:descriptionTextView.text forKey:@"description"];
+    }
+    if (tableKeyTextField.text.length && [tableKeyTextField.text isEqualToString:confirmTableKeyTextField.text]){
+        [parameters setObject:tableKeyTextField.text forKey:@"code"];
+    }
+    
+    [ProgressHUD show:@"Saving light table..."];
+    [manager PATCH:[NSString stringWithFormat:@"light_tables/%@",_lightTable.identifier] parameters:@{@"light_table":parameters,@"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success saving a light table: %@", responseObject);
+        [_lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [WFAlert show:[NSString stringWithFormat:@"\"%@\" successfully saved",_lightTable.name] withTime:2.7f];
+            if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(didSaveLightTable:)]){
+                [self.lightTableDelegate didSaveLightTable:_lightTable];
+            }
+            [self dismiss];
+            [ProgressHUD dismiss];
+        }];
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        [ProgressHUD dismiss];
+        if ([operation.responseString isEqualToString:kExistingLightTable]){
+            [WFAlert show:@"Sorry, but there's already another light table using that key code.\n\nPlease choose another."  withTime:3.3f];
+        } else {
+            NSLog(@"Error saving a light table: %@",error.description);
+        }
+    }];
+}
+
 - (void)joinLightTable {
     [self.view endEditing:YES];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
@@ -257,24 +351,24 @@
         [WFAlert show:@"Please make sure you've entered a valid key before attempting to join a light table" withTime:3.3f];
         return;
     }
-    if (_table && ![_table.identifier isEqualToNumber:@0]) {
-        [parameters setObject:_table.identifier forKey:@"id"];
+    if (_lightTable && ![_lightTable.identifier isEqualToNumber:@0]) {
+        [parameters setObject:_lightTable.identifier forKey:@"id"];
     }
     
     [ProgressHUD show:@"Searching for light table..."];
     [manager POST:@"light_tables/join" parameters:@{@"light_table":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Response object for joining a light table: %@",responseObject);
         NSDictionary *lightTableDict = [responseObject objectForKey:@"light_table"];
-        if (_table.identifier && [_table.identifier isEqualToNumber:[lightTableDict objectForKey:@"id"]]){
-            [_table populateFromDictionary:lightTableDict];
+        if (_lightTable.identifier && [_lightTable.identifier isEqualToNumber:[lightTableDict objectForKey:@"id"]]){
+            [_lightTable populateFromDictionary:lightTableDict];
         } else {
-            _table = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-            [_table populateFromDictionary:lightTableDict];
+            _lightTable = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            [_lightTable populateFromDictionary:lightTableDict];
         }
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            [WFAlert show:[NSString stringWithFormat:@"You just joined \"%@\"",_table.name] withTime:3.3f];
+            [WFAlert show:[NSString stringWithFormat:@"You just joined \"%@\"",_lightTable.name] withTime:3.3f];
             if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(didJoinLightTable:)]){
-                [self.lightTableDelegate didJoinLightTable:_table];
+                [self.lightTableDelegate didJoinLightTable:_lightTable];
             }
             [ProgressHUD dismiss];
             [self dismiss];
@@ -297,10 +391,6 @@
         [textView setText:@""];
         [textView setTextColor:[UIColor blackColor]];
     }
-    if (textView == descriptionTextView) {
-        
-    }
-    
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView {
@@ -329,40 +419,41 @@
         }
         return NO;
     } else {
+        
         if (textField == joinTableTextField){
             NSString *newText = [joinTableTextField.text stringByReplacingCharactersInRange:range withString:string];
             if (newText.length){
-                [joinButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.23]];
+                [joinButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.33]];
                 joinButton.enabled = YES;
             } else {
-                [joinButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+                [joinButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.077]];
                 joinButton.enabled = NO;
             }
         } else if (textField == confirmTableKeyTextField){
             NSString *newText = [confirmTableKeyTextField.text stringByReplacingCharactersInRange:range withString:string];
             if (titleTextField.text.length && [tableKeyTextField.text isEqualToString:newText]){
-                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.23]];
+                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.33]];
                 actionButton.enabled = YES;
             } else {
-                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.077]];
                 actionButton.enabled = NO;
             }
         } else if (textField == tableKeyTextField){
             NSString *newText = [tableKeyTextField.text stringByReplacingCharactersInRange:range withString:string];
             if (titleTextField.text.length && [confirmTableKeyTextField.text isEqualToString:newText]){
-                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.23]];
+                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.33]];
                 actionButton.enabled = YES;
             } else {
-                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.077]];
                 actionButton.enabled = NO;
             }
         } else if (textField == titleTextField){
             NSString *newText = [titleTextField.text stringByReplacingCharactersInRange:range withString:string];
-            if (newText.length && tableKeyTextField.text.length && [confirmTableKeyTextField.text isEqualToString:tableKeyTextField.text]){
-                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.23]];
+            if (newText.length && ((tableKeyTextField.text.length && [confirmTableKeyTextField.text isEqualToString:tableKeyTextField.text]) || _lightTable)){
+                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.33]];
                 actionButton.enabled = YES;
             } else {
-                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+                [actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.077]];
                 actionButton.enabled = NO;
             }
         }

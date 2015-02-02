@@ -109,14 +109,15 @@
     [_panGesture requireGestureRecognizerToFail:leftScreenEdgePanGesture];
     
     [_slideshowTitleButtonItem setTitle:_slideshow.title];
-    currentPage = _startIndex + 1;
+    currentPage = _startIndex;
     if (_startIndex == 0){
         [_previousButton setEnabled:NO];
+        [_slideNumberButtonItem setTitle:@""];
     } else {
-        [_collectionView setContentOffset:CGPointMake(width*(_startIndex + 1), 0) animated:NO]; // offset by 1 because of the title slide
+        [_collectionView setContentOffset:CGPointMake(width*(_startIndex+1), 0) animated:NO]; // offset by 1 because of the title slide
+        [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
     }
     
-    [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
     [_slideNumberButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
     [_slideshowTitleButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
 }
@@ -182,29 +183,58 @@
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     CGFloat pageWidth = scrollView.frame.size.width;
     float fractionalPage = scrollView.contentOffset.x / pageWidth;
-    NSInteger page = lround(fractionalPage)+1; // offset since we're starting on page 1
+    NSInteger page = lround(fractionalPage);
     if (currentPage != page) {
         currentPage = page;
-        [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
-        if (currentPage > 1){
-            currentSlide = _slideshow.slides[currentPage-2]; // offset by 2 because the index starts at 0, not 1, and there's always a title slide
+        if (currentPage > 0){
+            [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
+            currentSlide = _slideshow.slides[currentPage-1]; // offset by 1 because the index starts at 0, not 1
             self.navigationItem.rightBarButtonItem = metadataButton;
-            currentPage-1 == _slideshow.slides.count ? [_nextButton setEnabled:NO] : [_nextButton setEnabled:YES];
+            currentPage == _slideshow.slides.count ? [_nextButton setEnabled:NO] : [_nextButton setEnabled:YES];
             [_previousButton setEnabled:YES];
-            
-            // ensure the ivars are set to the ACTIVE cell
-            WFSlideshowSlideCell *cell = (WFSlideshowSlideCell*)[_collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:currentPage-2 inSection:1]];
-            containerView1 = cell.containerView1;
-            containerView2 = cell.containerView2;
-            containerView3 = cell.containerView3;
-            artImageView1 = cell.artImageView1;
-            artImageView2 = cell.artImageView2;
-            artImageView3 = cell.artImageView3;
         } else {
+            // we're on the title slide
+            [_slideNumberButtonItem setTitle:@""];
             self.navigationItem.rightBarButtonItem = nil;
             [_previousButton setEnabled:NO];
             currentSlide = nil;
         }
+    }
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+    CGFloat pageWidth = scrollView.frame.size.width;
+    float fractionalPage = scrollView.contentOffset.x / pageWidth;
+    NSInteger page = lround(fractionalPage);
+    currentPage = page;
+    if (currentPage > 0){
+        // ensure the ivars are set to the ACTIVE cell AND slide
+        currentSlide = _slideshow.slides[currentPage-1]; // offset by 1 because the index starts at 0, not 1
+        WFSlideshowSlideCell *cell = (WFSlideshowSlideCell*)[_collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:currentPage-1 inSection:1]];
+        containerView1 = cell.containerView1;
+        containerView2 = cell.containerView2;
+        containerView3 = cell.containerView3;
+        artImageView1 = cell.artImageView1;
+        artImageView2 = cell.artImageView2;
+        artImageView3 = cell.artImageView3;
+    } else {
+        currentSlide = nil;
+    }
+}
+
+- (IBAction)nextSlide:(id)sender {
+    CGPoint contentOffset = _collectionView.contentOffset;
+    contentOffset.x += width;
+    if (currentPage <= _slideshow.slides.count){
+        [_collectionView setContentOffset:contentOffset animated:YES];
+    }
+}
+
+- (IBAction)previousSlide:(id)sender {
+    CGPoint contentOffset = _collectionView.contentOffset;
+    contentOffset.x -= width;
+    if (contentOffset.x >= 0.f){
+        [_collectionView setContentOffset:contentOffset animated:YES];
     }
 }
 
@@ -241,21 +271,6 @@
     }
 }
 
-- (IBAction)nextSlide:(id)sender {
-    CGPoint contentOffset = _collectionView.contentOffset;
-    contentOffset.x += width;
-    if (currentPage-1 <= _slideshow.slides.count){
-        [_collectionView setContentOffset:contentOffset animated:YES];
-    }
-}
-
-- (IBAction)previousSlide:(id)sender {
-    CGPoint contentOffset = _collectionView.contentOffset;
-    contentOffset.x -= width;
-    if (contentOffset.x >= 0.f){
-        [_collectionView setContentOffset:contentOffset animated:YES];
-    }
-}
 
 #pragma mark – UICollectionViewDelegateFlowLayout
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -538,7 +553,7 @@
     [super viewWillDisappear:animated];
     [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        NSLog(@"Saving slideshow: %u",success);
+        
     }];
 }
 

@@ -22,6 +22,9 @@
     if ([dictionary objectForKey:@"description"] && [dictionary objectForKey:@"description"] != [NSNull null]){
         self.tableDescription = [dictionary objectForKey:@"description"];
     }
+    if ([dictionary objectForKey:@"code"] && [dictionary objectForKey:@"code"] != [NSNull null]){
+        self.code = [dictionary objectForKey:@"code"];
+    }
     if ([dictionary objectForKey:@"name"] && [dictionary objectForKey:@"name"] != [NSNull null]){
         self.name = [dictionary objectForKey:@"name"];
     }

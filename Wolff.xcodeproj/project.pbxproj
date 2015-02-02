@@ -148,6 +148,7 @@
 		50CEAAE81A6DD3FB0040E8EF /* homeIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CEAAE51A6DD3FB0040E8EF /* homeIcon.png */; };
 		50CEAAE91A6DD3FB0040E8EF /* homeIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CEAAE61A6DD3FB0040E8EF /* homeIcon@2x.png */; };
 		50CEAAEA1A6DD3FB0040E8EF /* homeIcon@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CEAAE71A6DD3FB0040E8EF /* homeIcon@3x.png */; };
+		50D6EC0E1A7C79CA00DAE52E /* WFLightTableContentsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D6EC0D1A7C79CA00DAE52E /* WFLightTableContentsCell.m */; };
 		50D7A9D11A622E5C007FE14C /* WFWalkthroughViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D7A9D01A622E5C007FE14C /* WFWalkthroughViewController.m */; };
 		50D7A9D41A62306D007FE14C /* WFWalkthroughAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D7A9D31A62306D007FE14C /* WFWalkthroughAnimator.m */; };
 		50D7A9DB1A6234E3007FE14C /* logout.png in Resources */ = {isa = PBXBuildFile; fileRef = 50D7A9D51A6234E3007FE14C /* logout.png */; };
@@ -518,6 +519,8 @@
 		50CEAAE51A6DD3FB0040E8EF /* homeIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = homeIcon.png; sourceTree = "<group>"; };
 		50CEAAE61A6DD3FB0040E8EF /* homeIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "homeIcon@2x.png"; sourceTree = "<group>"; };
 		50CEAAE71A6DD3FB0040E8EF /* homeIcon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "homeIcon@3x.png"; sourceTree = "<group>"; };
+		50D6EC0C1A7C79CA00DAE52E /* WFLightTableContentsCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFLightTableContentsCell.h; sourceTree = "<group>"; };
+		50D6EC0D1A7C79CA00DAE52E /* WFLightTableContentsCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFLightTableContentsCell.m; sourceTree = "<group>"; };
 		50D7A9CF1A622E5C007FE14C /* WFWalkthroughViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFWalkthroughViewController.h; sourceTree = "<group>"; };
 		50D7A9D01A622E5C007FE14C /* WFWalkthroughViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFWalkthroughViewController.m; sourceTree = "<group>"; };
 		50D7A9D21A62306D007FE14C /* WFWalkthroughAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFWalkthroughAnimator.h; sourceTree = "<group>"; };
@@ -1419,6 +1422,8 @@
 				50DB02281A5A72D8005A4E2F /* WFLightTableDetailsCell.m */,
 				505D3B791A64D56B00CD70DE /* WFLightTableKeyCell.h */,
 				505D3B7A1A64D56B00CD70DE /* WFLightTableKeyCell.m */,
+				50D6EC0C1A7C79CA00DAE52E /* WFLightTableContentsCell.h */,
+				50D6EC0D1A7C79CA00DAE52E /* WFLightTableContentsCell.m */,
 				50D7A9ED1A625853007FE14C /* WFAssetGroupPickerCell.h */,
 				50D7A9EE1A625853007FE14C /* WFAssetGroupPickerCell.m */,
 				503CD5931A715D7300F4FF85 /* WFFlagCell.h */,
@@ -1786,6 +1791,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50D6EC0E1A7C79CA00DAE52E /* WFLightTableContentsCell.m in Sources */,
 				F2CE0579198E91910061DB94 /* Art.m in Sources */,
 				F28C67111A34150500B82FD8 /* WFInstitutionSearchCell.m in Sources */,
 				50DB44281A54CA4E00856174 /* WFSearchResultsCell.m in Sources */,

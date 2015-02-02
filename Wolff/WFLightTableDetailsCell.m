@@ -41,7 +41,7 @@
     [_actionButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     _actionButton.layer.cornerRadius = 14.f;
     _actionButton.clipsToBounds = YES;
-    [_actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+    [_actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.077]];
 }
 
 - (void)textFieldTreatment:(UITextField*)textField {

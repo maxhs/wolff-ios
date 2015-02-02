@@ -578,6 +578,10 @@
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
+    if (titleTextField.isEditing){
+        [titleTextField resignFirstResponder];
+    }
+    
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     if (_slideshow.title.length){
@@ -936,7 +940,6 @@
 }
 
 - (void)deleteSlideshow {
-    
     [ProgressHUD show:@"Deleting..."];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
@@ -977,6 +980,16 @@
     [super viewWillDisappear:animated];
     if (self.popover && self.popover.isPopoverVisible){
         [self.popover dismissPopoverAnimated:YES];
+    }
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    if (!_slideshow.slides.count && !_slideshow.photos.count && !_slideshow.title.length){
+        [_slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            NSLog(@"Success deleting a phantom slideshow: %u",success);
+        }];
     }
 }
 

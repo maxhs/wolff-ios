@@ -50,6 +50,7 @@
     [_actionButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     
     [_editButton setBackgroundColor:kElectricBlue];
+    [_editButton setTitle:@"Edit" forState:UIControlStateNormal];
     [_editButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_editButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     
@@ -79,7 +80,9 @@
         [_actionButton setTitle:@"Delete" forState:UIControlStateNormal];
         [_actionButton setBackgroundColor:[UIColor redColor]];
         [_actionButton addTarget:self action:@selector(deleteLightTable) forControlEvents:UIControlEventTouchUpInside];
+        
         [_editButton setHidden:NO];
+        [_editButton addTarget:self action:@selector(editLightTable) forControlEvents:UIControlEventTouchUpInside];
         
         //readjust the scrollView depending on if the user should see the edit button
         [_scrollView setContentSize:CGSizeMake(kSidebarWidth+200, self.contentView.frame.size.height)];
@@ -88,13 +91,14 @@
         [_actionButton setBackgroundColor:kSaffronColor];
         [_actionButton addTarget:self action:@selector(leaveLightTable) forControlEvents:UIControlEventTouchUpInside];
         _actionButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
-        _actionButton.titleLabel.layer.shadowRadius = 2.3f;
-        _actionButton.titleLabel.layer.shadowOpacity = .5f;
-        _actionButton.titleLabel.layer.shadowOffset = CGSizeMake(.3f, .3f);
+        _actionButton.titleLabel.layer.shadowRadius = 1.4f;
+        _actionButton.titleLabel.layer.shadowOpacity = .23f;
+        _actionButton.titleLabel.layer.shadowOffset = CGSizeMake(.23f, .23f);
         [_editButton setHidden:YES];
         
         //readjust the scrollView depending on if the user should see the edit button
         [_scrollView setContentSize:CGSizeMake(kSidebarWidth+100, self.contentView.frame.size.height)];
+        [_actionButton setFrame:_editButton.frame];
     }
     
     //set up the title
@@ -112,24 +116,25 @@
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     CGFloat contentOffsetX = scrollView.contentOffset.x;
+    _editButton.transform = CGAffineTransformMakeTranslation(-contentOffsetX, 0);
     _actionButton.transform = CGAffineTransformMakeTranslation(-contentOffsetX, 0);
 }
 
 - (void)leaveLightTable {
     if (self.delegate && [self.delegate respondsToSelector:@selector(leaveLightTable:)]){
-        [self.delegate leaveLightTable:_lightTable];
+        [self.delegate leaveLightTable:_lightTable.identifier];
     }
 }
 
 - (void)deleteLightTable {
     if (self.delegate && [self.delegate respondsToSelector:@selector(deleteLightTable:)]){
-        [self.delegate deleteLightTable:_lightTable];
+        [self.delegate deleteLightTable:_lightTable.identifier];
     }
 }
 
 - (void)editLightTable {
     if (self.delegate && [self.delegate respondsToSelector:@selector(editLightTable:)]){
-        [self.delegate editLightTable:_lightTable];
+        [self.delegate editLightTable:_lightTable.identifier];
     }
 }
 

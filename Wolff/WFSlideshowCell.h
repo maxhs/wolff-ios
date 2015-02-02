@@ -10,8 +10,8 @@
 #import "Slideshow+helper.h"
 
 @protocol WFSlideshowCellDelegate <NSObject, UIAlertViewDelegate>
-- (void)deleteSlideshow:(Slideshow*)slideshow;
-- (void)removeSlideshow:(Slideshow*)slideshow;
+- (void)deleteSlideshow:(NSNumber*)slideshowId;
+- (void)removeSlideshow:(NSNumber*)slideshowId;
 @end
 
 @interface WFSlideshowCell : UITableViewCell <UIScrollViewDelegate>

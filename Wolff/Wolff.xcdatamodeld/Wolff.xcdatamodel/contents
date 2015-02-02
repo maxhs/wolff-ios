@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6254" systemVersion="14B25" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6254" systemVersion="14C109" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="Alternate" representedClassName="Alternate" syncable="YES">
         <attribute name="confirmed" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
@@ -210,6 +210,7 @@
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="slideshows" inverseEntity="User" syncable="YES"/>
     </entity>
     <entity name="Table" representedClassName="Table" syncable="YES">
+        <attribute name="code" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="identifier" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="privateTable" optional="YES" attributeType="Boolean" syncable="YES"/>
@@ -273,7 +274,7 @@
         <element name="Photo" positionX="279" positionY="324" width="128" height="343"/>
         <element name="Slide" positionX="297" positionY="315" width="128" height="225"/>
         <element name="Slideshow" positionX="288" positionY="306" width="128" height="195"/>
-        <element name="Table" positionX="288" positionY="270" width="128" height="223"/>
+        <element name="Table" positionX="288" positionY="270" width="128" height="240"/>
         <element name="User" positionX="261" positionY="189" width="128" height="450"/>
     </elements>
 </model>
