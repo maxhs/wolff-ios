@@ -148,7 +148,7 @@
 }
 
 - (void)showMetadata {
-    if (currentPage > 1){
+    if (currentPage > 0){
         WFSlideMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideMetadata"];
         [vc setSlide:currentSlide];
         [vc setSlideshow:_slideshow];

@@ -9,8 +9,6 @@
 #import <UIKit/UIKit.h>
 
 @interface WFNewArtCell : UITableViewCell
-
-@property (weak, nonatomic) IBOutlet UISwitch *theSwitch;
 @property (weak, nonatomic) IBOutlet UILabel *label;
 @property (weak, nonatomic) IBOutlet UITextField *textField;
 @property (weak, nonatomic) IBOutlet UITextView *textView;

@@ -413,7 +413,7 @@
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 //set up private photos and favorites
                 NSPredicate *privatePredicate = [NSPredicate predicateWithFormat:@"art.privateArt == %@ && art.user.identifier == %@", @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
-                _privatePhotos = [Photo MR_findAllWithPredicate:privatePredicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
+                _privatePhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:privatePredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
                 [_currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
                     if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
                         [_favoritePhotos addObject:favorite.photo];
@@ -485,7 +485,7 @@
 #pragma mark - Table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     if (slideshowSidebarMode){
-        _slideshows = [NSMutableArray arrayWithArray:[Slideshow MR_findAll]];
+        _slideshows = [NSMutableArray arrayWithArray:[Slideshow MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
         NSSortDescriptor *alphabeticalSlideshowSort = [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES];
         [_slideshows sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalSlideshowSort]];
         return 2;
@@ -710,14 +710,14 @@
         }
     } else {
         if (indexPath.section == 0){
-            [self setHomeAsReset];
+            //[self setHomeAsReset];
             indexPath.row == 0 ? [self showPrivateArt] : [self showFavorites];
         } else if (indexPath.section == 1){
             if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
                 if (_tables.count){
                     Table *table = _tables[indexPath.row];
                     [self showTable:table];
-                    [self setHomeAsReset];
+                    //[self setHomeAsReset];
                 }
             } else {
                 [self showLogin];
@@ -748,7 +748,7 @@
     if (indexPathToRemove && indexPathToRemove.row != NSNotFound && _slideshows.count){
         [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
     } else {
-        _slideshows = [NSMutableArray arrayWithArray:[Slideshow MR_findAll]];
+        _slideshows = [NSMutableArray arrayWithArray:[Slideshow MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
     }
     [self.tableView endUpdates];
@@ -761,7 +761,7 @@
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     
     [self.tableView beginUpdates];
-    _slideshows = [NSMutableArray arrayWithArray:[Slideshow MR_findAll]];
+    _slideshows = [NSMutableArray arrayWithArray:[Slideshow MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
     if (indexPathToRemove && indexPathToRemove.row != NSNotFound && _slideshows.count){
         [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
     } else {
@@ -898,20 +898,28 @@
 #pragma mark - UICollectionView Datasource
 
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
-    if (showPrivate){
+    if (searching && _filteredPhotos.count == 0){
+        [_noSearchResultsLabel setHidden:NO];
+    } else {
+        [_noSearchResultsLabel setHidden:YES];
+    }
+    if (searching){
+        return _filteredPhotos.count;
+    } else if (showPrivate){
+        self.searchBar.placeholder = @"Search private collection";
         return _privatePhotos.count;
     } else if (showLightTable){
+        if (_table && _table.name.length){
+            self.searchBar.placeholder = [NSString stringWithFormat:@"Search %@",_table.name];
+        } else {
+            self.searchBar.placeholder = @"Search light table";
+        }
         return _table.photos.count;
     } else if (showFavorites){
+        self.searchBar.placeholder = @"Search favorites";
         return _favoritePhotos.count;
-    } else if (searching){
-        if (_filteredPhotos.count > 0) {
-            [_noSearchResultsLabel setHidden:YES];
-        } else {
-            [_noSearchResultsLabel setHidden:NO];
-        }
-        return _filteredPhotos.count;
     } else {
+        self.searchBar.placeholder = @"Search Wölff Catalog";
         return _photos.count;
     }
 }
@@ -972,20 +980,19 @@
             [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
         });
     }
-    
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"PhotoCell" forIndexPath:indexPath];
     Photo *photo;
-    if (showPrivate){
+    if (searching){
+        photo = _filteredPhotos[indexPath.item];
+    } else if (showPrivate){
         photo = _privatePhotos[indexPath.item];
     } else if (showLightTable){
         photo = _table.photos[indexPath.item];
     } else if (showFavorites){
         photo = _favoritePhotos[indexPath.item];
-    } else if (searching){
-        photo = _filteredPhotos[indexPath.item];
     } else {
         photo = _photos[indexPath.item];
     }
@@ -1353,17 +1360,17 @@
 #pragma mark - UICollectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     Photo *photo;
-    if (showPrivate){
+    if (showPrivate && indexPath.item < _privatePhotos.count){
         photo = _privatePhotos[indexPath.item];
-    } else if (showLightTable){
+    } else if (showLightTable && indexPath.item < _table.photos.count){
         photo = _table.photos[indexPath.item];
-    } else if (showFavorites){
+    } else if (showFavorites && indexPath.item < _favoritePhotos.count){
         photo = _favoritePhotos[indexPath.item];
     } else if (searching){
-        if (_filteredPhotos.count){
+        if (_filteredPhotos.count && indexPath.item < _filteredPhotos.count){
             photo = _filteredPhotos[indexPath.item];
         }
-    } else {
+    } else if (indexPath.item < _photos.count){
         photo = _photos[indexPath.item];
     }
     
@@ -1666,7 +1673,7 @@
             resetButton.transform = CGAffineTransformIdentity;
             [_collectionView setFrame:collectionFrame];
             
-            if (_filteredPhotos.count && searching){
+            if ((_filteredPhotos.count && searching)){
                 [_collectionView performBatchUpdates:^{
                     [_collectionView reloadData];
                 } completion:^(BOOL finished) {
@@ -1677,7 +1684,7 @@
             }
             
         } completion:^(BOOL finished) {
-        
+            
         }];
     } else {
         tableIsVisible = YES;
@@ -1695,15 +1702,15 @@
             _tableView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
             _comparisonContainerView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
             resetButton.transform = CGAffineTransformMakeTranslation(-kSidebarWidth, 0);
+            [_collectionView setFrame:collectionFrame];
             
-            if (_filteredPhotos.count){
+            if (_filteredPhotos.count && searching){
                 [_collectionView performBatchUpdates:^{
                     [_collectionView reloadData];
                 } completion:^(BOOL finished) {
-                    [_collectionView setFrame:collectionFrame];
+        
                 }];
             } else {
-                [_collectionView setFrame:collectionFrame];
                 [_collectionView reloadData];
             }
         } completion:^(BOOL finished) {
@@ -1815,7 +1822,7 @@
     if (!searchBar.text.length) {
         searching = NO;
         [self resetArtBooleans];
-        [self setHomeAsHome];
+        //[self setHomeAsHome];
     }
 }
 
@@ -1831,8 +1838,8 @@
     [_noSearchResultsLabel setTextColor:[UIColor colorWithWhite:0 alpha:.23]];
     [_noSearchResultsLabel setText:@"No search results..."];
     [_noSearchResultsLabel setHidden:YES];
-    
     [self.searchBar setPlaceholder:@"Search catalog"];
+    
     //reset the search bar font
     for (id subview in [self.searchBar.subviews.firstObject subviews]){
         if ([subview isKindOfClass:[UITextField class]]){
@@ -1851,16 +1858,16 @@
     if (!_filteredPhotos) _filteredPhotos = [NSMutableArray arrayWithArray:_photos];
     searching = YES;
     if (self.popover) [self.popover dismissPopoverAnimated:YES];
-    [self setHomeAsReset];
+    //[self setHomeAsReset];
 }
 
-- (void)setHomeAsReset {
-    [homeButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
-}
-
-- (void)setHomeAsHome {
-    [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
-}
+//- (void)setHomeAsReset {
+//    [homeButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
+//}
+//
+//- (void)setHomeAsHome {
+//    [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
+//}
 
 - (void)searchDidSelectPhoto:(Photo *)photo {
     NSLog(@"Search did select art: %@",photo.art.title);
@@ -1876,7 +1883,17 @@
     //NSLog(@"search text: %@",text);
     if (text.length) {
         [_filteredPhotos removeAllObjects];
-        for (Photo *photo in _photos){
+        NSArray *photosToIterateThrough;
+        if (showLightTable && _table){
+            photosToIterateThrough = _table.photos.array;
+        } else if (showPrivate){
+            photosToIterateThrough = _privatePhotos.array;
+        } else if (showFavorites){
+            photosToIterateThrough = _favoritePhotos.array;
+        } else {
+            photosToIterateThrough = _photos;
+        }
+        for (Photo *photo in photosToIterateThrough){
             // evaluate the art metadata, but actually add the photo to _filteredPhotos
             Art *art = photo.art;
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF contains[cd] %@", text];

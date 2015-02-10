@@ -61,6 +61,7 @@
         }
         art.identifier = [dictionary objectForKey:@"art_id"];
         self.art = art;
+        self.artists = art.artists;
     } else if ([dictionary objectForKey:@"art"] && [dictionary objectForKey:@"art"] != [NSNull null]){
         NSDictionary *dict = [dictionary objectForKey:@"art"];
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
@@ -70,6 +71,7 @@
         }
         [art populateFromDictionary:dict];
         self.art = art;
+        self.artists = art.artists;
     }
     if ([dictionary objectForKey:@"user_id"] && [dictionary objectForKey:@"user_id"] != [NSNull null]){
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"user_id"]];

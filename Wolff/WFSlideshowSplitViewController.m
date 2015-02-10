@@ -235,7 +235,6 @@
         }
     }];
     if (slideTableCell) {
-        
         [self becomeFirstResponder];
         activeIndexPath = [self.tableView indexPathForCell:slideTableCell];
         activeImageView = imageView;
@@ -250,7 +249,6 @@
         CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
         CGRect menuLocation = CGRectMake(location.x, location.y, 0, 0);
         [menuController setTargetRect:menuLocation inView:[gestureRecognizer view]];
-        
         [menuController setMenuVisible:YES animated:YES];
     }
 }
@@ -635,6 +633,9 @@
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 [WFAlert show:@"Slideshow saved" withTime:2.3f];
                 [ProgressHUD dismiss];
+                [_collectionView reloadData];
+                [_tableView reloadData];
+                [_tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to save a slideshow: %@",error.description);

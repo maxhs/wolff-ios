@@ -145,10 +145,21 @@
 		50952EAB1A480BD000485831 /* camera.png in Resources */ = {isa = PBXBuildFile; fileRef = 50952EA81A480BD000485831 /* camera.png */; };
 		50952EAC1A480BD000485831 /* camera@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50952EA91A480BD000485831 /* camera@2x.png */; };
 		50952EAD1A480BD000485831 /* camera@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50952EAA1A480BD000485831 /* camera@3x.png */; };
+		50A9D41A1A83E6CB000B8DD6 /* WFNewLocationCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9D4191A83E6CB000B8DD6 /* WFNewLocationCell.m */; };
+		50A9D41D1A842590000B8DD6 /* WFDatePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9D41C1A842590000B8DD6 /* WFDatePicker.m */; };
+		50C589511A8528970094DBBF /* WFDateMetadataCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589501A8528970094DBBF /* WFDateMetadataCell.m */; };
+		50C589541A8558070094DBBF /* WFMaterialsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589531A8558070094DBBF /* WFMaterialsViewController.m */; };
+		50C589571A8558450094DBBF /* WFMaterialCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589561A8558450094DBBF /* WFMaterialCollectionCell.m */; };
+		50C5895A1A8558500094DBBF /* WFNewMaterialCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589591A8558500094DBBF /* WFNewMaterialCell.m */; };
 		50CEAAE81A6DD3FB0040E8EF /* homeIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CEAAE51A6DD3FB0040E8EF /* homeIcon.png */; };
 		50CEAAE91A6DD3FB0040E8EF /* homeIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CEAAE61A6DD3FB0040E8EF /* homeIcon@2x.png */; };
 		50CEAAEA1A6DD3FB0040E8EF /* homeIcon@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CEAAE71A6DD3FB0040E8EF /* homeIcon@3x.png */; };
 		50D6EC0E1A7C79CA00DAE52E /* WFLightTableContentsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D6EC0D1A7C79CA00DAE52E /* WFLightTableContentsCell.m */; };
+		50D6EC111A8284F200DAE52E /* WFArtistsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D6EC101A8284F200DAE52E /* WFArtistsViewController.m */; };
+		50D6EC141A8285E500DAE52E /* WFArtistCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D6EC131A8285E500DAE52E /* WFArtistCollectionCell.m */; };
+		50D6EC171A82E52800DAE52E /* WFLocationCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D6EC161A82E52800DAE52E /* WFLocationCollectionCell.m */; };
+		50D6EC1A1A82E53B00DAE52E /* WFLocationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D6EC191A82E53B00DAE52E /* WFLocationsViewController.m */; };
+		50D6EC231A832D8D00DAE52E /* WFNewArtistCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D6EC221A832D8D00DAE52E /* WFNewArtistCell.m */; };
 		50D7A9D11A622E5C007FE14C /* WFWalkthroughViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D7A9D01A622E5C007FE14C /* WFWalkthroughViewController.m */; };
 		50D7A9D41A62306D007FE14C /* WFWalkthroughAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D7A9D31A62306D007FE14C /* WFWalkthroughAnimator.m */; };
 		50D7A9DB1A6234E3007FE14C /* logout.png in Resources */ = {isa = PBXBuildFile; fileRef = 50D7A9D51A6234E3007FE14C /* logout.png */; };
@@ -516,11 +527,33 @@
 		50952EA81A480BD000485831 /* camera.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = camera.png; sourceTree = "<group>"; };
 		50952EA91A480BD000485831 /* camera@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "camera@2x.png"; sourceTree = "<group>"; };
 		50952EAA1A480BD000485831 /* camera@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "camera@3x.png"; sourceTree = "<group>"; };
+		50A9D4181A83E6CB000B8DD6 /* WFNewLocationCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNewLocationCell.h; sourceTree = "<group>"; };
+		50A9D4191A83E6CB000B8DD6 /* WFNewLocationCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFNewLocationCell.m; sourceTree = "<group>"; };
+		50A9D41B1A842590000B8DD6 /* WFDatePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFDatePicker.h; sourceTree = "<group>"; };
+		50A9D41C1A842590000B8DD6 /* WFDatePicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFDatePicker.m; sourceTree = "<group>"; };
+		50C5894F1A8528970094DBBF /* WFDateMetadataCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFDateMetadataCell.h; sourceTree = "<group>"; };
+		50C589501A8528970094DBBF /* WFDateMetadataCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFDateMetadataCell.m; sourceTree = "<group>"; };
+		50C589521A8558070094DBBF /* WFMaterialsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMaterialsViewController.h; sourceTree = "<group>"; };
+		50C589531A8558070094DBBF /* WFMaterialsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFMaterialsViewController.m; sourceTree = "<group>"; };
+		50C589551A8558450094DBBF /* WFMaterialCollectionCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMaterialCollectionCell.h; sourceTree = "<group>"; };
+		50C589561A8558450094DBBF /* WFMaterialCollectionCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFMaterialCollectionCell.m; sourceTree = "<group>"; };
+		50C589581A8558500094DBBF /* WFNewMaterialCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNewMaterialCell.h; sourceTree = "<group>"; };
+		50C589591A8558500094DBBF /* WFNewMaterialCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFNewMaterialCell.m; sourceTree = "<group>"; };
 		50CEAAE51A6DD3FB0040E8EF /* homeIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = homeIcon.png; sourceTree = "<group>"; };
 		50CEAAE61A6DD3FB0040E8EF /* homeIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "homeIcon@2x.png"; sourceTree = "<group>"; };
 		50CEAAE71A6DD3FB0040E8EF /* homeIcon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "homeIcon@3x.png"; sourceTree = "<group>"; };
 		50D6EC0C1A7C79CA00DAE52E /* WFLightTableContentsCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFLightTableContentsCell.h; sourceTree = "<group>"; };
 		50D6EC0D1A7C79CA00DAE52E /* WFLightTableContentsCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFLightTableContentsCell.m; sourceTree = "<group>"; };
+		50D6EC0F1A8284F200DAE52E /* WFArtistsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFArtistsViewController.h; sourceTree = "<group>"; };
+		50D6EC101A8284F200DAE52E /* WFArtistsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFArtistsViewController.m; sourceTree = "<group>"; };
+		50D6EC121A8285E500DAE52E /* WFArtistCollectionCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFArtistCollectionCell.h; sourceTree = "<group>"; };
+		50D6EC131A8285E500DAE52E /* WFArtistCollectionCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFArtistCollectionCell.m; sourceTree = "<group>"; };
+		50D6EC151A82E52800DAE52E /* WFLocationCollectionCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFLocationCollectionCell.h; sourceTree = "<group>"; };
+		50D6EC161A82E52800DAE52E /* WFLocationCollectionCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFLocationCollectionCell.m; sourceTree = "<group>"; };
+		50D6EC181A82E53B00DAE52E /* WFLocationsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFLocationsViewController.h; sourceTree = "<group>"; };
+		50D6EC191A82E53B00DAE52E /* WFLocationsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFLocationsViewController.m; sourceTree = "<group>"; };
+		50D6EC211A832D8D00DAE52E /* WFNewArtistCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNewArtistCell.h; sourceTree = "<group>"; };
+		50D6EC221A832D8D00DAE52E /* WFNewArtistCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFNewArtistCell.m; sourceTree = "<group>"; };
 		50D7A9CF1A622E5C007FE14C /* WFWalkthroughViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFWalkthroughViewController.h; sourceTree = "<group>"; };
 		50D7A9D01A622E5C007FE14C /* WFWalkthroughViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFWalkthroughViewController.m; sourceTree = "<group>"; };
 		50D7A9D21A62306D007FE14C /* WFWalkthroughAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFWalkthroughAnimator.h; sourceTree = "<group>"; };
@@ -943,6 +976,12 @@
 				F20FB2BE1A22A0A80007C905 /* WFNewArtViewController.m */,
 				F2CE057D198E929A0061DB94 /* WFArtMetadataViewController.h */,
 				F2CE057E198E929A0061DB94 /* WFArtMetadataViewController.m */,
+				50D6EC0F1A8284F200DAE52E /* WFArtistsViewController.h */,
+				50D6EC101A8284F200DAE52E /* WFArtistsViewController.m */,
+				50D6EC181A82E53B00DAE52E /* WFLocationsViewController.h */,
+				50D6EC191A82E53B00DAE52E /* WFLocationsViewController.m */,
+				50C589521A8558070094DBBF /* WFMaterialsViewController.h */,
+				50C589531A8558070094DBBF /* WFMaterialsViewController.m */,
 				503CD5901A715D5900F4FF85 /* WFFlagViewController.h */,
 				503CD5911A715D5900F4FF85 /* WFFlagViewController.m */,
 				F2CE0553198E73940061DB94 /* WFWebViewController.h */,
@@ -979,6 +1018,8 @@
 				50DB44241A54C04800856174 /* WFSearchResultsViewController.m */,
 				50DB44641A57901800856174 /* WFInteractiveImageView.h */,
 				50DB44651A57901800856174 /* WFInteractiveImageView.m */,
+				50A9D41B1A842590000B8DD6 /* WFDatePicker.h */,
+				50A9D41C1A842590000B8DD6 /* WFDatePicker.m */,
 				F2A9581119E2293800A3B471 /* Transitions / Animators */,
 				F2CE055E198E76450061DB94 /* Images */,
 				F2CE0548198E6C5E0061DB94 /* Fonts */,
@@ -1394,6 +1435,8 @@
 				F2CE0597198EAB7A0061DB94 /* WFSettingsCell.m */,
 				F20FB2C91A22B1A60007C905 /* WFNewArtCell.h */,
 				F20FB2CA1A22B1A60007C905 /* WFNewArtCell.m */,
+				50C5894F1A8528970094DBBF /* WFDateMetadataCell.h */,
+				50C589501A8528970094DBBF /* WFDateMetadataCell.m */,
 				F28C670F1A34150500B82FD8 /* WFInstitutionSearchCell.h */,
 				F28C67101A34150500B82FD8 /* WFInstitutionSearchCell.m */,
 				5026DF5E1A3CC4D1000CD26F /* WFTableCell.h */,
@@ -1428,6 +1471,18 @@
 				50D7A9EE1A625853007FE14C /* WFAssetGroupPickerCell.m */,
 				503CD5931A715D7300F4FF85 /* WFFlagCell.h */,
 				503CD5941A715D7300F4FF85 /* WFFlagCell.m */,
+				50D6EC151A82E52800DAE52E /* WFLocationCollectionCell.h */,
+				50D6EC161A82E52800DAE52E /* WFLocationCollectionCell.m */,
+				50A9D4181A83E6CB000B8DD6 /* WFNewLocationCell.h */,
+				50A9D4191A83E6CB000B8DD6 /* WFNewLocationCell.m */,
+				50D6EC121A8285E500DAE52E /* WFArtistCollectionCell.h */,
+				50D6EC131A8285E500DAE52E /* WFArtistCollectionCell.m */,
+				50D6EC211A832D8D00DAE52E /* WFNewArtistCell.h */,
+				50D6EC221A832D8D00DAE52E /* WFNewArtistCell.m */,
+				50C589551A8558450094DBBF /* WFMaterialCollectionCell.h */,
+				50C589561A8558450094DBBF /* WFMaterialCollectionCell.m */,
+				50C589581A8558500094DBBF /* WFNewMaterialCell.h */,
+				50C589591A8558500094DBBF /* WFNewMaterialCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -1808,6 +1863,7 @@
 				F20A3EBD19EB1AFE008E0D4C /* Institution.m in Sources */,
 				503CD5951A715D7300F4FF85 /* WFFlagCell.m in Sources */,
 				F2CE05B519911AA10061DB94 /* Slide+helper.m in Sources */,
+				50D6EC141A8285E500DAE52E /* WFArtistCollectionCell.m in Sources */,
 				F20A3EC319EB1B24008E0D4C /* Location+helper.m in Sources */,
 				50DB447E1A586B8F00856174 /* WFSaveMenuCell.m in Sources */,
 				F20FB2EC1A24DCCE0007C905 /* Material+helper.m in Sources */,
@@ -1819,11 +1875,13 @@
 				F20A3EBA19EB1AFD008E0D4C /* Location.m in Sources */,
 				F28C670B1A34086500B82FD8 /* WFSlideshowFocusAnimator.m in Sources */,
 				F20FB3071A24E9730007C905 /* Icon+helper.m in Sources */,
+				50C5895A1A8558500094DBBF /* WFNewMaterialCell.m in Sources */,
 				F20FB2BF1A22A0A80007C905 /* WFNewArtViewController.m in Sources */,
 				50DB43A51A53611300856174 /* WFNotificationsViewController.m in Sources */,
 				50DB449C1A58C82700856174 /* WFComparisonViewController.m in Sources */,
 				F20FB2E61A24DBF50007C905 /* Artist+helper.m in Sources */,
 				F2CE0598198EAB7A0061DB94 /* WFSettingsCell.m in Sources */,
+				50D6EC171A82E52800DAE52E /* WFLocationCollectionCell.m in Sources */,
 				50DB44581A57456C00856174 /* WFSlideshowSettingsViewController.m in Sources */,
 				F2CE058D198EAA730061DB94 /* WFSlideTableCell.m in Sources */,
 				F20FB30A1A24F08E0007C905 /* Movement.m in Sources */,
@@ -1835,12 +1893,14 @@
 				F2CE05BB19913ECC0061DB94 /* WFMainTableCell.m in Sources */,
 				F2CE05AF199117990061DB94 /* Slide.m in Sources */,
 				50DB44811A58772800856174 /* WFTableShareCell.m in Sources */,
+				50A9D41A1A83E6CB000B8DD6 /* WFNewLocationCell.m in Sources */,
 				F2CE054B198E72AC0061DB94 /* User.m in Sources */,
 				F20A3ECA19EB37A4008E0D4C /* Photo.m in Sources */,
 				F20FB2C51A22AFDE0007C905 /* Favorite+helper.m in Sources */,
 				F2139D80193A56BE00EE5C96 /* UIImage+ImageEffects.m in Sources */,
 				50DB02261A5A7285005A4E2F /* WFLightTableDetailsViewController.m in Sources */,
 				F2CE0555198E73940061DB94 /* WFWebViewController.m in Sources */,
+				50D6EC111A8284F200DAE52E /* WFArtistsViewController.m in Sources */,
 				503CD57A1A6F44DA00F4FF85 /* Alternate+helper.m in Sources */,
 				F2CE057F198E929A0061DB94 /* WFArtMetadataViewController.m in Sources */,
 				503CD5921A715D5900F4FF85 /* WFFlagViewController.m in Sources */,
@@ -1878,8 +1938,10 @@
 				F28C77F618E1E4950088B4C9 /* WFAppDelegate.m in Sources */,
 				50DB44841A58773E00856174 /* WFSlideshowShareTableViewController.m in Sources */,
 				50DB44491A564A2900856174 /* WFProfileViewController.m in Sources */,
+				50D6EC1A1A82E53B00DAE52E /* WFLocationsViewController.m in Sources */,
 				50DB44251A54C04800856174 /* WFSearchResultsViewController.m in Sources */,
 				F2CE0595198EAB280061DB94 /* WFSettingsViewController.m in Sources */,
+				50D6EC231A832D8D00DAE52E /* WFNewArtistCell.m in Sources */,
 				50952E7B1A478EA100485831 /* WFMenuViewController.m in Sources */,
 				50DB444C1A564EB600856174 /* WFProfileHeader.m in Sources */,
 				503CD5981A72BF2B00F4FF85 /* WFSlideshowTitleCell.m in Sources */,
@@ -1888,10 +1950,12 @@
 				503CD5771A6F44C700F4FF85 /* Alternate.m in Sources */,
 				50DB444F1A56570C00856174 /* WFNewLightTableAnimator.m in Sources */,
 				50DB43AE1A5363C300856174 /* Notification.m in Sources */,
+				50C589571A8558450094DBBF /* WFMaterialCollectionCell.m in Sources */,
 				F2CE0576198E85DA0061DB94 /* Art+helper.m in Sources */,
 				50DB02231A5A6FDE005A4E2F /* WFUtilities.m in Sources */,
 				504926291A58E101000C6FD9 /* WFSlideMetadataViewController.m in Sources */,
 				F2CE0573198E85850061DB94 /* WFPhotoCell.m in Sources */,
+				50C589511A8528970094DBBF /* WFDateMetadataCell.m in Sources */,
 				5026DF601A3CC4D1000CD26F /* WFTableCell.m in Sources */,
 				5026DF5A1A3CBE80000CD26F /* WFGroupsInteractor.m in Sources */,
 				50DB43BA1A5363EA00856174 /* Discussion+helper.m in Sources */,
@@ -1909,7 +1973,9 @@
 				F28C66FF1A33F27500B82FD8 /* WFSlideAnimator.m in Sources */,
 				F2CE05C2199141C40061DB94 /* WFLoginAnimator.m in Sources */,
 				F298A1BE19523065005B13EA /* WFLoginViewController.m in Sources */,
+				50A9D41D1A842590000B8DD6 /* WFDatePicker.m in Sources */,
 				508DC9A31A5B9ABD00B1C008 /* WFSearchOptionsCell.m in Sources */,
+				50C589541A8558070094DBBF /* WFMaterialsViewController.m in Sources */,
 				50DB43B11A5363C300856174 /* Comment.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -180,13 +180,13 @@
             break;
         case 5:
         {
-            NSString *credit = photo.credit.length ? photo.credit : photo.user.fullName;
+            NSMutableAttributedString *creditString = [[NSMutableAttributedString alloc] initWithString:@"CREDIT:   " attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor colorWithWhite:1 alpha:.33]}];
+            NSAttributedString *credit = photo.credit.length ? [[NSAttributedString alloc] initWithString:photo.credit attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0], NSForegroundColorAttributeName : [UIColor whiteColor]}] : [[NSAttributedString alloc] initWithString:photo.user.fullName attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0], NSForegroundColorAttributeName : [UIColor whiteColor]}];
+            [creditString appendAttributedString:credit];
             if (credit.length){
-                [cell.textLabel setText:credit];
+                [cell.textLabel setAttributedText:creditString];
             } else {
                 [cell.textLabel setText:@"N/A"];
-                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
-                [cell.textLabel setTextColor:[UIColor lightGrayColor]];
             }
         }
             break;

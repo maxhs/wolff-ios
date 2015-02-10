@@ -18,12 +18,15 @@
 @property (nonatomic, retain) NSString * lastName;
 @property (nonatomic, retain) NSDate * createdDate;
 @property (nonatomic, retain) NSString * name;
+@property (nonatomic, retain) NSNumber * birthYear;
+@property (nonatomic, retain) NSNumber * deathYear;
 @property (nonatomic, retain) NSDate * birthDate;
 @property (nonatomic, retain) NSDate * deathDate;
 @property (nonatomic, retain) NSOrderedSet *arts;
 @property (nonatomic, retain) NSOrderedSet *favorites;
 @property (nonatomic, retain) NSOrderedSet *discussions;
 @property (nonatomic, retain) NSOrderedSet *notifications;
+@property (nonatomic, retain) NSOrderedSet *photos;
 
 @end
 

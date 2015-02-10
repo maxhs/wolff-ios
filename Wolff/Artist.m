@@ -18,11 +18,14 @@
 @dynamic lastName;
 @dynamic createdDate;
 @dynamic name;
+@dynamic birthYear;
+@dynamic deathYear;
 @dynamic birthDate;
 @dynamic deathDate;
 @dynamic arts;
 @dynamic favorites;
 @dynamic discussions;
 @dynamic notifications;
+@dynamic photos;
 
 @end

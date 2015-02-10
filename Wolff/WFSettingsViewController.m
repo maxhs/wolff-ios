@@ -294,7 +294,7 @@
                 break;
             case 2:
                 //text
-                [cell.textLabel setText:@"Wolff texts"];
+                [cell.textLabel setText:@"Wölff texts"];
                 [cell.settingsSwitch setOn:_currentUser.textPermission.boolValue];
                 break;
             default:

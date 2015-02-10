@@ -194,13 +194,12 @@
         if (location.name.length){
             [names addObject:location.name];
         } else if (location.city.length){
-            
+            [names addObject:location.city];
         } else if (location.state.length){
-            
+            [names addObject:location.state];
         } else if (location.country.length){
-            
+            [names addObject:location.country];
         }
-        
     }];
     return [names toSentence];
 }

@@ -41,7 +41,7 @@
     } else {
         iOS8 = NO; height = screenWidth(); width = screenHeight();
     }
-    _institutions = [NSMutableArray arrayWithArray:[Institution MR_findAll]];
+    _institutions = [NSMutableArray arrayWithArray:[Institution MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
     _filteredInstitutions = [NSMutableArray array];
     [self loadInstitutions];
     [self registerForKeyboardNotifications];
@@ -124,7 +124,7 @@
             [institution populateFromDictionary:dict];
         }
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            _institutions = [Institution MR_findAll].mutableCopy;
+            _institutions = [Institution MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
             [self.tableView reloadData];
         }];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {

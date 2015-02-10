@@ -24,8 +24,10 @@
 #import "WFFlagViewController.h"
 #import "WFProfileAnimator.h"
 #import "WFProfileViewController.h"
+#import "WFArtistsViewController.h"
+#import "WFLocationsViewController.h"
 
-@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, UIActionSheetDelegate> {
+@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, UIActionSheetDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     BOOL iOS8;
@@ -320,11 +322,21 @@
 - (void)loadPhotoMetadata {
     [manager GET:[NSString stringWithFormat:@"photos/%@",_photo.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success fetching metadata: %@",responseObject);
-        [_photo populateFromDictionary:[responseObject objectForKey:@"photo"]];
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            [self setupHeader];
-            [self.tableView reloadData];
-        }];
+        if ([responseObject objectForKey:@"text"] && [[responseObject objectForKey:@"text"] isEqualToString:kNoPhoto]){
+            [_photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+            [WFAlert show:@"Sorry, but something went wrong while trying to fetch this art.\n\nThe creator likely expunged it from our database." withTime:3.7f];
+            [self dismiss];
+            if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(photoDeleted:)]){
+                [self.metadataDelegate photoDeleted:_photo.identifier];
+            }
+        } else {
+            [_photo populateFromDictionary:[responseObject objectForKey:@"photo"]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                [self setupHeader];
+                [self.tableView reloadData];
+            }];
+        }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error fetching art metadata: %@",error.description);
     }];
@@ -381,7 +393,8 @@
     [cell setDefaultStyle:editMode];
     cell.textView.delegate = self;
     [cell.textView setKeyboardAppearance:UIKeyboardAppearanceDark];
-
+    [cell.textView setUserInteractionEnabled:YES];
+    
     switch (indexPath.row) {
         case 0:
             [cell.label setText:@"TITLE"];
@@ -392,18 +405,18 @@
         {
             [cell.label setText:@"ARTIST(S)"];
             NSString *artists = [_photo.art artistsToSentence];
-            if (artists.length > 1){
+            if (artists.length > 0){
                 [cell.textView setText:artists];
             } else {
                 [cell.textView setText:@"Artist(s) Unknown"];
                 [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
                 [cell.textView setTextColor:[UIColor lightGrayColor]];
             }
+            [cell.textView setUserInteractionEnabled:NO];
         }
             break;
         case 2:
             [cell.label setText:@"DATE"];
-            //NSLog(@"art interval: %@",_photo.interval);
             if (_photo.art.interval.single){
                 [cell.textView setText:[dateFormatter stringFromDate:_photo.art.interval.single]];
             } else if (_photo.art.interval.beginRange && ![_photo.art.interval.beginRange isEqualToNumber:@0] && _photo.art.interval.endRange && ![_photo.art.interval.endRange isEqualToNumber:@0]) {
@@ -418,8 +431,24 @@
                 [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
                 [cell.textView setTextColor:[UIColor lightGrayColor]];
             }
+            [cell.textView setKeyboardType:UIKeyboardTypeNumberPad];
             break;
         case 3:
+        {
+            [cell.label setText:@"LOCATION"];
+            NSString *locations = [_photo.art locationsToSentence];
+            
+            if (locations.length){
+                [cell.textView setText:locations];
+            } else {
+                [cell.textView setText:@"No locations listed"];
+                [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+                [cell.textView setTextColor:[UIColor lightGrayColor]];
+            }
+            [cell.textView setUserInteractionEnabled:NO];
+        }
+            break;
+        case 4:
         {
             [cell.label setText:@"MATERIAL(S)"];
             NSString *materials = [_photo.art materialsToSentence];
@@ -432,7 +461,7 @@
             }
         }
             break;
-        case 4:
+        case 5:
         {
             [cell.label setText:@"ICONOGRAPHY"];
             NSString *icons = [_photo.art iconsToSentence];
@@ -440,20 +469,6 @@
                 [cell.textView setText:icons];
             } else {
                 [cell.textView setText:@"N/A"];
-                [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
-                [cell.textView setTextColor:[UIColor lightGrayColor]];
-            }
-        }
-            break;
-        case 5:
-        {
-            [cell.label setText:@"LOCATION"];
-            NSString *locations = [_photo.art locationsToSentence];
-            
-            if (locations.length){
-                [cell.textView setText:locations];
-            } else {
-                [cell.textView setText:@"No locations listed"];
                 [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
                 [cell.textView setTextColor:[UIColor lightGrayColor]];
             }
@@ -537,6 +552,45 @@
     } else {
         return rowHeight;
     }
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.row == 1){
+        [self showArtists];
+    } else if (indexPath.row == 3){
+        [self showLocations];
+    }
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (void)showArtists {
+    WFArtistsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Artists"];
+    [vc setSelectedArtists:_photo.art.artists.mutableCopy];
+    vc.artistDelegate = self;
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+- (void)artistsSelected:(NSOrderedSet *)selectedArtists {
+    _photo.art.artists = selectedArtists;
+    [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:1 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
+}
+
+- (void)showLocations {
+    WFLocationsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Locations"];
+    [vc setSelectedLocations:_photo.art.locations.mutableCopy];
+    vc.locationDelegate = self;
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+- (void)locationsSelected:(NSOrderedSet *)selectedLocations {
+    _photo.art.locations = selectedLocations;
+    [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:3 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
 }
 
 - (void)favorite {

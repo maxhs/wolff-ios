@@ -57,7 +57,7 @@
     [self labelTreatment:_label2];
     [_label2 setText:@"Interactive slideshows with side-by-side comparisons in high resolution."];
     [self labelTreatment:_label3];
-    [_label3 setText:@"Contribute to the Wolff catalog: a crowd-sourced library of digitized artworks."];
+    [_label3 setText:@"Contribute to the Wölff catalog: a crowd-sourced library of digitized artworks."];
     
     [self bigLabelTreatment:_bigLabel1];
     [self bigLabelTreatment:_bigLabel2];

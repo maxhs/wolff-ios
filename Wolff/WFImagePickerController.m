@@ -9,6 +9,7 @@
 #import "WFImagePickerController.h"
 #import "WFImagePickerCell.h"
 #import "Constants.h"
+#import "WFUtilities.h"
 
 @interface WFImagePickerController () {
     CGFloat width;
@@ -16,6 +17,7 @@
     NSMutableArray *_assets;
     NSMutableOrderedSet *_selectedAssets;
     UIImageView *focusImageView;
+    UIImageView *navBarShadowView;
     UIBarButtonItem *selectButton;
     UIBarButtonItem *doneButton;
     UIBarButtonItem *backButton;
@@ -52,11 +54,13 @@ static NSString * const reuseIdentifier = @"PhotoCell";
     
     self.navigationItem.rightBarButtonItem = doneButton;
     self.navigationItem.leftBarButtonItem = backButton;
+    navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     backButton = self.navigationItem.backBarButtonItem;
+    navBarShadowView.hidden = YES;
 }
 
 - (void)toggleSelectMode {

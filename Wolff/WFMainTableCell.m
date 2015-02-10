@@ -54,8 +54,6 @@
     [_editButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_editButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     
-    //ensure that the scrollView can actually scroll
-    [_scrollView setContentSize:CGSizeMake(kSidebarWidth+100, self.contentView.frame.size.height)];
     [_scrollView setUserInteractionEnabled:NO];
     [self.contentView addGestureRecognizer:_scrollView.panGestureRecognizer];
     _scrollView.delegate = self;
@@ -75,7 +73,7 @@
 
 - (void)configureForTable:(Table *)table {
     _lightTable = table;
-    //set up the actio button
+    //set up the action button
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [_lightTable.owner.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
         [_actionButton setTitle:@"Delete" forState:UIControlStateNormal];
         [_actionButton setBackgroundColor:[UIColor redColor]];

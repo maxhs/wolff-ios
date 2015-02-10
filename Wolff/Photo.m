@@ -30,5 +30,6 @@
 @dynamic credit;
 @dynamic art;
 @dynamic user;
+@dynamic artists;
 
 @end

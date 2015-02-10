@@ -19,8 +19,11 @@
     [self setBackgroundColor:[UIColor colorWithWhite:1 alpha:.17]];
     [_slideContainerView setBackgroundColor:[UIColor blackColor]];
     [_slideNumberLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
+    [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:0]];
     [self setSelectionStyle:UITableViewCellSelectionStyleNone];
+    [_artImageView1 setContentMode:UIViewContentModeScaleAspectFit];
+    [_artImageView2 setContentMode:UIViewContentModeScaleAspectFit];
+    [_artImageView3 setContentMode:UIViewContentModeScaleAspectFit];
 }
 
 - (void)prepareForReuse {
@@ -64,9 +67,11 @@
             }];
             
         } else {
+            
             [_artImageView1 setImage:nil];
             [_artImageView2 setImage:nil];
             [_artImageView3 setImage:nil];
+            
         }
     } else {
         // no slide, this means this is a new slide prompt cell
