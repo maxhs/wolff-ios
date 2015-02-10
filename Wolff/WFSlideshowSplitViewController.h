@@ -10,14 +10,14 @@
 #import "Slideshow+helper.h"
 #import "Slide+helper.h"
 
-@interface WFSlideshowSplitViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
+@interface WFSlideshowSplitViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UILabel *lightBoxPlaceholderLabel;
 
 @property (strong, nonatomic) UIPopoverController *popover;
-@property (strong, nonatomic) Slideshow *slideshow;
+@property (strong, nonatomic) NSNumber *slideshowId;
 
 - (void)dismissMetadata;
 @end

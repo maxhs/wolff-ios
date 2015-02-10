@@ -129,7 +129,7 @@ typedef enum {
     }
     
     if ([dictionary objectForKey:@"slideshows"] && [dictionary objectForKey:@"slideshows"] != [NSNull null]){
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshows];
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"slideshows"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -139,10 +139,15 @@ typedef enum {
             [slideshow populateFromDictionary:dict];
             [set addObject:slideshow];
         }
+        for (Slideshow *slideshow in self.slideshows){
+            if (![set containsObject:slideshow]){
+                [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+        }
         self.slideshows = set;
     }
     if ([dictionary objectForKey:@"public_slideshows"] && [dictionary objectForKey:@"public_slideshows"] != [NSNull null]){
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshows];
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"public_slideshows"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -152,22 +157,29 @@ typedef enum {
             [slideshow populateFromDictionary:dict];
             [set addObject:slideshow];
         }
+        for (Slideshow *slideshow in self.slideshows){
+            if (![set containsObject:slideshow]){
+                [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+        }
         self.slideshows = set;
     }
     
     if ([dictionary objectForKey:@"light_tables"] && [dictionary objectForKey:@"light_tables"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        //NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithOrderedSet:self.lightTables];
         for (id dict in [dictionary objectForKey:@"light_tables"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Table *table = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (table){
-                
-            } else {
+            if (!table){
                 table = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [table populateFromDictionary:dict];
             [set addObject:table];
+        }
+        for (Table *table in self.lightTables){
+            if (![set containsObject:table]){
+                [table MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
         }
         self.lightTables = set;
     }
@@ -177,13 +189,16 @@ typedef enum {
         for (id dict in [dictionary objectForKey:@"public_light_tables"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Table *table = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (table){
-                
-            } else {
+            if (!table){
                 table = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [table populateFromDictionary:dict];
             [set addObject:table];
+        }
+        for (Table *table in self.lightTables){
+            if (![set containsObject:table]){
+                [table MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
         }
         self.lightTables = set;
     }
@@ -246,6 +261,11 @@ typedef enum {
             }
             [alternate populateFromDictionary:dict];
             [set addObject:alternate];
+        }
+        for (Alternate *alternate in self.alternates){
+            if (![set containsObject:alternate]){
+                [alternate MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
         }
         self.alternates = set;
     }

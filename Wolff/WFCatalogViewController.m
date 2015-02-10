@@ -370,16 +370,15 @@
         [ProgressHUD show:@"Loading art..."];
     }
     if (searching && searchText && searchText.length){
+        [ProgressHUD show:@"Searching..."];
         [parameters setObject:searchText forKey:@"search"];
     }
     if (!loading){
         loading = YES;
         [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            //NSLog(@"load photos success: %@", responseObject);
-            NSLog(@"photos count: %lu",(unsigned long)[[responseObject objectForKey:@"photos"] count]);
+            
             if ([[responseObject objectForKey:@"photos"] count]){
                 canLoadMorePhotos = YES;
-                
                 for (NSDictionary *dict in [responseObject objectForKey:@"photos"]) {
                     Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                     if (!photo){
@@ -387,15 +386,18 @@
                     }
                     [photo populateFromDictionary:dict];
                     [_photos addObject:photo];
+                    if (searching){
+                        [_filteredPhotos addObject:photo];
+                    }
                 }
                 [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                    //NSLog(@"Done saving photos: %u",success);
+                    [self.collectionView reloadData];
                 }];
             } else {
                 canLoadMorePhotos = NO;
                 NSLog(@"Can't load any more photo. We got it all!");
             }
-            [self.collectionView reloadData];
+            
             [self endRefresh];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [self endRefresh];
@@ -929,7 +931,7 @@
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
-    if (showFavorites || showLightTable || showPrivate || searching){
+    if (showFavorites || (showLightTable && _table) || showPrivate){
         return CGSizeMake(collectionView.frame.size.width, 54);
     } else {
         return CGSizeMake(1, 0);
@@ -1594,7 +1596,7 @@
     }
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         NSLog(@"new slideshow has %lu slides",(unsigned long)slideshow.slides.count);
-        [vc setSlideshow:slideshow];
+        [vc setSlideshowId:slideshow.identifier];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
@@ -1608,7 +1610,7 @@
 - (void)slideshowSelected:(Slideshow *)presentation {
     [self.popover dismissPopoverAnimated:YES];
     WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
-    [vc setSlideshow:presentation];
+    [vc setSlideshowId:presentation.identifier];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.transitioningDelegate = self;
     nav.modalPresentationStyle = UIModalPresentationCustom;
@@ -1673,12 +1675,18 @@
             resetButton.transform = CGAffineTransformIdentity;
             [_collectionView setFrame:collectionFrame];
             
-            if ((_filteredPhotos.count && searching)){
-                [_collectionView performBatchUpdates:^{
+            if (_filteredPhotos.count && searching){
+                // important to differentiate between iOS8 and iOS7 for some reason
+                if (iOS8){
+                    [_collectionView performBatchUpdates:^{
+                        [_collectionView reloadData];
+                    } completion:^(BOOL finished) {
+                        
+                    }];
+                } else {
+                    [_collectionView setFrame:collectionFrame];
                     [_collectionView reloadData];
-                } completion:^(BOOL finished) {
-                
-                }];
+                }
             } else {
                 [_collectionView reloadData];
             }
@@ -1705,11 +1713,17 @@
             [_collectionView setFrame:collectionFrame];
             
             if (_filteredPhotos.count && searching){
-                [_collectionView performBatchUpdates:^{
+                // important to differentiate between iOS8 and iOS7 for some reason
+                if (iOS8){
+                    [_collectionView performBatchUpdates:^{
+                        [_collectionView reloadData];
+                    } completion:^(BOOL finished) {
+                        
+                    }];
+                } else {
+                    [_collectionView setFrame:collectionFrame];
                     [_collectionView reloadData];
-                } completion:^(BOOL finished) {
-        
-                }];
+                }
             } else {
                 [_collectionView reloadData];
             }

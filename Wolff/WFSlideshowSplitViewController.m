@@ -31,6 +31,7 @@
     AFHTTPRequestOperationManager *manager;
     CGFloat width;
     CGFloat height;
+    Slideshow *_slideshow;
     UIBarButtonItem *dismissButton;
     UIBarButtonItem *playButton;
     UIBarButtonItem *searchButton;
@@ -66,8 +67,7 @@
 @end
 
 @implementation WFSlideshowSplitViewController
-
-@synthesize slideshow = _slideshow;
+@synthesize slideshowId = _slideshowId;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -82,7 +82,7 @@
     }
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    
+    _slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:_slideshowId inContext:[NSManagedObjectContext MR_defaultContext]];
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     [self.navigationController.navigationBar setTranslucent:YES];
     
@@ -219,7 +219,6 @@
 }
 
 - (void)longPressGesture:(UILongPressGestureRecognizer*)gestureRecognizer {
-    
     WFInteractiveImageView *imageView = (WFInteractiveImageView*)gestureRecognizer.view;
     __block WFSlideTableCell *slideTableCell;
     [self.tableView.visibleCells enumerateObjectsUsingBlock:^(WFSlideTableCell *cell, NSUInteger idx, BOOL *stop) {
@@ -269,7 +268,7 @@
         activeIndexPath = nil;
     }
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-     
+
     }];
 }
 
@@ -424,11 +423,11 @@
     }
     
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
-        NSLog(@"ended loc: %f, %f",loc.x,loc.y);
+        //NSLog(@"ended loc: %f, %f",loc.x,loc.y);
         if (selectedPhoto){
             if (loc.x < 0){
                 CGPoint tableViewPoint = [gestureRecognizer locationInView:_tableView];
-                NSLog(@"tableViewPoint %f, %f",tableViewPoint.x, tableViewPoint.y);
+                //NSLog(@"tableViewPoint %f, %f",tableViewPoint.x, tableViewPoint.y);
                 
                 NSIndexPath *indexPathForSlideCell = [_tableView indexPathForRowAtPoint:tableViewPoint];
 
@@ -469,8 +468,6 @@
                     
                 }
     
-            } else {
-                NSLog(@"Art slide was not dropped on the left sidebar");
             }
         } else if (selectedSlide) {
             
@@ -635,7 +632,6 @@
                 [ProgressHUD dismiss];
                 [_collectionView reloadData];
                 [_tableView reloadData];
-                [_tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to save a slideshow: %@",error.description);

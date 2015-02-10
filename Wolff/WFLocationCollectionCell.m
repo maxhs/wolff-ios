@@ -13,21 +13,34 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    [_locationNameLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     [_locationNameLabel setTextAlignment:NSTextAlignmentLeft];
 }
 
-- (void)prepareForReuse {
-    [super prepareForReuse];
-}
-
 - (void)configureForLocation:(Location *)location {
+    NSMutableAttributedString *locationString;
     if (location.name.length){
-        [_locationNameLabel setText:location.name];
-    } else if (location.city.length){
-        [_locationNameLabel setText:location.city];
+        locationString = [[NSMutableAttributedString alloc] initWithString:location.name attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]}];
+    } else {
+        locationString = [[NSMutableAttributedString alloc] initWithString:location.name attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]}];
+    }
+    
+    NSAttributedString *geographyString;
+    if (location.city.length){
+        geographyString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",location.city] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]}];
     } else if (location.country.length){
-        [_locationNameLabel setText:location.country];
+        geographyString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",location.country] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]}];
+    }
+    
+    if (geographyString.length && locationString.length){
+        [locationString appendAttributedString:geographyString];
+        [_locationNameLabel setAttributedText:locationString];
+    } else if (locationString.length){
+        [_locationNameLabel setAttributedText:locationString];
+    } else if (geographyString.length){
+        [_locationNameLabel setAttributedText:geographyString];
+    } else {
+        NSAttributedString *noLocationString = [[NSAttributedString alloc] initWithString:@"No location name listed" attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]}];
+        [_locationNameLabel setAttributedText:noLocationString];
     }
 }
 

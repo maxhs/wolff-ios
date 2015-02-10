@@ -13,7 +13,7 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    [_locationPrompt setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    [_locationPrompt setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
     [_locationPrompt setTextAlignment:NSTextAlignmentLeft];
     
     [_nameTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
@@ -63,6 +63,7 @@
     [_countryLabel setTextColor:[UIColor colorWithWhite:1 alpha:.77]];
     [_countryLabel setText:@"CURRENT COUNTRY"];
     [_countryLabel setHidden:YES];
+    
 }
 
 @end

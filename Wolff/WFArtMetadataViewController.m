@@ -73,11 +73,11 @@
     editMode = NO;
     [self setupDateFormatter];
     [self registerForKeyboardNotifications];
-    [self loadPhotoMetadata];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    [self loadPhotoMetadata];
     [self setupHeader];
 }
 

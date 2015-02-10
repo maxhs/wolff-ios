@@ -36,12 +36,11 @@
             [slide populateFromDictionary:dict];
             [slides addObject:slide];
         }
-        /*for (Slide *slide in self.slides){
+        for (Slide *slide in self.slides){
             if (![slides containsObject:slide]){
-                NSLog(@"Removing a slide that no longer exist");
                 [slide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-        }*/
+        }
         self.slides = slides;
     }
     if ([dictionary objectForKey:@"photos"] && [dictionary objectForKey:@"photos"] != [NSNull null]){

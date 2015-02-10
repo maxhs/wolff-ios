@@ -483,12 +483,12 @@
     }
     
     if (view){
-        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.5 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             
             if (view == artImageView1){
                 if (artImageView1.moved){
                     view.transform = CGAffineTransformIdentity;
-                    [artImageView1 setFrame:CGRectFromString(currentSlide.originalRectString1)];
+                    [artImageView1 setFrame:kOriginalArtImageFrame1];
                     [currentSlide setRectString1:@""];
                     [artImageView1 setMoved:NO];
                 } else {
@@ -502,7 +502,7 @@
             } else if (view == artImageView2){
                 if (artImageView2.moved){
                     view.transform = CGAffineTransformIdentity;
-                    [artImageView2 setFrame:CGRectFromString(currentSlide.originalRectString2)];
+                    [artImageView2 setFrame:kOriginalArtImageFrame2];
                     [currentSlide setRectString2:@""];
                     [artImageView2 setMoved:NO];
                 } else {
@@ -516,7 +516,7 @@
             } else if (view == artImageView3){
                 if (artImageView3.moved){
                     view.transform = CGAffineTransformIdentity;
-                    [artImageView3 setFrame:CGRectFromString(currentSlide.originalRectString3)];
+                    [artImageView3 setFrame:kOriginalArtImageFrame3];
                     [currentSlide setRectString3:@""];
                     [artImageView3 setMoved:NO];
                 } else {

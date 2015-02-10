@@ -12,7 +12,7 @@
 #import "Constants.h"
 
 @interface WFSlideshowSlideCell () {
-    
+
 }
 
 @end
@@ -91,7 +91,7 @@
         NSURL *art1thumbUrl = [NSURL URLWithString:photo.thumbImageUrl];
         NSURL *art1originalUrl = [NSURL URLWithString:photo.originalImageUrl];
         
-        [_artImageView1 sd_setImageWithURL:art1thumbUrl placeholderImage:nil options:SDWebImageLowPriority completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        [_artImageView1 sd_setImageWithURL:art1thumbUrl placeholderImage:nil options:(SDWebImageLowPriority | SDWebImageContinueInBackground) completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             //if the image is cached, no need to fade it in slowly
             if (cacheType == SDImageCacheTypeNone && _artImageView1.image != nil){
                 [UIView animateWithDuration:.27 animations:^{
@@ -104,11 +104,8 @@
                     [_progressView1 setAlpha:1.0];
                 }];
             }
-            if (!slide.originalRectString1.length){
-                slide.originalRectString1 = NSStringFromCGRect(_artImageView1.frame);
-            }
         }];
-        [[SDWebImageManager sharedManager] downloadImageWithURL:art1originalUrl options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+        [[SDWebImageManager sharedManager] downloadImageWithURL:art1originalUrl options:(SDWebImageLowPriority | SDWebImageContinueInBackground) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
             [_progressView1 setProgress:((CGFloat)receivedSize/(CGFloat)expectedSize)];
         } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
             CGFloat duration = cacheType == SDImageCacheTypeNone ?  kSlowAnimationDuration : kFastAnimationDuration;
@@ -142,7 +139,7 @@
         NSURL *art2thumbUrl = [NSURL URLWithString:photo2.thumbImageUrl];
         NSURL *art2originalUrl = [NSURL URLWithString:photo2.originalImageUrl];
         
-        [_artImageView2 sd_setImageWithURL:art2thumbUrl placeholderImage:nil options:SDWebImageLowPriority completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        [_artImageView2 sd_setImageWithURL:art2thumbUrl placeholderImage:nil options:(SDWebImageLowPriority | SDWebImageContinueInBackground) completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             //if the image is cached, no need to fade it in
             if (cacheType == SDImageCacheTypeNone && _artImageView2.image != nil){
                 [UIView animateWithDuration:.27 animations:^{
@@ -155,12 +152,9 @@
                     [_progressView2 setAlpha:1.0];
                 }];
             }
-            if (!slide.originalRectString2.length){
-                slide.originalRectString2 = NSStringFromCGRect(_artImageView2.frame);
-            }
         }];
         
-        [[SDWebImageManager sharedManager] downloadImageWithURL:art2originalUrl options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+        [[SDWebImageManager sharedManager] downloadImageWithURL:art2originalUrl options:(SDWebImageLowPriority | SDWebImageContinueInBackground) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
             [_progressView2 setProgress:((CGFloat)receivedSize/(CGFloat)expectedSize)];
         } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
             CGFloat duration = cacheType == SDImageCacheTypeNone ?  kSlowAnimationDuration : kFastAnimationDuration;
@@ -180,7 +174,7 @@
         NSURL *art3thumbUrl = [NSURL URLWithString:photo3.thumbImageUrl];
         NSURL *art3originalUrl = [NSURL URLWithString:photo3.originalImageUrl];
         
-        [_artImageView3 sd_setImageWithURL:art3thumbUrl placeholderImage:nil options:SDWebImageLowPriority completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        [_artImageView3 sd_setImageWithURL:art3thumbUrl placeholderImage:nil options:(SDWebImageLowPriority | SDWebImageContinueInBackground) completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             //if the image is cached, no need to fade it in
             if (cacheType == SDImageCacheTypeNone && _artImageView3.image != nil){
                 [UIView animateWithDuration:.27 animations:^{
@@ -193,12 +187,9 @@
                     [_progressView3 setAlpha:1.0];
                 }];
             }
-            if (!slide.originalRectString3.length){
-                slide.originalRectString3 = NSStringFromCGRect(_artImageView3.frame);
-            }
         }];
         
-        [[SDWebImageManager sharedManager] downloadImageWithURL:art3originalUrl options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+        [[SDWebImageManager sharedManager] downloadImageWithURL:art3originalUrl options:(SDWebImageLowPriority | SDWebImageContinueInBackground) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
             [_progressView3 setProgress:((CGFloat)receivedSize/(CGFloat)expectedSize)];
         } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
             CGFloat duration = cacheType == SDImageCacheTypeNone ?  kSlowAnimationDuration : kFastAnimationDuration;

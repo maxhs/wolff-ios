@@ -114,16 +114,37 @@ static NSString * const reuseIdentifier = @"LocationCell";
     }
     [manager POST:@"locations/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success loading locations: %@",responseObject);
-        for (id dict in [responseObject objectForKey:@"locations"]){
-            Location *location = [Location MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!location){
-                location = [Location MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        if ([responseObject objectForKey:@"locations"]){
+            NSDictionary *locationsDict = [responseObject objectForKey:@"locations"];
+            if (locationsDict.count){
+                for (id dict in [responseObject objectForKey:@"locations"]){
+                    Location *location = [Location MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+                    if (!location){
+                        location = [Location MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                    }
+                    [location populateFromDictionary:dict];
+                    [_filteredLocations addObject:location];
+                    [_locations addObject:location];
+                }
+                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                    _locations = [NSMutableOrderedSet orderedSetWithArray:[Location MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
+                    [_collectionView reloadData];
+                    [ProgressHUD dismiss];
+                }];
+            } else {
+                [_filteredLocations enumerateObjectsUsingBlock:^(Location *location, NSUInteger idx, BOOL *stop) {
+                    [location MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                }];
+                [_filteredLocations removeAllObjects];
+                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                    [_collectionView reloadData];
+                    [ProgressHUD dismiss];
+                }];
             }
-            [location populateFromDictionary:dict];
         }
-        _locations = [NSMutableOrderedSet orderedSetWithArray:[Location MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         [WFAlert show:@"Sorry, something went wrong while trying to fetch location info.\n\nPlease try again soon." withTime:3.3f];
+        [ProgressHUD dismiss];
         NSLog(@"Failed to load locations: %@",error.description);
     }];
 }
@@ -144,6 +165,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     if ((searching && indexPath.row == _filteredLocations.count) || (indexPath.row == _locations.count)){
         WFNewLocationCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"NewLocationCell" forIndexPath:indexPath];
+        
         if (editing){
             [cell.locationPrompt setHidden:YES];
             [cell.nameLabel setHidden:NO];
@@ -296,6 +318,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
     if (searchBar.text.length){
+        [ProgressHUD show:@"Searching..."];
         [self loadLocationsWithSearch:searchBar.text];
     }
 }

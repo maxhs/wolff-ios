@@ -118,13 +118,15 @@ static NSString * const reuseIdentifier = @"MaterialCell";
                 material = [Material MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [material populateFromDictionary:dict];
+            [_filteredMaterials addObject:material];
+            [_materials addObject:material];
         }
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [ProgressHUD dismiss];
+            _materials = [NSMutableOrderedSet orderedSetWithArray:[Material MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
+            [_collectionView reloadData];
         }];
-        _materials = [NSMutableOrderedSet orderedSetWithArray:[Material MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
-        [ProgressHUD dismiss];
-        [_collectionView reloadData];
+        
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         [WFAlert show:@"Sorry, something went wrong while trying to fetch material info.\n\nPlease try again soon." withTime:3.3f];
         [ProgressHUD dismiss];

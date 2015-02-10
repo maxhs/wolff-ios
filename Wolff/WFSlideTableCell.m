@@ -73,6 +73,8 @@
             [_artImageView3 setImage:nil];
             
         }
+        //clear the background
+        [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:0]];
     } else {
         // no slide, this means this is a new slide prompt cell
         [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];

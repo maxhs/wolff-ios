@@ -13,6 +13,7 @@
 #import "WFSearchOptionsCell.h"
 #import "WFSlideshowsViewController.h"
 #import "WFLightTablesViewController.h"
+#import "WFAlert.h"
 
 @interface WFSearchResultsViewController () <UISearchBarDelegate, WFLightTablesDelegate, WFSlideshowDelegate> {
     WFAppDelegate *delegate;
@@ -37,6 +38,9 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
+    manager = delegate.manager;
+    
     [self.view setBackgroundColor:[UIColor clearColor]];
     [_tableView setBackgroundColor:[UIColor clearColor]];
     [_tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
@@ -304,6 +308,46 @@
     if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(endSearch)]){
         [self.searchDelegate endSearch];
     }
+}
+
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    if (searchBar.text) {
+        [parameters setObject:searchBar.text forKey:@"search"];
+        [ProgressHUD show:@"Searching..."];
+    } else {
+        return;
+    }
+    [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success searching from split view controller: %@",responseObject);
+        
+        if ([responseObject objectForKey:@"photos"]){
+            for (NSDictionary *dict in [responseObject objectForKey:@"photos"]) {
+                Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+                if (!photo){
+                    photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                }
+                [photo populateFromDictionary:dict];
+                [_photos addObject:photo];
+                if (searching){
+                    [_filteredPhotos addObject:photo];
+                }
+            }
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                if (_shouldShowTiles){
+                    [self.collectionView reloadData];
+                } else {
+                    [self.tableView reloadData];
+                }
+                [ProgressHUD dismiss];
+            }];
+        }
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed to search from split view: %@",error.description);
+        [WFAlert show:@"Sorry, but something went wrong while attempting to search. Please try again soon." withTime:3.3f];
+        [ProgressHUD dismiss];
+    }];
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)text {
