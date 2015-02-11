@@ -68,21 +68,26 @@
 
 @implementation WFSlideshowSplitViewController
 @synthesize slideshowId = _slideshowId;
+@synthesize slideshow = _slideshow;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     if (IDIOM == IPAD){
         if (SYSTEM_VERSION >= 8.f){
-            width = screenWidth();
-            height = screenHeight();
+            width = screenWidth(); height = screenHeight();
         } else {
-            width = screenHeight();
-            height = screenWidth();
+            width = screenHeight(); height = screenWidth();
         }
     }
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    _slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:_slideshowId inContext:[NSManagedObjectContext MR_defaultContext]];
+    if (_slideshowId){
+        _slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:_slideshowId inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!_slideshow){
+            [ProgressHUD show:@"Refreshing slideshow..."];
+            [self refreshSlideshow];
+        }
+    }
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     [self.navigationController.navigationBar setTranslucent:YES];
     
@@ -107,6 +112,22 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didHideEditMenu:) name:UIMenuControllerDidHideMenuNotification object:nil];
     //NSLog(@"Does the slideshow have a light table? %@",_slideshow.tables);
+}
+
+- (void)refreshSlideshow {
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [manager GET:[NSString stringWithFormat:@"slideshows/%@",_slideshowId] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success refreshing slideshow: %@",responseObject);
+        [_slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [_collectionView reloadData];
+            [self.tableView reloadData];
+            [ProgressHUD dismiss];
+        }];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        [ProgressHUD dismiss];
+        NSLog(@"Failed to refersh slideshow");
+    }];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -617,10 +638,14 @@
                     [WFAlert show:@"Slideshow saved" withTime:2.3f];
                     [ProgressHUD dismiss];
                 }
-                
+                if (self.createSlideshowDelegate && [self.createSlideshowDelegate respondsToSelector:@selector(slideshowCreated:)]){
+                    [self.createSlideshowDelegate slideshowCreated:_slideshow];
+                }
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to create a slideshow: %@",error.description);
+            [WFAlert show:@"Sorry, but something went wrong while saving your slideshow to the cloud.\n\nWe've saved it locally in the meantime." withTime:3.7f];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
             [ProgressHUD dismiss];
         }];
     } else {
@@ -635,6 +660,8 @@
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to save a slideshow: %@",error.description);
+            [WFAlert show:@"Sorry, but something went wrong while saving your slideshow to the cloud.\n\nWe've saved it locally in the meantime." withTime:3.7f];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
             [ProgressHUD dismiss];
         }];
     }

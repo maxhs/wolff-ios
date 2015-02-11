@@ -1496,30 +1496,23 @@
                                         <rect key="frame" x="121" y="189" width="150" height="2"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                     </progressView>
-                                    <button opaque="NO" clipsSubviews="YES" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="6Jg-2Q-pgf" userLabel="Image Button">
+                                    <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" id="6fL-uG-xMc">
                                         <rect key="frame" x="16" y="16" width="360" height="360"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES" flexibleMaxY="YES"/>
-                                        <state key="normal">
-                                            <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                        </state>
-                                    </button>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <connections>
+                                            <outlet property="delegate" destination="fcP-NS-BkU" id="L7i-9y-Uwd"/>
+                                        </connections>
+                                    </scrollView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="bottom" lineBreakMode="middleTruncation" id="5vy-Rv-IvD" userLabel="PostedBy">
-                                        <rect key="frame" x="385" y="280" width="200" height="100"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <rect key="frame" x="400" y="244" width="190" height="95"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
                                         <state key="normal" title="Posted:">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                                             <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="I68-MF-Apn" userLabel="Dismiss Button">
-                                        <rect key="frame" x="553" y="3" width="44" height="44"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                        <state key="normal" image="blackRemove.png">
-                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                        </state>
-                                    </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Q3p-wV-O0q" userLabel="Flag button">
-                                        <rect key="frame" x="385" y="146" width="204" height="46"/>
+                                        <rect key="frame" x="384.00000034207881" y="112" width="207" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Flag">
                                             <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -1527,7 +1520,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="hhK-VU-066" userLabel="Favorites button">
-                                        <rect key="frame" x="385" y="50" width="204" height="46"/>
+                                        <rect key="frame" x="384.00000034207881" y="16" width="207" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="    Add to favorites">
                                             <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -1535,7 +1528,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="CZy-qv-iaO" userLabel="Light table button">
-                                        <rect key="frame" x="385" y="98" width="204" height="46"/>
+                                        <rect key="frame" x="384" y="64" width="207.00000034207878" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Drop to light table">
                                             <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -1543,7 +1536,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="lN5-Jr-Blo" userLabel="Edit button">
-                                        <rect key="frame" x="385" y="194" width="204" height="46"/>
+                                        <rect key="frame" x="384.00000034207881" y="160" width="207" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Edit">
                                             <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -1551,10 +1544,38 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="uYO-2W-NEp" userLabel="Delete button">
-                                        <rect key="frame" x="385" y="242" width="204" height="46"/>
+                                        <rect key="frame" x="384.00000034207881" y="208" width="207" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Delete">
                                             <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="top" lineBreakMode="middleTruncation" id="I68-MF-Apn" userLabel="Dismiss Button">
+                                        <rect key="frame" x="570" y="0.0" width="30" height="30"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" image="blackRemove.png">
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="tDM-k3-vyy">
+                                        <rect key="frame" x="419" y="347" width="140" height="29"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Kek-kX-zB6" userLabel="Last Photo Button">
+                                        <rect key="frame" x="384" y="339" width="44" height="44"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" image="left.png">
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="6vp-2b-1pf" userLabel="Next Photo Button">
+                                        <rect key="frame" x="550" y="339" width="44" height="44"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                        <state key="normal" image="right.png">
                                             <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
                                     </button>
@@ -1567,13 +1588,16 @@
                     <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
                     <connections>
                         <outlet property="backButton" destination="I68-MF-Apn" id="Cpq-9H-aO8"/>
+                        <outlet property="creditButton" destination="5vy-Rv-IvD" id="ycb-QB-eei"/>
                         <outlet property="deleteButton" destination="uYO-2W-NEp" id="CtX-cl-5WX"/>
                         <outlet property="dropToTableButton" destination="CZy-qv-iaO" id="EcK-De-baI"/>
                         <outlet property="editButton" destination="lN5-Jr-Blo" id="M89-1Y-Y0v"/>
                         <outlet property="favoriteButton" destination="hhK-VU-066" id="Dec-bp-vDv"/>
                         <outlet property="flagButton" destination="Q3p-wV-O0q" id="8cd-ga-Ccy"/>
-                        <outlet property="imageButton" destination="6Jg-2Q-pgf" id="M9M-tX-j6G"/>
-                        <outlet property="postedByButton" destination="5vy-Rv-IvD" id="qLN-Do-Tu9"/>
+                        <outlet property="lastPhotoButton" destination="Kek-kX-zB6" id="lmW-7n-k10"/>
+                        <outlet property="nextPhotoButton" destination="6vp-2b-1pf" id="lRn-fs-3Ai"/>
+                        <outlet property="photoCountLabel" destination="tDM-k3-vyy" id="LKX-Dg-5kD"/>
+                        <outlet property="photoScrollView" destination="6fL-uG-xMc" id="QaL-cD-ThX"/>
                         <outlet property="progressIndicator" destination="5qU-Vq-ifS" id="IMZ-2S-zQT"/>
                         <outlet property="tableView" destination="vCW-x4-dsW" id="LVG-pF-ZpJ"/>
                         <outlet property="topImageContainerView" destination="xNT-E7-QRF" id="lw9-8s-ssK"/>
@@ -2648,6 +2672,7 @@
         <image name="left.png" width="20" height="20"/>
         <image name="leftArrow.png" width="20" height="20"/>
         <image name="remove.png" width="25" height="25"/>
+        <image name="right.png" width="20" height="20"/>
         <image name="rightArrow.png" width="20" height="20"/>
         <image name="transparentIconWhite.png" width="128" height="128"/>
         <image name="walkthrough1.jpg" width="1024" height="768"/>

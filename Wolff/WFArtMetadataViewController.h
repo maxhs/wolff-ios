@@ -20,19 +20,22 @@
 - (void)photoDeleted:(NSNumber*)photoId;
 @end
 
-@interface WFArtMetadataViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+@interface WFArtMetadataViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UIView *topImageContainerView;
 @property (weak, nonatomic) IBOutlet UIProgressView *progressIndicator;
-@property (weak, nonatomic) IBOutlet UIButton *imageButton;
-@property (weak, nonatomic) IBOutlet UIButton *postedByButton;
+@property (weak, nonatomic) IBOutlet UIButton *creditButton;
 @property (weak, nonatomic) IBOutlet UIButton *backButton;
 @property (weak, nonatomic) IBOutlet UIButton *editButton;
 @property (weak, nonatomic) IBOutlet UIButton *deleteButton;
 @property (weak, nonatomic) IBOutlet UIButton *dropToTableButton;
 @property (weak, nonatomic) IBOutlet UIButton *flagButton;
 @property (weak, nonatomic) IBOutlet UIButton *favoriteButton;
+@property (weak, nonatomic) IBOutlet UIButton *nextPhotoButton;
+@property (weak, nonatomic) IBOutlet UIButton *lastPhotoButton;
+@property (weak, nonatomic) IBOutlet UILabel *photoCountLabel;
+@property (weak, nonatomic) IBOutlet UIScrollView *photoScrollView;
 @property (strong, nonatomic) Photo *photo;
 @property (weak, nonatomic) id<WFMetadataDelegate> metadataDelegate;
 

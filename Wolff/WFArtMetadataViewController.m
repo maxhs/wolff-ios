@@ -47,6 +47,7 @@
     UIImageView *navBarShadowView;
     CGFloat rowHeight;
     CGFloat textViewWidth;
+    NSInteger currentPhoto;
 }
 @property (strong, nonatomic) UIPopoverController *popover;
 @end
@@ -93,45 +94,103 @@
 
 - (void)setupHeader {
     self.tableView.tableHeaderView = _topImageContainerView;
-    
-    [_imageButton setBackgroundColor:kSlideBackgroundColor];
-    _imageButton.imageView.contentMode = UIViewContentModeScaleAspectFill;
-    _imageButton.imageView.layer.cornerRadius = 3.f;
-    _imageButton.imageView.layer.backgroundColor = [UIColor clearColor].CGColor;
-    
-    if (!_imageButton.imageView.image){
-        [_imageButton setAlpha:0.0];
-    }
-    
-    [[SDWebImageManager sharedManager] downloadImageWithURL:[NSURL URLWithString:_photo.mediumImageUrl] options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-        [_progressIndicator setProgress:((CGFloat)receivedSize / (CGFloat)expectedSize)];
-    } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-        [_imageButton setImage:image forState:UIControlStateNormal];
-        [UIView animateWithDuration:.23 animations:^{
-            [_imageButton setBackgroundColor:[UIColor whiteColor]];
-            [_imageButton setAlpha:1.0];
-        } completion:^(BOOL finished) {
-            [_imageButton.imageView.layer setShouldRasterize:YES];
-            _imageButton.imageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
-        }];
-    }];
-    
-    [_imageButton addTarget:self action:@selector(showFullScreen) forControlEvents:UIControlEventTouchUpInside];
+    [self setupPhotoScrollView];
     [_backButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
     [self setUpButtons];
-    [self setPostedCredit];
+    
+    [_nextPhotoButton addTarget:self action:@selector(nextPhoto) forControlEvents:UIControlEventTouchUpInside];
+    [_lastPhotoButton addTarget:self action:@selector(lastPhoto) forControlEvents:UIControlEventTouchUpInside];
+    [_photoCountLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
+    [self setPhotoCount];
 }
 
-- (void)setPostedCredit {
-    if (_photo.user){
-        [_postedByButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
-        [_postedByButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
-        [_postedByButton setTitle:[NSString stringWithFormat:@"Posted: %@",_photo.user.fullName] forState:UIControlStateNormal];
-        [_postedByButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
-        [_postedByButton setHidden:NO];
-        [_postedByButton.titleLabel setNumberOfLines:0];
+- (void)setPhotoCount{
+    if (_photo.art.photos.count == 1){
+        [_photoCountLabel setText:@"1 photo"];
     } else {
-        [_postedByButton setHidden:YES];
+    NSInteger currentIdx = [_photo.art.photos indexOfObject:_photo] + 1;
+        [_photoCountLabel setText:[NSString stringWithFormat:@"%ld of %lu photos",(long)currentIdx, (unsigned long)_photo.art.photos.count]];
+    }
+    [self setPhotoCredit];
+}
+
+- (void)setupPhotoScrollView {
+    [_photoScrollView setBackgroundColor:[UIColor clearColor]];
+    _photoScrollView.delegate = self;
+    _photoScrollView.pagingEnabled = YES;
+    CGFloat imageWidth = 360.f;
+    CGFloat imageHeight = 360.f;
+    [_photoScrollView setContentSize:CGSizeMake(_photo.art.photos.count*imageWidth, imageHeight)];
+    [_photoScrollView setCanCancelContentTouches:YES];
+    
+    NSInteger idx = 0;
+    for (Photo *photo in _photo.art.photos){
+        
+        UIButton *imageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [imageButton setShowsTouchWhenHighlighted:NO];
+        [imageButton setAdjustsImageWhenHighlighted:NO];
+        [imageButton setBackgroundColor:kSlideBackgroundColor];
+        imageButton.imageView.contentMode = UIViewContentModeScaleAspectFill;
+        imageButton.imageView.layer.cornerRadius = 3.f;
+        imageButton.imageView.layer.backgroundColor = [UIColor clearColor].CGColor;
+        [imageButton setFrame:CGRectMake(0+(idx*imageWidth), 0, imageWidth, imageHeight)];
+        [_photoScrollView addSubview:imageButton];
+        
+        if (!imageButton.imageView.image){
+            [imageButton setAlpha:0.0];
+        }
+        
+        [[SDWebImageManager sharedManager] downloadImageWithURL:[NSURL URLWithString:photo.mediumImageUrl] options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+            [_progressIndicator setProgress:((CGFloat)receivedSize / (CGFloat)expectedSize)];
+        } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+            [imageButton setImage:image forState:UIControlStateNormal];
+            [UIView animateWithDuration:.23 animations:^{
+                [imageButton setAlpha:1.0];
+            } completion:^(BOOL finished) {
+                //[imageButton.imageView.layer setShouldRasterize:YES];
+                //imageButton.imageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+            }];
+        }];
+        [imageButton addTarget:self action:@selector(showFullScreen) forControlEvents:UIControlEventTouchUpInside];
+        idx ++;
+    }
+}
+
+- (void)setPhotoCredit {
+    if (_photo.credit.length){
+        [_creditButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+        [_creditButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
+        [_creditButton setTitle:[NSString stringWithFormat:@"Credit: %@",_photo.credit] forState:UIControlStateNormal];
+        [_creditButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
+        [_creditButton setHidden:NO];
+        [_creditButton.titleLabel setNumberOfLines:0];
+    } else {
+        [_creditButton setHidden:YES];
+    }
+}
+
+- (void)nextPhoto {
+    [_photoScrollView setContentOffset:CGPointMake(_photoScrollView.contentOffset.x+360.f, 0) animated:YES];
+    [self setPhotoCount];
+}
+
+- (void)lastPhoto {
+    [_photoScrollView setContentOffset:CGPointMake(_photoScrollView.contentOffset.x-360.f, 0) animated:YES];
+    [self setPhotoCount];
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    CGFloat contentSizeWidth = scrollView.frame.size.width;
+    CGFloat offsetX = scrollView.contentOffset.x;
+    float fractionalPage = offsetX / contentSizeWidth;
+    NSInteger page = lround(fractionalPage);
+    if (currentPhoto != page) {
+        currentPhoto = page;
+        Art *art = _photo.art;
+        if (currentPhoto <= art.photos.count - 1){
+            _photo = art.photos[currentPhoto];
+            [self setPhotoCount];
+        }
     }
 }
 

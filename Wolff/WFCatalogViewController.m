@@ -45,7 +45,7 @@
 #import "WFUtilities.h"
 #import "WFSlideshowViewController.h"
 
-@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, WFLightTableDelegate, WFSlideshowCellDelegate, WFLightTableCellDelegate, UIGestureRecognizerDelegate> {
+@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, WFLightTableDelegate, WFSlideshowCellDelegate, WFLightTableCellDelegate, WFCreateSlideshowDelegate, UIGestureRecognizerDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     User *_currentUser;
@@ -409,7 +409,7 @@
     if (_currentUser && !loading){
         loading = YES;
         [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            //NSLog(@"Success getting user dashboard: %@", responseObject);
+            NSLog(@"Success getting user dashboard: %@", responseObject);
             [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
             
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -697,7 +697,6 @@
             if ([slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
                 [self slideshowSelected:slideshow];
             } else {
-                NSLog(@"Play someone else's slideshow");
                 WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
                 [vc setSlideshow:slideshow];
                 UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
@@ -732,12 +731,11 @@
 }
 
 - (void)deleteSlideshow:(NSNumber*)slideshowId {
-    NSLog(@"slideshow id? %@",slideshowId);
     Slideshow *slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:slideshowId inContext:[NSManagedObjectContext MR_defaultContext]];
     NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_slideshows indexOfObject:slideshow] inSection:0];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-    [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshowId] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success deleting this slideshow: %@",responseObject);
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to delete this slideshow: %@",error.description);
@@ -747,11 +745,11 @@
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     
     [self.tableView beginUpdates];
+    [_slideshows removeObject:slideshow];
     if (indexPathToRemove && indexPathToRemove.row != NSNotFound && _slideshows.count){
         [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
     } else {
-        _slideshows = [NSMutableArray arrayWithArray:[Slideshow MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
-        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
+        [self.tableView reloadData];
     }
     [self.tableView endUpdates];
 }
@@ -807,7 +805,7 @@
 }
 
 - (void)showTable:(Table*)table {
-    if (showLightTable && [table.identifier isEqualToNumber:_table.identifier]){
+    if (showLightTable && table.identifier && _table.identifier && [table.identifier isEqualToNumber:_table.identifier]){
         [self resetArtBooleans];
     } else {
         [self resetArtBooleans];
@@ -905,6 +903,7 @@
     } else {
         [_noSearchResultsLabel setHidden:YES];
     }
+    
     if (searching){
         return _filteredPhotos.count;
     } else if (showPrivate){
@@ -1589,6 +1588,7 @@
 - (void)newSlideshow {
     [self.popover dismissPopoverAnimated:YES];
     WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
+    vc.createSlideshowDelegate = self;
     Slideshow *slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
     slideshow.user = _currentUser;
     if (_selectedPhotos.count){
@@ -1610,6 +1610,7 @@
 - (void)slideshowSelected:(Slideshow *)presentation {
     [self.popover dismissPopoverAnimated:YES];
     WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
+    vc.createSlideshowDelegate = self;
     [vc setSlideshowId:presentation.identifier];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.transitioningDelegate = self;
@@ -1618,6 +1619,11 @@
     [self presentViewController:nav animated:YES completion:^{
         
     }];
+}
+
+#pragma createSlidesShow Delegate
+- (void)slideshowCreated:(Slideshow *)slideshow {
+    [self.tableView reloadData];
 }
 
 - (void)showSlideshows {
@@ -2010,8 +2016,10 @@
             if ([slideshow.identifier isEqualToNumber:@0]){
                 [self newSlideshow];
             } else {
-                NSLog(@"should be synching an existing slideshow");
-                [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:@{@"slideshow":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                NSLog(@"Adding photos to an existing slideshow.");
+                [manager PATCH:[NSString stringWithFormat:@"slideshows/%@/add_photos",slideshow.identifier] parameters:@{@"slideshow":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                    NSString *photoCount = _selectedPhotos.count == 1 ? @"1 photo dropped" : [NSString stringWithFormat:@"%lu photos dropped",(unsigned long)_selectedPhotos.count];
+                    [WFAlert show:photoCount withTime:2.7f];
                     NSLog(@"Success dropping photos into slideshow: %@",responseObject);
                 } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                     
