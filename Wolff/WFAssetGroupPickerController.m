@@ -12,11 +12,13 @@
 #import "WFAssetGroupPickerCell.h"
 #import "WFNewArtViewController.h"
 #import "Constants.h"
+#import "WFUtilities.h"
 
 @interface WFAssetGroupPickerController () {
     ALAssetsLibrary *_assetsLibrary;
     NSMutableArray *_assetGroups;
     UIBarButtonItem *cancelButton;
+    UIImageView *navBarShadowView;
 }
 
 @end
@@ -42,8 +44,15 @@
     [backgroundToolbar setTranslucent:YES];
     [self.tableView setBackgroundView:backgroundToolbar];
     
+    navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
+    
     //make sure the buttons are tinted white
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    navBarShadowView.hidden = YES;
 }
 
 - (void)loadGroups {

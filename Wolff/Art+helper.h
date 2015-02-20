@@ -18,6 +18,5 @@
 - (Artist*)primaryArtist;
 - (NSString*)materialsToSentence;
 - (NSString*)artistsToSentence;
-- (NSString*)iconsToSentence;
 - (NSString*)locationsToSentence;
 @end

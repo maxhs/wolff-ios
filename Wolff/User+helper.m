@@ -54,6 +54,9 @@ typedef enum {
     if ([dictionary objectForKey:@"url"] && [dictionary objectForKey:@"url"] != [NSNull null]){
         self.url = [dictionary objectForKey:@"url"];
     }
+    if ([dictionary objectForKey:@"customer_plan"] && [dictionary objectForKey:@"customer_plan"] != [NSNull null]){
+        self.customerPlan = [dictionary objectForKey:@"customer_plan"];
+    }
     if ([dictionary objectForKey:@"prefix"] && [dictionary objectForKey:@"prefix"] != [NSNull null]){
         switch ([(NSNumber*)[dictionary objectForKey:@"prefix"] integerValue]) {
             case 0:

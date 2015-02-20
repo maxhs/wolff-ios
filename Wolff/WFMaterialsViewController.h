@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Material+helper.h"
 @protocol WFSelectMaterialsDelegate <NSObject>
 - (void)materialsSelected:(NSOrderedSet*)selectedMaterials;
 @end

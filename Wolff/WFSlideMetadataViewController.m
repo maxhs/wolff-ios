@@ -97,7 +97,7 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 6;
+    return 7;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -180,7 +180,19 @@
             break;
         case 5:
         {
-            NSMutableAttributedString *creditString = [[NSMutableAttributedString alloc] initWithString:@"CREDIT:   " attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor colorWithWhite:1 alpha:.33]}];
+            NSString *icons = [photo iconsToSentence];
+            if (icons.length){
+                [cell.textLabel setText:icons];
+            } else {
+                [cell.textLabel setText:@"No iconography listed"];
+                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
+                [cell.textLabel setTextColor:[UIColor lightGrayColor]];
+            }
+        }
+            break;
+        case 6:
+        {
+            NSMutableAttributedString *creditString = [[NSMutableAttributedString alloc] initWithString:@"CREDIT / RIGHTS:   " attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor colorWithWhite:1 alpha:.33]}];
             NSAttributedString *credit = photo.credit.length ? [[NSAttributedString alloc] initWithString:photo.credit attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0], NSForegroundColorAttributeName : [UIColor whiteColor]}] : [[NSAttributedString alloc] initWithString:photo.user.fullName attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0], NSForegroundColorAttributeName : [UIColor whiteColor]}];
             [creditString appendAttributedString:credit];
             if (credit.length){

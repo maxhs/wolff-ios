@@ -10,6 +10,7 @@
 #import "Art+helper.h"
 #import "WFImagePickerController.h"
 #import "WFDatePicker.h"
+#import "WFNewPhotoContainerView.h"
 
 @protocol WFNewArtDelegate <NSObject>
 
@@ -26,8 +27,8 @@
 @property (weak, nonatomic) IBOutlet UIButton *submitButton;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
-@property (weak, nonatomic) IBOutlet UISwitch *creditSwitch;
-@property (weak, nonatomic) IBOutlet UITextField *creditTextField;
+@property (weak, nonatomic) IBOutlet UISwitch *privacySwitch;
+@property (weak, nonatomic) IBOutlet UILabel *privateLabel;
 @property (weak, nonatomic) id<WFNewArtDelegate> artDelegate;
 - (void)dismiss;
 @end

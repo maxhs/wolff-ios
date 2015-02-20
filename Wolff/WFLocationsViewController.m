@@ -179,7 +179,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
             [cell.createButton setHidden:NO];
             [cell.createButton addTarget:self action:@selector(createLocation) forControlEvents:UIControlEventTouchUpInside];
             [cell.nameTextField becomeFirstResponder];
-            [cell.nameTextField setPlaceholder:@"+  add a new location"];
+            [cell.nameTextField setPlaceholder:kAddLocationPlaceholder];
             [cell.nameTextField setHidden:NO];
             [cell.nameTextField setReturnKeyType:UIReturnKeyNext];
             
@@ -187,11 +187,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
             [cell.nameTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
             cell.nameTextField.delegate = self;
             
-            if (searchText.length){
-                [cell.nameTextField setText:[NSString stringWithFormat:@"+  add \"%@\"",searchText]];
-            } else {
-                [cell.nameTextField setText:@""];
-            }
+            (searchText.length) ? [cell.nameTextField setText:searchText] : [cell.nameTextField setText:@""];
             
             cityTextField = cell.cityTextField;
             stateTextField = cell.stateTextField;
@@ -204,7 +200,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
             [cell.countryTextField setHidden:YES];
             [cell.countryLabel setHidden:YES];
             if (searchText.length){
-                [cell.locationPrompt setText:[NSString stringWithFormat:@"+  add \"%@\"",searchText]];
+                [cell.locationPrompt setText:searchText];
             } else {
                 [cell.locationPrompt setText:@"+  add a new location"];
             }

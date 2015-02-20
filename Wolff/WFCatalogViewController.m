@@ -56,13 +56,13 @@
     UIButton *tablesButton;
     UIBarButtonItem *lightTablesButton;
     UIBarButtonItem *notificationsButton;
-    UIBarButtonItem *refreshButton;
+    //UIBarButtonItem *refreshButton;
     CGFloat width;
     CGFloat height;
-    NSMutableArray *_photos;
+    NSMutableOrderedSet *_photos;
     NSMutableOrderedSet *_privatePhotos;
     NSMutableOrderedSet *_favoritePhotos;
-    NSMutableArray *_filteredPhotos;
+    NSMutableOrderedSet *_filteredPhotos;
     NSMutableArray *_tables;
     NSMutableArray *_slideshows;
     NSMutableArray *_filteredTables;
@@ -141,13 +141,11 @@
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     
-    _photos = [NSMutableArray array];
+    _photos = [NSMutableOrderedSet orderedSet];
     _privatePhotos = [NSMutableOrderedSet orderedSet];
     _favoritePhotos = [NSMutableOrderedSet orderedSet];
     
     if (!_selectedPhotos) _selectedPhotos = [NSMutableOrderedSet orderedSet];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"art.privateArt = %@",@NO];
-    _photos = [Photo MR_findAllSortedBy:@"createdDate" ascending:NO withPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
     
     //set up the nav buttons
     [self setUpNavBar];
@@ -197,19 +195,21 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    navBarShadowView.hidden = YES;
     _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     if (_currentUser){
         [self loadUserDashboard];
         if (!tableViewRefresh){
             tableViewRefresh = [[UIRefreshControl alloc] init];
             [tableViewRefresh addTarget:self action:@selector(refreshTableView:) forControlEvents:UIControlEventValueChanged];
+            [self.tableView addSubview:tableViewRefresh];
         }
-        [self.tableView addSubview:tableViewRefresh];
     }
-    [self loadPhotos];
-    navBarShadowView.hidden = YES;
     
-    if (tableIsVisible){
+    loading = NO;
+    [self loadPhotos];
+    
+    if (tableIsVisible && _photos.count){
         [self.tableView reloadData];
     }
 }
@@ -221,7 +221,7 @@
 
 - (void)showWalkthrough {
     if (![[NSUserDefaults standardUserDefaults] boolForKey:kExistingUser]){
-        double delayInSeconds = .23f;
+        double delayInSeconds = .77f;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             [ProgressHUD dismiss];
@@ -245,7 +245,6 @@
 
 - (void)refreshCollectionView:(id)sender {
     [ProgressHUD show:@"Refreshing Art..."];
-    [_photos removeAllObjects];
     canLoadMorePhotos = YES;
     [self loadPhotos];
 }
@@ -285,7 +284,7 @@
     
     self.navigationItem.leftBarButtonItems = @[negativeButton, homeBarButton, lightTablesButton,slideshowsBarButton];
     
-    refreshButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"refresh"] style:UIBarButtonItemStylePlain target:self action:@selector(refreshCollectionView:)];
+    //refreshButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"refresh"] style:UIBarButtonItemStylePlain target:self action:@selector(refreshCollectionView:)];
     addButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"plus"] style:UIBarButtonItemStylePlain target:self action:@selector(add)];
     
     UIView *customSelectedView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 38, 44)];
@@ -311,7 +310,7 @@
         settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"settings"] style:UIBarButtonItemStylePlain target:self action:@selector(settingsPopover:)];
         notificationsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"alert"] style:UIBarButtonItemStylePlain target:self action:@selector(showNotifications:)];
         
-        self.navigationItem.rightBarButtonItems = @[addButton, selectedBarButtonItem, notificationsButton, settingsButton, refreshButton];
+        self.navigationItem.rightBarButtonItems = @[addButton, selectedBarButtonItem, notificationsButton, settingsButton];
         
         //also ensure there's a pull to refresh
         if (!tableViewRefresh){
@@ -322,7 +321,7 @@
         
     } else {
         loginButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"login"] style:UIBarButtonItemStylePlain target:self action:@selector(showLogin)];
-        self.navigationItem.rightBarButtonItems = @[loginButton, addButton, refreshButton];
+        self.navigationItem.rightBarButtonItems = @[loginButton, addButton];
     }
     
     self.navigationItem.titleView = self.searchBar;
@@ -362,21 +361,22 @@
 
 - (void)loadPhotos {
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    [parameters setObject:@20 forKey:@"count"];
-    if (_photos.count) {
-        Photo *lastPhoto = _photos.lastObject;
-        [parameters setObject:[NSNumber numberWithDouble:[lastPhoto.createdDate timeIntervalSince1970]] forKey:@"before_date"];
-    } else {
-        [ProgressHUD show:@"Loading art..."];
-    }
+    [parameters setObject:@40 forKey:@"count"];
     if (searching && searchText && searchText.length){
         [ProgressHUD show:@"Searching..."];
         [parameters setObject:searchText forKey:@"search"];
+    } else if (_photos.count) {
+        Photo *lastPhoto = _photos.lastObject;
+        [parameters setObject:[NSNumber numberWithDouble:[lastPhoto.createdDate timeIntervalSince1970]] forKey:@"before_date"];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^(void){
+            [ProgressHUD show:@"Loading art..."];
+        });
     }
+    
     if (!loading){
         loading = YES;
         [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            
             if ([[responseObject objectForKey:@"photos"] count]){
                 canLoadMorePhotos = YES;
                 for (NSDictionary *dict in [responseObject objectForKey:@"photos"]) {
@@ -385,20 +385,24 @@
                         photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
                     }
                     [photo populateFromDictionary:dict];
-                    [_photos addObject:photo];
-                    if (searching){
-                        [_filteredPhotos addObject:photo];
+                    
+                    if (![photo.privatePhoto isEqualToNumber:@YES] || ![photo.art.privateArt isEqualToNumber:@YES]){
+                        [_photos addObject:photo];
+                        if (searching){
+                            [_filteredPhotos addObject:photo];
+                        }
                     }
                 }
                 [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                     [self.collectionView reloadData];
+                    [self endRefresh];
                 }];
             } else {
                 canLoadMorePhotos = NO;
-                NSLog(@"Can't load any more photo. We got it all!");
+                [self endRefresh];
+                NSLog(@"Can't load any more photos. We got it all!");
             }
             
-            [self endRefresh];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [self endRefresh];
         }];
@@ -409,7 +413,7 @@
     if (_currentUser && !loading){
         loading = YES;
         [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success getting user dashboard: %@", responseObject);
+            //NSLog(@"Success getting user dashboard: %@", responseObject);
             [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
             
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -447,16 +451,22 @@
 
 - (void)add {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        settings = NO; metadata = NO; _login = NO; groupBool = NO;
-        newArt = YES;
-        WFNewArtViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"NewArt"];
-        vc.artDelegate = self;
-        //UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-        vc.transitioningDelegate = self;
-        vc.modalPresentationStyle = UIModalPresentationCustom;
-        [self presentViewController:vc animated:YES completion:^{
-            
-        }];
+        if (_currentUser.customerPlan.length){
+            if (self.popover){
+                [self.popover dismissPopoverAnimated:YES];
+            }
+            settings = NO; metadata = NO; _login = NO; groupBool = NO;
+            newArt = YES;
+            WFNewArtViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"NewArt"];
+            vc.artDelegate = self;
+            vc.transitioningDelegate = self;
+            vc.modalPresentationStyle = UIModalPresentationCustom;
+            [self presentViewController:vc animated:YES completion:^{
+                
+            }];
+        } else {
+            [WFAlert show:@"Uploading art to the Wölff catalog requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
+        }
     } else {
         [self showLogin];
     }
@@ -711,14 +721,17 @@
         }
     } else {
         if (indexPath.section == 0){
-            //[self setHomeAsReset];
             indexPath.row == 0 ? [self showPrivateArt] : [self showFavorites];
         } else if (indexPath.section == 1){
             if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-                if (_tables.count){
-                    Table *table = _tables[indexPath.row];
-                    [self showTable:table];
-                    //[self setHomeAsReset];
+                if (_currentUser.customerPlan.length){
+                    if (_tables.count){
+                        Table *table = _tables[indexPath.row];
+                        [self showTable:table];
+                        //[self setHomeAsReset];
+                    }
+                } else {
+                    [WFAlert show:@"Joining or creating light tables requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
                 }
             } else {
                 [self showLogin];
@@ -929,6 +942,30 @@
     return 1;
 }
 
+- (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"PhotoCell" forIndexPath:indexPath];
+    Photo *photo;
+    if (searching){
+        photo = _filteredPhotos[indexPath.item];
+    } else if (showPrivate){
+        photo = _privatePhotos[indexPath.item];
+    } else if (showLightTable){
+        photo = _table.photos[indexPath.item];
+    } else if (showFavorites){
+        photo = _favoritePhotos[indexPath.item];
+    } else {
+        photo = _photos[indexPath.item];
+    }
+    [cell configureForPhoto:photo];
+    if ([_selectedPhotos containsObject:photo]){
+        [cell.checkmark setHidden:NO];
+    } else {
+        [cell.checkmark setHidden:YES];
+    }
+    return cell;
+}
+
+
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
     if (showFavorites || (showLightTable && _table) || showPrivate){
         return CGSizeMake(collectionView.frame.size.width, 54);
@@ -981,29 +1018,6 @@
             [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
         });
     }
-}
-
-- (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"PhotoCell" forIndexPath:indexPath];
-    Photo *photo;
-    if (searching){
-        photo = _filteredPhotos[indexPath.item];
-    } else if (showPrivate){
-        photo = _privatePhotos[indexPath.item];
-    } else if (showLightTable){
-        photo = _table.photos[indexPath.item];
-    } else if (showFavorites){
-        photo = _favoritePhotos[indexPath.item];
-    } else {
-        photo = _photos[indexPath.item];
-    }
-    [cell configureForPhoto:photo];
-    if ([_selectedPhotos containsObject:photo]){
-        [cell.checkmark setHidden:NO];
-    } else {
-        [cell.checkmark setHidden:YES];
-    }
-    return cell;
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -1276,7 +1290,6 @@
     if (comparison1 && comparison1.photo && comparison2 && comparison2.photo){
         [self resetTransitionBooleans];
         comparison = YES;
-        
         WFComparisonViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Comparison"];
         vc.photos = [NSMutableOrderedSet orderedSetWithArray:@[comparison1.photo, comparison2.photo]];
         
@@ -1422,11 +1435,11 @@
             *stop = YES;
         }
     }];
-    [_tables enumerateObjectsUsingBlock:^(Table *lightTable, NSUInteger idx, BOOL *stop) {
+    for (Table *lightTable in _tables){
         if ([lightTable.photos containsObject:photo]){
             [lightTable removePhoto:photo];
         }
-    }];
+    }
 }
 
 - (void)favoritedPhoto:(Photo *)photo {
@@ -1459,10 +1472,31 @@
 
 
 - (void)photoDeleted:(NSNumber *)photoId {
-    NSLog(@"photo deleted");
+    Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:photoId inContext:[NSManagedObjectContext MR_defaultContext]];
+    if (showPrivate){
+        NSPredicate *privatePredicate = [NSPredicate predicateWithFormat:@"art.privateArt == %@ && art.user.identifier == %@", @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+        _privatePhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:privatePredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
+        [_collectionView reloadData];
+    } else if (showFavorites){
+        [_currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
+            if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
+                [_favoritePhotos addObject:favorite.photo];
+            }
+        }];
+        [_collectionView reloadData];
+    } else if (showLightTable && _table){
+
+        [_table removePhoto:photo];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+        [_collectionView reloadData];
+    } else {
+        [_photos removeObject:photo];
+        [_collectionView reloadData];
+    }
+}
+
+- (void)artDeleted:(NSNumber *)photoId {
     if (!showLightTable && !showFavorites && !showPrivate){
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"art.privateArt = %@",@NO];
-        _photos = [Photo MR_findAllSortedBy:@"createdDate" ascending:NO withPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
         [_collectionView reloadData];
     }
 }
@@ -1588,6 +1622,7 @@
 - (void)newSlideshow {
     [self.popover dismissPopoverAnimated:YES];
     WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
+    [vc setPhotos:_photos];
     vc.createSlideshowDelegate = self;
     Slideshow *slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
     slideshow.user = _currentUser;
@@ -1610,6 +1645,7 @@
 - (void)slideshowSelected:(Slideshow *)presentation {
     [self.popover dismissPopoverAnimated:YES];
     WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
+    [vc setPhotos:_photos];
     vc.createSlideshowDelegate = self;
     [vc setSlideshowId:presentation.identifier];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
@@ -1628,19 +1664,23 @@
 
 - (void)showSlideshows {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        tablesButton.selected = NO;
-        if (slideshowSidebarMode){
-            [self.tableView reloadData];
-            [self showSidebar];
-        } else {
-            slideshowSidebarMode = YES;
-            if (tableIsVisible){
-                [self.tableView reloadData];
-                slideshowsButton.selected = YES;
-            } else {
+        if (_currentUser.customerPlan.length){
+            tablesButton.selected = NO;
+            if (slideshowSidebarMode){
                 [self.tableView reloadData];
                 [self showSidebar];
+            } else {
+                slideshowSidebarMode = YES;
+                if (tableIsVisible){
+                    [self.tableView reloadData];
+                    slideshowsButton.selected = YES;
+                } else {
+                    [self.tableView reloadData];
+                    [self showSidebar];
+                }
             }
+        } else {
+            [WFAlert show:@"The ability to show slideshows on this device requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
         }
     } else {
         [self showLogin];
@@ -1675,30 +1715,17 @@
         collectionFrame.size.width += kSidebarWidth;
         slideshowsButton.selected = NO;
         tablesButton.selected = NO;
+        [_collectionView reloadData];
+        
         [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             _tableView.transform = CGAffineTransformIdentity;
             _comparisonContainerView.transform = CGAffineTransformIdentity;
             resetButton.transform = CGAffineTransformIdentity;
             [_collectionView setFrame:collectionFrame];
-            
-            if (_filteredPhotos.count && searching){
-                // important to differentiate between iOS8 and iOS7 for some reason
-                if (iOS8){
-                    [_collectionView performBatchUpdates:^{
-                        [_collectionView reloadData];
-                    } completion:^(BOOL finished) {
-                        
-                    }];
-                } else {
-                    [_collectionView setFrame:collectionFrame];
-                    [_collectionView reloadData];
-                }
-            } else {
-                [_collectionView reloadData];
-            }
-            
         } completion:^(BOOL finished) {
-            
+            if (self.searchBar.isFirstResponder){
+                [self.searchBar resignFirstResponder];
+            }
         }];
     } else {
         tableIsVisible = YES;
@@ -1712,27 +1739,14 @@
         collectionFrame.origin.x = kSidebarWidth;
         collectionFrame.size.width -= kSidebarWidth;
         
+         [_collectionView reloadData];
+        
         [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
             _tableView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
             _comparisonContainerView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
             resetButton.transform = CGAffineTransformMakeTranslation(-kSidebarWidth, 0);
             [_collectionView setFrame:collectionFrame];
-            
-            if (_filteredPhotos.count && searching){
-                // important to differentiate between iOS8 and iOS7 for some reason
-                if (iOS8){
-                    [_collectionView performBatchUpdates:^{
-                        [_collectionView reloadData];
-                    } completion:^(BOOL finished) {
-                        
-                    }];
-                } else {
-                    [_collectionView setFrame:collectionFrame];
-                    [_collectionView reloadData];
-                }
-            } else {
-                [_collectionView reloadData];
-            }
+           
         } completion:^(BOOL finished) {
             
         }];
@@ -1856,7 +1870,7 @@
 - (void)setUpSearch {
     [_noSearchResultsLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLightItalic] size:0]];
     [_noSearchResultsLabel setTextColor:[UIColor colorWithWhite:0 alpha:.23]];
-    [_noSearchResultsLabel setText:@"No search results..."];
+    [_noSearchResultsLabel setText:@"No search results...\n\nTap the \"Search\" key to perform a full search through the Wölff catalog"];
     [_noSearchResultsLabel setHidden:YES];
     [self.searchBar setPlaceholder:@"Search catalog"];
     
@@ -1875,22 +1889,13 @@
 }
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
-    if (!_filteredPhotos) _filteredPhotos = [NSMutableArray arrayWithArray:_photos];
+    if (!_filteredPhotos) _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
     searching = YES;
     if (self.popover) [self.popover dismissPopoverAnimated:YES];
-    //[self setHomeAsReset];
 }
 
-//- (void)setHomeAsReset {
-//    [homeButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
-//}
-//
-//- (void)setHomeAsHome {
-//    [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
-//}
-
-- (void)searchDidSelectPhoto:(Photo *)photo {
-    NSLog(@"Search did select art: %@",photo.art.title);
+- (void)searchDidSelectPhotoWithId:(NSNumber *)photoId {
+   
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)text {
@@ -1911,7 +1916,7 @@
         } else if (showFavorites){
             photosToIterateThrough = _favoritePhotos.array;
         } else {
-            photosToIterateThrough = _photos;
+            photosToIterateThrough = _photos.array;
         }
         for (Photo *photo in photosToIterateThrough){
             // evaluate the art metadata, but actually add the photo to _filteredPhotos
@@ -1926,7 +1931,7 @@
             }
         }
     } else {
-        _filteredPhotos = [NSMutableArray arrayWithArray:_photos];
+        _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
     }
     
     [self.collectionView reloadData];
@@ -1967,34 +1972,6 @@
         [self.popover dismissPopoverAnimated:YES];
     }
     [self newLightTable];
-//    Table *newLightTable = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-//    for (Photo *photo in _selectedPhotos){
-//        [newLightTable addPhoto:photo];
-//    }
-//    
-//    if (tableIsVisible && !slideshowSidebarMode){
-//        [self.tableView reloadData];
-//    }
-//    
-//    __block NSMutableSet *photoIds = [NSMutableSet set];
-//    [newLightTable.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
-//        [photoIds addObject:photo.identifier];
-//    }];
-//    if (photoIds.count){
-//        [ProgressHUD show:@"Creating your light table..."];
-//        [manager POST:@"light_tables" parameters:@{@"light_table":@{@"photo_ids":photoIds, @"owner_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-//            NSLog(@"Success bulk adding photos to a NEW light table: %@",responseObject);
-//            [newLightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
-//            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-//                [WFAlert show:@"New light table created." withTime:2.7f];
-//                [ProgressHUD dismiss];
-//            }];
-//        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-//            [ProgressHUD dismiss];
-//            [WFAlert show:@"Sorry, but something went wrong while trying to create your light table. Please try again soon." withTime:2.7f];
-//            NSLog(@"Failed to create a new light table from selected: %@",error.description);
-//        }];
-//    }
 }
 
 - (void)slideshowForSelected:(Slideshow *)slideshow {

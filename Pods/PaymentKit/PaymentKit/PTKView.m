@@ -9,7 +9,7 @@
 #define RGB(r,g,b) [UIColor colorWithRed:r/255.0f green:g/255.0f blue:b/255.0f alpha:1.0f]
 #define DarkGreyColor RGB(0,0,0)
 #define RedColor RGB(253,0,17)
-#define DefaultBoldFont [UIFont boldSystemFontOfSize:17]
+#define DefaultFont [UIFont fontWithName:@"MuseoSans-300" size:17]
 
 #define kPTKViewPlaceholderViewAnimationDuration 0.25
 
@@ -132,8 +132,9 @@ static NSString *const kPTKOldLocalizedStringsTableName = @"STPaymentLocalizable
     self.cardNumberField.delegate = self;
     self.cardNumberField.placeholder = [self.class localizedStringWithKey:@"placeholder.card_number" defaultValue:@"1234 5678 9012 3456"];
     self.cardNumberField.keyboardType = UIKeyboardTypeNumberPad;
+    self.cardNumberField.keyboardAppearance = UIKeyboardAppearanceDark;
     self.cardNumberField.textColor = DarkGreyColor;
-    self.cardNumberField.font = DefaultBoldFont;
+    self.cardNumberField.font = DefaultFont;
 
     [self.cardNumberField.layer setMasksToBounds:YES];
 }
@@ -144,8 +145,9 @@ static NSString *const kPTKOldLocalizedStringsTableName = @"STPaymentLocalizable
     self.cardExpiryField.delegate = self;
     self.cardExpiryField.placeholder = [self.class localizedStringWithKey:@"placeholder.card_expiry" defaultValue:@"MM/YY"];
     self.cardExpiryField.keyboardType = UIKeyboardTypeNumberPad;
+    self.cardExpiryField.keyboardAppearance = UIKeyboardAppearanceDark;
     self.cardExpiryField.textColor = DarkGreyColor;
-    self.cardExpiryField.font = DefaultBoldFont;
+    self.cardExpiryField.font = DefaultFont;
 
     [self.cardExpiryField.layer setMasksToBounds:YES];
 }
@@ -156,8 +158,9 @@ static NSString *const kPTKOldLocalizedStringsTableName = @"STPaymentLocalizable
     self.cardCVCField.delegate = self;
     self.cardCVCField.placeholder = [self.class localizedStringWithKey:@"placeholder.card_cvc" defaultValue:@"CVC"];
     self.cardCVCField.keyboardType = UIKeyboardTypeNumberPad;
+    self.cardCVCField.keyboardAppearance = UIKeyboardAppearanceDark;
     self.cardCVCField.textColor = DarkGreyColor;
-    self.cardCVCField.font = DefaultBoldFont;
+    self.cardCVCField.font = DefaultFont;
 
     [self.cardCVCField.layer setMasksToBounds:YES];
 }
@@ -253,7 +256,7 @@ static NSString *const kPTKOldLocalizedStringsTableName = @"STPaymentLocalizable
         lastGroupSize = [self.cardNumber.lastGroup sizeWithFont:DefaultBoldFont];
     }
 #else
-    NSDictionary *attributes = @{NSFontAttributeName: DefaultBoldFont};
+    NSDictionary *attributes = @{NSFontAttributeName: DefaultFont};
 
     cardNumberSize = [self.cardNumber.formattedString sizeWithAttributes:attributes];
     lastGroupSize = [self.cardNumber.lastGroup sizeWithAttributes:attributes];

@@ -21,17 +21,15 @@
 @implementation WFWalkthroughAnimator
 
 - (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext {
-    return .75f;
+    return .4f;
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        width = screenWidth();
-        height = screenHeight();
+        width = screenWidth(); height = screenHeight();
         mainScreen = [UIScreen mainScreen].bounds;
     } else {
-        width = screenHeight();
-        height = screenWidth();
+        width = screenHeight(); height = screenWidth();
         mainScreen = CGRectMake(0, 0, height, width);
     }
     
@@ -72,13 +70,6 @@
         
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
-        
-        /*mainScreen.origin.x -= screenWidth();
-         CGRect originStartFrame = toViewController.view.frame;
-         originStartFrame.origin.x = screenWidth();
-         toViewController.view.frame = originStartFrame;
-         CGRect originEndFrame = toViewController.view.frame;
-         originEndFrame.origin.x = 0;*/
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] animations:^{
             [fromView setAlpha:0.0];

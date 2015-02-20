@@ -129,10 +129,10 @@
         WFLightTableDetailsCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LightTableDetailsCell" forIndexPath:indexPath];
         [cell setBackgroundColor:[UIColor clearColor]];
         
-        if (_lightTable){
-            [cell.actionButton setTitle:@"SAVE" forState:UIControlStateNormal];
-        } else {
+        if ([_lightTable.identifier isEqualToNumber:@0]){
             [cell.actionButton setTitle:@"CREATE" forState:UIControlStateNormal];
+        } else {
+            [cell.actionButton setTitle:@"SAVE" forState:UIControlStateNormal];
         }
         
         [cell.actionButton addTarget:self action:@selector(post) forControlEvents:UIControlEventTouchUpInside];
@@ -170,7 +170,7 @@
         [cell.keyTextField setReturnKeyType:UIReturnKeyNext];
 
         confirmTableKeyTextField = cell.confirmKeyTextField;
-        [cell.confirmKeyTextField setPlaceholder:@"Confirm table key"];
+        [cell.confirmKeyTextField setPlaceholder:@"Confirm that your table key matches"];
         [cell.confirmKeyTextField setReturnKeyType:UIReturnKeyGo];
         
         actionButton = cell.actionButton;
@@ -179,7 +179,7 @@
         if (_showKey){
             WFLightTableKeyCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LightTableKeyCell" forIndexPath:indexPath];
             [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.03]];
-            [cell.label setText:@"TABLE KEY"];
+            [cell.label setText:@"TABLE KEY - THE PASSWORD REQUIRED TO JOIN THIS LIGHT TABLE"];
             [cell.textField setPlaceholder:@"The key code for the light table code you'd like to join"];
             cell.textField.delegate = self;
             [cell.joinButton setTitle:@"JOIN" forState:UIControlStateNormal];
@@ -305,6 +305,9 @@
 
 - (void)saveLightTable {
     [self.view endEditing:YES];
+    if ([_lightTable.identifier isEqualToNumber:@0]){
+        return [self createLightTable];
+    }
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     if (titleTextField.text.length){
         [parameters setObject:titleTextField.text forKey:@"name"];

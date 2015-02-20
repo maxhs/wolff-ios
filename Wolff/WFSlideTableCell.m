@@ -24,6 +24,16 @@
     [_artImageView1 setContentMode:UIViewContentModeScaleAspectFit];
     [_artImageView2 setContentMode:UIViewContentModeScaleAspectFit];
     [_artImageView3 setContentMode:UIViewContentModeScaleAspectFit];
+    
+    [_scrollView setBackgroundColor:[UIColor clearColor]];
+    [_removeButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThin] size:0]];
+    [_removeButton setTitle:@"Remove" forState:UIControlStateNormal];
+    [_moveButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThin] size:0]];
+    [_moveButton setTitle:@"Move" forState:UIControlStateNormal];
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    
 }
 
 - (void)prepareForReuse {

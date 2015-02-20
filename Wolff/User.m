@@ -38,5 +38,6 @@
 @dynamic notifications;
 @dynamic photos;
 @dynamic alternates;
+@dynamic customerPlan;
 
 @end

@@ -13,7 +13,7 @@
 #import "Table+helper.h"
 
 @protocol WFSearchDelegate <NSObject>
-- (void)searchDidSelectPhoto:(Photo *)photo;
+- (void)searchDidSelectPhotoWithId:(NSNumber *)photoId;
 - (void)endSearch;
 @optional
 - (void)removeAllSelected;
@@ -29,7 +29,7 @@
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
 @property (weak, nonatomic) IBOutlet UILabel *noResultsPrompt;
-@property (strong, nonatomic) NSMutableArray *photos;
+@property (strong, nonatomic) NSMutableOrderedSet *photos;
 @property (weak, nonatomic) id<WFSearchDelegate> searchDelegate;
 @property CGFloat originalPopoverHeight;
 @property BOOL shouldShowSearchBar;

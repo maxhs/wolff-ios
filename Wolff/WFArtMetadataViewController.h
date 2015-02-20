@@ -18,6 +18,7 @@
 - (void)droppedPhoto:(Photo*)photo toLightTable:(Table*)lightTable;
 - (void)removedPhoto:(Photo*)photo fromLightTable:(Table*)lightTable;
 - (void)photoDeleted:(NSNumber*)photoId;
+- (void)artDeleted:(NSNumber*)artId;
 @end
 
 @interface WFArtMetadataViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate>
@@ -25,7 +26,7 @@
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UIView *topImageContainerView;
 @property (weak, nonatomic) IBOutlet UIProgressView *progressIndicator;
-@property (weak, nonatomic) IBOutlet UIButton *creditButton;
+@property (weak, nonatomic) IBOutlet UIButton *postedByButton;
 @property (weak, nonatomic) IBOutlet UIButton *backButton;
 @property (weak, nonatomic) IBOutlet UIButton *editButton;
 @property (weak, nonatomic) IBOutlet UIButton *deleteButton;

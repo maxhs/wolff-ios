@@ -21,20 +21,16 @@
 @implementation WFArtMetadataAnimator
 
 - (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext {
-    return .75f;
+    return .67f;
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     CGRect mainScreen;
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        iOS8 = YES;
-        width = screenWidth();
-        height = screenHeight();
+        iOS8 = YES; width = screenWidth(); height = screenHeight();
         mainScreen = [UIScreen mainScreen].bounds;
     } else {
-        iOS8 = NO;
-        width = screenHeight();
-        height = screenWidth();
+        iOS8 = NO; width = screenHeight(); height = screenWidth();
         mainScreen = CGRectMake(0, 0, height, width);
     }
     
@@ -87,7 +83,7 @@
             toView.frame = metadataStartFrame;
         }
     
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.975 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseOut animations:^{
             toView.frame = metadataFrame;
             [toView setAlpha:1.0];
             [darkBackground setAlpha:1.0];
@@ -102,7 +98,7 @@
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
         
-        NSTimeInterval outDuration = [self transitionDuration:transitionContext]*.7;
+        NSTimeInterval outDuration = [self transitionDuration:transitionContext]*.77;
         [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseIn animations:^{
             if (iOS8){
                 fromViewController.view.transform = CGAffineTransformMakeScale(.923f, .923f);

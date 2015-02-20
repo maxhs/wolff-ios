@@ -12,8 +12,8 @@
 
 @interface Slideshow (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
-- (void)addSlide:(Slide*)slide;
-- (void)removeSlide:(Slide*)slide;
+- (void)addSlide:(Slide*)slide atIndex:(NSInteger)index;
+- (void)removeSlide:(Slide*)slide fromIndex:(NSInteger)index;
 - (void)addPhoto:(Photo*)photo;
 - (void)removePhoto:(Photo*)photo;
 

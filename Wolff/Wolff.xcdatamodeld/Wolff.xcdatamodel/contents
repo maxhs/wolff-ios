@@ -14,10 +14,10 @@
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="notes" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="notExtant" optional="YES" attributeType="Boolean" syncable="YES"/>
-        <attribute name="privateArt" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="privateArt" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="uploadedDate" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="visible" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="visible" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
         <relationship name="artists" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Artist" inverseName="arts" inverseEntity="Artist" syncable="YES"/>
         <relationship name="citations" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Citation" inverseName="art" inverseEntity="Citation" syncable="YES"/>
         <relationship name="discussions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Discussion" inverseName="art" inverseEntity="Discussion" syncable="YES"/>
@@ -97,16 +97,16 @@
     </entity>
     <entity name="Interval" representedClassName="Interval" syncable="YES">
         <attribute name="beginRange" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
-        <attribute name="beginSuffix" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="beginSuffix" optional="YES" attributeType="String" defaultValueString="CE" syncable="YES"/>
         <attribute name="circa" optional="YES" attributeType="Boolean" defaultValueString="0" syncable="YES"/>
         <attribute name="createdAt" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="day" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="endRange" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
-        <attribute name="endSuffix" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="endSuffix" optional="YES" attributeType="String" defaultValueString="CE" syncable="YES"/>
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="month" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="single" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="suffix" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="suffix" optional="YES" attributeType="String" defaultValueString="CE" syncable="YES"/>
         <attribute name="year" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <relationship name="art" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Art" inverseName="interval" inverseEntity="Art" syncable="YES"/>
     </entity>
@@ -174,9 +174,9 @@
         <attribute name="mediumImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="orientation" optional="YES" attributeType="Integer 16" defaultValueString="1" syncable="YES"/>
         <attribute name="originalImageUrl" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="privatePhoto" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="slideImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="thumbImageUrl" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="visible" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="width" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <relationship name="art" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Art" inverseName="photos" inverseEntity="Art" syncable="YES"/>
         <relationship name="artists" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Artist" inverseName="photos" inverseEntity="Artist" syncable="YES"/>
@@ -234,6 +234,7 @@
         <attribute name="avatarSmall" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="bio" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="createdDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="customerPlan" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="emailPermission" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="firstName" optional="YES" attributeType="String" syncable="YES"/>
@@ -270,15 +271,15 @@
         <element name="Favorite" positionX="279" positionY="324" width="128" height="148"/>
         <element name="Icon" positionX="315" positionY="378" width="128" height="118"/>
         <element name="Institution" positionX="261" positionY="234" width="128" height="165"/>
-        <element name="Interval" positionX="288" positionY="342" width="128" height="238"/>
+        <element name="Interval" positionX="288" positionY="342" width="128" height="240"/>
         <element name="Location" positionX="279" positionY="261" width="128" height="418"/>
         <element name="Material" positionX="288" positionY="342" width="128" height="120"/>
         <element name="Movement" positionX="324" positionY="387" width="128" height="88"/>
         <element name="Notification" positionX="288" positionY="342" width="128" height="240"/>
-        <element name="Photo" positionX="279" positionY="324" width="128" height="358"/>
+        <element name="Photo" positionX="279" positionY="324" width="128" height="360"/>
         <element name="Slide" positionX="297" positionY="315" width="128" height="225"/>
         <element name="Slideshow" positionX="288" positionY="306" width="128" height="195"/>
         <element name="Table" positionX="288" positionY="270" width="128" height="240"/>
-        <element name="User" positionX="261" positionY="189" width="128" height="450"/>
+        <element name="User" positionX="261" positionY="189" width="128" height="465"/>
     </elements>
 </model>

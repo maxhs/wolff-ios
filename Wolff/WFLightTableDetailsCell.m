@@ -23,7 +23,7 @@
     [self labelTreatment:_descriptionLabel];
     [_descriptionLabel setText:@"DESCRIPTION"];
     [self labelTreatment:_keyLabel];
-    [_keyLabel setText:@"TABLE KEY"];
+    [_keyLabel setText:@"TABLE KEY - THE PASSWORD REQUIRED TO JOIN THIS LIGHT TABLE"];
     [self labelTreatment:_confirmKeyLabel];
     [_confirmKeyLabel setText:@"CONFIRM TABLE KEY"];
     

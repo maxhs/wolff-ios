@@ -13,7 +13,7 @@
 @implementation Photo
 
 @dynamic identifier;
-@dynamic visible;
+@dynamic privatePhoto;
 @dynamic largeImageUrl;
 @dynamic thumbImageUrl;
 @dynamic slideImageUrl;

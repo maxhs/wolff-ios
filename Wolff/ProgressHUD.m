@@ -77,7 +77,7 @@
         [hud setShadowImage:[UIImage new]
                   forToolbarPosition:UIToolbarPositionAny];
         
-        [hud setBarStyle:UIBarStyleDefault];
+        [hud setBarStyle:UIBarStyleBlackTranslucent];
 		hud.translucent = YES;
 		hud.layer.cornerRadius = 7;
         //hud.layer.borderColor = kDarkerGrayColor.CGColor;
@@ -91,7 +91,7 @@
 	if (spinner == nil)
 	{
 		spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-		spinner.color = [UIColor blackColor];
+		spinner.color = [UIColor whiteColor];
 		spinner.hidesWhenStopped = YES;
 	}
 	if (spinner.superview == nil) [hud addSubview:spinner];
@@ -105,7 +105,7 @@
 		label = [[UILabel alloc] initWithFrame:CGRectZero];
         label.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansThin] size:0];
         label.shadowColor = [UIColor clearColor];
-		label.textColor = [UIColor blackColor];
+		label.textColor = [UIColor whiteColor];
 		label.backgroundColor = [UIColor clearColor];
 		label.textAlignment = NSTextAlignmentCenter;
 		label.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
@@ -150,9 +150,16 @@
 
 - (void)hudSize {
 	CGRect labelRect = CGRectZero;
-	CGFloat hudWidth = 230, hudHeight = 230;
-	if (label.text != nil)
-	{
+    CGFloat hudWidth, hudHeight;
+    if (IDIOM == IPAD){
+        hudWidth = 330;
+        hudHeight = 330;
+    } else {
+        hudWidth = 230;
+        hudHeight = 230;
+    }
+    
+	if (label.text != nil) {
 		NSDictionary *attributes = @{NSFontAttributeName:label.font};
 		NSInteger options = NSStringDrawingUsesFontLeading | NSStringDrawingTruncatesLastVisibleLine | NSStringDrawingUsesLineFragmentOrigin;
 		labelRect = [label.text boundingRectWithSize:CGSizeMake(200, 300) options:options attributes:attributes context:NULL];

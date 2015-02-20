@@ -12,7 +12,7 @@
 @interface Photo : NSManagedObject
 
 @property (nonatomic, retain) NSNumber * identifier;
-@property (nonatomic, retain) NSNumber * visible;
+@property (nonatomic, retain) NSNumber * privatePhoto;
 @property (nonatomic, retain) NSNumber * width;
 @property (nonatomic, retain) NSNumber * height;
 @property (nonatomic, retain) NSNumber * orientation;

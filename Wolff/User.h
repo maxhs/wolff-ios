@@ -21,6 +21,7 @@
 @property (nonatomic, retain) NSNumber * textPermission;
 @property (nonatomic, retain) NSNumber * pushPermission;
 @property (nonatomic, retain) NSString * lastName;
+@property (nonatomic, retain) NSString * customerPlan;
 @property (nonatomic, retain) NSString * location;
 @property (nonatomic, retain) NSString * prefix;
 @property (nonatomic, retain) NSString * url;

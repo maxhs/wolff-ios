@@ -18,7 +18,7 @@
 @interface WFSearchResultsViewController () <UISearchBarDelegate, WFLightTablesDelegate, WFSlideshowDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-    NSMutableArray *_filteredPhotos;
+    NSMutableOrderedSet *_filteredPhotos;
     NSMutableOrderedSet *selectedPhotos;
     NSString *searchText;
     BOOL searching;
@@ -48,10 +48,10 @@
     [_collectionView setBackgroundColor:[UIColor blackColor]];
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     // show full tile view if it's a real search
-    if (!_photos.count && _shouldShowTiles){
-        _photos = [Photo MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
-    }
-    _filteredPhotos = [NSMutableArray arrayWithArray:_photos];
+//    if (!_photos.count && _shouldShowTiles){
+//        _photos = [Photo MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
+//    }
+    _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
     selectedPhotos = [NSMutableOrderedSet orderedSet];
     
     if (_shouldShowTiles) {
@@ -60,6 +60,7 @@
         [_tableView setHidden:YES];
         [_noResultsPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.7]];
         [self.collectionView reloadData];
+        [_noResultsPrompt setText:@"No results...\n\nTap the \"Search\" key to perform a full search through the Wölff catalog"];
     } else {
         // this means we're actually looking at selected slides
         [self setPreferredContentSize:CGSizeMake(420, _originalPopoverHeight)];
@@ -143,12 +144,13 @@
 }
 
 #pragma mark - Table view data source
-
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    if (_photos.count == 0){
+    if (_photos.count == 0 && !searching){
+        NSLog(@"unhiding no results prompt");
         [_noResultsPrompt setHidden:NO];
         return 0;
     } else {
+        NSLog(@"HIDING no results prompt");
         [_noResultsPrompt setHidden:YES];
         return 1;
     }
@@ -172,8 +174,8 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0){
         Photo *photo = _photos[indexPath.row];
-        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhoto:)]) {
-            [self.searchDelegate searchDidSelectPhoto:photo];
+        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhotoWithId:)]) {
+            [self.searchDelegate searchDidSelectPhotoWithId:photo.identifier];
         }
     } else {
         [self removeSelected];
@@ -295,8 +297,8 @@
         [selectedPhotos addObject:photo];
     }
     [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
-    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhoto:)]) {
-        [self.searchDelegate searchDidSelectPhoto:photo];
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhotoWithId:)]) {
+        [self.searchDelegate searchDidSelectPhotoWithId:photo.identifier];
     }
 }
 
@@ -311,6 +313,7 @@
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    searching = YES;
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     if (searchBar.text) {
         [parameters setObject:searchBar.text forKey:@"search"];
@@ -319,8 +322,7 @@
         return;
     }
     [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success searching from split view controller: %@",responseObject);
-        
+        //NSLog(@"Success searching from split view controller: %@",responseObject);
         if ([responseObject objectForKey:@"photos"]){
             for (NSDictionary *dict in [responseObject objectForKey:@"photos"]) {
                 Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];

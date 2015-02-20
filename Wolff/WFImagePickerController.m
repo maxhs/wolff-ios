@@ -33,14 +33,24 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [_collectionView setBackgroundColor:[UIColor clearColor]];
+    [self.view setBackgroundColor:[UIColor clearColor]];
+    
+    UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.view.frame];
+    [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
+    [backgroundToolbar setTranslucent:YES];
+    [_collectionView setBackgroundView:backgroundToolbar];
+    
     if (IDIOM == IPAD){
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        if (SYSTEM_VERSION >= 8.f){
             width = screenWidth();
             height = screenHeight();
         } else {
             width = screenHeight();
             height = screenWidth();
         }
+    } else {
+        
     }
     _assets = [NSMutableArray array];
     _selectedAssets = [NSMutableOrderedSet orderedSet];
@@ -123,7 +133,11 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 #pragma mark – UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(128,128);
+    if (IDIOM == IPAD){
+        return CGSizeMake(width/10,width/10);
+    } else {
+        return CGSizeMake(width/4, width/4);
+    }
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -174,16 +188,6 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     
-    if ([[segue identifier] isEqualToString:@"showPhoto"]) {
-        
-        // hand off the assets of this album to our singleton data source
-        //[PageViewControllerData sharedInstance].photoAssets = self.assets;
-        
-        // start viewing the image at the appropriate cell index
-        //MyPageViewController *pageViewController = [segue destinationViewController];
-        //NSIndexPath *selectedCell = [self.collectionView indexPathsForSelectedItems][0];
-        //pageViewController.startingIndex = selectedCell.row;
-    }
 }
 
 - (void)dismiss {

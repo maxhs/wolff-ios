@@ -19,8 +19,9 @@
 #import "Constants.h"
 #import "WFDateMetadataCell.h"
 #import "WFMaterialsViewController.h"
+#import "WFIconsViewController.h"
 
-@interface WFNewArtViewController () <UITableViewDataSource, UITableViewDelegate , UIScrollViewDelegate, UITextFieldDelegate, WFImagePickerControllerDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFDatePickerDelegate, WFSelectMaterialsDelegate> {
+@interface WFNewArtViewController () <UITableViewDataSource, UITableViewDelegate , UIScrollViewDelegate, UITextFieldDelegate, WFImagePickerControllerDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFDatePickerDelegate, WFSelectMaterialsDelegate, WFSelectIconsDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     BOOL iOS8;
@@ -29,13 +30,20 @@
     CGFloat height;
     UITextField *titleTextField;
     UITextField *dateTextField;
+    UITextField *beginDateTextField;
+    UITextField *endDateTextField;
     UITextField *materialTextField;
-    UISwitch *privacySwitch;
-    UILabel *privateLabel;
+    UITextField *notesTextField;
     Art *_art;
     WFDatePicker *_datePicker;
     UIButton *_ceButton;
     UIButton *_bceButton;
+    NSInteger currentPhotoIdx;
+    NSMutableArray *_selectedImages;
+    CGFloat imageWidth;
+    CGFloat imageHeight;
+    Photo *_currentPhoto;
+    User *_currentUser;
 }
 
 @end
@@ -44,7 +52,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+    if (SYSTEM_VERSION >= 8.f){
         iOS8 = YES; width = screenWidth(); height = screenHeight();
     } else {
         iOS8 = NO; width = screenHeight(); height = screenWidth();
@@ -55,8 +63,8 @@
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     [_tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
-    _tableView.rowHeight = 50.f;
-    [self setupTableFooter];
+    imageWidth = 262.f;
+    imageHeight = 170.f;
     [self setupSlideContainer];
     _art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
     [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
@@ -70,14 +78,16 @@
     [_photoCountLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0]];
     
     [self registerKeyboardNotifications];
-    //[self setupDatePicker];
+    
+    [_privateLabel setBackgroundColor:[UIColor clearColor]];
+    [_privateLabel setTextColor:[UIColor whiteColor]];
+    [_privateLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
+    [_privateLabel setText:@"MAKE ART PRIVATE"];
+    [_privacySwitch addTarget:self action:@selector(switchSwitched:) forControlEvents:UIControlEventValueChanged];
+    [_privacySwitch setOn:NO];
+    
+    _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
 }
-
-//- (void)setupDatePicker {
-//    _datePicker = [[WFDatePicker alloc] initWithFrame:CGRectMake(0, height, width, 216.f)];
-//    _datePicker.datePickerDelegate = self;
-//    [self.view addSubview:_datePicker];
-//}
 
 - (void)dateSelected:(NSDate *)date suffix:(NSString*)suffix circa:(BOOL)circa {
     NSDateComponents *components = [[NSCalendar currentCalendar] components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:date];
@@ -92,27 +102,7 @@
 
     [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:2 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
     
-    [UIView animateWithDuration:.77 animations:^{
-        if (_art.interval.year && ![_art.interval.year isEqualToNumber:@0]){
-            NSString *suffix = _art.interval.suffix.length ? _art.interval.suffix : @"";
-            [dateTextField setText:[NSString stringWithFormat:@"%@ %@",_art.interval.year, suffix]];
-        } else {
-            [dateTextField setText:@""];
-        }
-    }];
 }
-
-//- (void)showDatePicker {
-//    selectingDate = YES;
-//    [dateTextField setUserInteractionEnabled:YES];
-//    [dateTextField becomeFirstResponder];
-//}
-//
-//- (void)hideDatePicker {
-//    selectingDate = NO;
-//    [dateTextField setUserInteractionEnabled:NO];
-//    [dateTextField resignFirstResponder];
-//}
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
@@ -148,57 +138,113 @@
 }
 
 - (void)didFinishPickingPhotos:(NSMutableArray *)selectedImages {
+    _selectedImages = selectedImages;
     for (UIImage *image in selectedImages){
         Photo *photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
         [photo setImage:image];
         [_art addPhoto:photo];
     }
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    if (selectedImages.count) {
-        NSString *photoCountText = selectedImages.count == 1 ? @"1 IMAGE" : [NSString stringWithFormat:@"%lu IMAGES",(unsigned long)selectedImages.count];
-        [_photoCountLabel setText:photoCountText];
-    } else {
-        [_photoCountLabel setText:@""];
-    }
     if (selectedImages.count && _submitButton.isHidden){
         [_submitButton setHidden:NO];
     }
-    [self setUpPhotosScrollView];
+    if (selectedImages.count == 1){
+        [_photoCountLabel setText:@"1 image"];
+    } else if (selectedImages.count == 0) {
+        [_photoCountLabel setText:@""];
+    } else {
+        [self setPhotoCount];
+    }
+    
+    [self drawPhotosScrollView];
+    _currentPhoto = _art.photos.firstObject;
 }
 
-- (void)setUpPhotosScrollView {
+- (void)setPhotoCount {
+    if (currentPhotoIdx >= _selectedImages.count){
+        [_photoCountLabel setText:@"+ Photo"];
+    } else {
+        [_photoCountLabel setText:[NSString stringWithFormat:@"%lu of %lu",(unsigned long)currentPhotoIdx + 1,(unsigned long)_selectedImages.count]];
+    }
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    if (scrollView == _scrollView){
+        CGFloat contentSizeWidth = scrollView.frame.size.width;
+        CGFloat offsetX = scrollView.contentOffset.x;
+        float fractionalPage = offsetX / contentSizeWidth;
+        NSInteger page = lround(fractionalPage);
+        if (currentPhotoIdx != page) {
+            currentPhotoIdx = page;
+            if (currentPhotoIdx < _selectedImages.count){
+                _currentPhoto = _selectedImages[currentPhotoIdx];
+            }
+            [self setPhotoCount];
+        }
+    }
+}
+
+- (void)drawPhotosScrollView {
     [_scrollView setPagingEnabled:YES];
+    _scrollView.delegate = self;
     _scrollView.showsHorizontalScrollIndicator = NO;
     [_scrollView setBackgroundColor:[UIColor clearColor]];
+    [_scrollView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    
     [_art.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
-        UIImageView *photoImage = [[UIImageView alloc] initWithImage:photo.image];
-        [photoImage setFrame:CGRectMake(((_scrollView.frame.size.width-230)/2)+(_scrollView.frame.size.width*idx), (_scrollView.frame.size.height-230)/2, 230, 230)];
-        [photoImage setContentMode:UIViewContentModeScaleAspectFill];
-        photoImage.clipsToBounds = YES;
-        [_scrollView addSubview:photoImage];
+        WFNewPhotoContainerView *containerView = [[WFNewPhotoContainerView alloc] initWithFrame:CGRectMake(0 + (idx*_scrollView.frame.size.width), 0, _scrollView.frame.size.width, _scrollView.frame.size.height)];
+        [containerView setTag:idx];
+        [_scrollView addSubview:containerView];
         
-        UILabel *creditLabel = [[UILabel alloc] initWithFrame:CGRectMake(((_scrollView.frame.size.width-230)/2)+(_scrollView.frame.size.width*idx), _scrollView.frame.size.height-33, 60, 30)];
-        [creditLabel setText:@"CREDIT:"];
-        [creditLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSans] size:0]];
-        [creditLabel setTextColor:[UIColor whiteColor]];
-        [_scrollView addSubview:creditLabel];
-        UITextField *creditTextField = [[UITextField alloc] initWithFrame:CGRectMake(creditLabel.frame.origin.x+creditLabel.frame.size.width, _scrollView.frame.size.height-33, 190, 30)];
-        [creditTextField setBackgroundColor:[UIColor clearColor]];
-        [creditTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
-        [creditTextField setText:@"I took this photo"];
-        [creditTextField setPlaceholder:@"Photo credit field..."];
-        [creditTextField setTextColor:[UIColor whiteColor]];
-        [creditTextField setTextAlignment:NSTextAlignmentLeft];
-        [creditTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
-        [_scrollView addSubview:creditTextField];
+        containerView.photoImageView = [[UIImageView alloc] initWithImage:photo.image];
+        [containerView.photoImageView setFrame:CGRectMake(((_scrollView.frame.size.width-imageWidth)/2)+(_scrollView.frame.size.width*idx), 20, imageWidth, imageHeight)];
+        [containerView.photoImageView setContentMode:UIViewContentModeScaleAspectFill];
+        containerView.photoImageView.clipsToBounds = YES;
+        [containerView addSubview:containerView.photoImageView];
+        
+        containerView.creditLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 56.f, 100, 43)];
+        [containerView.creditLabel setText:@"CREDIT / RIGHTS:"];
+        [containerView.creditLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0]];
+        [containerView.creditLabel setTextColor:[UIColor lightGrayColor]];
+        [containerView addSubview:containerView.creditLabel];
+        
+        containerView.creditTextField = [[UITextField alloc] initWithFrame:CGRectMake(containerView.creditLabel.frame.origin.x+containerView.creditLabel.frame.size.width + 3, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 56.f, 157, 43)];
+        containerView.creditTextField.tag = idx;
+        UIView *paddingView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 7, 43)];
+        containerView.creditTextField.leftView = paddingView;
+        containerView.creditTextField.leftViewMode = UITextFieldViewModeAlways;
+        
+        [containerView.creditTextField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
+        [containerView.creditTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
+        [containerView.creditTextField setText:_currentUser.fullName];
+        [containerView.creditTextField setPlaceholder:@"Photo credit field..."];
+        [containerView.creditTextField setTextColor:[UIColor whiteColor]];
+        [containerView.creditTextField setTextAlignment:NSTextAlignmentCenter];
+        [containerView.creditTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
+        [containerView addSubview:containerView.creditTextField];
+        
+        containerView.iconographyLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 10.f, 100, 43)];
+        [containerView.iconographyLabel setText:@"ICONOGRAPHY:"];
+        [containerView.iconographyLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0]];
+        [containerView.iconographyLabel setTextColor:[UIColor lightGrayColor]];
+        [containerView addSubview:containerView.iconographyLabel];
+        
+        containerView.iconographyButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [containerView.iconographyButton addTarget:self action:@selector(showIcons) forControlEvents:UIControlEventTouchUpInside];
+        [containerView.iconographyButton setFrame:CGRectMake(containerView.creditLabel.frame.origin.x+containerView.creditLabel.frame.size.width + 3, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 10.f, 157, 43)];
+        [containerView.iconographyButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
+        [containerView.iconographyButton setTitle:photo.iconsToSentence forState:UIControlStateNormal];
+        [containerView.iconographyButton.titleLabel setNumberOfLines:0];
+        [containerView.iconographyButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
+        [containerView addSubview:containerView.iconographyButton];
     }];
+    
     [_scrollView addSubview:_addPhotoButton];
     [_scrollView setContentSize:CGSizeMake((_art.photos.count+1) * _scrollView.frame.size.width, _scrollView.frame.size.height)];
-    [_addPhotoButton setFrame:CGRectMake(_scrollView.contentSize.width-_scrollView.frame.size.width, (_scrollView.frame.size.height-230)/2, 230, 230)];
-    [_scrollView bringSubviewToFront:_addPhotoButton];
     
+    [_addPhotoButton setFrame:CGRectMake(_scrollView.contentSize.width-_scrollView.frame.size.width, 0, _slideContainerView.frame.size.width, _slideContainerView.frame.size.height)];
+    [_scrollView bringSubviewToFront:_addPhotoButton];
 }
-
 
 - (void)post {
     [self.view endEditing:YES];
@@ -222,18 +268,43 @@
     }
     [parameters setObject:locationIds forKey:@"location_ids"];
     
-    if (materialTextField.text.length){
-        [parameters setObject:materialTextField.text forKey:@"material"];
+    NSMutableArray *materialIds = [NSMutableArray arrayWithCapacity:_art.materials.count];
+    for (Material *material in _art.materials){
+        [materialIds addObject:material.identifier];
     }
+    [parameters setObject:materialIds forKey:@"material_ids"];
+    
+    if (notesTextField.text.length){
+        [parameters setObject:notesTextField.text forKey:@"notes"];
+    }
+    NSLog(@"art.interval? %@",_art.interval);
     if (_art.interval){
-        [parameters setObject:_art.interval.year forKey:@"year"];
-        [parameters setObject:_art.interval.suffix forKey:@"suffix"];
+        [parameters setObject:_art.interval.year forKey:@"interval[year]"];
+        if (![_art.interval.beginRange isEqualToNumber:@0]){
+            [parameters setObject:_art.interval.beginRange forKey:@"interval[begin_range]"];
+        }
+        if (![_art.interval.endRange isEqualToNumber:@0]){
+            [parameters setObject:_art.interval.endRange forKey:@"interval[end_range]"];
+        }
+        if (![_art.interval.circa isEqualToNumber:@0]){
+            [parameters setObject:_art.interval.circa forKey:@"interval[circa]"];
+        }
+        if (![_art.interval.year isEqualToNumber:@0]){
+            [parameters setObject:_art.interval.year forKey:@"interval[year]"];
+        }
+        if (_art.interval.suffix && _art.interval.suffix.length){
+            [parameters setObject:_art.interval.suffix forKey:@"interval[suffix]"];
+        }
     }
 
     if ([_art.privateArt isEqualToNumber:@YES]){
         [parameters setObject:@1 forKey:@"private"];
     } else {
         [parameters setObject:@0 forKey:@"private"];
+    }
+    
+    for (Photo *photo in _art.photos){
+        [parameters setObject:photo.credit forKey:@"photos[][credit]"];
     }
     
     [manager POST:@"arts" parameters:@{@"art":parameters} constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
@@ -257,23 +328,8 @@
     }];
     
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        [WFAlert show:@"We're adding your art to the catalog!\n\nThis may take a few minutes..." withTime:3.3f];
+        [WFAlert show:@"We're adding your art to the catalog!\n\nThis may take a few minutes. You can also add additional metadata on wolffapp.com." withTime:3.3f];
     }];
-}
-
-- (void)setupTableFooter {
-    UIView *tableFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.tableView.frame.size.width, 54)];
-    privateLabel = [[UILabel alloc] initWithFrame:CGRectMake(142, 25, self.tableView.frame.size.width-100, 27)];
-    [privateLabel setBackgroundColor:[UIColor clearColor]];
-    [privateLabel setTextColor:[UIColor whiteColor]];
-    [privateLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [privateLabel setText:@"Would you like to keep this art private?"];
-    [privateLabel sizeToFit];
-    [tableFooterView addSubview:privateLabel];
-    privacySwitch = [[UISwitch alloc] initWithFrame:CGRectMake(privateLabel.frame.origin.x + privateLabel.frame.size.width+30, 20, 44, 44)];
-    [privacySwitch addTarget:self action:@selector(switchSwitched:) forControlEvents:UIControlEventValueChanged];
-    [tableFooterView addSubview:privacySwitch];
-    self.tableView.tableFooterView = tableFooterView;
 }
 
 #pragma mark - Table view data source
@@ -282,7 +338,7 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 5;
+    return 6;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -300,7 +356,7 @@
     
     switch (indexPath.row) {
         case 0:
-            [cell.label setText:@"TITLE *"];
+            [cell.label setText:@"TITLE"];
             [cell.textField setPlaceholder:@"Art title"];
             [cell.textField setReturnKeyType:UIReturnKeyNext];
             titleTextField = cell.textField;
@@ -308,7 +364,7 @@
             [cell.textField setUserInteractionEnabled:YES];
             break;
         case 1:
-            [cell.label setText:@"ARTIST *"];
+            [cell.label setText:@"ARTIST"];
             [cell.textField setPlaceholder:@"Leave blank if artist unknown"];
             [cell.textField setText:_art.artistsToSentence];
             [cell.textField setReturnKeyType:UIReturnKeyNext];
@@ -321,7 +377,14 @@
             if (SYSTEM_VERSION < 8.f){
                 [dateCell setBackgroundColor:[UIColor clearColor]];
             }
-            dateTextField = dateCell.beginYearTextField;
+            
+            dateTextField = dateCell.singleYearTextField;
+            dateTextField.delegate = self;
+            beginDateTextField = dateCell.beginYearTextField;
+            beginDateTextField.delegate = self;
+            endDateTextField = dateCell.endYearTextField;
+            endDateTextField.delegate = self;
+            
             if ([_art.interval.suffix isEqualToString:@"CE"]){
                 [dateCell.ceButton setSelected:YES];
                 [dateCell.bceButton setSelected:NO];
@@ -331,19 +394,18 @@
             }
             [dateCell configureForArt:_art];
             dateCell.selectedBackgroundView = selectedView;
-            [dateCell.label setText:@"DATE *"];
+            [dateCell.label setText:@"DATE"];
+            [dateCell.rangeLabel setText:@"DATE RANGE"];
             [dateCell.circaLabel setText:@"CIRCA"];
-            [dateCell.beginYearTextField setPlaceholder:@"e.g. 1776"];
-            [dateCell.beginYearTextField setKeyboardType:UIKeyboardTypeNumberPad];
-            [dateCell.beginYearTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
+            [dateCell.singleYearTextField setPlaceholder:@"e.g. 1776"];
+            [dateCell.beginYearTextField setPlaceholder:@"Beginning"];
+            [dateCell.endYearTextField setPlaceholder:@"End"];
             
             if (_art.interval.year && ![_art.interval.year isEqualToNumber:@0]){
                 [dateCell.beginYearTextField setText:[NSString stringWithFormat:@"%@",_art.interval.year]];
-                NSString *suffix = _art.interval.suffix.length ? _art.interval.suffix : @"";
-                [dateCell.eraLabel setText:suffix];
+                //NSString *suffix = _art.interval.suffix.length ? _art.interval.suffix : @"";
             } else {
                 [dateCell.beginYearTextField setText:@""];
-                [dateCell.eraLabel setText:@""];
             }
             [dateCell.circaSwitch setOn:_art.interval.circa.boolValue animated:YES];
             [dateCell.circaSwitch addTarget:self action:@selector(circaSwitchSwitched:) forControlEvents:UIControlEventValueChanged];
@@ -357,7 +419,7 @@
         }
             break;
         case 3:
-            [cell.label setText:@"LOCATION *"];
+            [cell.label setText:@"LOCATION"];
             [cell.textField setPlaceholder:@"e.g. Paris"];
             [cell.textField setText:_art.locationsToSentence];
             [cell.textField setUserInteractionEnabled:NO];
@@ -370,10 +432,27 @@
             [cell.textField setText:_art.materialsToSentence];
             [cell.textField setUserInteractionEnabled:NO];
             break;
+        case 5:
+            [cell.label setText:@"NOTES"];
+            [cell.textField setPlaceholder:@"Any miscellaneous notes you may have"];
+            [cell.textField setAutocapitalizationType:UITextAutocapitalizationTypeSentences];
+            [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+            notesTextField = cell.textField;
+            [cell.textField setText:_art.notes];
+            [cell.textField setUserInteractionEnabled:YES];
+            break;
         default:
             break;
     }
     return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.row == 2){
+        return 140.f;
+    } else {
+        return 50.f;
+    }
 }
 
 - (void)eraTapped:(UIButton*)button {
@@ -393,7 +472,6 @@
     }
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     NSLog(@"art interval suffix: %@",_art.interval.suffix);
-    //[self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:2 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
 }
 
 - (void)circaSwitchSwitched:(UISwitch*)circaSwitch {
@@ -462,11 +540,29 @@
     [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:4 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
 }
 
+- (void)showIcons {
+    WFIconsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Icons"];
+    [vc setSelectedIcons:_currentPhoto.icons.mutableCopy];
+    vc.iconsDelegate = self;
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    [nav.navigationBar setTintColor:[UIColor whiteColor]];
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+- (void)iconsSelected:(NSOrderedSet *)selectedIcons {
+    _currentPhoto.icons = selectedIcons;
+    [self drawPhotosScrollView];
+}
+
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
     if ([string isEqualToString:@"\n"]){
         if (textField == titleTextField){
             [self showArtists];
-        } else if (textField == dateTextField){
+        } else if (textField == beginDateTextField){
+            [endDateTextField becomeFirstResponder];
+        } else if (textField == endDateTextField){
             [self showLocations];
         }
         return NO;
@@ -493,23 +589,17 @@
 }
 
 - (void)willShowKeyboard:(NSNotification*)notification {
-    //NSDictionary* keyboardInfo = [notification userInfo];
-    //NSValue *keyboardValue = keyboardInfo[UIKeyboardFrameEndUserInfoKey];
-    //CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
-    //CGFloat keyboardHeight = convertedKeyboardFrame.size.height;
+    NSDictionary* keyboardInfo = [notification userInfo];
+    NSValue *keyboardValue = keyboardInfo[UIKeyboardFrameEndUserInfoKey];
+    CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
+    CGFloat keyboardHeight = convertedKeyboardFrame.size.height;
     CGFloat duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationOptions animationCurve = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
     [UIView animateWithDuration:duration
                           delay:0
                         options:(animationCurve << 16)
                      animations:^{
-//                         if (selectingDate){
-//                             _datePicker.transform = CGAffineTransformMakeTranslation(0, -(_datePicker.frame.size.height+keyboardHeight));
-//                             _slideContainerView.transform = CGAffineTransformMakeTranslation(0, -_datePicker.frame.size.height/2);
-//                             _tableView.transform = CGAffineTransformMakeTranslation(0, -_datePicker.frame.size.height/2);
-//                             [privacySwitch setAlpha:0.0];
-//                             [privateLabel setAlpha:0.0];
-//                         }
+                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
                      }
                      completion:^(BOOL finished) {
 
@@ -523,11 +613,7 @@
                           delay:0
                         options:(animationCurve << 16)
                      animations:^{
-//                         _datePicker.transform = CGAffineTransformIdentity;
-//                         _slideContainerView.transform = CGAffineTransformIdentity;
-//                         _tableView.transform = CGAffineTransformIdentity;
-//                         [privacySwitch setAlpha:1.0];
-//                         [privateLabel setAlpha:1.0];
+                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
                      }
                      completion:NULL];
 }
@@ -538,21 +624,35 @@
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField {
-    if (textField == dateTextField && dateTextField.text.length){
-        if (!_art.interval){
-            Interval *interval = [Interval MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-            [_art setInterval:interval];
-        }
+    if (!_art.interval){
+        Interval *interval = [Interval MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        [_art setInterval:interval];
+    }
+    
+    if (textField == beginDateTextField || textField == endDateTextField || textField == dateTextField){
         NSNumberFormatter *f = [[NSNumberFormatter alloc] init];
         f.numberStyle = NSNumberFormatterDecimalStyle;
-        NSNumber *yearNumber = [f numberFromString:dateTextField.text];
-        if (yearNumber){
-            _art.interval.year = yearNumber;
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-            [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:2 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
-        } else {
-            NSLog(@"Not a number");
+        
+        if (textField == beginDateTextField && beginDateTextField.text.length){
+            NSNumber *yearNumber = [f numberFromString:beginDateTextField.text];
+            if (yearNumber){
+                _art.interval.year = yearNumber;
+            }
+        } else if (textField == endDateTextField && endDateTextField.text.length){
+            NSNumber *yearNumber = [f numberFromString:endDateTextField.text];
+            if (yearNumber){
+                _art.interval.endRange = yearNumber;
+            }
+        } else if (textField == endDateTextField && endDateTextField.text.length){
+            NSNumber *yearNumber = [f numberFromString:endDateTextField.text];
+            if (yearNumber){
+                _art.interval.year = yearNumber;
+            }
         }
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
+        //[_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:2 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
     }
 }
 

@@ -12,6 +12,7 @@
 #import "Icon+helper.h"
 #import "Table+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
+#import "NSArray+ToSentence.h"
 
 @implementation Photo (helper)
 - (void)populateFromDictionary:(NSDictionary*)dictionary {
@@ -19,8 +20,8 @@
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }
-    if ([dictionary objectForKey:@"visible"] && [dictionary objectForKey:@"visible"] != [NSNull null]){
-        self.visible = [dictionary objectForKey:@"visible"];
+    if ([dictionary objectForKey:@"private"] && [dictionary objectForKey:@"private"] != [NSNull null]){
+        self.privatePhoto = [dictionary objectForKey:@"private"];
     }
     if ([dictionary objectForKey:@"width"] && [dictionary objectForKey:@"width"] != [NSNull null]){
         self.width = [dictionary objectForKey:@"width"];
@@ -127,4 +128,13 @@
         return true;
     }
 }
+
+- (NSString *)iconsToSentence {
+    NSMutableArray *names = [NSMutableArray arrayWithCapacity:self.icons.count];
+    [self.icons enumerateObjectsUsingBlock:^(Icon *icon, NSUInteger idx, BOOL *stop) {
+        [names addObject:icon.name];
+    }];
+    return [names toSentence];
+}
+
 @end

@@ -28,6 +28,7 @@
     BOOL lightTables;
     UIImageView *navBarShadowView;
     NSDateFormatter *userSinceDateFormatter;
+    NSArray *_publicPhotos;
 }
 
 @end
@@ -55,14 +56,15 @@
     self.navigationController.navigationBar.translucent = YES;
     self.navigationController.view.backgroundColor = [UIColor clearColor];
     self.navigationController.navigationBar.backgroundColor = [UIColor clearColor];
-    [self loadUser];
     self.navigationItem.titleView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"whiteLogo"]];
     
+    [self loadUser];
     userSinceDateFormatter = [[NSDateFormatter alloc] init];
     [userSinceDateFormatter setDateFormat:@"MMM yy"];
     
     //photos mode by default
     photos = YES;
+    [self getPublicPhotos];
 }
 
 - (void)loadUser {
@@ -71,16 +73,22 @@
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     }
     [manager GET:[NSString stringWithFormat:@"users/%@",_user.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success loading user details: %@",responseObject);
+        NSLog(@"Success loading user details: %@",responseObject);
         [_user populateFromDictionary:[responseObject objectForKey:@"user"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             self.title = _user.fullName;
-            [_collectionView reloadData];
+            [self getPublicPhotos];
         }];
        
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to load user details: %@",error.description);
     }];
+}
+
+- (void)getPublicPhotos {
+    NSPredicate *publicPhotoPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@ && privatePhoto != %@",_user.identifier, @YES];
+    _publicPhotos = [Photo MR_findAllSortedBy:@"createdDate" ascending:NO withPredicate:publicPhotoPredicate inContext:[NSManagedObjectContext MR_defaultContext]];
+    [_collectionView reloadData];
 }
 
 - (void)resetBooleans {
@@ -97,7 +105,6 @@
     } else {
         urlString = _user.url;
     }
-    NSLog(@"url: %@",urlString);
     [vc setUrl:[NSURL URLWithString:urlString]];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     [self presentViewController:nav animated:YES completion:^{
@@ -121,12 +128,12 @@
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return _user.photos.count;
+    return _publicPhotos.count;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFPhotoCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"PhotoCell" forIndexPath:indexPath];
-    Photo *photo = _user.photos[indexPath.item];
+    Photo *photo = _publicPhotos[indexPath.item];
     [cell setBackgroundColor:[UIColor clearColor]];
     [cell configureForPhoto:photo];
     [cell.slideContainerView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
@@ -138,6 +145,15 @@
         WFProfileHeader *headerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"ProfileHeader" forIndexPath:indexPath];
         [headerView setBackgroundColor:[UIColor clearColor]];
         [headerView configureForUser:_user];
+        NSString *photoCount = _publicPhotos.count == 1 ? @"1 image" : [NSString stringWithFormat:@"%lu images",(unsigned long)_publicPhotos.count];
+        [headerView.photoCountButton setTitle:photoCount forState:UIControlStateNormal];
+        
+        NSString *slideshowCount = _user.slideshows.count == 1 ? @"1 slideshow" : [NSString stringWithFormat:@"%lu slideshows",(unsigned long)_user.slideshows.count];
+        [headerView.slideshowsButton setTitle:slideshowCount forState:UIControlStateNormal];
+        
+        NSString *lightTableCount = _user.lightTables.count == 1 ? @"1 light table" : [NSString stringWithFormat:@"%lu light tables",(unsigned long)_user.lightTables.count];
+        [headerView.lightTablesButton setTitle:lightTableCount forState:UIControlStateNormal];
+        
         [headerView.userSinceLabel setText:[NSString stringWithFormat:@"Since %@",[userSinceDateFormatter stringFromDate:_user.createdDate]]];
         if (_user.url.length){
             [headerView.urlButton addTarget:self action:@selector(goToUrl) forControlEvents:UIControlEventTouchUpInside];
@@ -150,7 +166,7 @@
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     if (photos){
-        Photo *photo = _user.photos[indexPath.item];
+        Photo *photo = _publicPhotos[indexPath.item];
         [self showMetadata:photo];
     }
     [collectionView deselectItemAtIndexPath:indexPath animated:YES];
@@ -173,19 +189,15 @@
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented
                                                                   presentingController:(UIViewController *)presenting
                                                                       sourceController:(UIViewController *)source {
-    //if (photos){
-        WFArtMetadataAnimator *animator = [WFArtMetadataAnimator new];
-        animator.presenting = YES;
-        return animator;
-    //}
+    WFArtMetadataAnimator *animator = [WFArtMetadataAnimator new];
+    animator.presenting = YES;
+    return animator;
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
     
-    //if (photos){
-        WFArtMetadataAnimator *animator = [WFArtMetadataAnimator new];
-        return animator;
-    //}
+    WFArtMetadataAnimator *animator = [WFArtMetadataAnimator new];
+    return animator;
 }
 
 

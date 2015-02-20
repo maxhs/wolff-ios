@@ -16,5 +16,6 @@
 @dynamic name;
 @dynamic about;
 @dynamic arts;
+@dynamic photos;
 
 @end

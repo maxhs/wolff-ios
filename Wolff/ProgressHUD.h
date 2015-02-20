@@ -9,10 +9,8 @@
 #import <Foundation/Foundation.h>
 
 @interface ProgressHUD : UIView
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 + (ProgressHUD *)shared;
-
 + (void)dismiss;
 + (void)show:(NSString *)status;
 + (void)showSuccess:(NSString *)status;

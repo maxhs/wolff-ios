@@ -69,6 +69,7 @@
 @implementation WFSlideshowSplitViewController
 @synthesize slideshowId = _slideshowId;
 @synthesize slideshow = _slideshow;
+@synthesize photos = _photos;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -279,7 +280,7 @@
         [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
     } else {
         [self.tableView beginUpdates];
-        [_slideshow removeSlide:activeSlide];
+        [_slideshow removeSlide:activeSlide fromIndex:activeSlide.index.integerValue];
         [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
         [self.tableView endUpdates];
@@ -448,13 +449,12 @@
         if (selectedPhoto){
             if (loc.x < 0){
                 CGPoint tableViewPoint = [gestureRecognizer locationInView:_tableView];
-                //NSLog(@"tableViewPoint %f, %f",tableViewPoint.x, tableViewPoint.y);
-                
                 NSIndexPath *indexPathForSlideCell = [_tableView indexPathForRowAtPoint:tableViewPoint];
 
                 if (indexPathForSlideCell){
-                    
                     //cell was dropped in the left sidebar
+                    
+                    
                     if (indexPathForSlideCell.section == 1){
                         // this means we should add a new slide
                         
@@ -462,8 +462,8 @@
                         [slide addPhoto:selectedPhoto];
                         [slide setIndex:@(_slideshow.slides.count)];
                         [self.tableView beginUpdates];
-                        [_slideshow addSlide:slide];
-                        [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:_slideshow.slides.count-1 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
+                        [_slideshow addSlide:slide atIndex:slide.index.integerValue];
+                        [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:(slide.index.integerValue) inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
                         [self.tableView endUpdates];
                         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                             [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
@@ -769,6 +769,7 @@
         [self.popover dismissPopoverAnimated:YES];
     }
     WFSearchResultsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SearchResults"];
+    [vc setPhotos:_photos];
     vc.shouldShowSearchBar = YES;
     vc.shouldShowTiles = YES;
     vc.searchDelegate = self;
@@ -779,9 +780,9 @@
     [self.popover presentPopoverFromBarButtonItem:searchButton permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
-- (void)searchDidSelectPhoto:(Photo *)photo {
+- (void)searchDidSelectPhotoWithId:(NSNumber *)photoId {
+    Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:photoId inContext:[NSManagedObjectContext MR_defaultContext]];
     BOOL add; NSIndexPath *indexPathToReload;
-    
     if ([_slideshow.photos containsObject:photo]){
         indexPathToReload = [NSIndexPath indexPathForItem:[_slideshow.photos indexOfObject:photo] inSection:0];
         [_slideshow removePhoto:photo];

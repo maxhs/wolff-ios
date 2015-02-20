@@ -31,7 +31,8 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kApiBaseUrl @"https://wolffapp.com/api/v1"
 #define kBaseUrl @"https://wolffapp.com"
 #define kTestFlightToken @"a37d3f4a-b21b-4f38-ac66-83c68b65a8a1"
-
+#define kStripePublishableKey @"pk_live_4sgQpIqXTKke1WwlPUSHAd6g"
+#define kStripePublishableKeyTest @"pk_test_ZXELq5hTeexZnsrdWXpEbHeL"
 #define MIXPANEL_TOKEN @"b091c81f24a93b828683bb5c3c260278"
 
 #define kDarkBackgroundConstant 5298
@@ -70,15 +71,19 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kLatoBold @"Lato-Bold"
 #define kLatoBoldItalic @"Lato-BoldItalic"
 
+#define kAddLocationPlaceholder @"+  add a new location"
 #define kIncorrectPassword @"Incorrect password"
 #define kNoEmail @"No email"
 #define kInvalidToken @"Invalid token"
 #define kUserAlreadyExists @"User already exists"
 #define kNoUser @"No user"
 #define kNoAccess @"No access"
+#define kNoIcon @"No icon"
+#define kNoMaterial @"No material"
 #define kNoArt @"No art"
 #define kNoPhoto @"No photo"
 #define kNoSlideshow @"No slideshow"
+#define kArtDeleted @"Art deleted"
 #define kIncorrectLightTableCode @"Incorrect light table code"
 #define kNoLightTable @"No light table"
 #define kNotAuthorized @"Not authorized"

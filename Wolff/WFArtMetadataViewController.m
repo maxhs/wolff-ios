@@ -26,6 +26,7 @@
 #import "WFProfileViewController.h"
 #import "WFArtistsViewController.h"
 #import "WFLocationsViewController.h"
+#import "Art+helper.h"
 
 @interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, UIActionSheetDelegate> {
     WFAppDelegate *delegate;
@@ -47,7 +48,8 @@
     UIImageView *navBarShadowView;
     CGFloat rowHeight;
     CGFloat textViewWidth;
-    NSInteger currentPhoto;
+    NSInteger currentPhotoIdx;
+    CGFloat imageWidth;
 }
 @property (strong, nonatomic) UIPopoverController *popover;
 @end
@@ -94,23 +96,44 @@
 
 - (void)setupHeader {
     self.tableView.tableHeaderView = _topImageContainerView;
+    currentPhotoIdx = [_photo.art.photos indexOfObject:_photo];
+    [self setPhotoCount:currentPhotoIdx+1]; // setPhotoCredit called at the end of setPhotoCount... no worries
     [self setupPhotoScrollView];
+    
     [_backButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
     [self setUpButtons];
     
     [_nextPhotoButton addTarget:self action:@selector(nextPhoto) forControlEvents:UIControlEventTouchUpInside];
     [_lastPhotoButton addTarget:self action:@selector(lastPhoto) forControlEvents:UIControlEventTouchUpInside];
     [_photoCountLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
-    [self setPhotoCount];
+    
 }
 
-- (void)setPhotoCount{
+- (void)setPhotoCount:(NSInteger)currentIdx{
     if (_photo.art.photos.count == 1){
         [_photoCountLabel setText:@"1 photo"];
     } else {
-    NSInteger currentIdx = [_photo.art.photos indexOfObject:_photo] + 1;
         [_photoCountLabel setText:[NSString stringWithFormat:@"%ld of %lu photos",(long)currentIdx, (unsigned long)_photo.art.photos.count]];
     }
+    if (_photo.art.photos.count <= 1){
+        [_nextPhotoButton setHidden:YES];
+        [_lastPhotoButton setHidden:YES];
+    } else {
+        [_nextPhotoButton setHidden:NO];
+        [_lastPhotoButton setHidden:NO];
+    }
+    
+    if (_photoScrollView.contentOffset.x < imageWidth/2){
+        [_lastPhotoButton setEnabled:NO];
+        [_nextPhotoButton setEnabled:YES];
+    } else if (_photoScrollView.contentOffset.x >= ((_photo.art.photos.count-1)*imageWidth)-imageWidth/2) {
+        [_nextPhotoButton setEnabled:NO];
+        [_lastPhotoButton setEnabled:YES];
+    } else {
+        [_lastPhotoButton setEnabled:YES];
+        [_nextPhotoButton setEnabled:YES];
+    }
+
     [self setPhotoCredit];
 }
 
@@ -118,9 +141,8 @@
     [_photoScrollView setBackgroundColor:[UIColor clearColor]];
     _photoScrollView.delegate = self;
     _photoScrollView.pagingEnabled = YES;
-    CGFloat imageWidth = 360.f;
+    imageWidth = 360.f;
     CGFloat imageHeight = 360.f;
-    [_photoScrollView setContentSize:CGSizeMake(_photo.art.photos.count*imageWidth, imageHeight)];
     [_photoScrollView setCanCancelContentTouches:YES];
     
     NSInteger idx = 0;
@@ -147,49 +169,64 @@
             [UIView animateWithDuration:.23 animations:^{
                 [imageButton setAlpha:1.0];
             } completion:^(BOOL finished) {
-                //[imageButton.imageView.layer setShouldRasterize:YES];
-                //imageButton.imageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+                
             }];
         }];
         [imageButton addTarget:self action:@selector(showFullScreen) forControlEvents:UIControlEventTouchUpInside];
         idx ++;
     }
+    
+    [_photoScrollView setContentSize:CGSizeMake(_photo.art.photos.count * imageWidth, imageHeight)];
+    [_photoScrollView setContentOffset:CGPointMake(imageWidth * currentPhotoIdx, 0) animated:YES];
 }
 
 - (void)setPhotoCredit {
-    if (_photo.credit.length){
-        [_creditButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
-        [_creditButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
-        [_creditButton setTitle:[NSString stringWithFormat:@"Credit: %@",_photo.credit] forState:UIControlStateNormal];
-        [_creditButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
-        [_creditButton setHidden:NO];
-        [_creditButton.titleLabel setNumberOfLines:0];
+    if (_photo.user && _photo.user.fullName.length){
+        NSMutableParagraphStyle *paragraphStyle = NSMutableParagraphStyle.new;
+        paragraphStyle.alignment = NSTextAlignmentCenter;
+        
+        [_postedByButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
+        NSMutableAttributedString *postedByString = [[NSMutableAttributedString alloc] initWithString:@"Posted by:" attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansThin] size:0], NSForegroundColorAttributeName : [UIColor blackColor],NSParagraphStyleAttributeName:paragraphStyle}];
+        NSMutableAttributedString *postedByUserString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@",_photo.user.fullName] attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansThin] size:0], NSForegroundColorAttributeName : kElectricBlue,NSParagraphStyleAttributeName:paragraphStyle}];
+        [postedByString appendAttributedString:postedByUserString];
+        [_postedByButton setContentHorizontalAlignment:UIControlContentHorizontalAlignmentCenter];
+        [_postedByButton setContentVerticalAlignment:UIControlContentVerticalAlignmentBottom];
+        [_postedByButton setAttributedTitle:postedByString forState:UIControlStateNormal];
+        [_postedByButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
+        [_postedByButton setHidden:NO];
+        [_postedByButton.titleLabel setNumberOfLines:0];
     } else {
-        [_creditButton setHidden:YES];
+        [_postedByButton setHidden:YES];
     }
+    [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:5 inSection:0],[NSIndexPath indexPathForRow:6 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
 }
 
 - (void)nextPhoto {
-    [_photoScrollView setContentOffset:CGPointMake(_photoScrollView.contentOffset.x+360.f, 0) animated:YES];
-    [self setPhotoCount];
+    [_photoScrollView setContentOffset:CGPointMake(_photoScrollView.contentOffset.x + imageWidth, 0) animated:YES];
+    currentPhotoIdx ++;
 }
 
 - (void)lastPhoto {
-    [_photoScrollView setContentOffset:CGPointMake(_photoScrollView.contentOffset.x-360.f, 0) animated:YES];
-    [self setPhotoCount];
+    [_photoScrollView setContentOffset:CGPointMake(_photoScrollView.contentOffset.x - imageWidth, 0) animated:YES];
+    currentPhotoIdx --;
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    CGFloat contentSizeWidth = scrollView.frame.size.width;
-    CGFloat offsetX = scrollView.contentOffset.x;
-    float fractionalPage = offsetX / contentSizeWidth;
-    NSInteger page = lround(fractionalPage);
-    if (currentPhoto != page) {
-        currentPhoto = page;
-        Art *art = _photo.art;
-        if (currentPhoto <= art.photos.count - 1){
-            _photo = art.photos[currentPhoto];
-            [self setPhotoCount];
+    if (scrollView == _photoScrollView){
+        CGFloat contentSizeWidth = scrollView.frame.size.width;
+        CGFloat offsetX = scrollView.contentOffset.x;
+        float fractionalPage = offsetX / contentSizeWidth;
+        NSInteger page = lround(fractionalPage);
+        if (currentPhotoIdx != page) {
+            currentPhotoIdx = page;
+            Art *art = _photo.art;
+            if (currentPhotoIdx < art.photos.count-1){
+                _photo = art.photos[currentPhotoIdx];
+            }
+            [self setPhotoCount:currentPhotoIdx + 1]; // make sure to offset by 1
+        }
+        if (offsetX > _photoScrollView.contentSize.width - imageWidth/2){
+            [_nextPhotoButton setEnabled:NO];
         }
     }
 }
@@ -250,18 +287,24 @@
 }
 
 - (void)dropToLightTable {
-    if (self.popover){
-        [self.popover dismissPopoverAnimated:YES];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        if (_currentUser.customerPlan.length){
+            if (self.popover){
+                [self.popover dismissPopoverAnimated:YES];
+            }
+            WFLightTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTables"];
+            vc.lightTableDelegate = self;
+            [vc setPhoto:_photo];
+            [vc setLightTables:_currentUser.lightTables.array.mutableCopy];
+            CGFloat vcHeight = _currentUser.lightTables.count*54.f > 260.f ? 260 : (_currentUser.lightTables.count)*54.f;
+            vc.preferredContentSize = CGSizeMake(420, vcHeight+34.f); // add the header height
+            self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
+            self.popover.delegate = self;
+            [self.popover presentPopoverFromRect:CGRectMake(_dropToTableButton.center.x,(_dropToTableButton.center.y+_dropToTableButton.frame.size.height/2)+ 23,1,1) inView:self.view permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES]; // added 23 points to the popover rect to make the arrow look nicerp
+        } else {
+            [WFAlert show:@"Dropping images onto a light table requires a billing plan.\n\nPlease either set up an individual billing plan or add yourself as a member to an institution that's been registered with Wölff." withTime:4.7f];
+        }
     }
-    WFLightTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTables"];
-    vc.lightTableDelegate = self;
-    [vc setPhoto:_photo];
-    [vc setLightTables:_currentUser.lightTables.array.mutableCopy];
-    CGFloat vcHeight = _currentUser.lightTables.count*54.f > 260.f ? 260 : (_currentUser.lightTables.count)*54.f;
-    vc.preferredContentSize = CGSizeMake(420, vcHeight+34.f); // add the header height
-    self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
-    self.popover.delegate = self;
-    [self.popover presentPopoverFromRect:CGRectMake(_dropToTableButton.center.x,(_dropToTableButton.center.y+_dropToTableButton.frame.size.height/2)+ 23,1,1) inView:self.view permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES]; // added 23 points to the popover rect to make the arrow look nicerp 
 }
 
 - (void)lightTableSelected:(NSNumber *)lightTableId {
@@ -381,14 +424,24 @@
 - (void)loadPhotoMetadata {
     [manager GET:[NSString stringWithFormat:@"photos/%@",_photo.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success fetching metadata: %@",responseObject);
-        if ([responseObject objectForKey:@"text"] && [[responseObject objectForKey:@"text"] isEqualToString:kNoPhoto]){
-            [_photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-            [WFAlert show:@"Sorry, but something went wrong while trying to fetch this art.\n\nThe creator likely expunged it from our database." withTime:3.7f];
-            [self dismiss];
-            if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(photoDeleted:)]){
-                [self.metadataDelegate photoDeleted:_photo.identifier];
+        if ([responseObject objectForKey:@"text"]){
+            if ([[responseObject objectForKey:@"text"] isEqualToString:kNoPhoto]){
+                [_photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+                [WFAlert show:@"Sorry, but something went wrong while trying to fetch this art.\n\nThe creator likely expunged it from our database." withTime:3.7f];
+                if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(photoDeleted:)]){
+                    [self.metadataDelegate photoDeleted:_photo.identifier];
+                }
+                
+            } else if ([[responseObject objectForKey:@"text"] isEqualToString:kArtDeleted]){
+                NSLog(@"art deleted");
+                [_photo.art MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+                if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(artDeleted:)]){
+                    [self.metadataDelegate artDeleted:_photo.art.identifier];
+                }
             }
+            [self dismiss];
         } else {
             [_photo populateFromDictionary:[responseObject objectForKey:@"photo"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -523,7 +576,7 @@
         case 5:
         {
             [cell.label setText:@"ICONOGRAPHY"];
-            NSString *icons = [_photo.art iconsToSentence];
+            NSString *icons = [_photo iconsToSentence];
             if (icons.length){
                 [cell.textView setText:icons];
             } else {
@@ -534,12 +587,11 @@
         }
             break;
         case 6:
-            [cell.label setText:@"CREDIT"];
+            [cell.label setText:@"CREDIT / RIGHTS"];
             [cell.textView setText:(_photo.credit.length ? _photo.credit : _photo.user.fullName)];
             break;
         case 7:
             [cell.label setText:@"NOTES"];
-            [cell.textView setText:@""];
             notesTextView = cell.textView;
             CGRect notesRect = cell.textView.frame;
             CGFloat cellHeight = cell.frame.size.height;
@@ -585,7 +637,7 @@
     } else if (indexPath.row == 4){
         UITextView *sizingTextView = [[UITextView alloc] init];
         [sizingTextView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
-        [sizingTextView setText:_photo.art.iconsToSentence];
+        [sizingTextView setText:[_photo iconsToSentence]];
         CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
         CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
         sizingTextView = nil;
@@ -654,25 +706,29 @@
 
 - (void)favorite {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-        [manager POST:[NSString stringWithFormat:@"photos/%@/favorite",_photo.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success posting favorite: %@",responseObject);
-            _favorite = [Favorite MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-            [_favorite populateFromDictionary:[responseObject objectForKey:@"favorite"]];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [_favoriteButton setTitle:@"   Favorited!" forState:UIControlStateNormal];
-                [_favoriteButton removeTarget:nil
-                                       action:NULL
-                             forControlEvents:UIControlEventAllEvents];
-                [_favoriteButton addTarget:self action:@selector(unfavorite) forControlEvents:UIControlEventTouchUpInside];
-                if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(favoritedPhoto:)]){
-                    [self.metadataDelegate favoritedPhoto:_photo];
-                }
+        if (_currentUser.customerPlan.length){
+            NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+            [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+            [manager POST:[NSString stringWithFormat:@"photos/%@/favorite",_photo.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                NSLog(@"Success posting favorite: %@",responseObject);
+                _favorite = [Favorite MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                [_favorite populateFromDictionary:[responseObject objectForKey:@"favorite"]];
+                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                    [_favoriteButton setTitle:@"   Favorited!" forState:UIControlStateNormal];
+                    [_favoriteButton removeTarget:nil
+                                           action:NULL
+                                 forControlEvents:UIControlEventAllEvents];
+                    [_favoriteButton addTarget:self action:@selector(unfavorite) forControlEvents:UIControlEventTouchUpInside];
+                    if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(favoritedPhoto:)]){
+                        [self.metadataDelegate favoritedPhoto:_photo];
+                    }
+                }];
+            } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                NSLog(@"Failed to favorite %@: %@",_photo.art.title,error.description);
             }];
-        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Failed to favorite %@: %@",_photo.art.title,error.description);
-        }];
+        } else {
+            [WFAlert show:@"\"Adding to favorites\" requires a billing plan.\n\nPlease either set up an individual billing plan or add yourself as a member to an institution that's been registered with Wölff." withTime:4.7f];
+        }
     } else {
         [self showLogin];
     }
@@ -798,7 +854,7 @@
                     [self.metadataDelegate photoDeleted:photoId];
                 }
                 [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                    [WFAlert show:@"Art expunged" withTime:2.7f];
+                    [WFAlert show:@"Image expunged" withTime:2.7f];
                 }];
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {

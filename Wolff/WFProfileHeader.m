@@ -42,7 +42,7 @@
 }
 - (void)configureForUser:(User *)user {
     [_userPhotoButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1]];
-    [_userPhotoButton sd_setImageWithURL:[NSURL URLWithString:user.avatarLarge] forState:UIControlStateNormal completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+    [_userPhotoButton sd_setImageWithURL:[NSURL URLWithString:user.avatarLarge] forState:UIControlStateNormal placeholderImage:[UIImage imageNamed:@"transparentIconWhite"] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
         [UIView animateWithDuration:.23 animations:^{
             [_userPhotoButton setAlpha:1.0];
         }];
@@ -50,15 +50,6 @@
     NSString *prefix = user.prefix && user.prefix.length ? [NSString stringWithFormat:@"%@ ",user.prefix] : @"";
     [_nameLabel setText:[NSString stringWithFormat:@"%@%@",prefix,user.fullName]];
     [_institutionLabel setText:user.institution.name];
-    
-    NSString *photoCount = user.photos.count == 1 ? @"1 photo" : [NSString stringWithFormat:@"%lu photos",(unsigned long)user.photos.count];
-    [_photoCountButton setTitle:photoCount forState:UIControlStateNormal];
-    
-    NSString *slideshowCount = user.slideshows.count == 1 ? @"1 slideshow" : [NSString stringWithFormat:@"%lu slideshows",(unsigned long)user.slideshows.count];
-    [_slideshowsButton setTitle:slideshowCount forState:UIControlStateNormal];
-    
-    NSString *lightTableCount = user.lightTables.count == 1 ? @"1 light table" : [NSString stringWithFormat:@"%lu light tables",(unsigned long)user.lightTables.count];
-    [_lightTablesButton setTitle:lightTableCount forState:UIControlStateNormal];
     
     [_locationLabel setText:user.location];
     

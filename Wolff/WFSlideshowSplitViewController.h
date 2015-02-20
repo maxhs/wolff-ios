@@ -22,6 +22,7 @@
 @property (strong, nonatomic) UIPopoverController *popover;
 @property (strong, nonatomic) NSNumber *slideshowId;
 @property (strong, nonatomic) Slideshow *slideshow;
+@property (strong, nonatomic) NSMutableOrderedSet *photos;
 
 - (void)dismissMetadata;
 @end

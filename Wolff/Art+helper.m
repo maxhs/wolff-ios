@@ -204,12 +204,4 @@
     return [names toSentence];
 }
 
-- (NSString *)iconsToSentence {
-    NSMutableArray *names = [NSMutableArray arrayWithCapacity:self.icons.count];
-    [self.icons enumerateObjectsUsingBlock:^(Icon *icon, NSUInteger idx, BOOL *stop) {
-        [names addObject:icon.name];
-    }];
-    return [names toSentence];
-}
-
 @end

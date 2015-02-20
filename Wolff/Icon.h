@@ -17,6 +17,7 @@
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic, retain) NSString * about;
 @property (nonatomic, retain) NSOrderedSet *arts;
+@property (nonatomic, retain) NSOrderedSet *photos;
 @end
 
 @interface Icon (CoreDataGeneratedAccessors)

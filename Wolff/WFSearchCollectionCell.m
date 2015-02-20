@@ -33,12 +33,14 @@
 
 - (void)configureForPhoto:(Photo *)photo {
     if (photo.thumbImageUrl.length){
+        [self setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
         [self.imageView sd_setImageWithURL:[NSURL URLWithString:photo.thumbImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:.23 animations:^{
                 [self.imageView setAlpha:1.0];
             }];
         }];
-        
+    } else {
+        [self setBackgroundColor:[UIColor clearColor]];
     }
 }
 @end

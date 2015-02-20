@@ -170,7 +170,7 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 4;
+    return 5;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -183,14 +183,18 @@
             }
             break;
         case 1:
+            // manage billing
+            return 1;
+            break;
+        case 2:
             // manage institutions
             return _currentUser.institutions.count + 1;
             break;
-        case 2:
+        case 3:
             // manage alternate contact info
             return _currentUser.alternates.count + 1;
             break;
-        case 3:
+        case 4:
             return 3;
             break;
         default:
@@ -252,6 +256,15 @@
         }
         cell.accessoryView = nil;
     } else if (indexPath.section == 1) {
+        [cell.textField setHidden:YES];
+        [cell.textField setUserInteractionEnabled:NO];
+        [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
+        if (_currentUser.customerPlan.length){
+            [cell.textLabel setText:_currentUser.customerPlan];
+        } else {
+            [cell.textLabel setText:@"Set up billing"];
+        }
+    } else if (indexPath.section == 2) {
         [cell.textField setHidden:NO];
         [cell.textField setUserInteractionEnabled:NO];
         if (indexPath.row == _currentUser.institutions.count){
@@ -260,7 +273,7 @@
             Institution *institution = _currentUser.institutions[indexPath.row];
             [cell.textField setText:institution.name];
         }
-    } else if (indexPath.section == 2) {
+    } else if (indexPath.section == 3) {
         [cell.textField setHidden:NO];
         [cell.actionButton setHidden:NO];
         [cell.actionButton setTag:indexPath.row];
@@ -278,7 +291,7 @@
             [cell.actionButton setTitle:@"SAVE" forState:UIControlStateNormal];
             [cell.actionButton addTarget:self action:@selector(editAlternate:) forControlEvents:UIControlEventTouchUpInside];
         }
-    } else if (indexPath.section == 3) {
+    } else if (indexPath.section == 4) {
         [cell.settingsSwitch setHidden:NO];
         [cell.textField setHidden:YES];
         switch (indexPath.row) {
@@ -343,9 +356,12 @@
     [headerLabel setTextColor:[UIColor colorWithWhite:1 alpha:.27]];
     switch (section) {
         case 1:
-            [headerLabel setText:@"YOUR AFFILIATED INSTITUTIONS"];
+            [headerLabel setText:@"BILLING"];
             break;
         case 2:
+            [headerLabel setText:@"YOUR AFFILIATED INSTITUTIONS"];
+            break;
+        case 3:
             [headerLabel setText:@"SECONDARY CONTACT INFORMATION"];
             break;
             
@@ -358,7 +374,9 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 1 && indexPath.row == _currentUser.institutions.count){
+    if (indexPath.section == 1){
+        [self performSegueWithIdentifier:@"Billing" sender:nil];
+    } else if (indexPath.section == 2 && indexPath.row == _currentUser.institutions.count){
         WFSettingsCell *cell = (WFSettingsCell*)[_tableView cellForRowAtIndexPath:indexPath];
         [self showInstitutionSearchFromRect:cell.frame];
     }
@@ -448,9 +466,9 @@
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 1 && indexPath.row != _currentUser.institutions.count) {
+    if (indexPath.section == 2 && indexPath.row != _currentUser.institutions.count) {
         return YES;
-    } else if (indexPath.section == 2 && indexPath.row != _currentUser.alternates.count){
+    } else if (indexPath.section == 3 && indexPath.row != _currentUser.alternates.count){
         return YES;
     } else {
         return NO;
@@ -459,10 +477,10 @@
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete){
-        if (indexPath.section == 1){
+        if (indexPath.section == 2){
             indexPathToRemoveInstitution = indexPath;
             [self removeInstitution];
-        } else if (indexPath.section == 2){
+        } else if (indexPath.section == 3){
             indexPathToDeleteAlternate = indexPath;
             [self deleteAlternate];
         }

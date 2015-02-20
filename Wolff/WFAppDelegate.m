@@ -11,6 +11,7 @@
 #import <Crashlytics/Crashlytics.h>
 #import <SDWebImage/SDImageCache.h>
 #import "WFAlert.h"
+#import <Stripe/Stripe.h>
 
 @implementation WFAppDelegate
 @synthesize manager = _manager;
@@ -20,6 +21,9 @@
     [Crashlytics startWithAPIKey:@"fdf66a0a10b6fc2a0f7052c9758873dc992773d5"];
     [MagicalRecord setShouldDeleteStoreOnModelMismatch:YES];
     [MagicalRecord setupAutoMigratingCoreDataStack];
+    [Stripe setDefaultPublishableKey:kStripePublishableKeyTest];
+    [self hackForPreloadingKeyboard];
+    [self customizeAppearance];
     
 //    SDImageCache *imageCache = [SDImageCache sharedImageCache];
 //    [imageCache clearMemory];
@@ -39,9 +43,6 @@
         NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken] forKey:@"mobile_token"];
         [self connectWithParameters:parameters];
     }
-    
-    [self hackForPreloadingKeyboard];
-    [self customizeAppearance];
     
     return YES;
 }
@@ -77,8 +78,6 @@
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken] forKey:@"device_token"];
     }
-    
-    [ProgressHUD show:@"Logging in..."];
     [_manager POST:[NSString stringWithFormat:@"%@/sessions",kApiBaseUrl] parameters:@{@"user":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success connecting: %@",responseObject);
         if ([responseObject objectForKey:@"user"]){
@@ -97,10 +96,9 @@
             }
             [[NSNotificationCenter defaultCenter] postNotificationName:@"LoginSuccessful" object:nil];
         }
-        [ProgressHUD dismiss];
     
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        [ProgressHUD dismiss];
+        
         if (!_connected) {
             [self offlineNotification];
         } else if ([operation.responseString isEqualToString:kNoEmail]){
@@ -183,7 +181,6 @@
     [NSUserDefaults resetStandardUserDefaults];
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kExistingUser];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    
     [ProgressHUD dismiss];
 }
 

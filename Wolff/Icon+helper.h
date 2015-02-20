@@ -7,7 +7,9 @@
 //
 
 #import "Icon.h"
+#import "Photo+helper.h"
 
 @interface Icon (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
+- (Photo*)coverPhoto;
 @end

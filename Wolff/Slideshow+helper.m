@@ -56,9 +56,9 @@
         }
         self.photos = set;
     }
-    if ([dictionary objectForKey:@"light_tables"] && [dictionary objectForKey:@"light_tables"] != [NSNull null]){
+    if ([dictionary objectForKey:@"public_light_tables"] && [dictionary objectForKey:@"public_light_tables"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dict in [dictionary objectForKey:@"light_tables"]){
+        for (id dict in [dictionary objectForKey:@"public_light_tables"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Table *lightTable = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!lightTable){
@@ -83,15 +83,19 @@
     self.photos = tempSet;
 }
 
-- (void)addSlide:(Slide *)slide {
+- (void)addSlide:(Slide *)slide atIndex:(NSInteger)index {
     NSMutableOrderedSet *slideSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slides];
-    [slideSet addObject:slide];
+    [slideSet insertObject:slide atIndex:index];
     self.slides = slideSet;
 }
 
-- (void)removeSlide:(Slide *)slide {
+- (void)removeSlide:(Slide *)slide fromIndex:(NSInteger)index {
     NSMutableOrderedSet *slideSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slides];
-    [slideSet removeObject:slide];
+    if (slide){
+        [slideSet removeObject:slide];
+    } else {
+        [slideSet removeObjectAtIndex:index];
+    }
     self.slides = slideSet;
 }
 @end
