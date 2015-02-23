@@ -18,6 +18,7 @@
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     BOOL iOS8;
+    BOOL loading;
     BOOL searching;
     BOOL editing;
     CGFloat width;
@@ -52,6 +53,7 @@ static NSString * const reuseIdentifier = @"ArtistCell";
     }
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     
     _artists = [NSMutableOrderedSet orderedSetWithArray:[Artist MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
     _filteredArtists = [NSMutableOrderedSet orderedSet];
@@ -94,41 +96,42 @@ static NSString * const reuseIdentifier = @"ArtistCell";
     if (_selectedArtists.count){
         [artistUnknownButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     } else {
-        [artistUnknownButton setTitleColor:kElectricBlue forState:UIControlStateNormal];
+        [artistUnknownButton setTitleColor:kSaffronColor forState:UIControlStateNormal];
     }
 }
 
 - (void)loadArtistsWithSearch:(NSString*)searchString {
-    [self.searchBar resignFirstResponder];
-    searching = YES;
-    
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-    }
-    if (searchString.length){
-        [parameters setObject:searchString forKey:@"search"];
-    }
-    [ProgressHUD show:@"Searching..."];
-    [manager POST:@"artists/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success loading artists: %@",responseObject);
-        for (id dict in [responseObject objectForKey:@"artists"]){
-            Artist *artist = [Artist MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext    :[NSManagedObjectContext MR_defaultContext]];
-            if (!artist){
-                artist = [Artist MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-            }
-            [artist populateFromDictionary:dict];
+    if (!loading && searchString.length){
+        loading = YES;
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
+            [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         }
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        if (searchString.length){
+            [parameters setObject:searchString forKey:@"search"];
+        }
+        [manager POST:@"artists/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success loading artists: %@",responseObject);
+            for (id dict in [responseObject objectForKey:@"artists"]){
+                Artist *artist = [Artist MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext    :[NSManagedObjectContext MR_defaultContext]];
+                if (!artist){
+                    artist = [Artist MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                }
+                [artist populateFromDictionary:dict];
+            }
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                [ProgressHUD dismiss];
+            }];
+            _artists = [NSMutableOrderedSet orderedSetWithArray:[Artist MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
+            [self filterContentForSearchText:searchString scope:nil];
+            loading = NO;
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            [WFAlert show:@"Sorry, something went wrong while trying to fetch artist info.\n\nPlease try again soon." withTime:3.3f];
             [ProgressHUD dismiss];
+            NSLog(@"Failed to load artists: %@",error.description);
+            loading = NO;
         }];
-        _artists = [NSMutableOrderedSet orderedSetWithArray:[Artist MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
-        [self filterContentForSearchText:searchString scope:nil];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        [WFAlert show:@"Sorry, something went wrong while trying to fetch artist info.\n\nPlease try again soon." withTime:3.3f];
-        [ProgressHUD dismiss];
-        NSLog(@"Failed to load artists: %@",error.description);
-    }];
+    }
 }
 
 #pragma mark <UICollectionViewDataSource>
@@ -279,6 +282,7 @@ static NSString * const reuseIdentifier = @"ArtistCell";
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
     if (searchBar.text.length){
+        [ProgressHUD show:@"Searching..."];
         [self loadArtistsWithSearch:searchBar.text];
     }
 }
@@ -297,6 +301,9 @@ static NSString * const reuseIdentifier = @"ArtistCell";
             if ([predicate evaluateWithObject:artist.name]) {
                 [_filteredArtists addObject:artist];
             }
+        }
+        if (!_filteredArtists.count) {
+            [self loadArtistsWithSearch:text];
         }
     } else {
         _filteredArtists = [NSMutableOrderedSet orderedSetWithOrderedSet:_artists];

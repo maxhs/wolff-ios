@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Card+helper.h"
 
 @interface WFBillingCell : UITableViewCell
-
+- (void)configureForCard:(Card*)card;
 @end

@@ -10,6 +10,7 @@
 #import "WFImagePickerCell.h"
 #import "Constants.h"
 #import "WFUtilities.h"
+#import "ProgressHUD.h"
 
 @interface WFImagePickerController () {
     CGFloat width;
@@ -156,7 +157,7 @@ static NSString * const reuseIdentifier = @"PhotoCell";
         } else {
             [_selectedAssets addObject:asset];
         }
-        NSString *viewTitle = _selectedAssets.count == 1 ? @"1 photo selected" : [NSString stringWithFormat:@"%lu photos selected",(unsigned long)_selectedAssets.count];
+        NSString *viewTitle = _selectedAssets.count == 1 ? @"1 image selected" : [NSString stringWithFormat:@"%lu images selected",(unsigned long)_selectedAssets.count];
         self.title = viewTitle;
         [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
     } else {
@@ -173,7 +174,6 @@ static NSString * const reuseIdentifier = @"PhotoCell";
             [selectedCell.contentView setAlpha:0.23f];
             [self.view addSubview:focusImageView];
             [self.view bringSubviewToFront:focusImageView];
-            NSLog(@"selected cell frame origin x: %f and y: %f",selectedCell.frame.origin.x,selectedCell.frame.origin.y);
             focusImageView.frame = selectedCell.frame;
             CGRect newFrame = CGRectMake(width/2-400, height/2-300, 800, 600);
             
@@ -201,18 +201,29 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 }
 
 - (void)done {
-    if (self.delegate && [self.delegate respondsToSelector:@selector(didFinishPickingPhotos:)]){
-        NSMutableArray *imageArray = [NSMutableArray arrayWithCapacity:_selectedAssets.count];
-        [_selectedAssets enumerateObjectsUsingBlock:^(ALAsset *asset, NSUInteger idx, BOOL *stop) {
-            UIImage *fullImage = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullResolutionImage]];
-            [imageArray addObject:fullImage];
-        }];
-        [self.delegate didFinishPickingPhotos:imageArray];
-    }
-    
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (_selectedAssets.count == 1){
+            [ProgressHUD show:@"Fetching image..."];
+        } else {
+            [ProgressHUD show:@"Fetching images..."];
+        }
+    });
+    double delayInSeconds = .07f;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        if (self.delegate && [self.delegate respondsToSelector:@selector(didFinishPickingPhotos:)]){
+            NSMutableArray *imageArray = [NSMutableArray arrayWithCapacity:_selectedAssets.count];
+            [_selectedAssets enumerateObjectsUsingBlock:^(ALAsset *asset, NSUInteger idx, BOOL *stop) {
+                UIImage *fullImage = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullResolutionImage]];
+                [imageArray addObject:fullImage];
+            }];
+            [self.delegate didFinishPickingPhotos:imageArray];
+        } else {
+            [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+                
+            }];
+        }
+    });
 }
 
 - (void)didReceiveMemoryWarning {

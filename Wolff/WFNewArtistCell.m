@@ -13,17 +13,18 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    [_artistPrompt setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    [_artistPrompt setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLightItalic] size:0]];
+    
     [_nameTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [_birthYearTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [_deathYearTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [_createButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [_createButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [_createButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
+    [_createButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
     _createButton.layer.cornerRadius = 7.f;
     _createButton.clipsToBounds = YES;
     
-    [_nameTextField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
+    [_nameTextField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
     [_nameTextField setTintColor:[UIColor whiteColor]];
     [_nameTextField setTextColor:[UIColor whiteColor]];
     

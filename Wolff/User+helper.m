@@ -13,6 +13,8 @@
 #import "Alternate+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 #import "WFUtilities.h"
+#import "Constants.h"
+#import "Card+helper.h"
 
 typedef enum {
     WFPrefixMr = 1,
@@ -31,7 +33,9 @@ typedef enum {
     }
     if ([dictionary objectForKey:@"mobile_tokens"] && [dictionary objectForKey:@"mobile_tokens"] != [NSNull null]){
         for (id dict in [dictionary objectForKey:@"mobile_tokens"]){
-            if ([[dict objectForKey:@"device_type"] isEqualToNumber:@2]){
+            if (IDIOM == IPAD && [[dict objectForKey:@"device_type"] isEqualToNumber:@2]){
+                self.mobileToken = [dict objectForKey:@"token"];
+            } else if ([[dict objectForKey:@"device_type"] isEqualToNumber:@2]) {
                 self.mobileToken = [dict objectForKey:@"token"];
             }
         }
@@ -131,6 +135,20 @@ typedef enum {
         self.arts = set;
     }
     
+    if ([dictionary objectForKey:@"private_photos"] && [dictionary objectForKey:@"private_photos"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"private_photos"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!photo){
+                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [photo populateFromDictionary:dict];
+            photo.privatePhoto = @YES;
+            [set addObject:photo];
+        }
+    }
+    
     if ([dictionary objectForKey:@"slideshows"] && [dictionary objectForKey:@"slideshows"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"slideshows"]){
@@ -220,6 +238,20 @@ typedef enum {
         self.institutions = set;
     }
     
+    if ([dictionary objectForKey:@"cards"] && [dictionary objectForKey:@"cards"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"cards"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Card *card = [Card MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!card){
+                card = [Card MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [card populateFromDictionary:dict];
+            [set addObject:card];
+        }
+        self.cards = set;
+    }
+    
     if ([dictionary objectForKey:@"favorites"] && [dictionary objectForKey:@"favorites"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"favorites"]){
@@ -243,6 +275,19 @@ typedef enum {
     if ([dictionary objectForKey:@"photos"] && [dictionary objectForKey:@"photos"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"photos"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!photo){
+                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [photo populateFromDictionary:dict];
+            [set addObject:photo];
+        }
+        self.photos = set;
+    }
+    if ([dictionary objectForKey:@"public_photos"] && [dictionary objectForKey:@"public_photos"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"public_photos"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!photo){
@@ -359,6 +404,18 @@ typedef enum {
     NSMutableOrderedSet *slideshows = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshows];
     [slideshows removeObject:slideshow];
     self.slideshows = slideshows;
+}
+
+- (void)addCard:(Card *)card {
+    NSMutableOrderedSet *cards = [NSMutableOrderedSet orderedSetWithOrderedSet:self.cards];
+    [cards removeObject:card];
+    self.cards = cards;
+}
+
+- (void)removeCard:(Card *)card {
+    NSMutableOrderedSet *cards = [NSMutableOrderedSet orderedSetWithOrderedSet:self.cards];
+    [cards removeObject:card];
+    self.cards = cards;
 }
 
 @end

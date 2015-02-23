@@ -51,6 +51,7 @@ static NSString * const reuseIdentifier = @"IconCell";
     }
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     
     _icons = [NSMutableOrderedSet orderedSetWithArray:[Icon MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
     _filteredIcons = [NSMutableOrderedSet orderedSet];
@@ -64,7 +65,7 @@ static NSString * const reuseIdentifier = @"IconCell";
     [noIconsButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
     [noIconsButton addTarget:self action:@selector(iconUnknownToggled) forControlEvents:UIControlEventTouchUpInside];
     [noIconsButton setFrame:CGRectMake(0, 0, 170.f, 44.f)];
-    [noIconsButton setTitle:@"NO ICONS" forState:UIControlStateNormal];
+    [noIconsButton setTitle:@"NO ICONOGRAPHY" forState:UIControlStateNormal];
     unknownBarButton = [[UIBarButtonItem alloc] initWithCustomView:noIconsButton];
     spacerBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
     spacerBarButton.width = 23.f;
@@ -93,7 +94,7 @@ static NSString * const reuseIdentifier = @"IconCell";
     if (_selectedIcons.count){
         [noIconsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     } else {
-        [noIconsButton setTitleColor:kElectricBlue forState:UIControlStateNormal];
+        [noIconsButton setTitleColor:kSaffronColor forState:UIControlStateNormal];
     }
 }
 
@@ -177,7 +178,7 @@ static NSString * const reuseIdentifier = @"IconCell";
             if (searchText.length){
                 [cell.prompt setText:[NSString stringWithFormat:@"+  add \"%@\"",searchText]];
             } else {
-                [cell.prompt setText:@"+  add a new icon"];
+                [cell.prompt setText:@"+  add a new iconography"];
             }
             [cell.createButton setHidden:YES];
         }
@@ -276,7 +277,7 @@ static NSString * const reuseIdentifier = @"IconCell";
     [_noSearchResultsLabel setText:@"No search results..."];
     [_noSearchResultsLabel setHidden:YES];
     
-    [self.searchBar setPlaceholder:@"Search for icon(s)"];
+    [self.searchBar setPlaceholder:@"Search iconography"];
     //reset the search bar font
     for (id subview in [self.searchBar.subviews.firstObject subviews]){
         if ([subview isKindOfClass:[UITextField class]]){
@@ -343,7 +344,7 @@ static NSString * const reuseIdentifier = @"IconCell";
     [parameters setObject:icon.name forKey:@"name"];
     [ProgressHUD show:[NSString stringWithFormat:@"Adding \"%@\"",icon.name]];
     [manager POST:@"icons" parameters:@{@"icon":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success creating a new icon: %@",responseObject);
+        //NSLog(@"Success creating a new icon: %@",responseObject);
         if ([responseObject objectForKey:@"icon"]){
             [icon populateFromDictionary:[responseObject objectForKey:@"icon"]];
         }

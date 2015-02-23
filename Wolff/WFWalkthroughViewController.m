@@ -106,6 +106,11 @@
     if (currentPage != page) {
         currentPage = page;
         [_pageControl setCurrentPage:currentPage];
+        if (currentPage + 1 >= _pageControl.numberOfPages){
+            [_skipButton setTitle:@"Done" forState:UIControlStateNormal];
+        } else {
+            [_skipButton setTitle:@"Skip" forState:UIControlStateNormal];
+        }
     }
     [_backgroundImageView1 setAlpha:1-(offsetX/_scrollView.frame.size.width)];
     [_backgroundImageView2 setAlpha:2-(offsetX/(_scrollView.frame.size.width))];
@@ -114,7 +119,8 @@
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
     CGFloat endedAtX = scrollView.contentOffset.x;
-    if (endedAtX > (width * 2.14)) {
+    if (endedAtX > ((width * 2) + 100)) {
+        [scrollView setContentOffset:CGPointMake(width * 4, 0) animated:YES];
         [self dismiss];
     }
 }

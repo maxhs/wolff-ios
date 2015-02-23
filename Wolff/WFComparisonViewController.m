@@ -68,8 +68,8 @@
     [self.view addGestureRecognizer:_panGesture];
     _pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
     [self.view addGestureRecognizer:_pinchGesture];
-    _rotationGesture = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
-    [self.view addGestureRecognizer:_rotationGesture];
+    //_rotationGesture = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotation:)];
+    //[self.view addGestureRecognizer:_rotationGesture];
     _singleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTap:)];
     _singleTapGesture.numberOfTapsRequired = 1;
     [self.view addGestureRecognizer:_singleTapGesture];

@@ -29,6 +29,9 @@
 		5026DF731A3D1F63000CD26F /* remove.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6D1A3D1F62000CD26F /* remove.png */; };
 		5026DF741A3D1F63000CD26F /* remove@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6E1A3D1F62000CD26F /* remove@2x.png */; };
 		5026DF751A3D1F63000CD26F /* remove@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5026DF6F1A3D1F62000CD26F /* remove@3x.png */; };
+		50300ADC1A97A6F900DBAC86 /* WFCardViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50300ADB1A97A6F900DBAC86 /* WFCardViewController.m */; };
+		50300ADF1A97A86700DBAC86 /* Card.m in Sources */ = {isa = PBXBuildFile; fileRef = 50300ADE1A97A86700DBAC86 /* Card.m */; };
+		50300AE21A97A87400DBAC86 /* Card+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 50300AE11A97A87400DBAC86 /* Card+helper.m */; };
 		50305BD01A5A0D0C00D2CAD1 /* info.png in Resources */ = {isa = PBXBuildFile; fileRef = 50305BCD1A5A0D0C00D2CAD1 /* info.png */; };
 		50305BD11A5A0D0C00D2CAD1 /* info@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50305BCE1A5A0D0C00D2CAD1 /* info@2x.png */; };
 		50305BD21A5A0D0C00D2CAD1 /* info@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50305BCF1A5A0D0C00D2CAD1 /* info@3x.png */; };
@@ -153,6 +156,23 @@
 		50A077B61A8EF67300147A0F /* WFIconCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A077B51A8EF67300147A0F /* WFIconCollectionCell.m */; };
 		50A9D41A1A83E6CB000B8DD6 /* WFNewLocationCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9D4191A83E6CB000B8DD6 /* WFNewLocationCell.m */; };
 		50A9D41D1A842590000B8DD6 /* WFDatePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9D41C1A842590000B8DD6 /* WFDatePicker.m */; };
+		50AC91F61A998135004148D2 /* WFCreditTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 50AC91F51A998135004148D2 /* WFCreditTextField.m */; };
+		50AC91FA1A99868C004148D2 /* WFMetadataModalAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = 50AC91F91A99868C004148D2 /* WFMetadataModalAnimator.m */; };
+		50AC91FE1A9A6A30004148D2 /* menuProfile.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC91FB1A9A6A30004148D2 /* menuProfile.png */; };
+		50AC91FF1A9A6A30004148D2 /* menuProfile@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC91FC1A9A6A30004148D2 /* menuProfile@2x.png */; };
+		50AC92001A9A6A30004148D2 /* menuProfile@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC91FD1A9A6A30004148D2 /* menuProfile@3x.png */; };
+		50AC92071A9A6AAA004148D2 /* menuLogout.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC92011A9A6AAA004148D2 /* menuLogout.png */; };
+		50AC92081A9A6AAA004148D2 /* menuLogout@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC92021A9A6AAA004148D2 /* menuLogout@2x.png */; };
+		50AC92091A9A6AAA004148D2 /* menuLogout@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC92031A9A6AAA004148D2 /* menuLogout@3x.png */; };
+		50AC920A1A9A6AAA004148D2 /* menuBlackSettings.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC92041A9A6AAA004148D2 /* menuBlackSettings.png */; };
+		50AC920B1A9A6AAA004148D2 /* menuBlackSettings@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC92051A9A6AAA004148D2 /* menuBlackSettings@2x.png */; };
+		50AC920C1A9A6AAA004148D2 /* menuBlackSettings@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC92061A9A6AAA004148D2 /* menuBlackSettings@3x.png */; };
+		50AC92131A9BB26E004148D2 /* leftWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC920D1A9BB26E004148D2 /* leftWhite.png */; };
+		50AC92141A9BB26E004148D2 /* leftWhite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC920E1A9BB26E004148D2 /* leftWhite@2x.png */; };
+		50AC92151A9BB26E004148D2 /* leftWhite@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC920F1A9BB26E004148D2 /* leftWhite@3x.png */; };
+		50AC92161A9BB26E004148D2 /* rightWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC92101A9BB26E004148D2 /* rightWhite.png */; };
+		50AC92171A9BB26E004148D2 /* rightWhite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC92111A9BB26E004148D2 /* rightWhite@2x.png */; };
+		50AC92181A9BB26E004148D2 /* rightWhite@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC92121A9BB26E004148D2 /* rightWhite@3x.png */; };
 		50C589511A8528970094DBBF /* WFDateMetadataCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589501A8528970094DBBF /* WFDateMetadataCell.m */; };
 		50C589541A8558070094DBBF /* WFMaterialsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589531A8558070094DBBF /* WFMaterialsViewController.m */; };
 		50C589571A8558450094DBBF /* WFMaterialCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589561A8558450094DBBF /* WFMaterialCollectionCell.m */; };
@@ -403,6 +423,12 @@
 		5026DF6D1A3D1F62000CD26F /* remove.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = remove.png; sourceTree = "<group>"; };
 		5026DF6E1A3D1F62000CD26F /* remove@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "remove@2x.png"; sourceTree = "<group>"; };
 		5026DF6F1A3D1F62000CD26F /* remove@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "remove@3x.png"; sourceTree = "<group>"; };
+		50300ADA1A97A6F900DBAC86 /* WFCardViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFCardViewController.h; sourceTree = "<group>"; };
+		50300ADB1A97A6F900DBAC86 /* WFCardViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFCardViewController.m; sourceTree = "<group>"; };
+		50300ADD1A97A86700DBAC86 /* Card.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Card.h; sourceTree = "<group>"; };
+		50300ADE1A97A86700DBAC86 /* Card.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Card.m; sourceTree = "<group>"; };
+		50300AE01A97A87400DBAC86 /* Card+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Card+helper.h"; sourceTree = "<group>"; };
+		50300AE11A97A87400DBAC86 /* Card+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "Card+helper.m"; sourceTree = "<group>"; };
 		50305BCD1A5A0D0C00D2CAD1 /* info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = info.png; sourceTree = "<group>"; };
 		50305BCE1A5A0D0C00D2CAD1 /* info@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info@2x.png"; sourceTree = "<group>"; };
 		50305BCF1A5A0D0C00D2CAD1 /* info@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info@3x.png"; sourceTree = "<group>"; };
@@ -549,6 +575,25 @@
 		50A9D4191A83E6CB000B8DD6 /* WFNewLocationCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFNewLocationCell.m; sourceTree = "<group>"; };
 		50A9D41B1A842590000B8DD6 /* WFDatePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFDatePicker.h; sourceTree = "<group>"; };
 		50A9D41C1A842590000B8DD6 /* WFDatePicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFDatePicker.m; sourceTree = "<group>"; };
+		50AC91F41A998135004148D2 /* WFCreditTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFCreditTextField.h; sourceTree = "<group>"; };
+		50AC91F51A998135004148D2 /* WFCreditTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFCreditTextField.m; sourceTree = "<group>"; };
+		50AC91F81A99868C004148D2 /* WFMetadataModalAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMetadataModalAnimator.h; sourceTree = "<group>"; };
+		50AC91F91A99868C004148D2 /* WFMetadataModalAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFMetadataModalAnimator.m; sourceTree = "<group>"; };
+		50AC91FB1A9A6A30004148D2 /* menuProfile.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menuProfile.png; sourceTree = "<group>"; };
+		50AC91FC1A9A6A30004148D2 /* menuProfile@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menuProfile@2x.png"; sourceTree = "<group>"; };
+		50AC91FD1A9A6A30004148D2 /* menuProfile@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menuProfile@3x.png"; sourceTree = "<group>"; };
+		50AC92011A9A6AAA004148D2 /* menuLogout.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menuLogout.png; sourceTree = "<group>"; };
+		50AC92021A9A6AAA004148D2 /* menuLogout@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menuLogout@2x.png"; sourceTree = "<group>"; };
+		50AC92031A9A6AAA004148D2 /* menuLogout@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menuLogout@3x.png"; sourceTree = "<group>"; };
+		50AC92041A9A6AAA004148D2 /* menuBlackSettings.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menuBlackSettings.png; sourceTree = "<group>"; };
+		50AC92051A9A6AAA004148D2 /* menuBlackSettings@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menuBlackSettings@2x.png"; sourceTree = "<group>"; };
+		50AC92061A9A6AAA004148D2 /* menuBlackSettings@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menuBlackSettings@3x.png"; sourceTree = "<group>"; };
+		50AC920D1A9BB26E004148D2 /* leftWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = leftWhite.png; sourceTree = "<group>"; };
+		50AC920E1A9BB26E004148D2 /* leftWhite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "leftWhite@2x.png"; sourceTree = "<group>"; };
+		50AC920F1A9BB26E004148D2 /* leftWhite@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "leftWhite@3x.png"; sourceTree = "<group>"; };
+		50AC92101A9BB26E004148D2 /* rightWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rightWhite.png; sourceTree = "<group>"; };
+		50AC92111A9BB26E004148D2 /* rightWhite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rightWhite@2x.png"; sourceTree = "<group>"; };
+		50AC92121A9BB26E004148D2 /* rightWhite@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rightWhite@3x.png"; sourceTree = "<group>"; };
 		50C5894F1A8528970094DBBF /* WFDateMetadataCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFDateMetadataCell.h; sourceTree = "<group>"; };
 		50C589501A8528970094DBBF /* WFDateMetadataCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFDateMetadataCell.m; sourceTree = "<group>"; };
 		50C589521A8558070094DBBF /* WFMaterialsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMaterialsViewController.h; sourceTree = "<group>"; };
@@ -899,6 +944,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		50AC91F71A998172004148D2 /*  Custom Objects */ = {
+			isa = PBXGroup;
+			children = (
+				50DB44641A57901800856174 /* WFInteractiveImageView.h */,
+				50DB44651A57901800856174 /* WFInteractiveImageView.m */,
+				50A9D41B1A842590000B8DD6 /* WFDatePicker.h */,
+				50A9D41C1A842590000B8DD6 /* WFDatePicker.m */,
+				504237F11A93A18C0064408C /* WFNewPhotoContainerView.h */,
+				504237F21A93A18C0064408C /* WFNewPhotoContainerView.m */,
+				50AC91F41A998135004148D2 /* WFCreditTextField.h */,
+				50AC91F51A998135004148D2 /* WFCreditTextField.m */,
+			);
+			name = " Custom Objects";
+			sourceTree = "<group>";
+		};
 		50DB445C1A57476E00856174 /* User */ = {
 			isa = PBXGroup;
 			children = (
@@ -910,6 +970,8 @@
 				F2CE0594198EAB280061DB94 /* WFSettingsViewController.m */,
 				504237EB1A93991F0064408C /* WFBillingViewController.h */,
 				504237EC1A93991F0064408C /* WFBillingViewController.m */,
+				50300ADA1A97A6F900DBAC86 /* WFCardViewController.h */,
+				50300ADB1A97A6F900DBAC86 /* WFCardViewController.m */,
 				50DB43A31A53611300856174 /* WFNotificationsViewController.h */,
 				50DB43A41A53611300856174 /* WFNotificationsViewController.m */,
 				50D7A9CF1A622E5C007FE14C /* WFWalkthroughViewController.h */,
@@ -996,8 +1058,6 @@
 				F2CE05B7199127960061DB94 /* WFCatalogViewController.m */,
 				F20FB2BD1A22A0A80007C905 /* WFNewArtViewController.h */,
 				F20FB2BE1A22A0A80007C905 /* WFNewArtViewController.m */,
-				504237F11A93A18C0064408C /* WFNewPhotoContainerView.h */,
-				504237F21A93A18C0064408C /* WFNewPhotoContainerView.m */,
 				F2CE057D198E929A0061DB94 /* WFArtMetadataViewController.h */,
 				F2CE057E198E929A0061DB94 /* WFArtMetadataViewController.m */,
 				50D6EC0F1A8284F200DAE52E /* WFArtistsViewController.h */,
@@ -1042,10 +1102,7 @@
 				50DB43FB1A53D35400856174 /* WFImagePickerController.m */,
 				50DB44231A54C04800856174 /* WFSearchResultsViewController.h */,
 				50DB44241A54C04800856174 /* WFSearchResultsViewController.m */,
-				50DB44641A57901800856174 /* WFInteractiveImageView.h */,
-				50DB44651A57901800856174 /* WFInteractiveImageView.m */,
-				50A9D41B1A842590000B8DD6 /* WFDatePicker.h */,
-				50A9D41C1A842590000B8DD6 /* WFDatePicker.m */,
+				50AC91F71A998172004148D2 /*  Custom Objects */,
 				F2A9581119E2293800A3B471 /* Transitions / Animators */,
 				F2CE055E198E76450061DB94 /* Images */,
 				F2CE0548198E6C5E0061DB94 /* Fonts */,
@@ -1110,6 +1167,8 @@
 			children = (
 				F2CE0586198EA3A50061DB94 /* WFArtMetadataAnimator.h */,
 				F2CE0587198EA3A50061DB94 /* WFArtMetadataAnimator.m */,
+				50AC91F81A99868C004148D2 /* WFMetadataModalAnimator.h */,
+				50AC91F91A99868C004148D2 /* WFMetadataModalAnimator.m */,
 				5049263F1A59342A000C6FD9 /* WFSlideMetadataAnimator.h */,
 				504926401A59342A000C6FD9 /* WFSlideMetadataAnimator.m */,
 				50DB43E81A53946A00856174 /* WFNewArtAnimator.h */,
@@ -1224,6 +1283,10 @@
 				F2CE054A198E72AC0061DB94 /* User.m */,
 				F2CE0550198E72CC0061DB94 /* User+helper.h */,
 				F2CE0551198E72CC0061DB94 /* User+helper.m */,
+				50300ADD1A97A86700DBAC86 /* Card.h */,
+				50300ADE1A97A86700DBAC86 /* Card.m */,
+				50300AE01A97A87400DBAC86 /* Card+helper.h */,
+				50300AE11A97A87400DBAC86 /* Card+helper.m */,
 				503CD5751A6F44C700F4FF85 /* Alternate.h */,
 				503CD5761A6F44C700F4FF85 /* Alternate.m */,
 				503CD5781A6F44DA00F4FF85 /* Alternate+helper.h */,
@@ -1260,6 +1323,21 @@
 			isa = PBXGroup;
 			children = (
 				F28C780618E1E4950088B4C9 /* Images.xcassets */,
+				50AC920D1A9BB26E004148D2 /* leftWhite.png */,
+				50AC920E1A9BB26E004148D2 /* leftWhite@2x.png */,
+				50AC920F1A9BB26E004148D2 /* leftWhite@3x.png */,
+				50AC92101A9BB26E004148D2 /* rightWhite.png */,
+				50AC92111A9BB26E004148D2 /* rightWhite@2x.png */,
+				50AC92121A9BB26E004148D2 /* rightWhite@3x.png */,
+				50AC92011A9A6AAA004148D2 /* menuLogout.png */,
+				50AC92021A9A6AAA004148D2 /* menuLogout@2x.png */,
+				50AC92031A9A6AAA004148D2 /* menuLogout@3x.png */,
+				50AC92041A9A6AAA004148D2 /* menuBlackSettings.png */,
+				50AC92051A9A6AAA004148D2 /* menuBlackSettings@2x.png */,
+				50AC92061A9A6AAA004148D2 /* menuBlackSettings@3x.png */,
+				50AC91FB1A9A6A30004148D2 /* menuProfile.png */,
+				50AC91FC1A9A6A30004148D2 /* menuProfile@2x.png */,
+				50AC91FD1A9A6A30004148D2 /* menuProfile@3x.png */,
 				503CD5B11A773A6900F4FF85 /* whiteLogo.png */,
 				503CD5B21A773A6900F4FF85 /* whiteLogo@2x.png */,
 				503CD5B31A773A6900F4FF85 /* whiteLogo@3x.png */,
@@ -1654,22 +1732,28 @@
 				50DB44711A5867C100856174 /* cloud@2x.png in Resources */,
 				503CD5B51A773A6900F4FF85 /* whiteLogo@2x.png in Resources */,
 				50952EA31A47FE3300485831 /* edit@2x.png in Resources */,
+				50AC920B1A9A6AAA004148D2 /* menuBlackSettings@2x.png in Resources */,
 				F2A9580319E220F100A3B471 /* icon-120.png in Resources */,
 				F2A957FB19E220F100A3B471 /* icon-40.png in Resources */,
 				50D7A9E61A623A5C007FE14C /* login@3x.png in Resources */,
 				50DB44451A56211D00856174 /* transparentIcon@2x.png in Resources */,
 				5049263A1A592C28000C6FD9 /* mobile@2x.png in Resources */,
+				50AC92131A9BB26E004148D2 /* leftWhite.png in Resources */,
 				505D3B6D1A64AECA00CD70DE /* saffronSlideshow.png in Resources */,
+				50AC92091A9A6AAA004148D2 /* menuLogout@3x.png in Resources */,
 				508DC9421A5B702200B1C008 /* settings@2x.png in Resources */,
 				504926261A58DFB9000C6FD9 /* infoCircle@3x.png in Resources */,
 				50DB446F1A5867C100856174 /* wrench@3x.png in Resources */,
+				50AC91FF1A9A6A30004148D2 /* menuProfile@2x.png in Resources */,
 				508DC95F1A5B764100B1C008 /* whiteTables.png in Resources */,
 				505D3B551A64ABA300CD70DE /* blueTables.png in Resources */,
+				50AC91FE1A9A6A30004148D2 /* menuProfile.png in Resources */,
 				F2A9580219E220F100A3B471 /* icon-114.png in Resources */,
 				50952E8D1A47F70E00485831 /* MuseoSans-900italic.ttf in Resources */,
 				508DC9531A5B725F00B1C008 /* plus.png in Resources */,
 				50DB443A1A5503FC00856174 /* cloudUpload@3x.png in Resources */,
 				50DB446D1A5867C100856174 /* wrench.png in Resources */,
+				50AC92171A9BB26E004148D2 /* rightWhite@2x.png in Resources */,
 				50952E991A47FD8100485831 /* flag.png in Resources */,
 				50DB44721A5867C100856174 /* cloud@3x.png in Resources */,
 				505D3BB41A660FCD00CD70DE /* lock@3x.png in Resources */,
@@ -1684,6 +1768,8 @@
 				5026DF741A3D1F63000CD26F /* remove@2x.png in Resources */,
 				50DB44761A58682800856174 /* shareArrow.png in Resources */,
 				505D3B8A1A6516DE00CD70DE /* leftArrow@2x.png in Resources */,
+				50AC92151A9BB26E004148D2 /* leftWhite@3x.png in Resources */,
+				50AC92081A9A6AAA004148D2 /* menuLogout@2x.png in Resources */,
 				50952E851A47F70E00485831 /* MuseoSans-100.ttf in Resources */,
 				50DB43D51A537AC500856174 /* dropToLightTable@3x.png in Resources */,
 				508DC9391A5B6FA900B1C008 /* refresh@2x.png in Resources */,
@@ -1702,6 +1788,7 @@
 				505D3BB91A66129300CD70DE /* favorite@3x.png in Resources */,
 				50952E881A47F70E00485831 /* MuseoSans-300italic.ttf in Resources */,
 				508DC98C1A5B7C4D00B1C008 /* blueCheckbox.png in Resources */,
+				50AC920A1A9A6AAA004148D2 /* menuBlackSettings.png in Resources */,
 				50DB43D31A537AC500856174 /* dropToLightTable.png in Resources */,
 				F20D2EA019EB095F00CA54C0 /* Lato-RegIta.ttf in Resources */,
 				50952E9B1A47FD8100485831 /* flag@3x.png in Resources */,
@@ -1724,6 +1811,7 @@
 				505D3B561A64ABA300CD70DE /* blueTables@2x.png in Resources */,
 				505D3B491A646FD400CD70DE /* left.png in Resources */,
 				50FB5FEA1A40E6CC004D6062 /* Lato-Hai.ttf in Resources */,
+				50AC920C1A9A6AAA004148D2 /* menuBlackSettings@3x.png in Resources */,
 				505D3B991A65D32A00CD70DE /* walkthrough2.jpg in Resources */,
 				501473FE1A3EA136000422B8 /* trash@3x.png in Resources */,
 				50FB5F781A3F2AA8004D6062 /* download.png in Resources */,
@@ -1760,6 +1848,7 @@
 				50DB44611A5756D600856174 /* whiteTrash.png in Resources */,
 				505D3B891A6516DE00CD70DE /* leftArrow.png in Resources */,
 				50952EA21A47FE3300485831 /* edit.png in Resources */,
+				50AC92161A9BB26E004148D2 /* rightWhite.png in Resources */,
 				508DC9411A5B702200B1C008 /* settings.png in Resources */,
 				505D3B9D1A65D4E800CD70DE /* walkthrough3.jpg in Resources */,
 				501473F71A3EA136000422B8 /* lightbulb@2x.png in Resources */,
@@ -1779,6 +1868,7 @@
 				501473F81A3EA136000422B8 /* lightbulb@3x.png in Resources */,
 				50952EA61A47FE3300485831 /* share@2x.png in Resources */,
 				505D3B6E1A64AECA00CD70DE /* saffronSlideshow@2x.png in Resources */,
+				50AC92001A9A6A30004148D2 /* menuProfile@3x.png in Resources */,
 				508DC9431A5B702200B1C008 /* settings@3x.png in Resources */,
 				50DB44131A54705B00856174 /* whiteLock@3x.png in Resources */,
 				505D3B9E1A65D4E800CD70DE /* walkthrough3@2x.jpg in Resources */,
@@ -1791,12 +1881,15 @@
 				50FB5FE91A40E6CC004D6062 /* Lato-BlaIta.ttf in Resources */,
 				F28C77F018E1E4950088B4C9 /* InfoPlist.strings in Resources */,
 				50DB44151A54705B00856174 /* whiteFavorite@2x.png in Resources */,
+				50AC92141A9BB26E004148D2 /* leftWhite@2x.png in Resources */,
+				50AC92071A9A6AAA004148D2 /* menuLogout.png in Resources */,
 				50DB44161A54705B00856174 /* whiteFavorite@3x.png in Resources */,
 				F2A9580519E220F100A3B471 /* icon-152.png in Resources */,
 				505D3B721A64AECA00CD70DE /* slideshow@3x.png in Resources */,
 				F2A9581019E2245F00A3B471 /* Default_iPad_landscape@2x.png in Resources */,
 				50DB44701A5867C100856174 /* cloud.png in Resources */,
 				50FB5F791A3F2AA8004D6062 /* download@2x.png in Resources */,
+				50AC92181A9BB26E004148D2 /* rightWhite@3x.png in Resources */,
 				508DC9A01A5B836800B1C008 /* alert@3x.png in Resources */,
 				50952EAB1A480BD000485831 /* camera.png in Resources */,
 				5026DF701A3D1F62000CD26F /* blackRemove.png in Resources */,
@@ -1893,6 +1986,7 @@
 				50DB43FC1A53D35400856174 /* WFImagePickerController.m in Sources */,
 				50D7A9EF1A625853007FE14C /* WFAssetGroupPickerCell.m in Sources */,
 				F20A3EBD19EB1AFE008E0D4C /* Institution.m in Sources */,
+				50300AE21A97A87400DBAC86 /* Card+helper.m in Sources */,
 				504237F31A93A18C0064408C /* WFNewPhotoContainerView.m in Sources */,
 				503CD5951A715D7300F4FF85 /* WFFlagCell.m in Sources */,
 				F2CE05B519911AA10061DB94 /* Slide+helper.m in Sources */,
@@ -1902,6 +1996,7 @@
 				F20FB2EC1A24DCCE0007C905 /* Material+helper.m in Sources */,
 				50DB02291A5A72D8005A4E2F /* WFLightTableDetailsCell.m in Sources */,
 				F20A3EC019EB1B17008E0D4C /* Institution+helper.m in Sources */,
+				50AC91F61A998135004148D2 /* WFCreditTextField.m in Sources */,
 				504926411A59342A000C6FD9 /* WFSlideMetadataAnimator.m in Sources */,
 				F20A3ECD19EB37B1008E0D4C /* Photo+helper.m in Sources */,
 				F28C77FF18E1E4950088B4C9 /* Wolff.xcdatamodeld in Sources */,
@@ -1972,12 +2067,14 @@
 				F28C66FC1A33DA0000B82FD8 /* WFSlideshowsViewController.m in Sources */,
 				F28C67141A34176D00B82FD8 /* WFSettingsAnimator.m in Sources */,
 				F28C77F618E1E4950088B4C9 /* WFAppDelegate.m in Sources */,
+				50AC91FA1A99868C004148D2 /* WFMetadataModalAnimator.m in Sources */,
 				50DB44841A58773E00856174 /* WFSlideshowShareTableViewController.m in Sources */,
 				50DB44491A564A2900856174 /* WFProfileViewController.m in Sources */,
 				50D6EC1A1A82E53B00DAE52E /* WFLocationsViewController.m in Sources */,
 				50DB44251A54C04800856174 /* WFSearchResultsViewController.m in Sources */,
 				F2CE0595198EAB280061DB94 /* WFSettingsViewController.m in Sources */,
 				50D6EC231A832D8D00DAE52E /* WFNewArtistCell.m in Sources */,
+				50300ADF1A97A86700DBAC86 /* Card.m in Sources */,
 				50952E7B1A478EA100485831 /* WFMenuViewController.m in Sources */,
 				50DB444C1A564EB600856174 /* WFProfileHeader.m in Sources */,
 				503CD5981A72BF2B00F4FF85 /* WFSlideshowTitleCell.m in Sources */,
@@ -1991,6 +2088,7 @@
 				50DB02231A5A6FDE005A4E2F /* WFUtilities.m in Sources */,
 				504926291A58E101000C6FD9 /* WFSlideMetadataViewController.m in Sources */,
 				F2CE0573198E85850061DB94 /* WFPhotoCell.m in Sources */,
+				50300ADC1A97A6F900DBAC86 /* WFCardViewController.m in Sources */,
 				50C589511A8528970094DBBF /* WFDateMetadataCell.m in Sources */,
 				5026DF601A3CC4D1000CD26F /* WFTableCell.m in Sources */,
 				5026DF5A1A3CBE80000CD26F /* WFGroupsInteractor.m in Sources */,

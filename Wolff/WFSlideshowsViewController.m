@@ -102,6 +102,10 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideshowCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideshowCell" forIndexPath:indexPath];
+    UIView *selectedView = [[UIView alloc] initWithFrame:cell.frame];
+    [selectedView setBackgroundColor:[UIColor colorWithWhite:0 alpha:.14]];
+    cell.selectedBackgroundView = selectedView;
+    
     if (indexPath.section == 0){
         [cell.imageView setImage:[UIImage imageNamed:@"plus"]];
         [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];

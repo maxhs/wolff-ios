@@ -27,6 +27,12 @@
     if ([dictionary objectForKey:@"suffix"] && [dictionary objectForKey:@"suffix"] != [NSNull null]){
         self.suffix = [dictionary objectForKey:@"suffix"];
     }
+    if ([dictionary objectForKey:@"begin_suffix"] && [dictionary objectForKey:@"begin_suffix"] != [NSNull null]){
+        self.beginSuffix = [dictionary objectForKey:@"begin_suffix"];
+    }
+    if ([dictionary objectForKey:@"end_suffix"] && [dictionary objectForKey:@"end_suffix"] != [NSNull null]){
+        self.endSuffix = [dictionary objectForKey:@"end_suffix"];
+    }
     if ([dictionary objectForKey:@"year"] && [dictionary objectForKey:@"year"] != [NSNull null]){
         self.year = [dictionary objectForKey:@"year"];
     }

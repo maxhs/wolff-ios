@@ -45,7 +45,7 @@
 #import "WFUtilities.h"
 #import "WFSlideshowViewController.h"
 
-@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, WFLightTableDelegate, WFSlideshowCellDelegate, WFLightTableCellDelegate, WFCreateSlideshowDelegate, UIGestureRecognizerDelegate> {
+@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, WFLightTableDelegate, WFSlideshowCellDelegate, WFLightTableCellDelegate, WFCreateSlideshowDelegate, WFNotificationsDelegate, UIGestureRecognizerDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     User *_currentUser;
@@ -57,8 +57,7 @@
     UIBarButtonItem *lightTablesButton;
     UIBarButtonItem *notificationsButton;
     //UIBarButtonItem *refreshButton;
-    CGFloat width;
-    CGFloat height;
+    CGFloat width, height, keyboardHeight;
     NSMutableOrderedSet *_photos;
     NSMutableOrderedSet *_privatePhotos;
     NSMutableOrderedSet *_favoritePhotos;
@@ -111,7 +110,6 @@
     WFInteractiveImageView *comparison1;
     WFInteractiveImageView *comparison2;
     
-    WFSearchResultsViewController *searchResultsVc;
     NSString *searchText;
     UIButton *resetButton;
     UIImageView *navBarShadowView;
@@ -363,7 +361,6 @@
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:@40 forKey:@"count"];
     if (searching && searchText && searchText.length){
-        [ProgressHUD show:@"Searching..."];
         [parameters setObject:searchText forKey:@"search"];
     } else if (_photos.count) {
         Photo *lastPhoto = _photos.lastObject;
@@ -379,6 +376,7 @@
         [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             if ([[responseObject objectForKey:@"photos"] count]){
                 canLoadMorePhotos = YES;
+                [_noSearchResultsLabel setText:@"Searching the full Wölff catalog..."];
                 for (NSDictionary *dict in [responseObject objectForKey:@"photos"]) {
                     Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                     if (!photo){
@@ -386,7 +384,7 @@
                     }
                     [photo populateFromDictionary:dict];
                     
-                    if (![photo.privatePhoto isEqualToNumber:@YES] || ![photo.art.privateArt isEqualToNumber:@YES]){
+                    if (![photo.privatePhoto isEqualToNumber:@YES] && ![photo.art.privateArt isEqualToNumber:@YES]){
                         [_photos addObject:photo];
                         if (searching){
                             [_filteredPhotos addObject:photo];
@@ -394,18 +392,30 @@
                     }
                 }
                 [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                    [self.collectionView reloadData];
                     [self endRefresh];
+                    [self.collectionView reloadData];
                 }];
             } else {
                 canLoadMorePhotos = NO;
                 [self endRefresh];
-                NSLog(@"Can't load any more photos. We got it all!");
+                [_noSearchResultsLabel setText:kNoSearchResults];
+                [_noSearchResultsLabel setHidden:NO];
             }
             
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [self endRefresh];
         }];
+    }
+}
+
+- (void)endRefresh {
+    loading = NO;
+    [ProgressHUD dismiss];
+    if (tableViewRefresh.isRefreshing){
+        [tableViewRefresh endRefreshing];
+    }
+    if (collectionViewRefresh.isRefreshing){
+        [collectionViewRefresh endRefreshing];
     }
 }
 
@@ -418,7 +428,7 @@
             
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 //set up private photos and favorites
-                NSPredicate *privatePredicate = [NSPredicate predicateWithFormat:@"art.privateArt == %@ && art.user.identifier == %@", @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+                NSPredicate *privatePredicate = [NSPredicate predicateWithFormat:@"privatePhoto == %@ && user.identifier == %@", @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
                 _privatePhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:privatePredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
                 [_currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
                     if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
@@ -436,16 +446,6 @@
             
             [self endRefresh];
         }];
-    }
-}
-- (void)endRefresh {
-    loading = NO;
-    [ProgressHUD dismiss];
-    if (tableViewRefresh.isRefreshing){
-        [tableViewRefresh endRefreshing];
-    }
-    if (collectionViewRefresh.isRefreshing){
-        [collectionViewRefresh endRefreshing];
     }
 }
 
@@ -491,7 +491,7 @@
 }
 
 - (void)failedToAddArt:(Art*)art {
-    [WFAlert show:[NSString stringWithFormat:@"Something went wrong while trying to add \"%@\" to the catalog. Please try again soon.",art.title] withTime:3.3f];
+    //[WFAlert show:[NSString stringWithFormat:@"Something went wrong while trying to add \"%@\" to the catalog. Please try again soon.",art.title] withTime:3.7f];
 }
 
 #pragma mark - Table view data source
@@ -593,7 +593,15 @@
                 [cell.label setText:@""];
                 cell.selectionStyle = UITableViewCellSelectionStyleDefault;
                 [cell.actionButton setUserInteractionEnabled:YES];
-                
+                if (table == _table){
+                    [cell.tableLabel setTextColor:kElectricBlue];
+                    [cell.pieceCountLabel setTextColor:kElectricBlue];
+                    [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
+                } else {
+                    [cell.tableLabel setTextColor:[UIColor whiteColor]];
+                    [cell.pieceCountLabel setTextColor:[UIColor colorWithWhite:1 alpha:.33]];
+                    [cell setBackgroundColor:[UIColor clearColor]];
+                }
             } else {
                 cell.selectionStyle = UITableViewCellSelectionStyleNone;
                 if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
@@ -728,7 +736,8 @@
                     if (_tables.count){
                         Table *table = _tables[indexPath.row];
                         [self showTable:table];
-                        //[self setHomeAsReset];
+                        [tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
+                        //[tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
                     }
                 } else {
                     [WFAlert show:@"Joining or creating light tables requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
@@ -849,18 +858,22 @@
 #pragma mark - Light Table Delegate Section
 - (void)newLightTable {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
-        (_selectedPhotos.count) ? [vc setPhotos:_selectedPhotos] : [vc setShowKey:YES];
-        vc.lightTableDelegate = self;
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            vc.modalPresentationStyle = UIModalPresentationCustom;
-            vc.transitioningDelegate = self;
-            [self resetTransitionBooleans];
-            newLightTableTransition = YES;
-            [self presentViewController:vc animated:YES completion:^{
-                
+        if (_currentUser.customerPlan.length){
+            WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
+            (_selectedPhotos.count) ? [vc setPhotos:_selectedPhotos] : [vc setShowKey:YES];
+            vc.lightTableDelegate = self;
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                vc.modalPresentationStyle = UIModalPresentationCustom;
+                vc.transitioningDelegate = self;
+                [self resetTransitionBooleans];
+                newLightTableTransition = YES;
+                [self presentViewController:vc animated:YES completion:^{
+                    
+                }];
             }];
-        }];
+        } else {
+            [WFAlert show:@"Joining or creating light tables requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
+        }
     } else {
         [self showLogin];
     }
@@ -943,6 +956,7 @@
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+ 
     WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"PhotoCell" forIndexPath:indexPath];
     Photo *photo;
     if (searching){
@@ -963,11 +977,12 @@
         [cell.checkmark setHidden:YES];
     }
     return cell;
+    
 }
 
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
-    if (showFavorites || (showLightTable && _table) || showPrivate){
+    if ((searching && searchText.length) || showFavorites || (showLightTable && _table) || showPrivate){
         return CGSizeMake(collectionView.frame.size.width, 54);
     } else {
         return CGSizeMake(1, 0);
@@ -980,14 +995,14 @@
         
         [headerView.headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
         if (showPrivate){
-            [headerView.headerLabel setText:@"My Private Art"];
+            [headerView.headerLabel setText:@"Private Art"];
         } else if (showLightTable) {
             [headerView.headerLabel setText:[NSString stringWithFormat:@"\"%@\" Art",_table.name]];
         } else if (showFavorites) {
-            [headerView.headerLabel setText:@"My Favorites"];
+            [headerView.headerLabel setText:@"Favorites"];
         } else if (searching) {
             if (searchText.length){
-                [headerView.headerLabel setText:[NSString stringWithFormat:@"Search results for: %@",searchText]];
+                [headerView.headerLabel setText:[NSString stringWithFormat:@"Search results for: \"%@\"",searchText]];
             } else {
                 [headerView.headerLabel setText:@""];
             }
@@ -1005,6 +1020,8 @@
     if (tableIsVisible || searching || showFavorites || showLightTable || showPrivate){
         dispatch_async(dispatch_get_main_queue(), ^(void){
             [self resetArtBooleans];
+            _table = nil;
+            
             if (tableIsVisible){
                 [self showSidebar];
             }
@@ -1015,8 +1032,9 @@
             [self.searchBar resignFirstResponder];
             [self.view endEditing:YES];
             [self.collectionView reloadData];
-            [homeButton setImage:[UIImage imageNamed:@"homeIcon"] forState:UIControlStateNormal];
         });
+        
+        [_tableView reloadData];
     }
 }
 
@@ -1476,23 +1494,21 @@
     if (showPrivate){
         NSPredicate *privatePredicate = [NSPredicate predicateWithFormat:@"art.privateArt == %@ && art.user.identifier == %@", @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
         _privatePhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:privatePredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
-        [_collectionView reloadData];
     } else if (showFavorites){
         [_currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
             if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
                 [_favoritePhotos addObject:favorite.photo];
             }
         }];
-        [_collectionView reloadData];
     } else if (showLightTable && _table){
-
         [_table removePhoto:photo];
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-        [_collectionView reloadData];
     } else {
         [_photos removeObject:photo];
-        [_collectionView reloadData];
     }
+    [photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        [_collectionView reloadData];
+    }];
 }
 
 - (void)artDeleted:(NSNumber *)photoId {
@@ -1519,8 +1535,8 @@
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
-    searchResultsVc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SearchResults"];
-    [searchResultsVc setPhotos:_selectedPhotos.array.mutableCopy];
+    WFSearchResultsViewController *searchResultsVc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SearchResults"];
+    [searchResultsVc setPhotos:_selectedPhotos];
     CGFloat selectedHeight = _selectedPhotos.count*80.f > 640.f ? 640.f : (_selectedPhotos.count*80.f); // don't need to offset by 44 because iOS is already adding a scrolView offset for us
     searchResultsVc.preferredContentSize = CGSizeMake(420, selectedHeight);
     searchResultsVc.searchDelegate = self;
@@ -1537,11 +1553,16 @@
         [self.popover dismissPopoverAnimated:YES];
     }
     WFNotificationsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Notifications"];
-    //vc.notificationsDelegate = self;
+    vc.notificationsDelegate = self;
     vc.preferredContentSize = CGSizeMake(470, 500);
     self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
     self.popover.delegate = self;
     [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+}
+
+- (void)didSelectNotificationWithId:(NSNumber*)notificationId {
+    Notification *notification = [Notification MR_findFirstByAttribute:@"identifier" withValue:notificationId inContext:[NSManagedObjectContext MR_defaultContext]];
+    NSLog(@"Did select notification: %@",notification.message);
 }
 
 - (void)settingsPopover:(id)sender {
@@ -1550,7 +1571,7 @@
     }
     WFMenuViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Menu"];
     vc.menuDelegate = self;
-    vc.preferredContentSize = CGSizeMake(200, 150);
+    vc.preferredContentSize = CGSizeMake(170, 150);
     self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
     self.popover.delegate = self;
     [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
@@ -1621,17 +1642,38 @@
 
 - (void)newSlideshow {
     [self.popover dismissPopoverAnimated:YES];
-    WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
-    [vc setPhotos:_photos];
-    vc.createSlideshowDelegate = self;
-    Slideshow *slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-    slideshow.user = _currentUser;
-    if (_selectedPhotos.count){
-        [slideshow setPhotos:[NSOrderedSet orderedSetWithOrderedSet:_selectedPhotos]];
+    if (_currentUser.customerPlan.length){
+        WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
+        [vc setPhotos:_photos];
+        vc.createSlideshowDelegate = self;
+        Slideshow *slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        slideshow.user = _currentUser;
+        if (_selectedPhotos.count){
+            [slideshow setPhotos:[NSOrderedSet orderedSetWithOrderedSet:_selectedPhotos]];
+        }
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            NSLog(@"new slideshow has %lu slides",(unsigned long)slideshow.slides.count);
+            [vc setSlideshowId:slideshow.identifier];
+            UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+            nav.transitioningDelegate = self;
+            nav.modalPresentationStyle = UIModalPresentationCustom;
+            [self resetTransitionBooleans];
+            [self presentViewController:nav animated:YES completion:^{
+                
+            }];
+        }];
+    } else {
+        [WFAlert show:@"Creating new slideshows requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
     }
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        NSLog(@"new slideshow has %lu slides",(unsigned long)slideshow.slides.count);
-        [vc setSlideshowId:slideshow.identifier];
+}
+
+- (void)slideshowSelected:(Slideshow *)presentation {
+    [self.popover dismissPopoverAnimated:YES];
+    if (_currentUser.customerPlan.length){
+        WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
+        [vc setPhotos:_photos];
+        vc.createSlideshowDelegate = self;
+        [vc setSlideshowId:presentation.identifier];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
@@ -1639,22 +1681,9 @@
         [self presentViewController:nav animated:YES completion:^{
             
         }];
-    }];
-}
-
-- (void)slideshowSelected:(Slideshow *)presentation {
-    [self.popover dismissPopoverAnimated:YES];
-    WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
-    [vc setPhotos:_photos];
-    vc.createSlideshowDelegate = self;
-    [vc setSlideshowId:presentation.identifier];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self resetTransitionBooleans];
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    } else {
+        [WFAlert show:@"Adding selected art to a slideshow requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
+    }
 }
 
 #pragma createSlidesShow Delegate
@@ -1801,7 +1830,6 @@
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
-    
     if (groupBool){
         WFTablesAnimator *animator = [WFTablesAnimator new];
         return animator;
@@ -1841,6 +1869,7 @@
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    [ProgressHUD show:@"Searching..."];
     [searchBar endEditing:YES];
     searchText = searchBar.text;
     [self loadPhotos];
@@ -1856,7 +1885,6 @@
     if (!searchBar.text.length) {
         searching = NO;
         [self resetArtBooleans];
-        //[self setHomeAsHome];
     }
 }
 
@@ -1870,7 +1898,7 @@
 - (void)setUpSearch {
     [_noSearchResultsLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLightItalic] size:0]];
     [_noSearchResultsLabel setTextColor:[UIColor colorWithWhite:0 alpha:.23]];
-    [_noSearchResultsLabel setText:@"No search results...\n\nTap the \"Search\" key to perform a full search through the Wölff catalog"];
+    [_noSearchResultsLabel setText:@"No search results..."];
     [_noSearchResultsLabel setHidden:YES];
     [self.searchBar setPlaceholder:@"Search catalog"];
     
@@ -1908,15 +1936,15 @@
     //NSLog(@"search text: %@",text);
     if (text.length) {
         [_filteredPhotos removeAllObjects];
-        NSArray *photosToIterateThrough;
+        NSOrderedSet *photosToIterateThrough;
         if (showLightTable && _table){
-            photosToIterateThrough = _table.photos.array;
+            photosToIterateThrough = _table.photos;
         } else if (showPrivate){
-            photosToIterateThrough = _privatePhotos.array;
+            photosToIterateThrough = _privatePhotos;
         } else if (showFavorites){
-            photosToIterateThrough = _favoritePhotos.array;
+            photosToIterateThrough = _favoritePhotos;
         } else {
-            photosToIterateThrough = _photos.array;
+            photosToIterateThrough = _photos;
         }
         for (Photo *photo in photosToIterateThrough){
             // evaluate the art metadata, but actually add the photo to _filteredPhotos
@@ -1928,8 +1956,16 @@
                 [_filteredPhotos addObject:photo];
             } else if ([predicate evaluateWithObject:art.locationsToSentence]){
                 [_filteredPhotos addObject:photo];
+            } else if ([predicate evaluateWithObject:art.materialsToSentence]){
+                [_filteredPhotos addObject:photo];
+            } else if ([predicate evaluateWithObject:photo.iconsToSentence]){
+                [_filteredPhotos addObject:photo];
+            } else if ([predicate evaluateWithObject:photo.credit]){
+                [_filteredPhotos addObject:photo];
             }
         }
+        
+        if (!_filteredPhotos.count) [self loadPhotos];
     } else {
         _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
     }
@@ -1942,42 +1978,52 @@
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
-    for (Photo *photo in _selectedPhotos){
-        [lightTable addPhoto:photo];
-    }
-    
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+    if (_currentUser.customerPlan.length){
+        for (Photo *photo in _selectedPhotos){
+            [lightTable addPhoto:photo];
+        }
+        
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
 
-        __block NSMutableSet *photoIds = [NSMutableSet set];
-        [lightTable.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
-            [photoIds addObject:photo.identifier];
-        }];
-        if (tableIsVisible && !slideshowSidebarMode){
-            [self.tableView reloadData];
-        }
-        if (photoIds.count){
-            [manager PATCH:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:@{@"light_table":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                NSLog(@"Success bulk adding photos to a light table: %@",responseObject);
-                NSString *photoCount = _selectedPhotos.count == 1 ? @"1 photo" : [NSString stringWithFormat:@"%lu photos",(unsigned long)_selectedPhotos.count];
-                [WFAlert show:[NSString stringWithFormat:@"%@ added to %@",photoCount, lightTable.name] withTime:3.3f];
-            } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                NSLog(@"Failed to add selected to a light table: %@",error.description);
+            __block NSMutableSet *photoIds = [NSMutableSet set];
+            [lightTable.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
+                [photoIds addObject:photo.identifier];
             }];
-        }
-    }];
+            if (tableIsVisible && !slideshowSidebarMode){
+                [self.tableView reloadData];
+            }
+            if (photoIds.count){
+                [manager PATCH:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:@{@"light_table":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                    NSLog(@"Success bulk adding photos to a light table: %@",responseObject);
+                    NSString *photoCount = _selectedPhotos.count == 1 ? @"1 photo" : [NSString stringWithFormat:@"%lu photos",(unsigned long)_selectedPhotos.count];
+                    [WFAlert show:[NSString stringWithFormat:@"%@ added to %@",photoCount, lightTable.name] withTime:3.3f];
+                } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                    NSLog(@"Failed to add selected to a light table: %@",error.description);
+                }];
+            }
+        }];
+    } else {
+        [WFAlert show:@"Dropping selected art onto a light table requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
+    }
 }
 
 - (void)newLightTableForSelected {
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
-    [self newLightTable];
+    if (_currentUser.customerPlan.length){
+        [self newLightTable];
+    } else {
+        [WFAlert show:@"Creating new light tables requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
+    }
+    
 }
 
 - (void)slideshowForSelected:(Slideshow *)slideshow {
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
+    if (_currentUser.customerPlan.length){
     for (Photo *photo in _selectedPhotos){
         [slideshow addPhoto:photo];
     }
@@ -2004,6 +2050,9 @@
             }
         }
     }];
+    } else {
+        [WFAlert show:@"Dropping selected art into a slideshow requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
+    }
 }
 
 - (void)batchFavorite {
@@ -2070,6 +2119,41 @@
 // UIMenuController requires that we can become first responder or it won't display
 - (BOOL)canBecomeFirstResponder {
     return YES;
+}
+
+- (void)registerKeyboardNotifications {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willShowKeyboard:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideKeyboard:) name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)willShowKeyboard:(NSNotification*)notification {
+    NSDictionary* keyboardInfo = [notification userInfo];
+    NSValue *keyboardValue = keyboardInfo[UIKeyboardFrameEndUserInfoKey];
+    CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
+    keyboardHeight = convertedKeyboardFrame.size.height;
+    CGFloat duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+    UIViewAnimationOptions animationCurve = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
+    [UIView animateWithDuration:duration
+                          delay:0
+                        options:(animationCurve << 16)
+                     animations:^{
+                         _collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight+44, 0);
+                         _collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, keyboardHeight+44, 0);
+                     }
+                     completion:NULL];
+}
+
+- (void)willHideKeyboard:(NSNotification *)notification {
+    CGFloat duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+    UIViewAnimationOptions animationCurve = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
+    [UIView animateWithDuration:duration
+                          delay:0
+                        options:(animationCurve << 16)
+                     animations:^{
+                         _collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+                         _collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, 0, 0);
+                     }
+                     completion:NULL];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

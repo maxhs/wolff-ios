@@ -22,6 +22,7 @@
 @property (nonatomic, retain) NSString * mediumImageUrl;
 @property (nonatomic, retain) NSString * originalImageUrl;
 @property (nonatomic, retain) NSString * credit;
+@property (nonatomic, retain) NSString * notes;
 @property (nonatomic, retain) NSDate * createdDate;
 @property (nonatomic, retain) NSOrderedSet *slides;
 @property (nonatomic, retain) NSOrderedSet *icons;

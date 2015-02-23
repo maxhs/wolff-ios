@@ -28,6 +28,7 @@
 @dynamic icons;
 @dynamic tables;
 @dynamic credit;
+@dynamic notes;
 @dynamic art;
 @dynamic user;
 @dynamic artists;

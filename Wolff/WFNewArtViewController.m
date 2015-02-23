@@ -20,8 +20,10 @@
 #import "WFDateMetadataCell.h"
 #import "WFMaterialsViewController.h"
 #import "WFIconsViewController.h"
+#import "Icon+helper.h"
+#import "WFCreditTextField.h"
 
-@interface WFNewArtViewController () <UITableViewDataSource, UITableViewDelegate , UIScrollViewDelegate, UITextFieldDelegate, WFImagePickerControllerDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFDatePickerDelegate, WFSelectMaterialsDelegate, WFSelectIconsDelegate> {
+@interface WFNewArtViewController () <UITableViewDataSource, UITableViewDelegate , UIScrollViewDelegate, UITextFieldDelegate, WFImagePickerControllerDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectMaterialsDelegate, WFSelectIconsDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     BOOL iOS8;
@@ -35,9 +37,12 @@
     UITextField *materialTextField;
     UITextField *notesTextField;
     Art *_art;
-    WFDatePicker *_datePicker;
     UIButton *_ceButton;
     UIButton *_bceButton;
+    UIButton *_ceBeginButton;
+    UIButton *_bceBeginButton;
+    UIButton *_ceEndButton;
+    UIButton *_bceEndButton;
     NSInteger currentPhotoIdx;
     NSMutableArray *_selectedImages;
     CGFloat imageWidth;
@@ -67,6 +72,9 @@
     imageHeight = 170.f;
     [self setupSlideContainer];
     _art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    Interval *interval = [Interval MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    [_art setInterval:interval];
+    
     [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
     [_submitButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
     [_submitButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
@@ -87,21 +95,6 @@
     [_privacySwitch setOn:NO];
     
     _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
-}
-
-- (void)dateSelected:(NSDate *)date suffix:(NSString*)suffix circa:(BOOL)circa {
-    NSDateComponents *components = [[NSCalendar currentCalendar] components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:date];
-    if (!_art.interval){
-        Interval *interval = [Interval MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-        [_art setInterval:interval];
-    }
-    [_art.interval setYear:[NSNumber numberWithInteger:components.year]];
-    [_art.interval setSuffix:suffix];
-    _art.interval.circa = @(circa);
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-
-    [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:2 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
-    
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -148,23 +141,37 @@
     if (selectedImages.count && _submitButton.isHidden){
         [_submitButton setHidden:NO];
     }
-    if (selectedImages.count == 1){
-        [_photoCountLabel setText:@"1 image"];
-    } else if (selectedImages.count == 0) {
-        [_photoCountLabel setText:@""];
-    } else {
-        [self setPhotoCount];
-    }
-    
+
+    [self setPhotoCount];
     [self drawPhotosScrollView];
     _currentPhoto = _art.photos.firstObject;
+    
+    [self dismissViewControllerAnimated:YES completion:^{
+        [ProgressHUD dismiss];
+    }];
 }
 
 - (void)setPhotoCount {
-    if (currentPhotoIdx >= _selectedImages.count){
-        [_photoCountLabel setText:@"+ Photo"];
+    if (_art.photos.count == 0) {
+        [_photoCountLabel setText:@""];
+    } else if (currentPhotoIdx >= _art.photos.count){
+        [_photoCountLabel setText:@"+ more images"];
+        [_previousPhotoButton setAlpha:1.0];
+        [_previousPhotoButton setEnabled:YES];
+        [_nextPhotoButton setAlpha:0.5];
+        [_nextPhotoButton setEnabled:NO];
     } else {
-        [_photoCountLabel setText:[NSString stringWithFormat:@"%lu of %lu",(unsigned long)currentPhotoIdx + 1,(unsigned long)_selectedImages.count]];
+        [_photoCountLabel setText:[NSString stringWithFormat:@"%lu of %lu",(unsigned long)currentPhotoIdx + 1,(unsigned long)_art.photos.count]];
+        
+        [_nextPhotoButton setAlpha:1.0];
+        [_nextPhotoButton setEnabled:YES];
+        if (currentPhotoIdx > 0){
+            [_previousPhotoButton setAlpha:1.0];
+            [_previousPhotoButton setEnabled:YES];
+        } else {
+            [_previousPhotoButton setAlpha:.5];
+            [_previousPhotoButton setEnabled:NO];
+        }
     }
 }
 
@@ -176,12 +183,28 @@
         NSInteger page = lround(fractionalPage);
         if (currentPhotoIdx != page) {
             currentPhotoIdx = page;
-            if (currentPhotoIdx < _selectedImages.count){
-                _currentPhoto = _selectedImages[currentPhotoIdx];
+            if (currentPhotoIdx < _art.photos.count){
+                _currentPhoto = _art.photos[currentPhotoIdx];
             }
             [self setPhotoCount];
         }
     }
+}
+
+- (IBAction)nextPhoto:(id)sender{
+    [UIView animateWithDuration:.5f delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [_scrollView setContentOffset:CGPointMake(_scrollView.contentOffset.x + _scrollView.frame.size.width, 0) animated:NO];
+    } completion:^(BOOL finished) {
+        
+    }];
+}
+
+- (IBAction)previousPhoto:(id)sender{
+    [UIView animateWithDuration:.5f delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [_scrollView setContentOffset:CGPointMake(_scrollView.contentOffset.x - _scrollView.frame.size.width, 0) animated:NO];
+    } completion:^(BOOL finished) {
+        
+    }];
 }
 
 - (void)drawPhotosScrollView {
@@ -190,40 +213,49 @@
     _scrollView.showsHorizontalScrollIndicator = NO;
     [_scrollView setBackgroundColor:[UIColor clearColor]];
     [_scrollView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-    
     [_art.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
         WFNewPhotoContainerView *containerView = [[WFNewPhotoContainerView alloc] initWithFrame:CGRectMake(0 + (idx*_scrollView.frame.size.width), 0, _scrollView.frame.size.width, _scrollView.frame.size.height)];
         [containerView setTag:idx];
         [_scrollView addSubview:containerView];
         
         containerView.photoImageView = [[UIImageView alloc] initWithImage:photo.image];
-        [containerView.photoImageView setFrame:CGRectMake(((_scrollView.frame.size.width-imageWidth)/2)+(_scrollView.frame.size.width*idx), 20, imageWidth, imageHeight)];
+        [containerView.photoImageView setFrame:CGRectMake(((_scrollView.frame.size.width-imageWidth)/2), 20, imageWidth, imageHeight)];
         [containerView.photoImageView setContentMode:UIViewContentModeScaleAspectFill];
         containerView.photoImageView.clipsToBounds = YES;
+        containerView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+        containerView.layer.shouldRasterize = YES;
         [containerView addSubview:containerView.photoImageView];
         
-        containerView.creditLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 56.f, 100, 43)];
+        containerView.creditLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 6.f, 100, 47)];
         [containerView.creditLabel setText:@"CREDIT / RIGHTS:"];
         [containerView.creditLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0]];
         [containerView.creditLabel setTextColor:[UIColor lightGrayColor]];
         [containerView addSubview:containerView.creditLabel];
         
-        containerView.creditTextField = [[UITextField alloc] initWithFrame:CGRectMake(containerView.creditLabel.frame.origin.x+containerView.creditLabel.frame.size.width + 3, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 56.f, 157, 43)];
+        containerView.creditTextField = [[WFCreditTextField alloc] initWithFrame:CGRectMake(containerView.creditLabel.frame.origin.x+containerView.creditLabel.frame.size.width + 3, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 6.f, 157, 47)];
         containerView.creditTextField.tag = idx;
-        UIView *paddingView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 7, 43)];
+        containerView.creditTextField.delegate = self;
+        UIView *paddingView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 3, 43)];
         containerView.creditTextField.leftView = paddingView;
         containerView.creditTextField.leftViewMode = UITextFieldViewModeAlways;
+        containerView.creditTextField.rightView = paddingView;
+        containerView.creditTextField.rightViewMode = UITextFieldViewModeAlways;
         
-        [containerView.creditTextField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
+        [containerView.creditTextField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.03]];
         [containerView.creditTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
-        [containerView.creditTextField setText:_currentUser.fullName];
+        if (!photo.credit.length){
+            [photo setCredit:_currentUser.fullName];
+        }
+        [containerView.creditTextField setText:photo.credit];
         [containerView.creditTextField setPlaceholder:@"Photo credit field..."];
         [containerView.creditTextField setTextColor:[UIColor whiteColor]];
+        [containerView.creditTextField setTintColor:[UIColor whiteColor]];
         [containerView.creditTextField setTextAlignment:NSTextAlignmentCenter];
         [containerView.creditTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
+        [containerView.creditTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
         [containerView addSubview:containerView.creditTextField];
         
-        containerView.iconographyLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 10.f, 100, 43)];
+        containerView.iconographyLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 57.f, 100, 47)];
         [containerView.iconographyLabel setText:@"ICONOGRAPHY:"];
         [containerView.iconographyLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0]];
         [containerView.iconographyLabel setTextColor:[UIColor lightGrayColor]];
@@ -231,10 +263,11 @@
         
         containerView.iconographyButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [containerView.iconographyButton addTarget:self action:@selector(showIcons) forControlEvents:UIControlEventTouchUpInside];
-        [containerView.iconographyButton setFrame:CGRectMake(containerView.creditLabel.frame.origin.x+containerView.creditLabel.frame.size.width + 3, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 10.f, 157, 43)];
-        [containerView.iconographyButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
+        [containerView.iconographyButton setFrame:CGRectMake(containerView.creditLabel.frame.origin.x+containerView.creditLabel.frame.size.width + 3, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 57.f, 157, 47)];
+        [containerView.iconographyButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.03]];
         [containerView.iconographyButton setTitle:photo.iconsToSentence forState:UIControlStateNormal];
-        [containerView.iconographyButton.titleLabel setNumberOfLines:0];
+        [containerView.iconographyButton.titleLabel setNumberOfLines:3];
+        [containerView.iconographyButton.titleLabel setMinimumScaleFactor:.23f];
         [containerView.iconographyButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
         [containerView addSubview:containerView.iconographyButton];
     }];
@@ -244,6 +277,14 @@
     
     [_addPhotoButton setFrame:CGRectMake(_scrollView.contentSize.width-_scrollView.frame.size.width, 0, _slideContainerView.frame.size.width, _slideContainerView.frame.size.height)];
     [_scrollView bringSubviewToFront:_addPhotoButton];
+    
+    if (_art.photos.count){
+        [_previousPhotoButton setHidden:NO];
+        [_nextPhotoButton setHidden:NO];
+    } else {
+        [_previousPhotoButton setHidden:YES];
+        [_nextPhotoButton setHidden:YES];
+    }
 }
 
 - (void)post {
@@ -277,23 +318,26 @@
     if (notesTextField.text.length){
         [parameters setObject:notesTextField.text forKey:@"notes"];
     }
-    NSLog(@"art.interval? %@",_art.interval);
     if (_art.interval){
-        [parameters setObject:_art.interval.year forKey:@"interval[year]"];
+        [parameters setObject:_art.interval.circa forKey:@"interval[circa]"];
+        
+        if (![_art.interval.year isEqualToNumber:@0]){
+            [parameters setObject:_art.interval.year forKey:@"interval[year]"];
+        }
         if (![_art.interval.beginRange isEqualToNumber:@0]){
             [parameters setObject:_art.interval.beginRange forKey:@"interval[begin_range]"];
         }
         if (![_art.interval.endRange isEqualToNumber:@0]){
             [parameters setObject:_art.interval.endRange forKey:@"interval[end_range]"];
         }
-        if (![_art.interval.circa isEqualToNumber:@0]){
-            [parameters setObject:_art.interval.circa forKey:@"interval[circa]"];
-        }
-        if (![_art.interval.year isEqualToNumber:@0]){
-            [parameters setObject:_art.interval.year forKey:@"interval[year]"];
-        }
         if (_art.interval.suffix && _art.interval.suffix.length){
             [parameters setObject:_art.interval.suffix forKey:@"interval[suffix]"];
+        }
+        if (_art.interval.beginSuffix && _art.interval.beginSuffix.length){
+            [parameters setObject:_art.interval.beginSuffix forKey:@"interval[begin_suffix]"];
+        }
+        if (_art.interval.endSuffix && _art.interval.endSuffix.length){
+            [parameters setObject:_art.interval.endSuffix forKey:@"interval[end_suffix]"];
         }
     }
 
@@ -303,14 +347,22 @@
         [parameters setObject:@0 forKey:@"private"];
     }
     
-    for (Photo *photo in _art.photos){
-        [parameters setObject:photo.credit forKey:@"photos[][credit]"];
-    }
-    
     [manager POST:@"arts" parameters:@{@"art":parameters} constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+        NSString *userId = [NSString stringWithFormat:@"%@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
         for (Photo *photo in _art.photos){
+            if (photo.credit.length){
+                [formData appendPartWithFormData:[photo.credit dataUsingEncoding:NSUTF8StringEncoding] name:@"photos[][credit]"];
+            }
+            NSMutableArray *iconIds = [NSMutableArray arrayWithCapacity:photo.icons.count];
+            for (Icon *icon in photo.icons){
+                [iconIds addObject:icon.identifier];
+            }
+            [formData appendPartWithFormData:[userId dataUsingEncoding:NSUTF8StringEncoding] name:@"photos[][user_id]"];
+            [formData appendPartWithFormData:[[iconIds componentsJoinedByString:@","] dataUsingEncoding:NSUTF8StringEncoding]  name:@"photos[][icon_ids]"];
+            
             NSData *imageData = UIImageJPEGRepresentation(photo.image, 1);
             [formData appendPartWithFileData:imageData name:@"photos[][image]" fileName:@"photo.jpg" mimeType:@"image/jpg"];
+            
         }
     } success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success creating art: %@",responseObject);
@@ -358,6 +410,9 @@
         case 0:
             [cell.label setText:@"TITLE"];
             [cell.textField setPlaceholder:@"Art title"];
+            if (_art.title.length){
+                [cell.textField setText:_art.title];
+            }
             [cell.textField setReturnKeyType:UIReturnKeyNext];
             titleTextField = cell.textField;
             [titleTextField setAutocapitalizationType:UITextAutocapitalizationTypeSentences];
@@ -377,44 +432,34 @@
             if (SYSTEM_VERSION < 8.f){
                 [dateCell setBackgroundColor:[UIColor clearColor]];
             }
-            
+            [dateCell setSelectionStyle:UITableViewCellSelectionStyleNone];
             dateTextField = dateCell.singleYearTextField;
             dateTextField.delegate = self;
             beginDateTextField = dateCell.beginYearTextField;
             beginDateTextField.delegate = self;
             endDateTextField = dateCell.endYearTextField;
             endDateTextField.delegate = self;
-            
-            if ([_art.interval.suffix isEqualToString:@"CE"]){
-                [dateCell.ceButton setSelected:YES];
-                [dateCell.bceButton setSelected:NO];
-            } else if ([_art.interval.suffix isEqualToString:@"BCE"]){
-                [dateCell.ceButton setSelected:NO];
-                [dateCell.bceButton setSelected:YES];
-            }
-            [dateCell configureForArt:_art];
             dateCell.selectedBackgroundView = selectedView;
-            [dateCell.label setText:@"DATE"];
-            [dateCell.rangeLabel setText:@"DATE RANGE"];
-            [dateCell.circaLabel setText:@"CIRCA"];
-            [dateCell.singleYearTextField setPlaceholder:@"e.g. 1776"];
-            [dateCell.beginYearTextField setPlaceholder:@"Beginning"];
-            [dateCell.endYearTextField setPlaceholder:@"End"];
             
-            if (_art.interval.year && ![_art.interval.year isEqualToNumber:@0]){
-                [dateCell.beginYearTextField setText:[NSString stringWithFormat:@"%@",_art.interval.year]];
-                //NSString *suffix = _art.interval.suffix.length ? _art.interval.suffix : @"";
-            } else {
-                [dateCell.beginYearTextField setText:@""];
-            }
+            [dateCell configureArt:_art forEditMode:NO];
+            
             [dateCell.circaSwitch setOn:_art.interval.circa.boolValue animated:YES];
             [dateCell.circaSwitch addTarget:self action:@selector(circaSwitchSwitched:) forControlEvents:UIControlEventValueChanged];
-            [dateCell.ceButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
             _ceButton = dateCell.ceButton;
-            [_ceButton setShowsTouchWhenHighlighted:YES];
-            [dateCell.bceButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+            [dateCell.ceButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
             _bceButton = dateCell.bceButton;
-            [_bceButton setShowsTouchWhenHighlighted:YES];
+            [dateCell.bceButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+            
+            _ceBeginButton = dateCell.ceBeginButton;
+            [dateCell.ceBeginButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+            _ceEndButton = dateCell.ceEndButton;
+            [dateCell.ceEndButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+            
+            _bceBeginButton = dateCell.bceBeginButton;
+            [dateCell.bceBeginButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+            _bceEndButton = dateCell.bceEndButton;
+            [dateCell.bceEndButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+            
             return dateCell;
         }
             break;
@@ -434,10 +479,14 @@
             break;
         case 5:
             [cell.label setText:@"NOTES"];
+            notesTextField = cell.textField;
             [cell.textField setPlaceholder:@"Any miscellaneous notes you may have"];
+            if (_art.notes.length){
+                [cell.textField setText:_art.notes];
+            }
             [cell.textField setAutocapitalizationType:UITextAutocapitalizationTypeSentences];
             [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
-            notesTextField = cell.textField;
+            
             [cell.textField setText:_art.notes];
             [cell.textField setUserInteractionEnabled:YES];
             break;
@@ -449,18 +498,13 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.row == 2){
-        return 140.f;
+        return 120.f;
     } else {
         return 50.f;
     }
 }
 
 - (void)eraTapped:(UIButton*)button {
-    if (!_art.interval){
-        Interval *interval = [Interval MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-        [_art setInterval:interval];
-    }
-    
     if (button == _ceButton){
         [_ceButton setSelected:YES];
         [_bceButton setSelected:NO];
@@ -469,13 +513,28 @@
         [_bceButton setSelected:YES];
         [_ceButton setSelected:NO];
         [_art.interval setSuffix:@"BCE"];
+    } else if (button == _ceBeginButton){
+        [_bceBeginButton setSelected:NO];
+        [_ceBeginButton setSelected:YES];
+        [_art.interval setBeginSuffix:@"CE"];
+    } else if (button == _bceBeginButton){
+        [_bceBeginButton setSelected:YES];
+        [_ceBeginButton setSelected:NO];
+        [_art.interval setBeginSuffix:@"BCE"];
+    } else if (button == _ceEndButton){
+        [_bceEndButton setSelected:NO];
+        [_ceEndButton setSelected:YES];
+        [_art.interval setEndSuffix:@"CE"];
+    } else if (button == _bceEndButton){
+        [_bceEndButton setSelected:YES];
+        [_ceEndButton setSelected:NO];
+        [_art.interval setEndSuffix:@"BCE"];
     }
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    NSLog(@"art interval suffix: %@",_art.interval.suffix);
 }
 
 - (void)circaSwitchSwitched:(UISwitch*)circaSwitch {
-    _art.interval.circa = @(circaSwitch.isOn);
+    _art.interval.circa = [NSNumber numberWithBool:circaSwitch.isOn];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         
     }];
@@ -599,7 +658,7 @@
                           delay:0
                         options:(animationCurve << 16)
                      animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
+                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight+70.f, 0); // random bottom spacer
                      }
                      completion:^(BOOL finished) {
 
@@ -624,27 +683,26 @@
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField {
-    if (!_art.interval){
-        Interval *interval = [Interval MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-        [_art setInterval:interval];
-    }
-    
-    if (textField == beginDateTextField || textField == endDateTextField || textField == dateTextField){
+    if (textField == titleTextField){
+        _art.title = titleTextField.text;
+    } else if (textField == notesTextField){
+        _art.notes = notesTextField.text;
+    } else if (textField == beginDateTextField || textField == endDateTextField || textField == dateTextField){
         NSNumberFormatter *f = [[NSNumberFormatter alloc] init];
         f.numberStyle = NSNumberFormatterDecimalStyle;
         
         if (textField == beginDateTextField && beginDateTextField.text.length){
             NSNumber *yearNumber = [f numberFromString:beginDateTextField.text];
             if (yearNumber){
-                _art.interval.year = yearNumber;
+                _art.interval.beginRange = yearNumber;
             }
         } else if (textField == endDateTextField && endDateTextField.text.length){
             NSNumber *yearNumber = [f numberFromString:endDateTextField.text];
             if (yearNumber){
                 _art.interval.endRange = yearNumber;
             }
-        } else if (textField == endDateTextField && endDateTextField.text.length){
-            NSNumber *yearNumber = [f numberFromString:endDateTextField.text];
+        } else if (textField == dateTextField && dateTextField.text.length){
+            NSNumber *yearNumber = [f numberFromString:dateTextField.text];
             if (yearNumber){
                 _art.interval.year = yearNumber;
             }
@@ -652,8 +710,20 @@
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             
         }];
-        //[_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:2 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
+    } else if ([textField isKindOfClass:[WFCreditTextField class]] && textField.text.length){
+        Photo *photo = _art.photos[textField.tag];
+        [photo setCredit:textField.text];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
     }
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        
+    }];
 }
 
 - (void)dismiss {

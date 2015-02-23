@@ -383,6 +383,10 @@
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    [super prepareForSegue:segue sender:sender];
+}
+
 - (void)showInstitutionSearchFromRect:(CGRect)rect {
     [self doneEditing];
     if (IDIOM == IPAD){

@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "Photo+helper.h"
 #import "Art+helper.h"
+#import "WFCreditTextField.h"
 
 @interface WFNewPhotoContainerView : UIView
 
@@ -16,7 +17,7 @@
 @property (strong, nonatomic) UIImageView *photoImageView;
 @property (strong, nonatomic) UILabel *iconographyLabel;
 @property (strong, nonatomic) UIButton *iconographyButton;
-@property (strong, nonatomic) UITextField *creditTextField;
+@property (strong, nonatomic) WFCreditTextField *creditTextField;
 @property (strong, nonatomic) UILabel *creditLabel;
 
 @end

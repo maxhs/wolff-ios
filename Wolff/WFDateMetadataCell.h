@@ -25,5 +25,5 @@
 @property (weak, nonatomic) IBOutlet UILabel *circaLabel;
 @property (weak, nonatomic) IBOutlet UISwitch *circaSwitch;
 @property (weak, nonatomic) IBOutlet UILabel *orLabel;
-- (void)configureForArt:(Art*)art;
+- (void)configureArt:(Art*)art forEditMode:(BOOL)editMode;
 @end

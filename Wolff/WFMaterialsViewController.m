@@ -18,6 +18,7 @@
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     BOOL iOS8;
+    BOOL loading;
     BOOL searching;
     BOOL editing;
     CGFloat width;
@@ -52,6 +53,7 @@ static NSString * const reuseIdentifier = @"MaterialCell";
     }
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     
     _materials = [NSMutableOrderedSet orderedSetWithArray:[Material MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
     _filteredMaterials = [NSMutableOrderedSet orderedSet];
@@ -75,6 +77,7 @@ static NSString * const reuseIdentifier = @"MaterialCell";
     [self registerKeyboardNotifications];
     topInset = self.navigationController.navigationBar.frame.size.height;
     [self setUpSearch];
+    loading = NO;
     
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
 }
@@ -94,44 +97,45 @@ static NSString * const reuseIdentifier = @"MaterialCell";
     if (_selectedMaterials.count){
         [noMaterialsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     } else {
-        [noMaterialsButton setTitleColor:kElectricBlue forState:UIControlStateNormal];
+        [noMaterialsButton setTitleColor:kSaffronColor forState:UIControlStateNormal];
     }
 }
 
 - (void)loadMaterialsWithSearch:(NSString*)searchString {
-    [self.searchBar resignFirstResponder];
-    searching = YES;
-    
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-    }
-    if (searchString.length){
-        [parameters setObject:searchString forKey:@"search"];
-    }
-    [ProgressHUD show:@"Searching..."];
-    [manager POST:@"materials/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success loading materials: %@",responseObject);
-        for (id dict in [responseObject objectForKey:@"materials"]){
-            Material *material = [Material MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext    :[NSManagedObjectContext MR_defaultContext]];
-            if (!material){
-                material = [Material MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-            }
-            [material populateFromDictionary:dict];
-            [_filteredMaterials addObject:material];
-            [_materials addObject:material];
+    if (!loading && searchString.length){
+        loading = YES;
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
+            [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         }
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        if (searchString.length){
+            [parameters setObject:searchString forKey:@"search"];
+        }
+        [manager POST:@"materials/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success loading materials: %@",responseObject);
+            for (id dict in [responseObject objectForKey:@"materials"]){
+                Material *material = [Material MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext    :[NSManagedObjectContext MR_defaultContext]];
+                if (!material){
+                    material = [Material MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                }
+                [material populateFromDictionary:dict];
+                [_filteredMaterials addObject:material];
+                [_materials addObject:material];
+            }
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                [ProgressHUD dismiss];
+                _materials = [NSMutableOrderedSet orderedSetWithArray:[Material MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
+                [_collectionView reloadData];
+                loading = NO;
+            }];
+            
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            [WFAlert show:@"Sorry, something went wrong while trying to fetch material info.\n\nPlease try again soon." withTime:3.3f];
             [ProgressHUD dismiss];
-            _materials = [NSMutableOrderedSet orderedSetWithArray:[Material MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
-            [_collectionView reloadData];
+            loading = NO;
+            NSLog(@"Failed to load materials: %@",error.description);
         }];
-        
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        [WFAlert show:@"Sorry, something went wrong while trying to fetch material info.\n\nPlease try again soon." withTime:3.3f];
-        [ProgressHUD dismiss];
-        NSLog(@"Failed to load materials: %@",error.description);
-    }];
+    }
 }
 
 #pragma mark <UICollectionViewDataSource>
@@ -156,9 +160,9 @@ static NSString * const reuseIdentifier = @"MaterialCell";
             [cell.label setHidden:NO];
             [cell.materialNameTextField setHidden:NO];
             [cell.materialNameTextField setPlaceholder:@"+  add a new material"];
-            
+
             if (searchText.length){
-                [cell.materialNameTextField setText:[NSString stringWithFormat:@"+  add \"%@\"",searchText]];
+                [cell.materialNameTextField setText:searchText];
             } else {
                 [cell.materialNameTextField setText:@""];
             }
@@ -295,6 +299,7 @@ static NSString * const reuseIdentifier = @"MaterialCell";
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
     if (searchBar.text.length){
+        [ProgressHUD show:@"Searching..."];
         [self loadMaterialsWithSearch:searchBar.text];
     }
 }
@@ -314,6 +319,7 @@ static NSString * const reuseIdentifier = @"MaterialCell";
                 [_filteredMaterials addObject:material];
             }
         }
+        if (!_filteredMaterials.count) [self loadMaterialsWithSearch:text];
     } else {
         _filteredMaterials = [NSMutableOrderedSet orderedSetWithOrderedSet:_materials];
     }

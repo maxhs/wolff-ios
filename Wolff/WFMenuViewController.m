@@ -50,15 +50,15 @@
             break;*/
         case 0:
             [cell.imageView setImage:[UIImage imageNamed:@"blackSettings"]];
-            [cell.textLabel setText:@" Account"];
+            [cell.textLabel setText:@" ACCOUNT"];
             break;
         case 1:
-            [cell.imageView setImage:[UIImage imageNamed:@"profile"]];
-            [cell.textLabel setText:@" Profile"];
+            [cell.imageView setImage:[UIImage imageNamed:@"menuProfile"]];
+            [cell.textLabel setText:@"  PROFILE"];
             break;
         case 2:
             [cell.imageView setImage:[UIImage imageNamed:@"logout"]];
-            [cell.textLabel setText:@" Log Out"];
+            [cell.textLabel setText:@" LOG OUT"];
             break;
             
         default:

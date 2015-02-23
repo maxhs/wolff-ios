@@ -22,6 +22,7 @@
     CGFloat height;
     NSString *searchText;
     BOOL searching;
+    BOOL loading;
     BOOL editing;
     NSMutableOrderedSet *_filteredLocations;
     NSMutableOrderedSet *_locations;
@@ -54,6 +55,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
     }
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     
     _filteredLocations = [NSMutableOrderedSet orderedSet];
     _locations = [NSMutableOrderedSet orderedSetWithArray:[Location MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
@@ -93,7 +95,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
         [locationUnknownButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [locationUnknownButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:0.f]];
     } else {
-        [locationUnknownButton setTitleColor:kElectricBlue forState:UIControlStateNormal];
+        [locationUnknownButton setTitleColor:kSaffronColor forState:UIControlStateNormal];
         [locationUnknownButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
     }
 }
@@ -104,49 +106,53 @@ static NSString * const reuseIdentifier = @"LocationCell";
 }
 
 - (void)loadLocationsWithSearch:(NSString *)searchString {
-    [self.searchBar resignFirstResponder];
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-    }
-    if (searchString.length){
-        [parameters setObject:searchString forKey:@"search"];
-    }
-    [manager POST:@"locations/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success loading locations: %@",responseObject);
-        if ([responseObject objectForKey:@"locations"]){
-            NSDictionary *locationsDict = [responseObject objectForKey:@"locations"];
-            if (locationsDict.count){
-                for (id dict in [responseObject objectForKey:@"locations"]){
-                    Location *location = [Location MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
-                    if (!location){
-                        location = [Location MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-                    }
-                    [location populateFromDictionary:dict];
-                    [_filteredLocations addObject:location];
-                    [_locations addObject:location];
-                }
-                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                    _locations = [NSMutableOrderedSet orderedSetWithArray:[Location MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
-                    [_collectionView reloadData];
-                    [ProgressHUD dismiss];
-                }];
-            } else {
-                [_filteredLocations enumerateObjectsUsingBlock:^(Location *location, NSUInteger idx, BOOL *stop) {
-                    [location MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-                }];
-                [_filteredLocations removeAllObjects];
-                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                    [_collectionView reloadData];
-                    [ProgressHUD dismiss];
-                }];
-            }
+    if (!loading){
+        loading = YES;
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
+            [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         }
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        [WFAlert show:@"Sorry, something went wrong while trying to fetch location info.\n\nPlease try again soon." withTime:3.3f];
-        [ProgressHUD dismiss];
-        NSLog(@"Failed to load locations: %@",error.description);
-    }];
+        if (searchString.length){
+            [parameters setObject:searchString forKey:@"search"];
+        }
+        [manager POST:@"locations/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success loading locations: %@",responseObject);
+            if ([responseObject objectForKey:@"locations"]){
+                NSDictionary *locationsDict = [responseObject objectForKey:@"locations"];
+                if (locationsDict.count){
+                    for (id dict in [responseObject objectForKey:@"locations"]){
+                        Location *location = [Location MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+                        if (!location){
+                            location = [Location MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                        }
+                        [location populateFromDictionary:dict];
+                        [_filteredLocations addObject:location];
+                        [_locations addObject:location];
+                    }
+                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                        _locations = [NSMutableOrderedSet orderedSetWithArray:[Location MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
+                        [_collectionView reloadData];
+                        [ProgressHUD dismiss];
+                        loading = NO;
+                    }];
+                } else {
+                    [_filteredLocations enumerateObjectsUsingBlock:^(Location *location, NSUInteger idx, BOOL *stop) {
+                        [location MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                    }];
+                    [_filteredLocations removeAllObjects];
+                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                        [_collectionView reloadData];
+                        [ProgressHUD dismiss];
+                        loading = NO;
+                    }];
+                }
+            }
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            [WFAlert show:@"Sorry, something went wrong while trying to fetch location info.\n\nPlease try again soon." withTime:3.3f];
+            [ProgressHUD dismiss];
+            NSLog(@"Failed to load locations: %@",error.description);
+        }];
+    }
 }
 
 #pragma mark <UICollectionViewDataSource>
@@ -169,23 +175,31 @@ static NSString * const reuseIdentifier = @"LocationCell";
         if (editing){
             [cell.locationPrompt setHidden:YES];
             [cell.nameLabel setHidden:NO];
-            
+            [cell.cityLabel setHidden:NO];
             [cell.countryLabel setHidden:NO];
+            
             [cell.countryTextField setHidden:NO];
             [cell.countryTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
             [cell.countryTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
             [cell.countryTextField setReturnKeyType:UIReturnKeyDone];
         
-            [cell.createButton setHidden:NO];
-            [cell.createButton addTarget:self action:@selector(createLocation) forControlEvents:UIControlEventTouchUpInside];
             [cell.nameTextField becomeFirstResponder];
             [cell.nameTextField setPlaceholder:kAddLocationPlaceholder];
             [cell.nameTextField setHidden:NO];
             [cell.nameTextField setReturnKeyType:UIReturnKeyNext];
-            
+            [cell.nameTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
             [cell.nameTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
             [cell.nameTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
             cell.nameTextField.delegate = self;
+            
+            [cell.cityTextField setHidden:NO];
+            [cell.cityTextField setReturnKeyType:UIReturnKeyNext];
+            [cell.cityTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
+            [cell.cityTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
+            [cell.cityTextField setPlaceholder:@"City"];
+            
+            [cell.createButton setHidden:NO];
+            [cell.createButton addTarget:self action:@selector(createLocation) forControlEvents:UIControlEventTouchUpInside];
             
             (searchText.length) ? [cell.nameTextField setText:searchText] : [cell.nameTextField setText:@""];
             
@@ -200,7 +214,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
             [cell.countryTextField setHidden:YES];
             [cell.countryLabel setHidden:YES];
             if (searchText.length){
-                [cell.locationPrompt setText:searchText];
+                [cell.locationPrompt setText:[NSString stringWithFormat:@"+ add \"%@\"",searchText]];
             } else {
                 [cell.locationPrompt setText:@"+  add a new location"];
             }
@@ -223,7 +237,14 @@ static NSString * const reuseIdentifier = @"LocationCell";
 #pragma mark – UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(width/2,height/8);
+    if (editing){
+        if ((searching && indexPath.row == _filteredLocations.count) || (indexPath.row == _locations.count)){
+            return CGSizeMake(width/2,height/4);
+        }
+        return CGSizeMake(width/2,height/8);
+    } else {
+        return CGSizeMake(width/2,height/8);
+    }
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -300,6 +321,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
             [searchTextField setTextColor:[UIColor whiteColor]];
             [searchTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
             searchTextField.keyboardAppearance = UIKeyboardAppearanceDark;
+            [searchTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
             break;
         }
     }
@@ -334,6 +356,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
                 [_filteredLocations addObject:location];
             }
         }
+        if (!_filteredLocations) [self loadLocationsWithSearch:text];
     } else {
         _filteredLocations = [NSMutableOrderedSet orderedSetWithOrderedSet:_locations];
     }

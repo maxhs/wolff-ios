@@ -27,8 +27,13 @@
 #import "WFArtistsViewController.h"
 #import "WFLocationsViewController.h"
 #import "Art+helper.h"
+#import "WFMaterialsViewController.h"
+#import "WFIconsViewController.h"
+#import "WFDateMetadataCell.h"
+#import "WFMetadataModalAnimator.h"
+#import "Icon+helper.h"
 
-@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, UIActionSheetDelegate> {
+@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectIconsDelegate, WFSelectMaterialsDelegate, UIActionSheetDelegate, UITextFieldDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     BOOL iOS8;
@@ -38,9 +43,11 @@
     BOOL editMode;
     BOOL login;
     BOOL profile;
+    BOOL metadataModal;
     CGFloat keyboardHeight;
     UITextView *titleTextView;
     UITextView *notesTextView;
+    UITextView *creditTextView;
     UISwitch *privateSwitch;
     CGRect originalViewFrame;
     UIView *saveContainerView;
@@ -50,6 +57,16 @@
     CGFloat textViewWidth;
     NSInteger currentPhotoIdx;
     CGFloat imageWidth;
+    
+    UITextField *beginYearTextField;
+    UITextField *endYearTextField;
+    UITextField *dateTextField;
+    UIButton *_ceButton;
+    UIButton *_bceButton;
+    UIButton *_ceBeginButton;
+    UIButton *_bceBeginButton;
+    UIButton *_ceEndButton;
+    UIButton *_bceEndButton;
 }
 @property (strong, nonatomic) UIPopoverController *popover;
 @end
@@ -76,11 +93,11 @@
     editMode = NO;
     [self setupDateFormatter];
     [self registerForKeyboardNotifications];
+    [self loadPhotoMetadata];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self loadPhotoMetadata];
     [self setupHeader];
 }
 
@@ -169,7 +186,7 @@
             [UIView animateWithDuration:.23 animations:^{
                 [imageButton setAlpha:1.0];
             } completion:^(BOOL finished) {
-                
+                [_progressIndicator removeFromSuperview];
             }];
         }];
         [imageButton addTarget:self action:@selector(showFullScreen) forControlEvents:UIControlEventTouchUpInside];
@@ -186,8 +203,8 @@
         paragraphStyle.alignment = NSTextAlignmentCenter;
         
         [_postedByButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
-        NSMutableAttributedString *postedByString = [[NSMutableAttributedString alloc] initWithString:@"Posted by:" attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansThin] size:0], NSForegroundColorAttributeName : [UIColor blackColor],NSParagraphStyleAttributeName:paragraphStyle}];
-        NSMutableAttributedString *postedByUserString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@",_photo.user.fullName] attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansThin] size:0], NSForegroundColorAttributeName : kElectricBlue,NSParagraphStyleAttributeName:paragraphStyle}];
+        NSMutableAttributedString *postedByString = [[NSMutableAttributedString alloc] initWithString:@"POSTED BY:" attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor blackColor],NSParagraphStyleAttributeName:paragraphStyle}];
+        NSMutableAttributedString *postedByUserString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@",_photo.user.fullName] attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSans] size:0], NSForegroundColorAttributeName : kElectricBlue,NSParagraphStyleAttributeName:paragraphStyle}];
         [postedByString appendAttributedString:postedByUserString];
         [_postedByButton setContentHorizontalAlignment:UIControlContentHorizontalAlignmentCenter];
         [_postedByButton setContentVerticalAlignment:UIControlContentVerticalAlignmentBottom];
@@ -220,7 +237,7 @@
         if (currentPhotoIdx != page) {
             currentPhotoIdx = page;
             Art *art = _photo.art;
-            if (currentPhotoIdx < art.photos.count-1){
+            if (currentPhotoIdx < art.photos.count){
                 _photo = art.photos[currentPhotoIdx];
             }
             [self setPhotoCount:currentPhotoIdx + 1]; // make sure to offset by 1
@@ -263,11 +280,11 @@
         [saveContainerView addSubview:saveButton];
         [saveButton setFrame:CGRectMake(10, 13, saveContainerView.frame.size.width-20, 44)];
         [saveButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0]];
-        [saveButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [saveButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [saveButton addTarget:self action:@selector(saveMetadata) forControlEvents:UIControlEventTouchUpInside];
         [saveButton setTitle:@"SAVE" forState:UIControlStateNormal];
         saveButton.layer.cornerRadius = 7.f;
-        [saveButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.1]];
+        [saveButton setBackgroundColor:kSaffronColor];
         
     } else {
         [_editButton setHidden:YES];
@@ -367,24 +384,28 @@
     if (editMode){
         CGRect newViewFrame = originalViewFrame;
         if (iOS8){
-            newViewFrame.origin.y = 10;
+            newViewFrame.origin.y = 0;
             newViewFrame.origin.x -= 100;
             newViewFrame.size.width += 200;
         } else {
-            newViewFrame.origin.x = 10;
+            newViewFrame.origin.x = 0;
             newViewFrame.origin.y -= 100;
             newViewFrame.size.height += 200;
         }
         self.tableView.tableFooterView = saveContainerView;
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self.view setFrame:newViewFrame];
+            [_nextPhotoButton setAlpha:0.0];
+            [_lastPhotoButton setAlpha:0.0];
             if (iOS8){
                 [saveButton setFrame:CGRectMake(20, 13, newViewFrame.size.width-40, 44)];
             } else {
                 [saveButton setFrame:CGRectMake(20, 13, newViewFrame.size.height-40, 44)];
             }
         } completion:^(BOOL finished) {
-            
+            [_nextPhotoButton setHidden:YES];
+            [_lastPhotoButton setHidden:YES];
+            [_photoScrollView setUserInteractionEnabled:NO];
         }];
         
         [self.view endEditing:YES];
@@ -399,6 +420,11 @@
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self.view setFrame:originalViewFrame];
             self.tableView.tableFooterView = nil;
+            [_nextPhotoButton setHidden:NO];
+            [_lastPhotoButton setHidden:NO];
+            [_photoScrollView setUserInteractionEnabled:YES];
+            [_nextPhotoButton setAlpha:1.0];
+            [_lastPhotoButton setAlpha:1.0];
         } completion:^(BOOL finished) {
             [self.tableView setBackgroundColor:[UIColor clearColor]];
         }];
@@ -423,7 +449,7 @@
 
 - (void)loadPhotoMetadata {
     [manager GET:[NSString stringWithFormat:@"photos/%@",_photo.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success fetching metadata: %@",responseObject);
+        NSLog(@"Success fetching metadata: %@",responseObject);
         if ([responseObject objectForKey:@"text"]){
             if ([[responseObject objectForKey:@"text"] isEqualToString:kNoPhoto]){
                 [_photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
@@ -455,18 +481,76 @@
 }
 
 - (void)saveMetadata {
-    _photo.art.notes = notesTextView.text;
-    _photo.art.title = titleTextView.text;
+    if (!titleTextView.text){
+        [WFAlert show:@"Please ensure your art has a title before continuing." withTime:2.7f];
+        return;
+    }
     [ProgressHUD show:@"Saving..."];
     [self.view endEditing:YES];
     
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    [parameters setObject:_photo.art.title forKey:@"title"];
-    [parameters setObject:_photo.art.notes forKey:@"notes"];
-    [parameters setObject:@(privateSwitch.isOn) forKey:@"private"];
-    [manager PATCH:[NSString stringWithFormat:@"arts/%@",_photo.art.identifier] parameters:@{@"art":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    //photo parameters
+    NSMutableDictionary *photoParameters = [NSMutableDictionary dictionary];
+    [photoParameters setObject:notesTextView.text forKey:@"notes"];
+    [photoParameters setObject:@(privateSwitch.isOn) forKey:@"private"];
+    [photoParameters setObject:creditTextView.text forKey:@"credit"];
+    NSMutableArray *iconIds = [NSMutableArray arrayWithCapacity:_photo.icons.count];
+    for (Icon *icon in _photo.icons){
+        [iconIds addObject:icon.identifier];
+    }
+    [photoParameters setObject:iconIds forKey:@"icon_ids"];
+    
+    // art parameters
+    NSMutableDictionary *artParameters = [NSMutableDictionary dictionary];
+    [artParameters setObject:titleTextView.text forKey:@"title"];
+    [artParameters setObject:notesTextView.text forKey:@"notes"];
+    NSMutableArray *artistIds = [NSMutableArray arrayWithCapacity:_photo.art.artists.count];
+    for (Artist *artist in _photo.art.artists){
+        [artistIds addObject:artist.identifier];
+    }
+    [artParameters setObject:artistIds forKey:@"artist_ids"];
+    
+    NSMutableArray *locationIds = [NSMutableArray arrayWithCapacity:_photo.art.locations.count];
+    for (Location *location in _photo.art.locations){
+        [locationIds addObject:location.identifier];
+    }
+    [artParameters setObject:locationIds forKey:@"location_ids"];
+    
+    NSMutableArray *materialIds = [NSMutableArray arrayWithCapacity:_photo.art.materials.count];
+    for (Material *material in _photo.art.materials){
+        [materialIds addObject:material.identifier];
+    }
+    [artParameters setObject:materialIds forKey:@"material_ids"];
+    
+    if (_photo.art.interval){
+        [artParameters setObject:_photo.art.interval.year forKey:@"interval[year]"];
+        if (![_photo.art.interval.beginRange isEqualToNumber:@0]){
+            [artParameters setObject:_photo.art.interval.beginRange forKey:@"interval[begin_range]"];
+        }
+        if (![_photo.art.interval.endRange isEqualToNumber:@0]){
+            [artParameters setObject:_photo.art.interval.endRange forKey:@"interval[end_range]"];
+        }
+        if (![_photo.art.interval.year isEqualToNumber:@0]){
+            [artParameters setObject:_photo.art.interval.year forKey:@"interval[year]"];
+        }
+        
+        if (_photo.art.interval.circa){
+            [artParameters setObject:_photo.art.interval.circa forKey:@"interval[circa]"];
+        }
+        
+        if (_photo.art.interval.suffix && _photo.art.interval.suffix.length){
+            [artParameters setObject:_photo.art.interval.suffix forKey:@"interval[suffix]"];
+        }
+        if (_photo.art.interval.beginSuffix && _photo.art.interval.beginSuffix.length){
+            [artParameters setObject:_photo.art.interval.beginSuffix forKey:@"interval[begin_suffix]"];
+        }
+        if (_photo.art.interval.endSuffix && _photo.art.interval.endSuffix.length){
+            [artParameters setObject:_photo.art.interval.endSuffix forKey:@"interval[end_suffix]"];
+        }
+    }
+    
+    [manager PATCH:[NSString stringWithFormat:@"photos/%@",_photo.identifier] parameters:@{@"photo":photoParameters,@"art":artParameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success saving metadata: %@",responseObject);
-        [_photo.art populateFromDictionary:[responseObject objectForKey:@"art"]];
+        [_photo populateFromDictionary:[responseObject objectForKey:@"photo"]];
         
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [ProgressHUD dismiss];
@@ -505,7 +589,6 @@
     [cell setDefaultStyle:editMode];
     cell.textView.delegate = self;
     [cell.textView setKeyboardAppearance:UIKeyboardAppearanceDark];
-    [cell.textView setUserInteractionEnabled:YES];
     
     switch (indexPath.row) {
         case 0:
@@ -528,22 +611,60 @@
         }
             break;
         case 2:
-            [cell.label setText:@"DATE"];
-            if (_photo.art.interval.single){
-                [cell.textView setText:[dateFormatter stringFromDate:_photo.art.interval.single]];
-            } else if (_photo.art.interval.beginRange && ![_photo.art.interval.beginRange isEqualToNumber:@0] && _photo.art.interval.endRange && ![_photo.art.interval.endRange isEqualToNumber:@0]) {
-                NSString *beginSuffix = _photo.art.interval.beginSuffix.length ? _photo.art.interval.beginSuffix : @"CE";
-                NSString *endSuffix = _photo.art.interval.endSuffix.length ? _photo.art.interval.endSuffix : @"CE";
-                [cell.textView setText:[NSString stringWithFormat:@"%@ %@ - %@ %@",_photo.art.interval.beginRange, beginSuffix, _photo.art.interval.endRange, endSuffix]];
-            } else if (_photo.art.interval.year && ![_photo.art.interval.year isEqualToNumber:@0]){
-                NSString *suffix = _photo.art.interval.suffix.length ? _photo.art.interval.suffix : @"CE";
-                [cell.textView setText:[NSString stringWithFormat:@"%@ %@",_photo.art.interval.year, suffix]];
+        {
+            if (editMode){
+                WFDateMetadataCell *dateCell = (WFDateMetadataCell *)[tableView dequeueReusableCellWithIdentifier:@"DateMetadataCell"];
+                [dateCell setBackgroundColor:[UIColor whiteColor]];
+                [dateCell configureArt:_photo.art forEditMode:YES];
+                [dateCell.circaSwitch addTarget:self action:@selector(circaSwitchSwitched:) forControlEvents:UIControlEventValueChanged];
+                
+                beginYearTextField = dateCell.beginYearTextField;
+                endYearTextField = dateCell.endYearTextField;
+                dateTextField = dateCell.singleYearTextField;
+                beginYearTextField.delegate = self;
+                endYearTextField.delegate = self;
+                dateTextField.delegate = self;
+                
+                _ceButton = dateCell.ceButton;
+                [dateCell.ceButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+                _bceButton = dateCell.bceButton;
+                [dateCell.bceButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+                
+                _ceBeginButton = dateCell.ceBeginButton;
+                [dateCell.ceBeginButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+                _ceEndButton = dateCell.ceEndButton;
+                [dateCell.ceEndButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+                
+                _bceBeginButton = dateCell.bceBeginButton;
+                [dateCell.bceBeginButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+                _bceEndButton = dateCell.bceEndButton;
+                [dateCell.bceEndButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+                return dateCell;
             } else {
-                [cell.textView setText:@"No date listed"];
-                [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
-                [cell.textView setTextColor:[UIColor lightGrayColor]];
+                [cell.label setText:@"DATE"];
+                NSMutableAttributedString *dateString;
+                if (_photo.art.interval.single){
+                    dateString = [[NSMutableAttributedString alloc] initWithString:[dateFormatter stringFromDate:_photo.art.interval.single] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]}];
+                } else if (_photo.art.interval.beginRange && ![_photo.art.interval.beginRange isEqualToNumber:@0] && _photo.art.interval.endRange && ![_photo.art.interval.endRange isEqualToNumber:@0]) {
+                    NSString *beginSuffix = _photo.art.interval.beginSuffix.length ? _photo.art.interval.beginSuffix : @"CE";
+                    NSString *endSuffix = _photo.art.interval.endSuffix.length ? _photo.art.interval.endSuffix : @"CE";
+                    dateString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@ %@ - %@ %@",_photo.art.interval.beginRange, beginSuffix, _photo.art.interval.endRange, endSuffix] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]}];
+                    
+                } else if (_photo.art.interval.year && ![_photo.art.interval.year isEqualToNumber:@0]){
+                    NSString *suffix = _photo.art.interval.suffix.length ? _photo.art.interval.suffix : @"CE";
+                    dateString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@ %@",_photo.art.interval.year, suffix] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]}];
+    
+                } else {
+                    dateString = [[NSMutableAttributedString alloc] initWithString:@"No date listed" attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0], NSForegroundColorAttributeName:[UIColor lightGrayColor]}];
+                }
+                
+                if ([_photo.art.interval.circa isEqualToNumber:@YES]){
+                    [dateString appendAttributedString:[[NSAttributedString alloc] initWithString:@"  circa" attributes:@{NSForegroundColorAttributeName:[UIColor blackColor],NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]}]];
+                }
+                [cell.textView setAttributedText:dateString];
+                [cell.textView setKeyboardType:UIKeyboardTypeNumberPad];
             }
-            [cell.textView setKeyboardType:UIKeyboardTypeNumberPad];
+        }
             break;
         case 3:
         {
@@ -571,6 +692,7 @@
                 [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
                 [cell.textView setTextColor:[UIColor lightGrayColor]];
             }
+            [cell.textView setUserInteractionEnabled:NO];
         }
             break;
         case 5:
@@ -584,28 +706,35 @@
                 [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
                 [cell.textView setTextColor:[UIColor lightGrayColor]];
             }
+            [cell.textView setUserInteractionEnabled:NO];
         }
             break;
         case 6:
             [cell.label setText:@"CREDIT / RIGHTS"];
             [cell.textView setText:(_photo.credit.length ? _photo.credit : _photo.user.fullName)];
+            creditTextView = cell.textView;
             break;
         case 7:
             [cell.label setText:@"NOTES"];
-            notesTextView = cell.textView;
-            CGRect notesRect = cell.textView.frame;
-            CGFloat cellHeight = cell.frame.size.height;
-            CGFloat minHeight = cellHeight-14 > 86 ? cellHeight-14 : 86;
-            notesRect.origin.y = 12.f;
-            notesRect.size.height = minHeight;
-            [cell.textView setFrame:notesRect];
             [cell.textView setText:_photo.art.notes];
+            notesTextView = cell.textView;
+            CGSize size = [cell.textView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
+            CGRect notesRect = cell.textView.frame;
+            //CGFloat cellHeight = cell.frame.size.height;
+            //CGFloat minHeight = cellHeight-14 > 86 ? cellHeight-14 : 86;
+            //CGFloat actualHeight = size.height > minHeight ? size.height : minHeight;
+            notesRect.origin.y = 12.f;
+            notesRect.size.width = textViewWidth;
+            notesRect.size.height = size.height;
+            [cell.textView setFrame:notesRect];
+
             break;
         case 8:
             [cell.label setText:@"PRIVATE"];
             [cell.privateSwitch setHidden:NO];
             privateSwitch = cell.privateSwitch;
-            [privateSwitch setOn:_photo.art.privateArt.boolValue];
+            [privateSwitch setOn:_photo.privatePhoto.boolValue];
+            [privateSwitch addTarget:self action:@selector(privateSwitchSwitched:) forControlEvents:UIControlEventValueChanged];
             [cell.textView setHidden:YES];
             break;
             
@@ -626,7 +755,9 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.row == 3){
+    if (indexPath.row == 2 && editMode){
+        return 120.f;
+    } else if (indexPath.row == 3){
         UITextView *sizingTextView = [[UITextView alloc] init];
         [sizingTextView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
         [sizingTextView setText:_photo.art.materialsToSentence];
@@ -659,26 +790,46 @@
         sizingTextView = nil;
         return newRowHeight;
     } else if (indexPath.row == 7) {
-        return 124;
+        if (_photo.art.notes.length){
+            UITextView *sizingTextView = [[UITextView alloc] init];
+            [sizingTextView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+            [sizingTextView setText:_photo.art.notes];
+            CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth - 37.f, CGFLOAT_MAX)];
+            CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
+            sizingTextView = nil;
+            return newRowHeight;
+        } else {
+            return 130;
+        }
     } else {
         return rowHeight;
     }
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.row == 1){
-        [self showArtists];
-    } else if (indexPath.row == 3){
-        [self showLocations];
+    if (editMode){
+        if (indexPath.row == 1){
+            [self showArtists];
+        } else if (indexPath.row == 3){
+            [self showLocations];
+        } else if (indexPath.row == 4){
+            [self showMaterials];
+        } else if (indexPath.row == 5){
+            [self showIcons];
+        }
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 - (void)showArtists {
+    [self resetTransitionBooleans];
+    metadataModal = YES;
     WFArtistsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Artists"];
     [vc setSelectedArtists:_photo.art.artists.mutableCopy];
     vc.artistDelegate = self;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    nav.transitioningDelegate = self;
     [self presentViewController:nav animated:YES completion:^{
         
     }];
@@ -686,14 +837,20 @@
 
 - (void)artistsSelected:(NSOrderedSet *)selectedArtists {
     _photo.art.artists = selectedArtists;
-    [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:1 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:1 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
+    }];
 }
 
 - (void)showLocations {
+    [self resetTransitionBooleans];
+    metadataModal = YES;
     WFLocationsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Locations"];
     [vc setSelectedLocations:_photo.art.locations.mutableCopy];
     vc.locationDelegate = self;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
     [self presentViewController:nav animated:YES completion:^{
         
     }];
@@ -701,7 +858,50 @@
 
 - (void)locationsSelected:(NSOrderedSet *)selectedLocations {
     _photo.art.locations = selectedLocations;
-    [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:3 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:3 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
+    }];
+}
+
+- (void)showMaterials {
+    [self resetTransitionBooleans];
+    metadataModal = YES;
+    WFMaterialsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Materials"];
+    [vc setSelectedMaterials:_photo.art.materials.mutableCopy];
+    vc.materialDelegate = self;
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+- (void)materialsSelected:(NSOrderedSet *)selectedMaterials {
+    _photo.art.materials = selectedMaterials;
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:4 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
+    }];
+    
+}
+
+- (void)showIcons {
+    [self resetTransitionBooleans];
+    metadataModal = YES;
+    WFIconsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Icons"];
+    [vc setSelectedIcons:_photo.icons.mutableCopy];
+    vc.iconsDelegate = self;
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+- (void)iconsSelected:(NSOrderedSet *)selectedIcons {
+    _photo.icons = selectedIcons;
+    [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:5 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
 }
 
 - (void)favorite {
@@ -757,12 +957,19 @@
     }
 }
 
+- (void)resetTransitionBooleans {
+    login = NO;
+    metadataModal = NO;
+    profile = NO;
+}
+
 - (void)showLogin {
+    [self resetTransitionBooleans];
+    login = YES;
     WFLoginViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Login"];
     delegate.loginDelegate = self;
     vc.modalPresentationStyle = UIModalPresentationCustom;
     vc.transitioningDelegate = self;
-    login = YES;
     [self presentViewController:vc animated:YES completion:^{
         
     }];
@@ -774,6 +981,7 @@
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.transitioningDelegate = self;
     nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self resetTransitionBooleans];
     [self presentViewController:nav animated:YES completion:^{
         
     }];
@@ -847,7 +1055,6 @@
         [manager DELETE:[NSString stringWithFormat:@"photos/%@",_photo.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success deleting photo: %@",responseObject);
             NSNumber *photoId = _photo.identifier;
-            [_photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 [ProgressHUD dismiss];
                 if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(photoDeleted:)]){
@@ -907,6 +1114,71 @@
                      completion:nil];
 }
 
+- (void)eraTapped:(UIButton*)button {
+    if (button == _ceButton){
+        [_ceButton setSelected:YES];
+        [_bceButton setSelected:NO];
+        [_photo.art.interval setSuffix:@"CE"];
+    } else if (button == _bceButton){
+        [_bceButton setSelected:YES];
+        [_ceButton setSelected:NO];
+        [_photo.art.interval setSuffix:@"BCE"];
+    } else if (button == _ceBeginButton){
+        [_bceBeginButton setSelected:NO];
+        [_ceBeginButton setSelected:YES];
+        [_photo.art.interval setBeginSuffix:@"CE"];
+    } else if (button == _bceBeginButton){
+        [_bceBeginButton setSelected:YES];
+        [_ceBeginButton setSelected:NO];
+        [_photo.art.interval setBeginSuffix:@"BCE"];
+    } else if (button == _ceEndButton){
+        [_bceEndButton setSelected:NO];
+        [_ceEndButton setSelected:YES];
+        [_photo.art.interval setEndSuffix:@"CE"];
+    } else if (button == _bceEndButton){
+        [_bceEndButton setSelected:YES];
+        [_ceEndButton setSelected:NO];
+        [_photo.art.interval setEndSuffix:@"BCE"];
+    }
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+}
+
+- (void)circaSwitchSwitched:(UISwitch*)circaSwitch {
+    _photo.art.interval.circa = [NSNumber numberWithBool:circaSwitch.isOn];
+}
+
+- (void)privateSwitchSwitched:(UISwitch*)leSwitch {
+    _photo.privatePhoto = [NSNumber numberWithBool:leSwitch.isOn];
+}
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField {
+    
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    NSNumberFormatter *f = [[NSNumberFormatter alloc] init];
+    f.numberStyle = NSNumberFormatterDecimalStyle;
+    Interval *interval = _photo.art.interval;
+    
+    if (textField == beginYearTextField && beginYearTextField.text.length){
+        NSNumber *yearNumber = [f numberFromString:beginYearTextField.text];
+        if (yearNumber){
+            interval.beginRange = yearNumber;
+        }
+    } else if (textField == endYearTextField && endYearTextField.text.length){
+        NSNumber *yearNumber = [f numberFromString:endYearTextField.text];
+        if (yearNumber){
+            interval.endRange = yearNumber;
+        }
+    } else if (textField == dateTextField && dateTextField.text.length){
+        NSNumber *yearNumber = [f numberFromString:dateTextField.text];
+        if (yearNumber){
+            interval.year = yearNumber;
+        }
+    }
+    NSLog(@"interval end editing: %@",interval);
+}
+
 - (void)textViewDidBeginEditing:(UITextView *)textView {
     if (textView == titleTextView){
         [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:YES];
@@ -929,6 +1201,10 @@
         WFProfileAnimator *animator = [WFProfileAnimator new];
         animator.presenting = YES;
         return animator;
+    } else if (metadataModal){
+        WFMetadataModalAnimator *animator = [WFMetadataModalAnimator new];
+        animator.presenting = YES;
+        return animator;
     } else {
         WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
         animator.presenting = YES;
@@ -943,6 +1219,9 @@
     } else if (profile){
         NSLog(@"profile animator dismiss");
         WFProfileAnimator *animator = [WFProfileAnimator new];
+        return animator;
+    } else if (metadataModal){
+        WFMetadataModalAnimator *animator = [WFMetadataModalAnimator new];
         return animator;
     } else {
         WFLoginAnimator *animator = [WFLoginAnimator new];

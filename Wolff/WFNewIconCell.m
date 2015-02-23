@@ -13,11 +13,11 @@
 
 - (void)awakeFromNib{
     [super awakeFromNib];
-    [_prompt setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
+    [_prompt setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLightItalic] size:0]];
     
     [_label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [_label setTextColor:[UIColor colorWithWhite:1 alpha:.77]];
-    [_label setText:@"NEW MATERIAL"];
+    [_label setText:@"NEW ICONOGRAPHY"];
     [_label setHidden:YES];
     
     [_iconNameTextField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];

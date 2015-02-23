@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface WFBillingViewController : UIViewController
+@interface WFBillingViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+
+@property (weak, nonatomic) IBOutlet UITableView *tableView;
 
 @end

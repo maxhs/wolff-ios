@@ -192,7 +192,13 @@
     NSMutableArray *names = [NSMutableArray arrayWithCapacity:self.locations.count];
     [self.locations enumerateObjectsUsingBlock:^(Location *location, NSUInteger idx, BOOL *stop) {
         if (location.name.length){
-            [names addObject:location.name];
+            if (location.city.length){
+                [names addObject:[NSString stringWithFormat:@"%@ (%@)",location.name, location.city]];
+            } else if (location.country.length){
+                [names addObject:[NSString stringWithFormat:@"%@ (%@)",location.name, location.country]];
+            } else {
+                [names addObject:location.name];
+            }
         } else if (location.city.length){
             [names addObject:location.city];
         } else if (location.state.length){

@@ -39,5 +39,6 @@
 @dynamic photos;
 @dynamic alternates;
 @dynamic customerPlan;
+@dynamic cards;
 
 @end

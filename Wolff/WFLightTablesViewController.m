@@ -123,6 +123,10 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFTableCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LightTableCell" forIndexPath:indexPath];
+    UIView *selectedView = [[UIView alloc] initWithFrame:cell.frame];
+    [selectedView setBackgroundColor:[UIColor colorWithWhite:0 alpha:.14]];
+    cell.selectedBackgroundView = selectedView;
+    
     if (indexPath.section == 0 && !_slideshowShareMode){
         if (indexPath.row == 0){
             [cell.imageView setImage:[UIImage imageNamed:@"plus"]];

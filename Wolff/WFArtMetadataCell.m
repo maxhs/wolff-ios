@@ -9,7 +9,11 @@
 #import "WFArtMetadataCell.h"
 #import "Constants.h"
 
+@interface WFArtMetadataCell(){
+    CGRect originalTextViewRect;
+}
 
+@end
 @implementation WFArtMetadataCell
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
@@ -27,11 +31,13 @@
     [self setDefaultStyle:NO];
     [self setBackgroundColor:[UIColor whiteColor]];
     [_privateSwitch setHidden:YES];
+    originalTextViewRect = self.textView.frame;
 }
 
 - (void)prepareForReuse {
     [super prepareForReuse];
     [_privateSwitch setHidden:YES];
+    [self.textView setFrame:originalTextViewRect];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

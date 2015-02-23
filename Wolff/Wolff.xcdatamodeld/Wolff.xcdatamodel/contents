@@ -48,6 +48,16 @@
         <relationship name="notifications" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Notification" inverseName="artist" inverseEntity="Notification" syncable="YES"/>
         <relationship name="photos" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Photo" inverseName="artists" inverseEntity="Photo" syncable="YES"/>
     </entity>
+    <entity name="Card" representedClassName="Card" syncable="YES">
+        <attribute name="brand" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="createdDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="expMonth" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="expYear" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="last4" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="zip" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="cards" inverseEntity="User" syncable="YES"/>
+    </entity>
     <entity name="Citation" representedClassName="Citation" syncable="YES">
         <attribute name="body" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
@@ -172,6 +182,7 @@
         <attribute name="image" optional="YES" attributeType="Transformable" syncable="YES"/>
         <attribute name="largeImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="mediumImageUrl" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="notes" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="orientation" optional="YES" attributeType="Integer 16" defaultValueString="1" syncable="YES"/>
         <attribute name="originalImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="privatePhoto" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
@@ -251,6 +262,7 @@
         <attribute name="url" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="alternates" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Alternate" inverseName="user" inverseEntity="Alternate" syncable="YES"/>
         <relationship name="arts" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Art" inverseName="user" inverseEntity="Art" syncable="YES"/>
+        <relationship name="cards" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Card" inverseName="user" inverseEntity="Card" syncable="YES"/>
         <relationship name="comments" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Comment" inverseName="user" inverseEntity="Comment" syncable="YES"/>
         <relationship name="favorites" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Favorite" inverseName="user" inverseEntity="Favorite" syncable="YES"/>
         <relationship name="institutions" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Institution" inverseName="users" inverseEntity="Institution" syncable="YES"/>
@@ -265,6 +277,7 @@
         <element name="Alternate" positionX="288" positionY="342" width="128" height="120"/>
         <element name="Art" positionX="270" positionY="252" width="128" height="390"/>
         <element name="Artist" positionX="306" positionY="279" width="128" height="253"/>
+        <element name="Card" positionX="288" positionY="342" width="128" height="165"/>
         <element name="Citation" positionX="288" positionY="342" width="128" height="88"/>
         <element name="Comment" positionX="297" positionY="351" width="128" height="103"/>
         <element name="Discussion" positionX="306" positionY="360" width="128" height="165"/>
@@ -276,10 +289,10 @@
         <element name="Material" positionX="288" positionY="342" width="128" height="120"/>
         <element name="Movement" positionX="324" positionY="387" width="128" height="88"/>
         <element name="Notification" positionX="288" positionY="342" width="128" height="240"/>
-        <element name="Photo" positionX="279" positionY="324" width="128" height="360"/>
+        <element name="Photo" positionX="279" positionY="324" width="128" height="375"/>
         <element name="Slide" positionX="297" positionY="315" width="128" height="225"/>
         <element name="Slideshow" positionX="288" positionY="306" width="128" height="195"/>
         <element name="Table" positionX="288" positionY="270" width="128" height="240"/>
-        <element name="User" positionX="261" positionY="189" width="128" height="465"/>
+        <element name="User" positionX="261" positionY="189" width="128" height="480"/>
     </elements>
 </model>

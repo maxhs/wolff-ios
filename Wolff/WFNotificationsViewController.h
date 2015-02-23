@@ -7,7 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Notification+helper.h"
+
+@protocol WFNotificationsDelegate <NSObject>
+
+- (void)didSelectNotificationWithId:(NSNumber*)notificationId;
+
+@end
 
 @interface WFNotificationsViewController : UITableViewController
+
+@property (weak, nonatomic) id<WFNotificationsDelegate>notificationsDelegate;
 
 @end

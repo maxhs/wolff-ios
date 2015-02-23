@@ -39,6 +39,7 @@
 @property (nonatomic, retain) NSOrderedSet *notifications;
 @property (nonatomic, retain) NSOrderedSet *photos;
 @property (nonatomic, retain) NSOrderedSet *alternates;
+@property (nonatomic, retain) NSOrderedSet *cards;
 
 @end
 

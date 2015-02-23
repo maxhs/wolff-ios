@@ -13,6 +13,7 @@
 #import "Table+helper.h"
 #import "Slideshow+helper.h"
 #import "Institution+helper.h"
+#import "Card+helper.h"
 
 @interface User (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
@@ -27,4 +28,6 @@
 - (void)addInstitution:(Institution*)institution;
 - (void)removeInstitution:(Institution*)institution;
 - (void)removeSlideshow:(Slideshow*)slideshow;
+- (void)addCard:(Card*)card;
+- (void)removeCard:(Card*)card;
 @end

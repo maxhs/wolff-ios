@@ -9,7 +9,6 @@
 #import "WFNotificationsViewController.h"
 #import "WFAppDelegate.h"
 #import "WFNotificationCell.h"
-#import "Notification.h"
 #import <DateTools/DateTools.h>
 
 @interface WFNotificationsViewController () <UIAlertViewDelegate> {
@@ -104,6 +103,14 @@
     [cell configureForNotificaiton:notification];
     
     return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (self.notificationsDelegate && [self.notificationsDelegate respondsToSelector:@selector(didSelectNotificationWithId:)]){
+        Notification *notification = _notifications[indexPath.row];
+        [self.notificationsDelegate didSelectNotificationWithId:notification.identifier];
+    }
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {

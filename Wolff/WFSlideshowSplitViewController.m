@@ -160,8 +160,14 @@
     playButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(playSlideshowFromStart)];
     
     //only show the settings buttons, and such, to the slideshow's owner
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [_slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
-        self.navigationItem.rightBarButtonItems = @[playButton, /*settingsButton,*/ searchButton, saveButton, shareButton];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        if ([_slideshow.identifier isEqualToNumber:@0]){
+            self.navigationItem.rightBarButtonItems = @[playButton, /*settingsButton,*/ searchButton, saveButton, shareButton];
+        } else if ([_slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+            self.navigationItem.rightBarButtonItems = @[playButton, /*settingsButton,*/ searchButton, saveButton, shareButton];
+        } else {
+            self.navigationItem.rightBarButtonItems = @[playButton, searchButton];
+        }
     } else {
         self.navigationItem.rightBarButtonItems = @[playButton, searchButton];
     }

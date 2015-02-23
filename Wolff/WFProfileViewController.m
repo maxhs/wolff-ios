@@ -86,7 +86,7 @@
 }
 
 - (void)getPublicPhotos {
-    NSPredicate *publicPhotoPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@ && privatePhoto != %@",_user.identifier, @YES];
+    NSPredicate *publicPhotoPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@ && privatePhoto != %@ && art.privateArt != %@",_user.identifier, @YES, @YES];
     _publicPhotos = [Photo MR_findAllSortedBy:@"createdDate" ascending:NO withPredicate:publicPhotoPredicate inContext:[NSManagedObjectContext MR_defaultContext]];
     [_collectionView reloadData];
 }

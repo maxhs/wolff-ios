@@ -47,10 +47,7 @@
     _tableView.rowHeight = 80.f;
     [_collectionView setBackgroundColor:[UIColor blackColor]];
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
-    // show full tile view if it's a real search
-//    if (!_photos.count && _shouldShowTiles){
-//        _photos = [Photo MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
-//    }
+    
     _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
     selectedPhotos = [NSMutableOrderedSet orderedSet];
     
@@ -59,6 +56,7 @@
         [_collectionView setHidden:NO];
         [_tableView setHidden:YES];
         [_noResultsPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.7]];
+        
         [self.collectionView reloadData];
         [_noResultsPrompt setText:@"No results...\n\nTap the \"Search\" key to perform a full search through the Wölff catalog"];
     } else {
@@ -146,11 +144,9 @@
 #pragma mark - Table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     if (_photos.count == 0 && !searching){
-        NSLog(@"unhiding no results prompt");
         [_noResultsPrompt setHidden:NO];
         return 0;
     } else {
-        NSLog(@"HIDING no results prompt");
         [_noResultsPrompt setHidden:YES];
         return 1;
     }
