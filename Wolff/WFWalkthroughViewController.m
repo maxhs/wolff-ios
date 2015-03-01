@@ -119,7 +119,7 @@
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
     CGFloat endedAtX = scrollView.contentOffset.x;
-    if (endedAtX > ((width * 2) + 100)) {
+    if (endedAtX > ((width * 2) + 50)) {
         [scrollView setContentOffset:CGPointMake(width * 4, 0) animated:YES];
         [self dismiss];
     }

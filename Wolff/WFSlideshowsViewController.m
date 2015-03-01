@@ -134,13 +134,13 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0){
-        if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(newSlideshow)]) {
-            [self.slideshowDelegate newSlideshow];
+        if (self.slideshowsDelegate && [self.slideshowsDelegate respondsToSelector:@selector(newSlideshow)]) {
+            [self.slideshowsDelegate newSlideshow];
         }
     } else {
-        if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(slideshowSelected:)]) {
+        if (self.slideshowsDelegate && [self.slideshowsDelegate respondsToSelector:@selector(slideshowSelected:)]) {
             Slideshow *slideshow = _currentUser.slideshows[indexPath.row];
-            [self.slideshowDelegate slideshowSelected:slideshow];
+            [self.slideshowsDelegate slideshowSelected:slideshow];
         }
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -173,6 +173,7 @@
 
 - (void)deleteSlideshow {
     Slideshow *slideshow = _currentUser.slideshows[indexPathForDeletion.row];
+    NSLog(@"Slideshow we're about to delete: %@",slideshow);
     if (slideshow && ![slideshow.identifier isEqualToNumber:@0]){
         [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             [self.tableView beginUpdates];
@@ -184,19 +185,17 @@
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 
             }];
-            NSLog(@"Success deleting this slideshow: %@",responseObject);
+            NSLog(@"Success deleting this slideshow from slideshows tableView: %@",responseObject);
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to delete this slideshow: %@",error.description);
         }];
     } else {
         [self.tableView beginUpdates];
         [_currentUser removeSlideshow:slideshow];
-        [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
-        [self.tableView endUpdates];
-        
         [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            
+            [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
+            [self.tableView endUpdates];
         }];
     }
 }

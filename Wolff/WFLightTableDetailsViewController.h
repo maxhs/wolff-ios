@@ -12,6 +12,7 @@
 
 - (void)didCreateLightTable:(Table*)table;
 - (void)didJoinLightTable:(Table*)table;
+@optional
 - (void)didSaveLightTable:(Table*)table;
 - (void)didDeleteLightTable:(Table*)table;
 @end

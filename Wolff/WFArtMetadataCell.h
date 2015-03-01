@@ -12,6 +12,7 @@
 
 @property (weak, nonatomic) IBOutlet UILabel *label;
 @property (weak, nonatomic) IBOutlet UITextView *textView;
+@property (weak, nonatomic) IBOutlet UITextView *notesTextView;
 @property (weak, nonatomic) IBOutlet UISwitch *privateSwitch;
 - (void)setDefaultStyle:(BOOL)editMode;
 @end

@@ -19,7 +19,7 @@
 - (void)removeAllSelected;
 - (void)batchFavorite;
 - (void)newLightTableForSelected;
-- (void)lightTableForSelected:(Table*)lightTable;
+- (void)batchSelectForLightTableWithId:(NSNumber*)lightTableId;
 - (void)slideshowForSelected:(Slideshow*)slideshow;
 @end
 

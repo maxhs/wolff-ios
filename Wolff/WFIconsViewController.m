@@ -19,6 +19,8 @@
     BOOL iOS8;
     BOOL searching;
     BOOL editing;
+    BOOL loading;
+    BOOL noResults;
     CGFloat width;
     CGFloat height;
     CGFloat topInset;
@@ -38,7 +40,6 @@
 @end
 
 @implementation WFIconsViewController
-@synthesize selectedIcons = _selectedIcons;
 
 static NSString * const reuseIdentifier = @"IconCell";
 
@@ -85,58 +86,66 @@ static NSString * const reuseIdentifier = @"IconCell";
 }
 
 - (void)iconUnknownToggled {
-    [_selectedIcons removeAllObjects];
+    [self.selectedIcons removeAllObjects];
     [self adjustUnknownButtonColor];
-    [_collectionView reloadData];
+    [self.collectionView reloadData];
 }
 
 - (void)adjustUnknownButtonColor {
-    if (_selectedIcons.count){
+    if (self.selectedIcons.count){
         [noIconsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     } else {
         [noIconsButton setTitleColor:kSaffronColor forState:UIControlStateNormal];
     }
 }
 
-- (void)loadiconsWithSearch:(NSString*)searchString {
-    [self.searchBar resignFirstResponder];
-    searching = YES;
-    
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-    }
-    if (searchString.length){
-        [parameters setObject:searchString forKey:@"search"];
-    }
-    [ProgressHUD show:@"Searching..."];
-    [manager POST:@"icons/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success loading icons: %@",responseObject);
-        for (id dict in [responseObject objectForKey:@"icons"]){
-            Icon *icon = [Icon MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!icon){
-                icon = [Icon MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-            }
-            [icon populateFromDictionary:dict];
-            [_filteredIcons addObject:icon];
-            [_icons addObject:icon];
+- (void)loadIconsWithSearch:(NSString*)searchString {
+    if (!loading && !noResults){
+        searching = YES;
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
+            [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         }
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        if (searchString.length){
+            [parameters setObject:searchString forKey:@"search"];
+        }
+        loading = YES;
+        [manager POST:@"icons/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success loading icons: %@",responseObject);
+            if ([responseObject objectForKey:@"icons"] && [[responseObject objectForKey:@"icons"] count]){
+                noResults = NO;
+                for (id dict in [responseObject objectForKey:@"icons"]){
+                    Icon *icon = [Icon MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+                    if (!icon){
+                        icon = [Icon MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                    }
+                    [icon populateFromDictionary:dict];
+                    [_filteredIcons addObject:icon];
+                    [_icons addObject:icon];
+                }
+                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                    [ProgressHUD dismiss];
+                    [_collectionView reloadData];
+                    loading = NO;
+                }];
+                
+            } else {
+                noResults = YES;
+            }
+            
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            [WFAlert show:@"Sorry, something went wrong while trying to fetch icon info.\n\nPlease try again soon." withTime:3.3f];
             [ProgressHUD dismiss];
-            _icons = [NSMutableOrderedSet orderedSetWithArray:[Icon MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
-            [_collectionView reloadData];
+            loading = NO;
+            NSLog(@"Failed to load icons: %@",error.description);
         }];
-        
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        [WFAlert show:@"Sorry, something went wrong while trying to fetch icon info.\n\nPlease try again soon." withTime:3.3f];
-        [ProgressHUD dismiss];
-        NSLog(@"Failed to load icons: %@",error.description);
-    }];
+    }
 }
 
 #pragma mark <UICollectionViewDataSource>
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    _icons = [NSMutableOrderedSet orderedSetWithArray:[Icon MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
     return 1;
 }
 
@@ -187,7 +196,7 @@ static NSString * const reuseIdentifier = @"IconCell";
         WFIconCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
         Icon * icon = searching ? _filteredIcons[indexPath.item] : _icons[indexPath.item];
         [cell configureForIcon:icon];
-        if ([_selectedIcons containsObject:icon]){
+        if ([self.selectedIcons containsObject:icon]){
             [cell.checkmark setHidden:NO];
         } else {
             [cell.checkmark setHidden:YES];
@@ -221,15 +230,15 @@ static NSString * const reuseIdentifier = @"IconCell";
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     if ((searching && indexPath.row == _filteredIcons.count) || (indexPath.row == _icons.count)){
         [self toggleEditMode];
-        [_collectionView reloadItemsAtIndexPaths:@[indexPath]];
+        [collectionView reloadItemsAtIndexPaths:@[indexPath]];
     } else {
         Icon *icon = searching ? _filteredIcons[indexPath.item] : _icons[indexPath.item];
-        if ([_selectedIcons containsObject:icon]){
-            [_selectedIcons removeObject:icon];
+        if ([self.selectedIcons containsObject:icon]){
+            [self.selectedIcons removeObject:icon];
         } else {
-            [_selectedIcons addObject:icon];
+            [self.selectedIcons addObject:icon];
         }
-        [_collectionView reloadItemsAtIndexPaths:@[indexPath]];
+        [collectionView reloadItemsAtIndexPaths:@[indexPath]];
         [collectionView deselectItemAtIndexPath:indexPath animated:YES];
     }
     [self adjustUnknownButtonColor];
@@ -271,7 +280,7 @@ static NSString * const reuseIdentifier = @"IconCell";
 #pragma mark - Search Methods
 - (void)setUpSearch {
     searching = NO;
-    
+    noResults = NO;
     [_noSearchResultsLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLightItalic] size:0]];
     [_noSearchResultsLabel setTextColor:[UIColor colorWithWhite:0 alpha:.23]];
     [_noSearchResultsLabel setText:@"No search results..."];
@@ -294,8 +303,11 @@ static NSString * const reuseIdentifier = @"IconCell";
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
-    if (searchBar.text.length){
-        [self loadiconsWithSearch:searchBar.text];
+    if (searchBar.text.length && !noResults){
+        [ProgressHUD show:@"Searching..."];
+        [self loadIconsWithSearch:searchBar.text];
+    } else {
+        [self.view endEditing:YES];
     }
 }
 
@@ -313,6 +325,11 @@ static NSString * const reuseIdentifier = @"IconCell";
             if ([predicate evaluateWithObject:icon.name]) {
                 [_filteredIcons addObject:icon];
             }
+        }
+        if (_filteredIcons.count == 0){
+            [self loadIconsWithSearch:text];
+        } else {
+            noResults = NO;
         }
     } else {
         _filteredIcons = [NSMutableOrderedSet orderedSetWithOrderedSet:_icons];
@@ -351,11 +368,11 @@ static NSString * const reuseIdentifier = @"IconCell";
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         
         //add the new icon to the selection
-        [_selectedIcons addObject:icon];
+        [self.selectedIcons addObject:icon];
         [ProgressHUD dismiss];
         
         if (self.iconsDelegate && [self.iconsDelegate respondsToSelector:@selector(iconsSelected:)]){
-            [self.iconsDelegate iconsSelected:_selectedIcons];
+            [self.iconsDelegate iconsSelected:self.selectedIcons];
         }
         [self dismiss];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -366,10 +383,10 @@ static NSString * const reuseIdentifier = @"IconCell";
 }
 
 - (void)save {
-    if (_selectedIcons.count){
+    if (self.selectedIcons.count){
         
         if (self.iconsDelegate && [self.iconsDelegate respondsToSelector:@selector(iconsSelected:)]){
-            [self.iconsDelegate iconsSelected:_selectedIcons];
+            [self.iconsDelegate iconsSelected:self.selectedIcons];
         }
         [self dismiss];
         

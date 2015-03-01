@@ -37,7 +37,6 @@
 
     topInset = self.navigationController.navigationBar.frame.size.height;
     _tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
-    _tableView.rowHeight = 54.f;
     [_tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.07]];
     
     _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -71,7 +70,8 @@
 
 #pragma mark - Table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 2;
+    //return 2;
+    return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -88,10 +88,17 @@
     UIView *selectedView = [[UIView alloc] initWithFrame:cell.frame];
     [selectedView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
     cell.selectedBackgroundView = selectedView;
+    [cell.textLabel setNumberOfLines: 0];
     
     if (indexPath.section == 0){
-        [cell.textLabel setText:[NSString stringWithFormat:@"You are currently signed up for the \"%@\" billing plan.",_currentUser.customerPlan]];
-        [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+        if (_currentUser.customerPlan.length){
+            [cell.textLabel setText:[NSString stringWithFormat:@"You are currently signed up for the \"%@\" billing plan.",_currentUser.customerPlan]];
+            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+        } else {
+            [cell.textLabel setText:@"You aren't currently signed up for a billing plan.\n\nPlease either sign up as an individual or as part of a registered institution on wolffapp.com."];
+            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
+        }
+        
         [cell.textLabel setTextAlignment:NSTextAlignmentCenter];
         [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
     } else {
@@ -109,6 +116,14 @@
     }
     
     return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0){
+        return 90.f;
+    } else {
+        return 54.f;
+    }
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
@@ -140,16 +155,14 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 1 && indexPath.row == _currentUser.cards.count){
-        [self performSegueWithIdentifier:@"NewCard" sender:nil];
+        //[self performSegueWithIdentifier:@"NewCard" sender:nil];
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 - (void)addedCardWithId:(NSNumber *)cardId {
     Card *card = [Card MR_findFirstByAttribute:@"identifier" withValue:cardId inContext:[NSManagedObjectContext MR_defaultContext]];
-    NSLog(@"current user cards before: %d",_currentUser.cards.count);
     [_currentUser addCard:card];
-    NSLog(@"current user cards after: %d",_currentUser.cards.count);
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         NSLog(@"just added new card: %@",card);
         [_tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];

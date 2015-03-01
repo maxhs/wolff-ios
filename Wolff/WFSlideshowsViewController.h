@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "Slideshow+helper.h"
 
-@protocol WFSlideshowDelegate <NSObject>
+@protocol WFSlideshowsDelegate <NSObject>
 
 @required
 - (void)newSlideshow;
@@ -19,6 +19,6 @@
 @interface WFSlideshowsViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
 @property BOOL slideshowShareMode;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
-@property (weak, nonatomic) id<WFSlideshowDelegate> slideshowDelegate;
+@property (weak, nonatomic) id<WFSlideshowsDelegate> slideshowsDelegate;
 
 @end

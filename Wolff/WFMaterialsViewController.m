@@ -215,7 +215,7 @@ static NSString * const reuseIdentifier = @"MaterialCell";
 #pragma mark – UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(width/3,width/8);
+    return CGSizeMake(width/2,height/4);
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -319,7 +319,9 @@ static NSString * const reuseIdentifier = @"MaterialCell";
                 [_filteredMaterials addObject:material];
             }
         }
-        if (!_filteredMaterials.count) [self loadMaterialsWithSearch:text];
+        if (_filteredMaterials.count == 0) {
+            [self loadMaterialsWithSearch:text];
+        }
     } else {
         _filteredMaterials = [NSMutableOrderedSet orderedSetWithOrderedSet:_materials];
     }

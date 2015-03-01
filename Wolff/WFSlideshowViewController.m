@@ -54,7 +54,6 @@
 
 @implementation WFSlideshowViewController
 
-@synthesize slideshow = _slideshow;
 @synthesize startIndex = _startIndex;
 
 - (void)viewDidLoad {
@@ -108,7 +107,7 @@
     [_panGesture requireGestureRecognizerToFail:rightScreenEdgePanGesture];
     [_panGesture requireGestureRecognizerToFail:leftScreenEdgePanGesture];
     
-    [_slideshowTitleButtonItem setTitle:_slideshow.title];
+    [_slideshowTitleButtonItem setTitle:self.slideshow.title];
     currentPage = _startIndex;
     if (_startIndex == 0){
         [_previousButton setEnabled:NO];
@@ -144,14 +143,14 @@
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     titleTimer = [[NSTimer alloc] init];
-    titleTimer = [NSTimer scheduledTimerWithTimeInterval:0.7f target:self selector:@selector(hideBars) userInfo:nil repeats:NO];
+    titleTimer = [NSTimer scheduledTimerWithTimeInterval:1.7f target:self selector:@selector(hideBars) userInfo:nil repeats:NO];
 }
 
 - (void)showMetadata {
     if (currentPage > 0){
         WFSlideMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideMetadata"];
         [vc setSlide:currentSlide];
-        [vc setSlideshow:_slideshow];
+        [vc setSlideshow:self.slideshow];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
@@ -188,9 +187,9 @@
         currentPage = page;
         if (currentPage > 0){
             [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
-            currentSlide = _slideshow.slides[currentPage-1]; // offset by 1 because the index starts at 0, not 1
+            currentSlide = self.slideshow.slides[currentPage-1]; // offset by 1 because the index starts at 0, not 1
             self.navigationItem.rightBarButtonItem = metadataButton;
-            currentPage == _slideshow.slides.count ? [_nextButton setEnabled:NO] : [_nextButton setEnabled:YES];
+            currentPage == self.slideshow.slides.count ? [_nextButton setEnabled:NO] : [_nextButton setEnabled:YES];
             [_previousButton setEnabled:YES];
         } else {
             // we're on the title slide
@@ -209,7 +208,7 @@
     currentPage = page;
     if (currentPage > 0){
         // ensure the ivars are set to the ACTIVE cell AND slide
-        currentSlide = _slideshow.slides[currentPage-1]; // offset by 1 because the index starts at 0, not 1
+        currentSlide = self.slideshow.slides[currentPage-1]; // offset by 1 because the index starts at 0, not 1
         WFSlideshowSlideCell *cell = (WFSlideshowSlideCell*)[_collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:currentPage-1 inSection:1]];
         containerView1 = cell.containerView1;
         containerView2 = cell.containerView2;
@@ -225,7 +224,7 @@
 - (IBAction)nextSlide:(id)sender {
     CGPoint contentOffset = _collectionView.contentOffset;
     contentOffset.x += width;
-    if (currentPage <= _slideshow.slides.count){
+    if (currentPage <= self.slideshow.slides.count){
         [_collectionView setContentOffset:contentOffset animated:YES];
     }
 }
@@ -246,17 +245,17 @@
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     if (section == 0) return 1;
-    else return _slideshow.slides.count;
+    else return self.slideshow.slides.count;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0){
         WFSlideshowTitleCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"TitleCell" forIndexPath:indexPath];
-        [cell configureForSlideshow:_slideshow];
+        [cell configureForSlideshow:self.slideshow];
         return cell;
     } else {
         WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
-        currentSlide = _slideshow.slides[indexPath.item];
+        currentSlide = self.slideshow.slides[indexPath.item];
         [cell configureForPhotos:currentSlide.photos.mutableCopy inSlide:currentSlide];
        
         if (!artImageView1){

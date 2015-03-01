@@ -27,7 +27,7 @@
     if ([dictionary objectForKey:@"photos"] && [dictionary objectForKey:@"photos"] != [NSNull null]){
         NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSet];
         for (NSDictionary *photoDict in [dictionary objectForKey:@"photos"]){
-            Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[photoDict objectForKey:@"id"]inContext:[NSManagedObjectContext MR_defaultContext]];
+            Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[photoDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!photo){
                 photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }

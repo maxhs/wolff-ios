@@ -9,10 +9,7 @@
 #import "WFSlideshowCell.h"
 #import "Constants.h"
 #import "User+helper.h"
-@interface WFSlideshowCell() {
-    Slideshow *_slideshow;
-}
-@end
+#import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation WFSlideshowCell
 
@@ -48,17 +45,13 @@
 }
 
 - (void)configureForSlideshow:(Slideshow *)slideshow {
-    _slideshow = slideshow;
     [self.textLabel setText:@""];
-    
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
         [_actionButton setTitle:@"Delete" forState:UIControlStateNormal];
         [_actionButton setBackgroundColor:[UIColor redColor]];
-        [_actionButton addTarget:self action:@selector(deleteShow) forControlEvents:UIControlEventTouchUpInside];
     } else {
         [_actionButton setTitle:@"Remove" forState:UIControlStateNormal];
         [_actionButton setBackgroundColor:kSaffronColor];
-        [_actionButton addTarget:self action:@selector(removeShow) forControlEvents:UIControlEventTouchUpInside];
     }
     
     //set up the title
@@ -80,18 +73,6 @@
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
-}
-
-- (void)deleteShow {
-    if (self.delegate && [self.delegate respondsToSelector:@selector(deleteSlideshow:)]){
-        [self.delegate deleteSlideshow:_slideshow.identifier];
-    }
-}
-
-- (void)removeShow {
-    if (self.delegate && [self.delegate respondsToSelector:@selector(removeSlideshow:)]){
-        [self.delegate removeSlideshow:_slideshow.identifier];
-    }
 }
 
 @end

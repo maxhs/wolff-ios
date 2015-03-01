@@ -40,7 +40,6 @@
 @end
 
 @implementation WFArtistsViewController
-@synthesize selectedArtists = _selectedArtists;
 
 static NSString * const reuseIdentifier = @"ArtistCell";
 
@@ -87,13 +86,13 @@ static NSString * const reuseIdentifier = @"ArtistCell";
 }
 
 - (void)artistUnknownToggled {
-    [_selectedArtists removeAllObjects];
+    [self.selectedArtists removeAllObjects];
     [self adjustUnknownButtonColor];
     [_collectionView reloadData];
 }
 
 - (void)adjustUnknownButtonColor {
-    if (_selectedArtists.count){
+    if (self.selectedArtists.count){
         [artistUnknownButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     } else {
         [artistUnknownButton setTitleColor:kSaffronColor forState:UIControlStateNormal];
@@ -121,10 +120,11 @@ static NSString * const reuseIdentifier = @"ArtistCell";
             }
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 [ProgressHUD dismiss];
+                _artists = [NSMutableOrderedSet orderedSetWithArray:[Artist MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
+                [self filterContentForSearchText:searchString scope:nil];
+                loading = NO;
             }];
-            _artists = [NSMutableOrderedSet orderedSetWithArray:[Artist MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
-            [self filterContentForSearchText:searchString scope:nil];
-            loading = NO;
+            
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [WFAlert show:@"Sorry, something went wrong while trying to fetch artist info.\n\nPlease try again soon." withTime:3.3f];
             [ProgressHUD dismiss];
@@ -186,7 +186,7 @@ static NSString * const reuseIdentifier = @"ArtistCell";
         WFArtistCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
         Artist * artist = searching ? _filteredArtists[indexPath.item] : _artists[indexPath.item];
         [cell configureForArtist:artist];
-        if ([_selectedArtists containsObject:artist]){
+        if ([self.selectedArtists containsObject:artist]){
             [cell.checkmark setHidden:NO];
         } else {
             [cell.checkmark setHidden:YES];
@@ -212,10 +212,10 @@ static NSString * const reuseIdentifier = @"ArtistCell";
         [_collectionView reloadItemsAtIndexPaths:@[indexPath]];
     } else {
         Artist *artist = searching ? _filteredArtists[indexPath.item] : _artists[indexPath.item];
-        if ([_selectedArtists containsObject:artist]){
-            [_selectedArtists removeObject:artist];
+        if ([self.selectedArtists containsObject:artist]){
+            [self.selectedArtists removeObject:artist];
         } else {
-            [_selectedArtists addObject:artist];
+            [self.selectedArtists addObject:artist];
         }
         
         [_collectionView reloadItemsAtIndexPaths:@[indexPath]];
@@ -342,11 +342,11 @@ static NSString * const reuseIdentifier = @"ArtistCell";
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         
         //add the new artist to the selection
-        [_selectedArtists addObject:artist];
+        [self.selectedArtists addObject:artist];
         [ProgressHUD dismiss];
         
         if (self.artistDelegate && [self.artistDelegate respondsToSelector:@selector(artistsSelected:)]){
-            [self.artistDelegate artistsSelected:_selectedArtists];
+            [self.artistDelegate artistsSelected:self.selectedArtists];
         }
         [self dismiss];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -357,9 +357,9 @@ static NSString * const reuseIdentifier = @"ArtistCell";
 }
 
 - (void)save {
-    if (_selectedArtists.count){
+    if (self.selectedArtists.count){
         if (self.artistDelegate && [self.artistDelegate respondsToSelector:@selector(artistsSelected:)]){
-            [self.artistDelegate artistsSelected:_selectedArtists];
+            [self.artistDelegate artistsSelected:self.selectedArtists];
         }
         [self dismiss];
     } else {

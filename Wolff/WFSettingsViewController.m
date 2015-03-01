@@ -45,11 +45,8 @@
 
 @implementation WFSettingsViewController
 
-@synthesize currentUser = _currentUser;
-
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
     if (SYSTEM_VERSION >= 8.f){
         iOS8 = YES;
     } else {
@@ -63,7 +60,7 @@
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+    self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
     [self loadUserDetails];
     
     _tableView.rowHeight = 54.f;
@@ -102,10 +99,10 @@
 }
 
 - (void)loadUserDetails {
-    [manager GET:[NSString stringWithFormat:@"%@/users/%@/edit",kApiBaseUrl,_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [manager GET:[NSString stringWithFormat:@"%@/users/%@/edit",kApiBaseUrl,self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success getting user details: %@",responseObject);
         
-        [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
+        [self.currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
         [self.tableView reloadData];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -124,31 +121,31 @@
     password = @"";
     confirmPassword = @"";
     
-    if (emailTextField.text.length && ![emailTextField.text isEqualToString:_currentUser.email]){
+    if (emailTextField.text.length && ![emailTextField.text isEqualToString:self.currentUser.email]){
         [parameters setObject:emailTextField.text forKey:@"email"];
     }
-    if (locationTextField.text.length && ![locationTextField.text isEqualToString:_currentUser.location]){
+    if (locationTextField.text.length && ![locationTextField.text isEqualToString:self.currentUser.location]){
         [parameters setObject:locationTextField.text forKey:@"location"];
     }
-    if (phoneTextField.text.length && ![phoneTextField.text isEqualToString:_currentUser.phone]){
+    if (phoneTextField.text.length && ![phoneTextField.text isEqualToString:self.currentUser.phone]){
         [parameters setObject:phoneTextField.text forKey:@"phone"];
     }
-    if (firstNameTextField.text.length && ![firstNameTextField.text isEqualToString:_currentUser.firstName]){
+    if (firstNameTextField.text.length && ![firstNameTextField.text isEqualToString:self.currentUser.firstName]){
         [parameters setObject:firstNameTextField.text forKey:@"first_name"];
     }
-    if (lastNameTextField.text.length && ![lastNameTextField.text isEqualToString:_currentUser.lastName]){
+    if (lastNameTextField.text.length && ![lastNameTextField.text isEqualToString:self.currentUser.lastName]){
         [parameters setObject:lastNameTextField.text forKey:@"last_name"];
     }
-    NSMutableArray *institutionIds = [NSMutableArray arrayWithCapacity:_currentUser.institutions.count];
-    for (Institution *institution in _currentUser.institutions){
+    NSMutableArray *institutionIds = [NSMutableArray arrayWithCapacity:self.currentUser.institutions.count];
+    for (Institution *institution in self.currentUser.institutions){
         [institutionIds addObject:institution.identifier];
     }
     [parameters setObject:institutionIds forKey:@"institution_ids"];
     
     [ProgressHUD show:@"Saving..."];
-    [manager PATCH:[NSString stringWithFormat:@"users/%@",_currentUser.identifier] parameters:@{@"user":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [manager PATCH:[NSString stringWithFormat:@"users/%@",self.currentUser.identifier] parameters:@{@"user":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success saving user settings: %@",responseObject);
-        [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
+        [self.currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             if (passwordChanged){
                 [WFAlert show:@"You successfully changed your password and updated your settings." withTime:3.3f];
@@ -188,11 +185,11 @@
             break;
         case 2:
             // manage institutions
-            return _currentUser.institutions.count + 1;
+            return self.currentUser.institutions.count + 1;
             break;
         case 3:
             // manage alternate contact info
-            return _currentUser.alternates.count + 1;
+            return self.currentUser.alternates.count + 1;
             break;
         case 4:
             return 3;
@@ -214,27 +211,27 @@
         [cell.textField setHidden:NO];
         switch (indexPath.row) {
             case 0:
-                [cell.textField setText:_currentUser.firstName];
+                [cell.textField setText:self.currentUser.firstName];
                 [cell.textField setPlaceholder:@"First name"];
                 firstNameTextField = cell.textField;
                 break;
             case 1:
-                [cell.textField setText:_currentUser.lastName];
+                [cell.textField setText:self.currentUser.lastName];
                 [cell.textField setPlaceholder:@"Last name"];
                 lastNameTextField = cell.textField;
                 break;
             case 2:
-                [cell.textField setText:_currentUser.email];
+                [cell.textField setText:self.currentUser.email];
                 [cell.textField setPlaceholder:@"albrecht@durer.com"];
                 emailTextField = cell.textField;
                 break;
             case 3:
-                [cell.textField setText:_currentUser.phone];
+                [cell.textField setText:self.currentUser.phone];
                 [cell.textField setPlaceholder:@"555-555-5555"];
                 phoneTextField = cell.textField;
                 break;
             case 4:
-                [cell.textField setText:_currentUser.location];
+                [cell.textField setText:self.currentUser.location];
                 [cell.textField setPlaceholder:@"Your location (e.g. Berlin, New York City, Byzantium)"];
                 locationTextField = cell.textField;
                 break;
@@ -259,37 +256,40 @@
         [cell.textField setHidden:YES];
         [cell.textField setUserInteractionEnabled:NO];
         [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
-        if (_currentUser.customerPlan.length){
-            [cell.textLabel setText:_currentUser.customerPlan];
+        if (self.currentUser.customerPlan.length){
+            [cell.textLabel setText:self.currentUser.customerPlan];
         } else {
             [cell.textLabel setText:@"Set up billing"];
+            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
         }
     } else if (indexPath.section == 2) {
         [cell.textField setHidden:NO];
         [cell.textField setUserInteractionEnabled:NO];
-        if (indexPath.row == _currentUser.institutions.count){
+        if (indexPath.row == self.currentUser.institutions.count){
             [cell.textField setPlaceholder:@"Add an affiliated institution"];
         } else {
-            Institution *institution = _currentUser.institutions[indexPath.row];
+            Institution *institution = self.currentUser.institutions[indexPath.row];
             [cell.textField setText:institution.name];
         }
     } else if (indexPath.section == 3) {
         [cell.textField setHidden:NO];
         [cell.actionButton setHidden:NO];
         [cell.actionButton setTag:indexPath.row];
-        if (indexPath.row == _currentUser.alternates.count){
+        if (indexPath.row == self.currentUser.alternates.count){
             alternateTextField = cell.textField;
             [cell.textField setPlaceholder:@"Alternate email address(es)"];
             [cell.actionButton setTitle:@"ADD" forState:UIControlStateNormal];
             [cell.actionButton addTarget:self action:@selector(createAlternate:) forControlEvents:UIControlEventTouchUpInside];
+            [cell.actionButton setHidden:NO];
         } else {
-            Alternate *alternate = _currentUser.alternates[indexPath.row];
+            Alternate *alternate = self.currentUser.alternates[indexPath.row];
             [cell.textField setText:alternate.email];
             [cell.textField setKeyboardType:UIKeyboardTypeEmailAddress];
             [cell.textField setAutocapitalizationType:UITextAutocapitalizationTypeNone];
             [cell.textField setAutocorrectionType:UITextAutocorrectionTypeNo];
-            [cell.actionButton setTitle:@"SAVE" forState:UIControlStateNormal];
-            [cell.actionButton addTarget:self action:@selector(editAlternate:) forControlEvents:UIControlEventTouchUpInside];
+            [cell.actionButton setHidden:YES];
+            //[cell.actionButton setTitle:@"SAVE" forState:UIControlStateNormal];
+            //[cell.actionButton addTarget:self action:@selector(editAlternate:) forControlEvents:UIControlEventTouchUpInside];
         }
     } else if (indexPath.section == 4) {
         [cell.settingsSwitch setHidden:NO];
@@ -298,17 +298,17 @@
             case 0:
                 //email
                 [cell.textLabel setText:@"Email notifications"];
-                [cell.settingsSwitch setOn:_currentUser.emailPermission.boolValue];
+                [cell.settingsSwitch setOn:self.currentUser.emailPermission.boolValue];
                 break;
             case 1:
                 //push
                 [cell.textLabel setText:@"Push notifications"];
-                [cell.settingsSwitch setOn:_currentUser.pushPermission.boolValue];
+                [cell.settingsSwitch setOn:self.currentUser.pushPermission.boolValue];
                 break;
             case 2:
                 //text
                 [cell.textLabel setText:@"Wölff texts"];
-                [cell.settingsSwitch setOn:_currentUser.textPermission.boolValue];
+                [cell.settingsSwitch setOn:self.currentUser.textPermission.boolValue];
                 break;
             default:
                 break;
@@ -324,15 +324,15 @@
     switch (s.tag) {
         case 0:
             //email
-            [_currentUser setEmailPermission:[NSNumber numberWithBool:s.isOn]];
+            [self.currentUser setEmailPermission:[NSNumber numberWithBool:s.isOn]];
             break;
         case 1:
             //push
-            [_currentUser setPushPermission:[NSNumber numberWithBool:s.isOn]];
+            [self.currentUser setPushPermission:[NSNumber numberWithBool:s.isOn]];
             break;
         case 2:
             //text
-            [_currentUser setTextPermission:[NSNumber numberWithBool:s.isOn]];
+            [self.currentUser setTextPermission:[NSNumber numberWithBool:s.isOn]];
             break;
             
         default:
@@ -376,7 +376,7 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 1){
         [self performSegueWithIdentifier:@"Billing" sender:nil];
-    } else if (indexPath.section == 2 && indexPath.row == _currentUser.institutions.count){
+    } else if (indexPath.section == 2 && indexPath.row == self.currentUser.institutions.count){
         WFSettingsCell *cell = (WFSettingsCell*)[_tableView cellForRowAtIndexPath:indexPath];
         [self showInstitutionSearchFromRect:cell.frame];
     }
@@ -418,7 +418,7 @@
         [manager POST:[NSString stringWithFormat:@"institutions/%@/add_user",institution.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success creating institution user: %@",responseObject);
             [self.tableView beginUpdates];
-            [institution addUser:_currentUser];
+            [institution addUser:self.currentUser];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
             [self.tableView endUpdates];
@@ -457,10 +457,10 @@
 
 - (void)editAlternate:(UIButton*)button {
     Alternate *alternate;
-    if (_currentUser.alternates.count == button.tag){
+    if (self.currentUser.alternates.count == button.tag){
         return;
     }
-    alternate = _currentUser.alternates[button.tag];
+    alternate = self.currentUser.alternates[button.tag];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [manager PATCH:[NSString stringWithFormat:@"alternates/%@",alternate.identifier] parameters:@{@"alternate":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success editing alternate: %@", responseObject);
@@ -470,9 +470,9 @@
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 2 && indexPath.row != _currentUser.institutions.count) {
+    if (indexPath.section == 2 && indexPath.row != self.currentUser.institutions.count) {
         return YES;
-    } else if (indexPath.section == 3 && indexPath.row != _currentUser.alternates.count){
+    } else if (indexPath.section == 3 && indexPath.row != self.currentUser.alternates.count){
         return YES;
     } else {
         return NO;
@@ -492,13 +492,13 @@
 }
 
 - (void)removeInstitution {
-    Institution *institution = _currentUser.institutions[indexPathToRemoveInstitution.row];
+    Institution *institution = self.currentUser.institutions[indexPathToRemoveInstitution.row];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     [manager DELETE:[NSString stringWithFormat:@"institutions/%@/remove_user",institution.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success removing an institution: %@",responseObject);
         [self.tableView beginUpdates];
-        [_currentUser removeInstitution:institution];
+        [self.currentUser removeInstitution:institution];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemoveInstitution] withRowAnimation:UITableViewRowAnimationAutomatic];
         [self.tableView endUpdates];
@@ -508,7 +508,7 @@
 }
 
 - (void)deleteAlternate {
-    Alternate *alternateForDeletion = _currentUser.alternates[indexPathToDeleteAlternate.row];
+    Alternate *alternateForDeletion = self.currentUser.alternates[indexPathToDeleteAlternate.row];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     
@@ -582,9 +582,13 @@
 }
 
 - (void)logout {
+    [WFAlert show:kLogoutMessage withTime:3.3f];
     [delegate logout];
+    if (self.settingsDelegate && [self.settingsDelegate respondsToSelector:@selector(logout)]) {
+        [self.settingsDelegate logout];
+    }
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        [WFAlert show:kLogoutMessage withTime:3.3f];
+        
     }];
 }
 

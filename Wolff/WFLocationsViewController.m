@@ -24,6 +24,7 @@
     BOOL searching;
     BOOL loading;
     BOOL editing;
+    BOOL noResults;
     NSMutableOrderedSet *_filteredLocations;
     NSMutableOrderedSet *_locations;
     UIBarButtonItem *dismissButton;
@@ -42,7 +43,6 @@
 @end
 
 @implementation WFLocationsViewController
-@synthesize selectedLocations = _selectedLocations;
 
 static NSString * const reuseIdentifier = @"LocationCell";
 
@@ -85,13 +85,13 @@ static NSString * const reuseIdentifier = @"LocationCell";
 }
 
 - (void)locationUnknownToggled {
-    [_selectedLocations removeAllObjects];
+    [self.selectedLocations removeAllObjects];
     [_collectionView reloadData];
     [self adjustLocationButtonColor];
 }
 
 - (void)adjustLocationButtonColor {
-    if (_selectedLocations.count){
+    if (self.selectedLocations.count){
         [locationUnknownButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [locationUnknownButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:0.f]];
     } else {
@@ -106,7 +106,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
 }
 
 - (void)loadLocationsWithSearch:(NSString *)searchString {
-    if (!loading){
+    if (!loading && searchString.length && !noResults){
         loading = YES;
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
@@ -120,31 +120,21 @@ static NSString * const reuseIdentifier = @"LocationCell";
             if ([responseObject objectForKey:@"locations"]){
                 NSDictionary *locationsDict = [responseObject objectForKey:@"locations"];
                 if (locationsDict.count){
-                    for (id dict in [responseObject objectForKey:@"locations"]){
+                    for (id dict in locationsDict){
                         Location *location = [Location MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                         if (!location){
                             location = [Location MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
                         }
                         [location populateFromDictionary:dict];
-                        [_filteredLocations addObject:location];
-                        [_locations addObject:location];
                     }
                     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                         _locations = [NSMutableOrderedSet orderedSetWithArray:[Location MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
-                        [_collectionView reloadData];
+                        [self filterContentForSearchText:searchText scope:nil];
                         [ProgressHUD dismiss];
                         loading = NO;
                     }];
                 } else {
-                    [_filteredLocations enumerateObjectsUsingBlock:^(Location *location, NSUInteger idx, BOOL *stop) {
-                        [location MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-                    }];
-                    [_filteredLocations removeAllObjects];
-                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                        [_collectionView reloadData];
-                        [ProgressHUD dismiss];
-                        loading = NO;
-                    }];
+                    noResults = YES;
                 }
             }
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -225,7 +215,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
         WFLocationCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
         Location * location = searching ? _filteredLocations[indexPath.item] : _locations[indexPath.item];
         [cell configureForLocation:location];
-        if ([_selectedLocations containsObject:location]){
+        if ([self.selectedLocations containsObject:location]){
             [cell.checkmark setHidden:NO];
         } else {
             [cell.checkmark setHidden:YES];
@@ -241,9 +231,9 @@ static NSString * const reuseIdentifier = @"LocationCell";
         if ((searching && indexPath.row == _filteredLocations.count) || (indexPath.row == _locations.count)){
             return CGSizeMake(width/2,height/4);
         }
-        return CGSizeMake(width/2,height/8);
+        return CGSizeMake(width/2,height/4);
     } else {
-        return CGSizeMake(width/2,height/8);
+        return CGSizeMake(width/2,height/4);
     }
 }
 
@@ -255,19 +245,18 @@ static NSString * const reuseIdentifier = @"LocationCell";
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     if ((searching && indexPath.row == _filteredLocations.count) || (indexPath.row == _locations.count)){
         [self toggleEditMode];
-        [_collectionView reloadItemsAtIndexPaths:@[indexPath]];
+        [collectionView reloadItemsAtIndexPaths:@[indexPath]];
     } else {
         Location *location = searching ? _filteredLocations[indexPath.item] : _locations[indexPath.item];
-        /*if ([_selectedLocations containsObject:location]){
-            [_selectedLocations removeObject:location];
+        /*if ([self.selectedLocations containsObject:location]){
+            [self.selectedLocations removeObject:location];
         } else {
-            [_selectedLocations addObject:location];
-        }
-        [_collectionView reloadItemsAtIndexPaths:indexPathArray];
-        */
-        [_selectedLocations removeAllObjects];
-        [_selectedLocations addObject:location];
-        [_collectionView reloadData];
+            [self.selectedLocations addObject:location];
+        }*/
+        [self.selectedLocations removeAllObjects];
+        [self.selectedLocations addObject:location];
+        [collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
+        //[collectionView reloadItemsAtIndexPaths:@[indexPath]];
         [collectionView deselectItemAtIndexPath:indexPath animated:YES];
     }
     [self adjustLocationButtonColor];
@@ -354,9 +343,20 @@ static NSString * const reuseIdentifier = @"LocationCell";
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF contains[cd] %@", text];
             if ([predicate evaluateWithObject:location.name]) {
                 [_filteredLocations addObject:location];
+            } else if ([predicate evaluateWithObject:location.city]) {
+                [_filteredLocations addObject:location];
+            } else if ([predicate evaluateWithObject:location.state]) {
+                [_filteredLocations addObject:location];
+            } else if ([predicate evaluateWithObject:location.country]) {
+                [_filteredLocations addObject:location];
             }
         }
-        if (!_filteredLocations) [self loadLocationsWithSearch:text];
+        
+        if (!_filteredLocations.count) {
+            [self loadLocationsWithSearch:text];
+        } else {
+            noResults = NO;
+        }
     } else {
         _filteredLocations = [NSMutableOrderedSet orderedSetWithOrderedSet:_locations];
     }
@@ -420,11 +420,11 @@ static NSString * const reuseIdentifier = @"LocationCell";
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         
         //add the new location to the selection
-        [_selectedLocations addObject:location];
+        [self.selectedLocations addObject:location];
         [ProgressHUD dismiss];
         
         if (self.locationDelegate && [self.locationDelegate respondsToSelector:@selector(locationsSelected:)]){
-            [self.locationDelegate locationsSelected:_selectedLocations];
+            [self.locationDelegate locationsSelected:self.selectedLocations];
         }
         [self dismiss];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -435,10 +435,10 @@ static NSString * const reuseIdentifier = @"LocationCell";
 }
 
 - (void)save {
-    if (_selectedLocations.count){
+    if (self.selectedLocations.count){
         
         if (self.locationDelegate && [self.locationDelegate respondsToSelector:@selector(locationsSelected:)]){
-            [self.locationDelegate locationsSelected:_selectedLocations];
+            [self.locationDelegate locationsSelected:self.selectedLocations];
         }
         [self dismiss];
         

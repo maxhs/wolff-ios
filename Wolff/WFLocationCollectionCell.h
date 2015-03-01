@@ -10,6 +10,7 @@
 #import "Location+helper.h"
 
 @interface WFLocationCollectionCell : UICollectionViewCell
+@property (weak, nonatomic) IBOutlet UIImageView *locationCoverImage;
 @property (weak, nonatomic) IBOutlet UILabel *locationNameLabel;
 @property (weak, nonatomic) IBOutlet UIImageView *checkmark;
 

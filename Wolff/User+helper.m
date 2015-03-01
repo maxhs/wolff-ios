@@ -120,21 +120,6 @@ typedef enum {
         self.arts = set;
     }
     
-    if ([dictionary objectForKey:@"private_arts"] && [dictionary objectForKey:@"private_arts"] != [NSNull null]){
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dict in [dictionary objectForKey:@"private_arts"]){
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!art){
-                art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-            }
-            [art populateFromDictionary:dict];
-            art.privateArt = @YES;
-            [set addObject:art];
-        }
-        self.arts = set;
-    }
-    
     if ([dictionary objectForKey:@"private_photos"] && [dictionary objectForKey:@"private_photos"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"private_photos"]){
@@ -356,7 +341,7 @@ typedef enum {
 - (Favorite *)getFavoritePhoto:(Photo *)photo {
     __block Favorite *favorite = nil;
     [self.favorites enumerateObjectsUsingBlock:^(Favorite *fav, NSUInteger idx, BOOL *stop) {
-        if (fav.photo && [fav.photo.identifier isEqualToNumber:photo.identifier]){
+        if (fav.photo && photo.identifier && [fav.photo.identifier isEqualToNumber:photo.identifier]){
             favorite = fav;
             *stop = YES;
         }

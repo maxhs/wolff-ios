@@ -15,7 +15,6 @@
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     BOOL iOS8;
-    User *_currentUser;
     CGFloat width;
     CGFloat height;
     NSMutableArray *_institutions;
@@ -24,10 +23,11 @@
     BOOL searching;
     UIBarButtonItem *dismissButton;
 }
-
+@property (strong, nonatomic) User *currentUser;
 @end
 
 @implementation WFInstitutionSearchViewController
+@synthesize currentUser = _currentUser;
 
 - (void)viewDidLoad {
     [super viewDidLoad];

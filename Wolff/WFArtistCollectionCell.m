@@ -18,6 +18,11 @@
     [_artistCoverImage setContentMode:UIViewContentModeScaleAspectFit];
 }
 
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    [_artistCoverImage setAlpha:0.0];
+}
+
 - (void)configureForArtist:(Artist *)artist {
     NSString *yearString;
     if (![artist.birthYear isEqualToNumber:@0] && ![artist.deathYear isEqualToNumber:@0]){
@@ -43,11 +48,14 @@
         [_artistCoverImage sd_setImageWithURL:[NSURL URLWithString:coverPhoto.slideImageUrl] placeholderImage:nil options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
             
         } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-            
+            [UIView animateWithDuration:kFastAnimationDuration animations:^{
+                [_artistCoverImage setAlpha:1.0];
+            }];
         }];
     } else {
         [_artistCoverImage setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1]];
         [_artistCoverImage setImage:nil];
+        [_artistCoverImage setAlpha:1.0];
     }
 }
 

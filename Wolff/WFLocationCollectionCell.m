@@ -8,12 +8,20 @@
 
 #import "WFLocationCollectionCell.h"
 #import "Constants.h"
+#import "Photo+helper.h"
+#import "Art+helper.h"
+#import <SDWebImage/UIImageView+WebCache.h>
 
 @implementation WFLocationCollectionCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
     [_locationNameLabel setTextAlignment:NSTextAlignmentLeft];
+}
+
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    [_locationCoverImage setAlpha:0.0];
 }
 
 - (void)configureForLocation:(Location *)location {
@@ -41,6 +49,28 @@
     } else {
         NSAttributedString *noLocationString = [[NSAttributedString alloc] initWithString:@"No location name listed" attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]}];
         [_locationNameLabel setAttributedText:noLocationString];
+    }
+    
+    __block Photo *coverPhoto;
+    [location.arts enumerateObjectsUsingBlock:^(Art *art, NSUInteger idx, BOOL *stop) {
+        if (art.photo){
+            coverPhoto = art.photo;
+            *stop = YES;
+        }
+    }];
+    if (coverPhoto.slideImageUrl.length){
+        [_locationCoverImage setBackgroundColor:[UIColor colorWithWhite:0 alpha:0]];
+        [_locationCoverImage sd_setImageWithURL:[NSURL URLWithString:coverPhoto.slideImageUrl] placeholderImage:nil options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+            
+        } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+            [UIView animateWithDuration:kFastAnimationDuration animations:^{
+                [_locationCoverImage setAlpha:1.0];
+            }];
+        }];
+    } else {
+        [_locationCoverImage setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1]];
+        [_locationCoverImage setImage:nil];
+        [_locationCoverImage setAlpha:1.0];
     }
 }
 

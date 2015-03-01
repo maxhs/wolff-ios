@@ -9,6 +9,7 @@
 #import "Slideshow+helper.h"
 #import "Slide+helper.h"
 #import "Table+helper.h"
+#import "User+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Slideshow (helper)
@@ -68,6 +69,15 @@
             [set addObject:lightTable];
         }
         self.tables = set;
+    }
+    
+    if ([dictionary objectForKey:@"user"] && [dictionary objectForKey:@"user"] != [NSNull null]){
+        User *user = [User MR_findFirstByAttribute:@"identifier" withValue:[[dictionary objectForKey:@"user"] objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!user){
+            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        [user populateFromDictionary:[dictionary objectForKey:@"user"]];
+        self.user = user;
     }
 }
 

@@ -21,8 +21,8 @@
     [_rangeLabel setTextColor:[UIColor whiteColor]];
  
     [_orLabel setText:@"OR"];
-    [_orLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];
-    [_orLabel setTextColor:[UIColor colorWithWhite:1 alpha:.33]];
+    [_orLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLightItalic] size:0]];
+    [_orLabel setTextColor:[UIColor colorWithWhite:1 alpha:.77]];
     
     [_circaLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [_circaLabel setTextColor:[UIColor whiteColor]];

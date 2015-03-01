@@ -15,13 +15,15 @@
 #import "WFLightTablesViewController.h"
 #import "WFAlert.h"
 
-@interface WFSearchResultsViewController () <UISearchBarDelegate, WFLightTablesDelegate, WFSlideshowDelegate> {
+@interface WFSearchResultsViewController () <UISearchBarDelegate, WFLightTablesDelegate, WFSlideshowsDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     NSMutableOrderedSet *_filteredPhotos;
     NSMutableOrderedSet *selectedPhotos;
     NSString *searchText;
     BOOL searching;
+    BOOL loading;
+    BOOL noResults;
     UIToolbar *backgroundToolbar;
     UIBarButtonItem *lightTableButton;
     UIBarButtonItem *slideshowButton;
@@ -33,19 +35,16 @@
 
 @implementation WFSearchResultsViewController
 
-@synthesize photos = _photos;
-@synthesize originalPopoverHeight = _originalPopoverHeight;
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     
     [self.view setBackgroundColor:[UIColor clearColor]];
-    [_tableView setBackgroundColor:[UIColor clearColor]];
-    [_tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
-    _tableView.rowHeight = 80.f;
-    [_collectionView setBackgroundColor:[UIColor blackColor]];
+    [self.tableView setBackgroundColor:[UIColor clearColor]];
+    [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    self.tableView.rowHeight = 80.f;
+    [self.collectionView setBackgroundColor:[UIColor blackColor]];
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     
     _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
@@ -53,19 +52,19 @@
     
     if (_shouldShowTiles) {
         // this means we're looking at search results on the "make slideshow" view
-        [_collectionView setHidden:NO];
-        [_tableView setHidden:YES];
+        [self.collectionView setHidden:NO];
+        [self.tableView setHidden:YES];
         [_noResultsPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.7]];
         
         [self.collectionView reloadData];
-        [_noResultsPrompt setText:@"No results...\n\nTap the \"Search\" key to perform a full search through the Wölff catalog"];
+        [_noResultsPrompt setText:kNoSearchResults];
     } else {
         // this means we're actually looking at selected slides
         [self setPreferredContentSize:CGSizeMake(420, _originalPopoverHeight)];
         [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
         [_noResultsPrompt setText:@"Nothing selected..."];
-        [_collectionView setHidden:YES];
-        [_tableView setHidden:NO];
+        [self.collectionView setHidden:YES];
+        [self.tableView setHidden:NO];
         [_noResultsPrompt setTextColor:[UIColor colorWithWhite:0 alpha:.7]];
         [self.tableView reloadData];
     }
@@ -93,7 +92,6 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     self.searchBar.delegate = self;
-    searching = YES;
     if (_shouldShowSearchBar){
         if (_shouldShowTiles){
             // don't need to do anything, search bar is already visible for collection view
@@ -138,7 +136,7 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    _noResultsPrompt.center = _collectionView.center;
+    _noResultsPrompt.center = self.collectionView.center;
 }
 
 #pragma mark - Table view data source
@@ -194,20 +192,18 @@
         vc.lightTableDelegate = self;
     } else if ([segue.identifier isEqualToString:@"Slideshows"]){
         WFSlideshowsViewController *vc = [segue destinationViewController];
-        vc.slideshowDelegate = self;
+        vc.slideshowsDelegate = self;
     }
 }
 
 - (void)lightTableSelected:(NSNumber *)lightTableId {
-    Table *lightTable;
     if ([lightTableId isEqualToNumber:@0]){
         if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(newLightTableForSelected)]) {
             [self.searchDelegate newLightTableForSelected];
         }
     } else {
-        lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
-        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(lightTableForSelected:)]) {
-            [self.searchDelegate lightTableForSelected:lightTable];
+        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(batchSelectForLightTableWithId:)]) {
+            [self.searchDelegate batchSelectForLightTableWithId:lightTableId];
         }
     }
 }
@@ -220,10 +216,8 @@
 }
 
 - (void)newSlideshow {
-    Slideshow *slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(slideshowSelected:)]) {
-        [self.searchDelegate slideshowForSelected:slideshow];
+        [self.searchDelegate slideshowForSelected:nil];
     }
 }
 
@@ -299,7 +293,9 @@
 }
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
-    
+    NSLog(@"searchbar text length: %d",searchBar.text.length);
+    noResults = NO;
+    searching = YES;
 }
 
 - (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
@@ -308,50 +304,67 @@
     }
 }
 
-- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
-    searching = YES;
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    if (searchBar.text) {
-        [parameters setObject:searchBar.text forKey:@"search"];
-        [ProgressHUD show:@"Searching..."];
-    } else {
-        return;
-    }
-    [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success searching from split view controller: %@",responseObject);
-        if ([responseObject objectForKey:@"photos"]){
-            for (NSDictionary *dict in [responseObject objectForKey:@"photos"]) {
-                Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
-                if (!photo){
-                    photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-                }
-                [photo populateFromDictionary:dict];
-                [_photos addObject:photo];
-                if (searching){
-                    [_filteredPhotos addObject:photo];
-                }
-            }
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                if (_shouldShowTiles){
-                    [self.collectionView reloadData];
-                } else {
-                    [self.tableView reloadData];
-                }
-                [ProgressHUD dismiss];
-            }];
+- (void)searchWithString:(NSString*)searchString{
+    if (!loading && !noResults){
+        loading = YES;
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        if (searchString.length) {
+            [parameters setObject:searchString forKey:@"search"];
+        } else {
+            return;
         }
+        [_noResultsPrompt setText:@"Searching the full Wölff catalog..."];
+        [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            //NSLog(@"Success searching from search reuslts view controller: %@",responseObject);
+            if ([responseObject objectForKey:@"photos"] && [[responseObject objectForKey:@"photos"] count]){
+                for (NSDictionary *dict in [responseObject objectForKey:@"photos"]) {
+                    Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+                    if (!photo){
+                        photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                    }
+                    [photo populateFromDictionary:dict];
+                    [_photos addObject:photo];
+                    if (searching){
+                        [_filteredPhotos addObject:photo];
+                    }
+                }
+                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                    if (_shouldShowTiles){
+                        [self.collectionView reloadData];
+                    } else {
+                        [self.tableView reloadData];
+                    }
+                    [ProgressHUD dismiss];
+                    loading = NO;
+                }];
+            } else {
+                [_noResultsPrompt setText:kNoSearchResults];
+                loading = NO;
+                noResults = YES;
+            }
+            
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to search from split view: %@",error.description);
+            [WFAlert show:@"Sorry, but something went wrong while attempting to search. Please try again soon." withTime:3.3f];
+            [ProgressHUD dismiss];
+        }];
+    }
+}
+
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    if (noResults){
         
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"Failed to search from split view: %@",error.description);
-        [WFAlert show:@"Sorry, but something went wrong while attempting to search. Please try again soon." withTime:3.3f];
-        [ProgressHUD dismiss];
-    }];
+    } else {
+        [ProgressHUD show:@"Searching..."];
+        [self searchWithString:searchBar.text];
+    }
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)text {
     if (!text.length){
         dispatch_async(dispatch_get_main_queue(), ^(void){
             [self.searchBar setText:@""];
+            noResults = NO;
             searching = NO;
             [_noResultsPrompt setHidden:YES];
             _shouldShowTiles ? [self.collectionView reloadData] : [self.tableView reloadData];
@@ -370,18 +383,7 @@
     return YES;
 }
 
-- (void)endSearch {
-    //have to manually resign the first responder here
-    [self.searchBar resignFirstResponder];
-    [self.searchBar setText:@""];
-    [self.view endEditing:YES];
-    searching = NO;
-    [self.searchBar setShowsCancelButton:NO animated:YES];
-    [_filteredPhotos removeAllObjects];
-}
-
 - (void)filterContentForSearchText:(NSString*)text scope:(NSString*)scope {
-    //NSLog(@"search text: %@",text);
     if (text.length) {
         searching = YES;
         [_filteredPhotos removeAllObjects];
@@ -396,6 +398,11 @@
                 [_filteredPhotos addObject:photo];
             }
         }
+        if (_filteredPhotos.count == 0){
+            [self searchWithString:text];
+        } else {
+            noResults = NO;
+        }
     }
     
     if (_shouldShowTiles) {
@@ -403,6 +410,15 @@
     } else {
         [self.tableView reloadData];
     }
+}
+
+- (void)endSearch {
+    [self.searchBar resignFirstResponder]; //have to manually resign the first responder here
+    [self.searchBar setText:@""];
+    [self.view endEditing:YES];
+    searching = NO;
+    [self.searchBar setShowsCancelButton:NO animated:YES];
+    [_filteredPhotos removeAllObjects];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

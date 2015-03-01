@@ -33,15 +33,17 @@
     UITextView *descriptionTextView;
     UIBarButtonItem *dismissBarButton;
     UIImageView *navBarShadowView;
-    Table *_lightTable;
     CGFloat topInset;
     CGFloat keyboardHeight;
 }
+
+@property (strong, nonatomic) Table *lightTable;
 
 @end
 
 @implementation WFLightTableDetailsViewController
 @synthesize photos = _photos;
+@synthesize lightTable = _lightTable;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -259,7 +261,7 @@
         [WFAlert show:@"Please make sure you've included a name for your light table before continuing." withTime:3.3f];
         return nil;
     }
-    if (descriptionTextView.text.length){
+    if (descriptionTextView.text.length && ![descriptionTextView.text isEqualToString:kLightTableDescriptionPlaceholder]){
         [parameters setObject:descriptionTextView.text forKey:@"description"];
     }
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
@@ -285,12 +287,14 @@
         NSLog(@"Success creating a light table: %@", responseObject);
         [_lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            [WFAlert show:[NSString stringWithFormat:@"\"%@\" successfully created",_lightTable.name] withTime:2.7f];
+            
             if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(didCreateLightTable:)]){
                 [self.lightTableDelegate didCreateLightTable:_lightTable];
             }
-            [self dismiss];
             [ProgressHUD dismiss];
+            [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+                [WFAlert show:[NSString stringWithFormat:@"\"%@\" successfully created",_lightTable.name] withTime:2.7f];
+            }];
         }];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -360,7 +364,7 @@
     
     [ProgressHUD show:@"Searching for light table..."];
     [manager POST:@"light_tables/join" parameters:@{@"light_table":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Response object for joining a light table: %@",responseObject);
+        //NSLog(@"Response object for joining a light table: %@",responseObject);
         NSDictionary *lightTableDict = [responseObject objectForKey:@"light_table"];
         if (_lightTable.identifier && [_lightTable.identifier isEqualToNumber:[lightTableDict objectForKey:@"id"]]){
             [_lightTable populateFromDictionary:lightTableDict];

@@ -13,7 +13,8 @@
 #import "WFPhotoCell.h"
 #import "WFArtMetadataAnimator.h"
 #import "WFArtMetadataViewController.h"
-#import "WFMainTableCell.h"
+#import "WFLightTableCell.h"
+#import "WFLightTableDefaultCell.h"
 #import "WFSettingsViewController.h"
 #import "WFLoginAnimator.h"
 #import "WFLoginViewController.h"
@@ -45,10 +46,9 @@
 #import "WFUtilities.h"
 #import "WFSlideshowViewController.h"
 
-@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, WFLightTableDelegate, WFSlideshowCellDelegate, WFLightTableCellDelegate, WFCreateSlideshowDelegate, WFNotificationsDelegate, UIGestureRecognizerDelegate> {
+@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, WFLightTableDelegate, WFSlideshowsDelegate, WFNotificationsDelegate, WFSettingsDelegate, UIGestureRecognizerDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-    User *_currentUser;
     UIButton *homeButton;
     UIBarButtonItem *homeBarButton;
     UIButton *slideshowsButton;
@@ -93,7 +93,7 @@
     BOOL showLightTable;
     BOOL iOS8;
     BOOL slideshowSidebarMode;
-    Table *_table;
+    
     CGFloat topInset;
     UIRefreshControl *tableViewRefresh;
     UIRefreshControl *collectionViewRefresh;
@@ -114,6 +114,9 @@
     UIButton *resetButton;
     UIImageView *navBarShadowView;
 }
+
+@property (strong, nonatomic) User *currentUser;
+@property (strong, nonatomic) Table *table;
 @property (weak, nonatomic) IBOutlet UIView *comparisonContainerView;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
@@ -145,9 +148,6 @@
     
     if (!_selectedPhotos) _selectedPhotos = [NSMutableOrderedSet orderedSet];
     
-    //set up the nav buttons
-    [self setUpNavBar];
-    
     //set up the light table sidebar
     expanded = NO;
     [self setUpTableView];
@@ -162,8 +162,8 @@
     gestureRecognizer.edges = UIRectEdgeLeft;
     [self.view addGestureRecognizer:gestureRecognizer];*/
     
-    _collectionView.delaysContentTouches = NO;
-    [_collectionView setBackgroundColor:[UIColor whiteColor]];
+    self.collectionView.delaysContentTouches = NO;
+    [self.collectionView setBackgroundColor:[UIColor whiteColor]];
     collectionViewRefresh = [[UIRefreshControl alloc] init];
     [collectionViewRefresh addTarget:self action:@selector(refreshCollectionView:) forControlEvents:UIControlEventValueChanged];
     [self.collectionView addSubview:collectionViewRefresh];
@@ -177,25 +177,11 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didHideEditMenu:) name:UIMenuControllerDidHideMenuNotification object:nil];
 }
 
-- (void)setUpGestureRecognizers {
-    catalogLongPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
-    catalogLongPress.minimumPressDuration = .23f;
-    [_collectionView addGestureRecognizer:catalogLongPress];
-    
-    catalogDoubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTap:)];
-    catalogDoubleTap.numberOfTapsRequired = 2;
-    [_collectionView addGestureRecognizer:catalogDoubleTap];
-    
-    comparisonTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(shouldCompare)];
-    comparisonTap.numberOfTapsRequired = 1;
-    [_comparisonContainerView addGestureRecognizer:comparisonTap];
-}
-
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     navBarShadowView.hidden = YES;
-    _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
-    if (_currentUser){
+    self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
+    if (self.currentUser){
         [self loadUserDashboard];
         if (!tableViewRefresh){
             tableViewRefresh = [[UIRefreshControl alloc] init];
@@ -203,6 +189,9 @@
             [self.tableView addSubview:tableViewRefresh];
         }
     }
+    
+    //set up the nav buttons
+    [self setUpNavBar];
     
     loading = NO;
     [self loadPhotos];
@@ -234,11 +223,64 @@
     }
 }
 
+- (void)setUpGestureRecognizers {
+    catalogLongPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
+    catalogLongPress.minimumPressDuration = .23f;
+    [self.collectionView addGestureRecognizer:catalogLongPress];
+    
+    catalogDoubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTap:)];
+    catalogDoubleTap.numberOfTapsRequired = 2;
+    [self.collectionView addGestureRecognizer:catalogDoubleTap];
+    
+    comparisonTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(shouldCompare)];
+    comparisonTap.numberOfTapsRequired = 1;
+    [_comparisonContainerView addGestureRecognizer:comparisonTap];
+}
+
 - (void)refreshTableView:(UIRefreshControl*)refreshControl {
-    if (_currentUser){
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         [ProgressHUD show:@"Refreshing..."];
-        [self loadUserDashboard];
+        if (slideshowSidebarMode){
+            [self loadSlideshows];
+        } else {
+            [self loadUserDashboard];
+        }
+    } else {
+        [refreshControl endRefreshing];
+        [self showLogin];
     }
+}
+
+- (void)loadSlideshows {
+    [manager GET:[NSString stringWithFormat:@"users/%@/slideshows",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //NSLog(@"Success loading slideshows: %@",responseObject);
+        if ([responseObject objectForKey:@"slideshows"]){
+            NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithCapacity:[[responseObject objectForKey:@"slideshows"] count]];
+            for (id dict in [responseObject objectForKey:@"slideshows"]){
+                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+                Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+                if (!slideshow){
+                    slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                }
+                [slideshow populateFromDictionary:dict];
+                [tempSet addObject:slideshow];
+            }
+            for (Slideshow *slideshow in _slideshows){
+                if (![tempSet containsObject:slideshow]){
+                    [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                }
+            }
+        }
+        
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [self.tableView reloadData];
+            [self endRefresh];
+        }];
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed to load slideshows: %@",error.description);
+        [self endRefresh];
+    }];
 }
 
 - (void)refreshCollectionView:(id)sender {
@@ -342,7 +384,7 @@
 
 #pragma mark - Login
 - (void)loginSuccessful {
-    _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
+    self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     [self setUpNavBar];
     [self loadUserDashboard];
     if (tableIsVisible){
@@ -354,7 +396,7 @@
     // reset the views now that we're logged out
     [self setUpNavBar];
     [self.tableView reloadData];
-    _currentUser = nil;
+    self.currentUser = nil;
 }
 
 - (void)loadPhotos {
@@ -420,17 +462,16 @@
 }
 
 - (void)loadUserDashboard {
-    if (_currentUser && !loading){
+    if (self.currentUser && !loading){
         loading = YES;
-        [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success getting user dashboard: %@", responseObject);
-            [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
-            
+            [self.currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 //set up private photos and favorites
                 NSPredicate *privatePredicate = [NSPredicate predicateWithFormat:@"privatePhoto == %@ && user.identifier == %@", @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
                 _privatePhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:privatePredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
-                [_currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
+                [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
                     if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
                         [_favoritePhotos addObject:favorite.photo];
                     }
@@ -451,7 +492,7 @@
 
 - (void)add {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        if (_currentUser.customerPlan.length){
+        if (self.currentUser.customerPlan.length){
             if (self.popover){
                 [self.popover dismissPopoverAnimated:YES];
             }
@@ -476,13 +517,13 @@
     if ([art.privateArt isEqualToNumber:@NO]){
         //don't animate the changes if the user is looking at a light table, their private art, their favorites, or searching.
         if (!showFavorites && !showLightTable && !searching && !showPrivate){
-            [_collectionView performBatchUpdates:^{
+            [self.collectionView performBatchUpdates:^{
                 NSMutableArray *indexPathArray = [NSMutableArray array];
                 for (Photo *photo in art.photos){
                     [_photos insertObject:photo atIndex:0];
                     [indexPathArray addObject:[NSIndexPath indexPathForItem:0 inSection:0]];
                 }
-                [_collectionView insertItemsAtIndexPaths:indexPathArray];
+                [self.collectionView insertItemsAtIndexPaths:indexPathArray];
             } completion:^(BOOL finished) {
                 
             }];
@@ -502,7 +543,7 @@
         [_slideshows sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalSlideshowSort]];
         return 2;
     } else {
-        _tables = _tables ? _currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:_currentUser.lightTables.array];
+        _tables = _tables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
         NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
         [_tables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
         return 3;
@@ -543,7 +584,6 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (slideshowSidebarMode){
         WFSlideshowCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideshowCell" forIndexPath:indexPath];
-        cell.delegate = self;
         [cell setBackgroundColor:[UIColor clearColor]];
         if (indexPath.section == 0){
             cell.tintColor = [UIColor whiteColor];
@@ -557,6 +597,8 @@
             } else {
                 Slideshow *slideshow = _slideshows[indexPath.row];
                 [cell configureForSlideshow:slideshow];
+                [cell.actionButton setTag:indexPath.row];
+                [cell.actionButton addTarget:self action:@selector(slideshowAction:) forControlEvents:UIControlEventTouchUpInside];
             }
             
         } else {
@@ -571,32 +613,45 @@
         [cell.slideshowLabel setTextColor:[UIColor whiteColor]];
         return cell;
     } else {
-        WFMainTableCell *cell = (WFMainTableCell *)[tableView dequeueReusableCellWithIdentifier:@"MainCell"];
-        [cell setBackgroundColor:[UIColor clearColor]];
-        cell.delegate = self;
-        
         if (indexPath.section == 0){
-            [cell.scrollView setScrollEnabled:NO];
+            WFLightTableDefaultCell *cell = (WFLightTableDefaultCell *)[tableView dequeueReusableCellWithIdentifier:@"LightTableDefaultCell"];
+            [cell setBackgroundColor:[UIColor clearColor]];
             if (indexPath.row == 0){
-                [cell.iconImageView setImage:[UIImage imageNamed:@"whiteLock"]];
                 [cell.label setText:@"Private"];
+                if (showPrivate){
+                    [cell.iconImageView setImage:[UIImage imageNamed:@"blueLock"]];
+                    [cell.label setTextColor:kElectricBlue];
+                    [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
+                } else {
+                    [cell.iconImageView setImage:[UIImage imageNamed:@"whiteLock"]];
+                    [cell.label setTextColor:[UIColor whiteColor]];
+                    [cell setBackgroundColor:[UIColor clearColor]];
+                }
             } else {
-                [cell.iconImageView setImage:[UIImage imageNamed:@"whiteFavorite"]];
                 [cell.label setText:@"Favorites"];
+                if (showFavorites){
+                    [cell.iconImageView setImage:[UIImage imageNamed:@"blueFavorite"]];
+                    [cell.label setTextColor:kElectricBlue];
+                    [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
+                } else {
+                    [cell.iconImageView setImage:[UIImage imageNamed:@"whiteFavorite"]];
+                    [cell.label setTextColor:[UIColor whiteColor]];
+                    [cell setBackgroundColor:[UIColor clearColor]];
+                }
             }
-            
+            return cell;
         } else if (indexPath.section == 1){
-            [cell.scrollView setScrollEnabled:YES];
+            WFLightTableCell *cell = (WFLightTableCell *)[tableView dequeueReusableCellWithIdentifier:@"LightTableCell"];
+            [cell setBackgroundColor:[UIColor clearColor]];
             if (_tables.count){
                 Table *table = _tables[indexPath.row];
                 [cell configureForTable:table];
                 [cell.label setText:@""];
                 cell.selectionStyle = UITableViewCellSelectionStyleDefault;
-                [cell.actionButton setUserInteractionEnabled:YES];
                 if (table == _table){
                     [cell.tableLabel setTextColor:kElectricBlue];
                     [cell.pieceCountLabel setTextColor:kElectricBlue];
-                    [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
+                    [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
                 } else {
                     [cell.tableLabel setTextColor:[UIColor whiteColor]];
                     [cell.pieceCountLabel setTextColor:[UIColor colorWithWhite:1 alpha:.33]];
@@ -613,62 +668,82 @@
                 }
             }
             [cell.iconImageView setImage:nil];
-            
+            cell.editButton.tag = indexPath.row;
+            cell.deleteButton.tag = indexPath.row;
+            cell.leaveButton.tag = indexPath.row;
+            [cell.editButton addTarget:self action:@selector(editLightTable:) forControlEvents:UIControlEventTouchUpInside];
+            [cell.deleteButton addTarget:self action:@selector(lightTableAction:) forControlEvents:UIControlEventTouchUpInside];
+            [cell.leaveButton addTarget:self action:@selector(lightTableAction:) forControlEvents:UIControlEventTouchUpInside];
+            return cell;
         } else {
+            WFLightTableDefaultCell *cell = (WFLightTableDefaultCell *)[tableView dequeueReusableCellWithIdentifier:@"LightTableDefaultCell"];
+            [cell setBackgroundColor:[UIColor clearColor]];
             [cell.iconImageView setImage:[UIImage imageNamed:@"whitePlus"]];
             [cell.label setText:@"Light Table"];
             [cell.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
-            [cell.scrollView setScrollEnabled:NO];
+            return cell;
         }
-        
-        return cell;
     }
 }
 
-- (void)deleteLightTable:(NSNumber*)lightTableId {
-    Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
-    NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_tables indexOfObject:lightTable] inSection:1];
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-    }
-    if (lightTable && ![lightTable.identifier isEqualToNumber:@0]){
-        [manager DELETE:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        
-            [self.tableView beginUpdates];
-            [_tables removeObject:lightTable];
-            [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                if (_tables.count && indexPathToRemove){
-                    [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
-                } else {
-                    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
-                }
-                [self.tableView endUpdates];
-            }];
-            NSLog(@"Success deleting this light table: %@",responseObject);
-        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Failed to delete this light table: %@",error.description);
-        }];
+- (void)slideshowAction:(UIButton*)button{
+    Slideshow *slideshow = _slideshows[button.tag];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:button.tag inSection:0];
+    if ([slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+        [self deleteSlideshow:slideshow atIndexPath:indexPath];
     } else {
-        [self.tableView beginUpdates];
-        [_tables removeObject:lightTable];
-        if (_tables.count){
-            [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
-        } else {
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
-        }
-        [self.tableView endUpdates];
-        
-        [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            
-        }];
+        [self removeSlideshow:slideshow atIndexPath:indexPath];
     }
 }
 
-- (void)editLightTable:(NSNumber *)lightTableId {
-    Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
+- (void)deleteSlideshow:(Slideshow *)slideshow atIndexPath:(NSIndexPath*)indexPath {
+    if (slideshow && ![slideshow.identifier isEqualToNumber:@0]){
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+        [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            //NSLog(@"Success deleting this slideshow from catalog view: %@",responseObject);
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to delete this slideshow: %@",error.description);
+        }];
+    }
+    [self.tableView beginUpdates];
+    [_slideshows removeObject:slideshow];
+    [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        [UIView animateWithDuration:kFastAnimationDuration animations:^{
+            if (_slideshows.count){
+                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+            } else {
+                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
+            }
+            [self.tableView endUpdates];
+        } completion:^(BOOL finished) {
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
+        }];
+    }];
+}
+
+- (void)removeSlideshow:(Slideshow *)slideshow atIndexPath:(NSIndexPath*)indexPath {
+    [self.tableView beginUpdates];
+    [_slideshows removeObject:slideshow];
+    [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        [UIView animateWithDuration:kFastAnimationDuration animations:^{
+            if (_slideshows.count){
+                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+            } else {
+                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
+            }
+            [self.tableView endUpdates];
+        } completion:^(BOOL finished) {
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
+        }];
+    }];
+    
+}
+
+- (void)editLightTable:(UIButton *)button {
+    Table *lightTable = _tables[button.tag];
     WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
     [vc setTableId:lightTable.identifier];
     vc.lightTableDelegate = self;
@@ -681,9 +756,52 @@
     }];
 }
 
-- (void)leaveLightTable:(NSNumber *)lightTableId {
-    Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
-    NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_tables indexOfObject:lightTable] inSection:1];
+- (void)lightTableAction:(UIButton*)button{
+    Table *lightTable = _tables[button.tag];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:button.tag inSection:1];
+    if (lightTable && [lightTable.owner.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+        [self deleteLightTable:lightTable atIndexPath:indexPath];
+    } else {
+        [self leaveLightTable:lightTable atIndexPath:indexPath];
+    }
+}
+
+- (void)deleteLightTable:(Table *)lightTable atIndexPath:(NSIndexPath*)indexPath {
+    WFLightTableCell *cell = (WFLightTableCell*)[_tableView cellForRowAtIndexPath:indexPath];
+    
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    }
+    if (![lightTable.identifier isEqualToNumber:@0]){
+        [manager DELETE:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success deleting this light table: %@",responseObject);
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to delete this light table: %@",error.description);
+        }];
+    }
+    
+    [self.tableView beginUpdates];
+    [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        _tables = _tables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
+        
+        [UIView animateWithDuration:kFastAnimationDuration animations:^{
+            [cell.scrollView setContentOffset:CGPointZero];
+            if (_tables.count){
+                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+            } else {
+                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
+            }
+            [self.tableView endUpdates];
+        } completion:^(BOOL finished) {
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
+        }];
+    }];
+}
+
+- (void)leaveLightTable:(Table *)lightTable atIndexPath:(NSIndexPath*)indexPath {
+    WFLightTableCell *cell = (WFLightTableCell*)[_tableView cellForRowAtIndexPath:indexPath];
     if (![lightTable.identifier isEqualToNumber:@0]){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
@@ -695,15 +813,22 @@
     }
     
     [self.tableView beginUpdates];
-    [_tables removeObject:lightTable];
     [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    if (_tables.count && indexPathToRemove && indexPathToRemove.row != NSNotFound){
-        [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
-    } else {
-        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
-    }
-    [self.tableView endUpdates];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        _tables = _tables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
+        
+        [UIView animateWithDuration:kFastAnimationDuration animations:^{
+            [cell.scrollView setContentOffset:CGPointZero];
+            if (_tables.count){
+                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+            } else {
+                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
+            }
+            [self.tableView endUpdates];
+        } completion:^(BOOL finished) {
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
+        }];
+    }];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -712,7 +837,7 @@
     if (slideshowSidebarMode){
         if (indexPath.section == 0){
             Slideshow *slideshow = _slideshows[indexPath.row];
-            if ([slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+            if (slideshow.user && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
                 [self slideshowSelected:slideshow];
             } else {
                 WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
@@ -725,19 +850,25 @@
                 }];
             }
         } else {
-            [self newSlideshow];
+            [self newSlideshow:NO];
         }
     } else {
         if (indexPath.section == 0){
             indexPath.row == 0 ? [self showPrivateArt] : [self showFavorites];
+            [tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 2)] withRowAnimation:UITableViewRowAnimationAutomatic];
         } else if (indexPath.section == 1){
             if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-                if (_currentUser.customerPlan.length){
+                if (self.currentUser.customerPlan.length){
                     if (_tables.count){
                         Table *table = _tables[indexPath.row];
-                        [self showTable:table];
-                        [tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationAutomatic];
-                        //[tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+                        if (_table == table){
+                            self.table = nil;
+                            showLightTable = NO;
+                            [self.collectionView reloadData];
+                        } else {
+                            [self showTable:table];
+                        }
+                        [tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 2)] withRowAnimation:UITableViewRowAnimationAutomatic];
                     }
                 } else {
                     [WFAlert show:@"Joining or creating light tables requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
@@ -752,50 +883,11 @@
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
-- (void)deleteSlideshow:(NSNumber*)slideshowId {
-    Slideshow *slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:slideshowId inContext:[NSManagedObjectContext MR_defaultContext]];
-    NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_slideshows indexOfObject:slideshow] inSection:0];
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-    [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshowId] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success deleting this slideshow: %@",responseObject);
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"Failed to delete this slideshow: %@",error.description);
-    }];
-
-    [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    
-    [self.tableView beginUpdates];
-    [_slideshows removeObject:slideshow];
-    if (indexPathToRemove && indexPathToRemove.row != NSNotFound && _slideshows.count){
-        [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
-    } else {
-        [self.tableView reloadData];
-    }
-    [self.tableView endUpdates];
-}
-
-- (void)removeSlideshow:(NSNumber *)slideshowId {
-    Slideshow *slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:slideshowId inContext:[NSManagedObjectContext MR_defaultContext]];
-    NSIndexPath *indexPathToRemove = [NSIndexPath indexPathForRow:[_slideshows indexOfObject:slideshow] inSection:0];
-    [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    
-    [self.tableView beginUpdates];
-    _slideshows = [NSMutableArray arrayWithArray:[Slideshow MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
-    if (indexPathToRemove && indexPathToRemove.row != NSNotFound && _slideshows.count){
-        [self.tableView deleteRowsAtIndexPaths:@[indexPathToRemove] withRowAnimation:UITableViewRowAnimationAutomatic];
-    } else {
-        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
-    }
-    [self.tableView endUpdates];
-}
-
 - (void)resetArtBooleans {
     showPrivate = NO;
     showFavorites = NO;
     showLightTable = NO;
+    self.table = nil;
 }
 
 - (void)showPrivateArt {
@@ -833,7 +925,7 @@
         [self resetArtBooleans];
         showLightTable = YES;
     }
-    _table = table;
+    self.table = table;
     [self loadLightTable:_table];
 }
 
@@ -858,7 +950,7 @@
 #pragma mark - Light Table Delegate Section
 - (void)newLightTable {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        if (_currentUser.customerPlan.length){
+        if (self.currentUser.customerPlan.length){
             WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
             (_selectedPhotos.count) ? [vc setPhotos:_selectedPhotos] : [vc setShowKey:YES];
             vc.lightTableDelegate = self;
@@ -880,27 +972,15 @@
 }
 
 - (void)didJoinLightTable:(Table *)table {
-    NSLog(@"just joined light table: %@",table.name);
     if (!slideshowSidebarMode && tableIsVisible){
-        [_tables insertObject:table atIndex:0];
         [self.tableView reloadData];
     }
 }
 
 - (void)didCreateLightTable:(Table *)table {
-    NSLog(@"just created a light table: %@",table.name);
     if (!slideshowSidebarMode && tableIsVisible){
-        [_tables insertObject:table atIndex:0];
         [self.tableView reloadData];
     }
-}
-
-- (void)didSaveLightTable:(Table *)table {
-    
-}
-
-- (void)didDeleteLightTable:(Table *)table {
-    
 }
 
 #pragma mark – UICollectionViewDelegateFlowLayout
@@ -977,9 +1057,7 @@
         [cell.checkmark setHidden:YES];
     }
     return cell;
-    
 }
-
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
     if ((searching && searchText.length) || showFavorites || (showLightTable && _table) || showPrivate){
@@ -1020,7 +1098,7 @@
     if (tableIsVisible || searching || showFavorites || showLightTable || showPrivate){
         dispatch_async(dispatch_get_main_queue(), ^(void){
             [self resetArtBooleans];
-            _table = nil;
+            self.table = nil;
             
             if (tableIsVisible){
                 [self showSidebar];
@@ -1039,7 +1117,7 @@
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    if (scrollView == _collectionView && !searching){
+    if (scrollView == self.collectionView && !searching){
         float bottomEdge = scrollView.contentOffset.y + scrollView.frame.size.height;
         if (bottomEdge >= scrollView.contentSize.height) {
             // at the bottom of the scrollView
@@ -1052,7 +1130,7 @@
 
 - (void)doubleTap:(UITapGestureRecognizer*)gestureRecognizer {
     CGPoint loc = [gestureRecognizer locationInView:self.collectionView];
-    NSIndexPath *selectedIndexPath = [_collectionView indexPathForItemAtPoint:loc];
+    NSIndexPath *selectedIndexPath = [self.collectionView indexPathForItemAtPoint:loc];
     if (!selectedIndexPath) return;
     
     Photo *photo;
@@ -1075,7 +1153,7 @@
         } else {
             [_selectedPhotos addObject:photo];
         }
-        [_collectionView reloadItemsAtIndexPaths:@[selectedIndexPath]];
+        [self.collectionView reloadItemsAtIndexPaths:@[selectedIndexPath]];
         [selectedLabel setText:[NSString stringWithFormat:@"%lu",(unsigned long)_selectedPhotos.count]];
         [self configureSelectedButton];
     }
@@ -1094,7 +1172,7 @@
 - (void)removeFavorite:(UIMenuController*)menuController {
     Art *art = _favoritePhotos[indexPathForFavoriteToRemove.item];
     [_favoritePhotos removeObject:art];
-    [_collectionView deleteItemsAtIndexPaths:@[indexPathForFavoriteToRemove]];
+    [self.collectionView deleteItemsAtIndexPaths:@[indexPathForFavoriteToRemove]];
 }
 
 - (void)removeLightTablePhoto:(UIMenuController*)menuController {
@@ -1102,7 +1180,7 @@
     [_table removePhoto:photo];
     
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        [_collectionView deleteItemsAtIndexPaths:@[indexPathForLightTableArtToRemove]];
+        [self.collectionView deleteItemsAtIndexPaths:@[indexPathForLightTableArtToRemove]];
     }];
     
     [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove",_table.identifier] parameters:@{@"photo_id":photo.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -1115,7 +1193,7 @@
 - (void)addPhotoToLightTable:(Photo*)photo {
     NSIndexPath *newArtIndexPath = [NSIndexPath indexPathForItem:_table.photos.count inSection:0];
     [_table addPhoto:photo];
-    [_collectionView insertItemsAtIndexPaths:@[newArtIndexPath]];
+    [self.collectionView insertItemsAtIndexPaths:@[newArtIndexPath]];
     
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         
@@ -1135,7 +1213,7 @@
         if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
             [self becomeFirstResponder];
             
-            indexPathForFavoriteToRemove = [_collectionView indexPathForItemAtPoint:loc];
+            indexPathForFavoriteToRemove = [self.collectionView indexPathForItemAtPoint:loc];
             NSString *menuItemTitle = NSLocalizedString(@"Remove", @"Remove this art from your favorites.");
             UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeFavorite:)];
             UIMenuController *menuController = [UIMenuController sharedMenuController];
@@ -1151,7 +1229,7 @@
         if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
             [self becomeFirstResponder];
             
-            indexPathForLightTableArtToRemove = [_collectionView indexPathForItemAtPoint:loc];
+            indexPathForLightTableArtToRemove = [self.collectionView indexPathForItemAtPoint:loc];
             NSString *menuItemTitle = NSLocalizedString(@"Remove", @"Remove this art from your favorites.");
             UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeLightTablePhoto:)];
             UIMenuController *menuController = [UIMenuController sharedMenuController];
@@ -1436,7 +1514,7 @@
     }
     [art MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    [_collectionView reloadData];
+    [self.collectionView reloadData];
 }
 
 - (void)removePhoto:(Photo*)photo {
@@ -1446,7 +1524,7 @@
     if ([_photos containsObject:photo]){
         [_photos removeObject:photo];
     }
-    [_currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
+    [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
         if (favorite.photo == photo){
             [_favoritePhotos removeObject:photo];
             [favorite MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
@@ -1480,7 +1558,7 @@
     }
     
     if (showLightTable && [lightTable.identifier isEqualToNumber:_table.identifier]){
-        [_collectionView reloadData];
+        [self.collectionView reloadData];
     }
 }
 
@@ -1488,14 +1566,13 @@
     [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
-
 - (void)photoDeleted:(NSNumber *)photoId {
     Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:photoId inContext:[NSManagedObjectContext MR_defaultContext]];
     if (showPrivate){
         NSPredicate *privatePredicate = [NSPredicate predicateWithFormat:@"art.privateArt == %@ && art.user.identifier == %@", @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
         _privatePhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:privatePredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
     } else if (showFavorites){
-        [_currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
+        [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
             if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
                 [_favoritePhotos addObject:favorite.photo];
             }
@@ -1507,13 +1584,13 @@
     }
     [photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        [_collectionView reloadData];
+        [self.collectionView reloadData];
     }];
 }
 
 - (void)artDeleted:(NSNumber *)photoId {
     if (!showLightTable && !showFavorites && !showPrivate){
-        [_collectionView reloadData];
+        [self.collectionView reloadData];
     }
 }
 
@@ -1599,6 +1676,7 @@
         [self resetTransitionBooleans];
         settings = YES;
         WFSettingsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Settings"];
+        vc.settingsDelegate = self;
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
@@ -1618,7 +1696,7 @@
         [self resetTransitionBooleans];
         profile = YES;
         WFProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Profile"];
-        [vc setUser:_currentUser];
+        [vc setUser:self.currentUser];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
@@ -1633,47 +1711,53 @@
 - (void)logout {
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
+        [WFAlert show:kLogoutMessage withTime:3.3f];
     }
-    [WFAlert show:kLogoutMessage withTime:2.7f];
-    _currentUser = nil;
+    self.currentUser = nil;
     [self setUpNavBar];
     [self loadPhotos];
 }
 
 - (void)newSlideshow {
+    [self newSlideshow:YES];
+}
+
+- (void)newSlideshow:(BOOL)withSelectedPhotos {
     [self.popover dismissPopoverAnimated:YES];
-    if (_currentUser.customerPlan.length){
+    if (self.currentUser.customerPlan.length){
         WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
         [vc setPhotos:_photos];
-        vc.createSlideshowDelegate = self;
-        Slideshow *slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-        slideshow.user = _currentUser;
-        if (_selectedPhotos.count){
-            [slideshow setPhotos:[NSOrderedSet orderedSetWithOrderedSet:_selectedPhotos]];
+        vc.slideshowDelegate = self;
+        
+        // create the new slideshow
+        Slideshow *newSlideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        if (_selectedPhotos.count && withSelectedPhotos){
+            [newSlideshow setPhotos:_selectedPhotos];
+            
+            [vc setSelectedPhotos:[NSMutableOrderedSet orderedSetWithOrderedSet:_selectedPhotos]];
         }
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            NSLog(@"new slideshow has %lu slides",(unsigned long)slideshow.slides.count);
-            [vc setSlideshowId:slideshow.identifier];
-            UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-            nav.transitioningDelegate = self;
-            nav.modalPresentationStyle = UIModalPresentationCustom;
-            [self resetTransitionBooleans];
-            [self presentViewController:nav animated:YES completion:^{
-                
-            }];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+        [vc setSlideshow:newSlideshow];
+        
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        [self resetTransitionBooleans];
+        [self presentViewController:nav animated:YES completion:^{
+            
         }];
     } else {
         [WFAlert show:@"Creating new slideshows requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
     }
 }
 
-- (void)slideshowSelected:(Slideshow *)presentation {
+- (void)slideshowSelected:(Slideshow *)slideshow {
     [self.popover dismissPopoverAnimated:YES];
-    if (_currentUser.customerPlan.length){
+    if (self.currentUser.customerPlan.length){
         WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
         [vc setPhotos:_photos];
-        vc.createSlideshowDelegate = self;
-        [vc setSlideshowId:presentation.identifier];
+        vc.slideshowDelegate = self;
+        [vc setSlideshowId:slideshow.identifier];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
@@ -1687,13 +1771,17 @@
 }
 
 #pragma createSlidesShow Delegate
-- (void)slideshowCreated:(Slideshow *)slideshow {
+- (void)slideshowCreatedWithId:(NSNumber *)slideshowId {
+    [self.tableView reloadData];
+}
+
+- (void)slideshowWithId:(NSNumber *)slideshowId droppedToLightTableWithId:(NSNumber *)lightTableId {
     [self.tableView reloadData];
 }
 
 - (void)showSlideshows {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        if (_currentUser.customerPlan.length){
+        if (self.currentUser.customerPlan.length){
             tablesButton.selected = NO;
             if (slideshowSidebarMode){
                 [self.tableView reloadData];
@@ -1739,18 +1827,18 @@
     if (tableIsVisible){
         tableIsVisible = NO;
         //hide the light table sidebar
-        CGRect collectionFrame = _collectionView.frame;
+        CGRect collectionFrame = self.collectionView.frame;
         collectionFrame.origin.x = 0;
         collectionFrame.size.width += kSidebarWidth;
         slideshowsButton.selected = NO;
         tablesButton.selected = NO;
-        [_collectionView reloadData];
+        [self.collectionView reloadData];
         
         [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             _tableView.transform = CGAffineTransformIdentity;
             _comparisonContainerView.transform = CGAffineTransformIdentity;
             resetButton.transform = CGAffineTransformIdentity;
-            [_collectionView setFrame:collectionFrame];
+            [self.collectionView setFrame:collectionFrame];
         } completion:^(BOOL finished) {
             if (self.searchBar.isFirstResponder){
                 [self.searchBar resignFirstResponder];
@@ -1764,17 +1852,17 @@
             tablesButton.selected = YES;
         }
         //show the light table sidebar
-        CGRect collectionFrame = _collectionView.frame;
+        CGRect collectionFrame = self.collectionView.frame;
         collectionFrame.origin.x = kSidebarWidth;
         collectionFrame.size.width -= kSidebarWidth;
         
-         [_collectionView reloadData];
+         [self.collectionView reloadData];
         
         [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
             _tableView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
             _comparisonContainerView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
             resetButton.transform = CGAffineTransformMakeTranslation(-kSidebarWidth, 0);
-            [_collectionView setFrame:collectionFrame];
+            [self.collectionView setFrame:collectionFrame];
            
         } completion:^(BOOL finished) {
             
@@ -1974,18 +2062,16 @@
 }
 
 #pragma mark - WFSearchDelegate methods
-- (void)lightTableForSelected:(Table *)lightTable {
+- (void)batchSelectForLightTableWithId:(NSNumber *)lightTableId {
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
-    if (_currentUser.customerPlan.length){
-        for (Photo *photo in _selectedPhotos){
-            [lightTable addPhoto:photo];
-        }
+    if (self.currentUser.customerPlan.length){
+        Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
+        [lightTable addPhotos:_selectedPhotos.array];
         
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-
-            __block NSMutableSet *photoIds = [NSMutableSet set];
+            __block NSMutableArray *photoIds = [NSMutableArray arrayWithCapacity:lightTable.photos.count];
             [lightTable.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
                 [photoIds addObject:photo.identifier];
             }];
@@ -1996,7 +2082,7 @@
                 [manager PATCH:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:@{@"light_table":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
                     NSLog(@"Success bulk adding photos to a light table: %@",responseObject);
                     NSString *photoCount = _selectedPhotos.count == 1 ? @"1 photo" : [NSString stringWithFormat:@"%lu photos",(unsigned long)_selectedPhotos.count];
-                    [WFAlert show:[NSString stringWithFormat:@"%@ added to %@",photoCount, lightTable.name] withTime:3.3f];
+                    [WFAlert show:[NSString stringWithFormat:@"%@ added to \"%@\"",photoCount, lightTable.name] withTime:3.3f];
                 } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                     NSLog(@"Failed to add selected to a light table: %@",error.description);
                 }];
@@ -2011,7 +2097,7 @@
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
-    if (_currentUser.customerPlan.length){
+    if (self.currentUser.customerPlan.length){
         [self newLightTable];
     } else {
         [WFAlert show:@"Creating new light tables requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
@@ -2023,45 +2109,51 @@
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
-    if (_currentUser.customerPlan.length){
-    for (Photo *photo in _selectedPhotos){
-        [slideshow addPhoto:photo];
-    }
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        if (tableIsVisible && slideshowSidebarMode){
-            [self.tableView reloadData];
-        }
-        __block NSMutableArray *photoIds = [NSMutableArray array];
-        [slideshow.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
-            [photoIds addObject:photo.identifier];
-        }];
-        if (photoIds.count){
-            if ([slideshow.identifier isEqualToNumber:@0]){
-                [self newSlideshow];
-            } else {
-                NSLog(@"Adding photos to an existing slideshow.");
-                [manager PATCH:[NSString stringWithFormat:@"slideshows/%@/add_photos",slideshow.identifier] parameters:@{@"slideshow":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                    NSString *photoCount = _selectedPhotos.count == 1 ? @"1 photo dropped" : [NSString stringWithFormat:@"%lu photos dropped",(unsigned long)_selectedPhotos.count];
-                    [WFAlert show:photoCount withTime:2.7f];
-                    NSLog(@"Success dropping photos into slideshow: %@",responseObject);
-                } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                    
-                }];
+    if (self.currentUser.customerPlan.length){
+        if (slideshow){
+            for (Photo *photo in _selectedPhotos){
+                [slideshow addPhoto:photo];
             }
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                NSString *title = slideshow.title.length ? slideshow.title : @"No title";
+                NSString *photoCount = _selectedPhotos.count == 1 ? [NSString stringWithFormat:@"1 photo dropped to \"%@\"",title] : [NSString stringWithFormat:@"%lu photos dropped to \"%@\"",(unsigned long)_selectedPhotos.count,title];
+                [WFAlert show:photoCount withTime:3.3f];
+                
+                __block NSMutableArray *photoIds = [NSMutableArray array];
+                [slideshow.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
+                    [photoIds addObject:photo.identifier];
+                }];
+                if (photoIds.count){
+                    if ([slideshow.identifier isEqualToNumber:@0]){
+                        [self newSlideshow:YES];
+                    } else {
+                        [manager PATCH:[NSString stringWithFormat:@"slideshows/%@/add_photos",slideshow.identifier] parameters:@{@"slideshow":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                            NSLog(@"Success dropping photos to slideshow: %@",responseObject);
+                            [slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
+                            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                                [_tableView reloadData];
+                            }];
+                        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                            
+                        }];
+                    }
+                }
+            }];
+        } else {
+            [self newSlideshow:YES];
         }
-    }];
     } else {
         [WFAlert show:@"Dropping selected art into a slideshow requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
     }
 }
 
 - (void)batchFavorite {
-    NSLog(@"Batch favoriting for current user: %@",_currentUser.fullName);
+    NSLog(@"Batch favoriting for current user: %@",self.currentUser.fullName);
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
     
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && _currentUser){
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && self.currentUser){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         NSMutableArray *photoIds = [NSMutableArray arrayWithCapacity:_selectedPhotos.count];
@@ -2070,7 +2162,7 @@
             Favorite *favorite = [Favorite MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             favorite.photo = photo;
             [_favoritePhotos addObject:photo];
-            [_currentUser addFavorite:favorite];
+            [self.currentUser addFavorite:favorite];
         }
     
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -2081,7 +2173,7 @@
             [parameters setObject:photoIds forKey:@"photo_ids"];
             [manager POST:@"favorites/batch" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
                 NSLog(@"Success batch favoriting: %@",responseObject);
-                [_currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
+                [self.currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
             } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                 NSLog(@"Failed to batch favorite: %@",error.description);
             }];
@@ -2098,7 +2190,7 @@
 - (void)removeAllSelected {
     searching = NO;
     [_selectedPhotos removeAllObjects];
-    [_collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
+    [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
     [self configureSelectedButton];
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
@@ -2137,8 +2229,8 @@
                           delay:0
                         options:(animationCurve << 16)
                      animations:^{
-                         _collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight+44, 0);
-                         _collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, keyboardHeight+44, 0);
+                         self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight+44, 0);
+                         self.collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, keyboardHeight+44, 0);
                      }
                      completion:NULL];
 }
@@ -2150,8 +2242,8 @@
                           delay:0
                         options:(animationCurve << 16)
                      animations:^{
-                         _collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
-                         _collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, 0, 0);
+                         self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+                         self.collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, 0, 0);
                      }
                      completion:NULL];
 }
@@ -2160,6 +2252,13 @@
     [super viewWillDisappear:animated];
     if (tableViewRefresh.isRefreshing){
         [tableViewRefresh endRefreshing];
+    }
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
     }
 }
 
