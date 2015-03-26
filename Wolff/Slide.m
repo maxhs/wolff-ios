@@ -23,7 +23,7 @@
 @dynamic rectString3;
 @dynamic slideshow;
 @dynamic photos;
-@dynamic caption;
 @dynamic index;
+@dynamic slideTexts;
 
 @end

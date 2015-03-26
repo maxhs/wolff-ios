@@ -80,7 +80,7 @@
             user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         user.identifier = [dictionary objectForKey:@"owner_id"];
-        self.owner = user;
+        [self addOwner:user];
     }
     if ([dictionary objectForKey:@"owner"] && [dictionary objectForKey:@"owner"] != [NSNull null]){
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"owner"] objectForKey:@"id"]];
@@ -89,7 +89,21 @@
             user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [user populateFromDictionary:[dictionary objectForKey:@"owner"]];
-        self.owner = user;
+        [self addOwner:user];
+    }
+    
+    if ([dictionary objectForKey:@"owners"] && [dictionary objectForKey:@"owners"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"owners"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            User *owner = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!owner){
+                owner = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [owner populateFromDictionary:dict];
+            [set addObject:owner];
+        }
+        self.owners = set;
     }
     if ([dictionary objectForKey:@"discussions"] && [dictionary objectForKey:@"discussions"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
@@ -116,6 +130,18 @@
     NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
     [tempSet removeObject:photo];
     self.photos = tempSet;
+}
+
+- (void)addOwner:(User *)owner {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.owners];
+    [tempSet addObject:owner];
+    self.owners = tempSet;
+}
+
+- (void)removeOwner:(User *)owner {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.owners];
+    [tempSet removeObject:owner];
+    self.owners = tempSet;
 }
 
 - (void)addSlideshow:(Slideshow *)slideshow {
@@ -152,6 +178,17 @@
     NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.users];
     [tempSet removeObject:user];
     self.users = tempSet;
+}
+
+- (BOOL)includesOwnerId:(NSNumber *)ownerId {
+    __block BOOL ownership = NO;
+    [self.owners enumerateObjectsUsingBlock:^(User *owner, NSUInteger idx, BOOL *stop) {
+        if ([owner.identifier isEqualToNumber:ownerId]){
+            ownership = YES;
+            *stop = YES;
+        }
+    }];
+    return ownership;
 }
 
 @end

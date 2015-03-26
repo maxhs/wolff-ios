@@ -223,8 +223,8 @@
         [containerView.photoImageView setFrame:CGRectMake(((_scrollView.frame.size.width-imageWidth)/2), 20, imageWidth, imageHeight)];
         [containerView.photoImageView setContentMode:UIViewContentModeScaleAspectFill];
         containerView.photoImageView.clipsToBounds = YES;
-        containerView.layer.rasterizationScale = [UIScreen mainScreen].scale;
-        containerView.layer.shouldRasterize = YES;
+        //containerView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+        //containerView.layer.shouldRasterize = YES;
         [containerView addSubview:containerView.photoImageView];
         
         containerView.creditLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, containerView.photoImageView.frame.size.height+containerView.photoImageView.frame.origin.y + 6.f, 100, 47)];

@@ -15,6 +15,7 @@
 #import "WFUtilities.h"
 #import "Constants.h"
 #import "Card+helper.h"
+#import "NSArray+ToSentence.h"
 
 typedef enum {
     WFPrefixMr = 1,
@@ -325,6 +326,15 @@ typedef enum {
         return nil;
     }
 }
+
+- (NSString *)institutionsToSentence {
+    NSMutableArray *institutions = [NSMutableArray arrayWithCapacity:self.institutions.count];
+    [self.institutions enumerateObjectsUsingBlock:^(Institution *institution, NSUInteger idx, BOOL *stop) {
+        [institutions addObject:institution.name];
+    }];
+    return [institutions toSentence];
+}
+
 
 - (Favorite *)getFavoriteArt:(Art *)art {
     __block Favorite *favorite = nil;

@@ -22,6 +22,7 @@
 @property (weak, nonatomic) IBOutlet UIView *containerView3;
 @property (weak, nonatomic) IBOutlet WFInteractiveImageView *artImageView3;
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView3;
+@property (weak, nonatomic) IBOutlet UILabel *mainTextLabel;
 
 - (void)configureForPhotos:(NSMutableOrderedSet*)photos inSlide:(Slide*)slide;
 - (void)recenterView:(WFInteractiveImageView*)viewToRecenter;

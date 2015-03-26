@@ -390,6 +390,13 @@
     if (tableIsVisible){
         [self.tableView reloadData];
     }
+    //only ask for push notifications when a user has successfully logged in
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
+        [[UIApplication sharedApplication] registerForRemoteNotifications];
+    } else {
+        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
+    }
 }
 
 - (void)loggedOut {
@@ -483,7 +490,7 @@
             
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to get user art: %@",error.description);
-            [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to load your art. Please try again soon." delegate:nil cancelButtonTitle:@"Cancel" otherButtonTitles:nil] show];
+            [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to load your art. Please try again soon." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
             
             [self endRefresh];
         }];
@@ -553,9 +560,9 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (slideshowSidebarMode){
         if (section == 0){
-            return _slideshows.count;
-        } else {
             return 1;
+        } else {
+            return _slideshows.count;
         }
     } else {
         switch (section) {
@@ -563,6 +570,9 @@
                 return 2;
                 break;
             case 1:
+                return 1;
+                break;
+            case 2:
                 if (_tables.count){
                     return _tables.count;
                 } else if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
@@ -571,9 +581,7 @@
                     return 0;
                 }
                 break;
-            case 2:
-                return 1;
-                break;
+            
             default:
                 return 0;
                 break;
@@ -586,6 +594,12 @@
         WFSlideshowCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideshowCell" forIndexPath:indexPath];
         [cell setBackgroundColor:[UIColor clearColor]];
         if (indexPath.section == 0){
+            [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
+            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
+            [cell.textLabel setText:@"New Slideshow"];
+            [cell.scrollView setScrollEnabled:NO];
+            
+        } else {
             cell.tintColor = [UIColor whiteColor];
             [cell.scrollView setScrollEnabled:YES];
             [cell.contentView addGestureRecognizer:cell.scrollView.panGestureRecognizer];
@@ -600,12 +614,6 @@
                 [cell.actionButton setTag:indexPath.row];
                 [cell.actionButton addTarget:self action:@selector(slideshowAction:) forControlEvents:UIControlEventTouchUpInside];
             }
-            
-        } else {
-            [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
-            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
-            [cell.textLabel setText:@"New Slideshow"];
-            [cell.scrollView setScrollEnabled:NO];
         }
         
         // ensure the labels are the right color. this cell is also being used on the Slideshows view, and the label text there is black
@@ -621,6 +629,7 @@
                 if (showPrivate){
                     [cell.iconImageView setImage:[UIImage imageNamed:@"blueLock"]];
                     [cell.label setTextColor:kElectricBlue];
+                    cell.label.highlightedTextColor = kElectricBlue;
                     [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
                 } else {
                     [cell.iconImageView setImage:[UIImage imageNamed:@"whiteLock"]];
@@ -641,6 +650,13 @@
             }
             return cell;
         } else if (indexPath.section == 1){
+            WFLightTableDefaultCell *cell = (WFLightTableDefaultCell *)[tableView dequeueReusableCellWithIdentifier:@"LightTableDefaultCell"];
+            [cell setBackgroundColor:[UIColor clearColor]];
+            [cell.iconImageView setImage:[UIImage imageNamed:@"whitePlus"]];
+            [cell.label setText:@"Light Table"];
+            [cell.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
+            return cell;
+        } else {
             WFLightTableCell *cell = (WFLightTableCell *)[tableView dequeueReusableCellWithIdentifier:@"LightTableCell"];
             [cell setBackgroundColor:[UIColor clearColor]];
             if (_tables.count){
@@ -675,20 +691,13 @@
             [cell.deleteButton addTarget:self action:@selector(lightTableAction:) forControlEvents:UIControlEventTouchUpInside];
             [cell.leaveButton addTarget:self action:@selector(lightTableAction:) forControlEvents:UIControlEventTouchUpInside];
             return cell;
-        } else {
-            WFLightTableDefaultCell *cell = (WFLightTableDefaultCell *)[tableView dequeueReusableCellWithIdentifier:@"LightTableDefaultCell"];
-            [cell setBackgroundColor:[UIColor clearColor]];
-            [cell.iconImageView setImage:[UIImage imageNamed:@"whitePlus"]];
-            [cell.label setText:@"Light Table"];
-            [cell.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
-            return cell;
         }
     }
 }
 
 - (void)slideshowAction:(UIButton*)button{
     Slideshow *slideshow = _slideshows[button.tag];
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:button.tag inSection:0];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:button.tag inSection:1];
     if ([slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
         [self deleteSlideshow:slideshow atIndexPath:indexPath];
     } else {
@@ -714,11 +723,11 @@
             if (_slideshows.count){
                 [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
             } else {
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
+                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
             }
             [self.tableView endUpdates];
         } completion:^(BOOL finished) {
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
         }];
     }];
 }
@@ -732,11 +741,11 @@
             if (_slideshows.count){
                 [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
             } else {
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
+                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
             }
             [self.tableView endUpdates];
         } completion:^(BOOL finished) {
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
         }];
     }];
     
@@ -758,8 +767,8 @@
 
 - (void)lightTableAction:(UIButton*)button{
     Table *lightTable = _tables[button.tag];
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:button.tag inSection:1];
-    if (lightTable && [lightTable.owner.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:button.tag inSection:2];
+    if (lightTable && [lightTable includesOwnerId:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
         [self deleteLightTable:lightTable atIndexPath:indexPath];
     } else {
         [self leaveLightTable:lightTable atIndexPath:indexPath];
@@ -791,11 +800,11 @@
             if (_tables.count){
                 [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
             } else {
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
+                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:2] withRowAnimation:UITableViewRowAnimationNone];
             }
             [self.tableView endUpdates];
         } completion:^(BOOL finished) {
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:2] withRowAnimation:UITableViewRowAnimationNone];
         }];
     }];
 }
@@ -822,11 +831,11 @@
             if (_tables.count){
                 [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
             } else {
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
+                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:2] withRowAnimation:UITableViewRowAnimationNone];
             }
             [self.tableView endUpdates];
         } completion:^(BOOL finished) {
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:2] withRowAnimation:UITableViewRowAnimationNone];
         }];
     }];
 }
@@ -836,6 +845,8 @@
     [_noSearchResultsLabel setHidden:YES];
     if (slideshowSidebarMode){
         if (indexPath.section == 0){
+            [self newSlideshow:NO];
+        } else {
             Slideshow *slideshow = _slideshows[indexPath.row];
             if (slideshow.user && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
                 [self slideshowSelected:slideshow];
@@ -849,14 +860,14 @@
                     
                 }];
             }
-        } else {
-            [self newSlideshow:NO];
         }
     } else {
         if (indexPath.section == 0){
             indexPath.row == 0 ? [self showPrivateArt] : [self showFavorites];
             [tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 2)] withRowAnimation:UITableViewRowAnimationAutomatic];
         } else if (indexPath.section == 1){
+            [self newLightTable];
+        } else if (indexPath.section == 2){
             if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
                 if (self.currentUser.customerPlan.length){
                     if (_tables.count){
@@ -866,9 +877,9 @@
                             showLightTable = NO;
                             [self.collectionView reloadData];
                         } else {
-                            [self showTable:table];
+                            [self showLightTable:table];
                         }
-                        [tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 2)] withRowAnimation:UITableViewRowAnimationAutomatic];
+                        [tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 3)] withRowAnimation:UITableViewRowAnimationAutomatic];
                     }
                 } else {
                     [WFAlert show:@"Joining or creating light tables requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
@@ -876,8 +887,6 @@
             } else {
                 [self showLogin];
             }
-        } else if (indexPath.section == 2){
-            [self newLightTable];
         }
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -918,7 +927,7 @@
     }
 }
 
-- (void)showTable:(Table*)table {
+- (void)showLightTable:(Table*)table {
     if (showLightTable && table.identifier && _table.identifier && [table.identifier isEqualToNumber:_table.identifier]){
         [self resetArtBooleans];
     } else {
@@ -1036,7 +1045,6 @@
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
- 
     WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"PhotoCell" forIndexPath:indexPath];
     Photo *photo;
     if (searching){
@@ -1638,8 +1646,21 @@
 }
 
 - (void)didSelectNotificationWithId:(NSNumber*)notificationId {
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
+    
     Notification *notification = [Notification MR_findFirstByAttribute:@"identifier" withValue:notificationId inContext:[NSManagedObjectContext MR_defaultContext]];
-    NSLog(@"Did select notification: %@",notification.message);
+    NSLog(@"Did select notification: %@",notification);
+    if (notification.lightTable){
+        [self showLightTable:notification.lightTable];
+    } else if (notification.slideshow){
+        [self slideshowSelected:notification.slideshow];
+    } else if (notification.photo){
+        [self showMetadata:notification.photo];
+    } else if (notification.art){
+        [self showMetadata:notification.art.photo];
+    }
 }
 
 - (void)settingsPopover:(id)sender {
@@ -2049,6 +2070,8 @@
             } else if ([predicate evaluateWithObject:photo.iconsToSentence]){
                 [_filteredPhotos addObject:photo];
             } else if ([predicate evaluateWithObject:photo.credit]){
+                [_filteredPhotos addObject:photo];
+            } else if ([predicate evaluateWithObject:art.user.fullName]){
                 [_filteredPhotos addObject:photo];
             }
         }

@@ -7,6 +7,7 @@
 //
 
 #import "Slide+helper.h"
+#import "SlideText+helper.h"
 #import "Art+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
@@ -18,11 +19,20 @@
     if ([dictionary objectForKey:@"title"] && [dictionary objectForKey:@"title"] != [NSNull null]){
         self.title = [dictionary objectForKey:@"title"];
     }
-    if ([dictionary objectForKey:@"index"] && [dictionary objectForKey:@"caption"] != [NSNull null]){
-        self.caption = [dictionary objectForKey:@"caption"];
+    if ([dictionary objectForKey:@"index"] && [dictionary objectForKey:@"index"] != [NSNull null]){
+        self.index = [dictionary objectForKey:@"index"];
     }
-    if ([dictionary objectForKey:@"caption"] && [dictionary objectForKey:@"caption"] != [NSNull null]){
-        self.caption = [dictionary objectForKey:@"caption"];
+    if ([dictionary objectForKey:@"slide_texts"] && [dictionary objectForKey:@"slide_texts"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (NSDictionary *textDict in [dictionary objectForKey:@"slide_texts"]){
+            SlideText *slideText = [SlideText MR_findFirstByAttribute:@"identifier" withValue:[textDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!slideText){
+                slideText = [SlideText MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [slideText populateFromDictionary:textDict];
+            [set addObject:slideText];
+        }
+        self.slideTexts = set;
     }
     if ([dictionary objectForKey:@"photos"] && [dictionary objectForKey:@"photos"] != [NSNull null]){
         NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSet];

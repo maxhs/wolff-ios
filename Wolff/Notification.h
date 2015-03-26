@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Art, Artist, Discussion, Institution, User, Slideshow;
+@class Art, Artist, Discussion, Institution, User, Slideshow, Table, Photo;
 
 @interface Notification : NSManagedObject
 
@@ -20,10 +20,12 @@
 @property (nonatomic, retain) NSNumber * read;
 @property (nonatomic, retain) NSNumber * sent;
 @property (nonatomic, retain) Art *art;
+@property (nonatomic, retain) Photo *photo;
 @property (nonatomic, retain) Institution *institution;
 @property (nonatomic, retain) User *user;
 @property (nonatomic, retain) Artist *artist;
 @property (nonatomic, retain) Discussion *discussion;
 @property (nonatomic, retain) Slideshow *slideshow;
+@property (nonatomic, retain) Table *lightTable;
 
 @end

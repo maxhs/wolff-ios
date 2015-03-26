@@ -13,18 +13,13 @@
 @interface WFLightTablesViewController () {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-    User *_currentUser;
     CGFloat height;
     CGFloat width;
 }
-
+@property (strong, nonatomic) User *currentUser;
 @end
 
 @implementation WFLightTablesViewController
-@synthesize lightTables = _lightTables;
-@synthesize slideshow = _slideshow;
-@synthesize slideshowShareMode = _slideshowShareMode;
-@synthesize photo = _photo;
 
 -(id)initWithPanTarget:(id<WFLightTablesDelegate>)lightTableDelegate {
     self = [super initWithNibName:nil bundle:nil];
@@ -52,7 +47,7 @@
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     
-    _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+    self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
     
     self.title = @"Your Light Tables";
     
@@ -64,13 +59,13 @@
     [super viewWillAppear:animated];
     [self setUpFooter];
     [self loadLightTables];
+    NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES];
+    _lightTables = self.currentUser.ownedTables.array.mutableCopy;
+    [_lightTables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
+    
     if (_slideshowShareMode){
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"owner.identifier = %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
-        _lightTables = [Table MR_findAllSortedBy:@"name" ascending:YES withPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
         [self setPreferredContentSize:CGSizeMake(420, (54.f*_lightTables.count)+34.f)];
     } else {
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"owner.identifier = %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
-        _lightTables = [Table MR_findAllSortedBy:@"name" ascending:YES withPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
         [self setPreferredContentSize:CGSizeMake(420, 54.f*(_lightTables.count+1))];
     }
 }
@@ -101,14 +96,14 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES];
+    _lightTables = self.currentUser.ownedTables.array.mutableCopy;
+    [_lightTables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
+    
     if (_slideshowShareMode){
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"owner.identifier = %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
-        _lightTables = [Table MR_findAllSortedBy:@"name" ascending:YES withPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
         [self setPreferredContentSize:CGSizeMake(420, (54.f*_lightTables.count)+34.f)];
         return 1;
     } else {
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"owner.identifier = %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
-        _lightTables = [Table MR_findAllSortedBy:@"name" ascending:YES withPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
         return 2;
     }
 }

@@ -58,14 +58,14 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
+    manager = delegate.manager;
     if (SYSTEM_VERSION >= 8.f){
         iOS8 = YES; width = screenWidth(); height = screenHeight();
     } else {
         iOS8 = NO; width = screenHeight(); height = screenWidth();
     }
-    
-    delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
-    manager = delegate.manager;
+
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     [_bottomToolbar setTintColor:[UIColor whiteColor]];
     [self setUpNavBar];
@@ -76,7 +76,7 @@
     [_bottomToolbar setBarStyle:UIBarStyleBlackTranslucent];
     [_bottomToolbar setTranslucent:YES];
     [_collectionView setDelaysContentTouches:NO];
-    [_collectionView setCanCancelContentTouches:NO];
+    [_collectionView setCanCancelContentTouches:YES];
     
     _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     _panGesture.delegate = self;
@@ -188,15 +188,21 @@
         if (currentPage > 0){
             [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
             currentSlide = self.slideshow.slides[currentPage-1]; // offset by 1 because the index starts at 0, not 1
-            self.navigationItem.rightBarButtonItem = metadataButton;
+            if (currentSlide.photos.count){ // remove the metadata button if it's a blank slide
+                self.navigationItem.rightBarButtonItem = metadataButton;
+            } else {
+                self.navigationItem.rightBarButtonItem = nil;
+            }
             currentPage == self.slideshow.slides.count ? [_nextButton setEnabled:NO] : [_nextButton setEnabled:YES];
             [_previousButton setEnabled:YES];
+            [self.collectionView setCanCancelContentTouches:NO];
         } else {
             // we're on the title slide
             [_slideNumberButtonItem setTitle:@""];
             self.navigationItem.rightBarButtonItem = nil;
             [_previousButton setEnabled:NO];
             currentSlide = nil;
+            [self.collectionView setCanCancelContentTouches:YES];
         }
     }
 }
@@ -339,6 +345,7 @@
 }
 
 - (void)handlePan:(UIPanGestureRecognizer*)gestureRecognizer {
+    
     CGPoint fullTranslation = [gestureRecognizer locationInView:self.view];
     CGPoint translation = [gestureRecognizer translationInView:_collectionView];
     NSIndexPath *indexPathForGesture = [_collectionView indexPathForItemAtPoint:[gestureRecognizer locationInView:_collectionView]];
@@ -359,9 +366,8 @@
     CGPoint newPoint = CGPointMake(view.center.x + translation.x, view.center.y + translation.y);
     view.center = newPoint;
     [gestureRecognizer setTranslation:CGPointMake(0, 0) inView:_collectionView];
-    
-    //offset and/or save pre-position
-    [(WFInteractiveImageView*)view setMoved:YES];
+
+    [(WFInteractiveImageView*)view setMoved:YES]; //offset and/or save pre-position
     if (cell){
         if (view == cell.artImageView1){
             [currentSlide setRectString1:NSStringFromCGRect(cell.artImageView1.frame)];
@@ -371,11 +377,22 @@
             [currentSlide setRectString3:NSStringFromCGRect(cell.artImageView3.frame)];
         }
     }
+    if (view && cell){
+        if (gestureRecognizer.state == UIGestureRecognizerStateBegan){
+            [_collectionView setScrollEnabled:NO];
+        } else if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
+            [_collectionView setScrollEnabled:YES];
+        }
+    }
 }
 
 - (void)screenEdgePan:(UIScreenEdgePanGestureRecognizer*)gestureRecognizer {
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
-        //NSLog(@"done panning from right");
+        if (gestureRecognizer == rightScreenEdgePanGesture){
+            //NSLog(@"done panning from right");
+        } else if (gestureRecognizer == leftScreenEdgePanGesture){
+            //NSLog(@"done panning from left");
+        }
     }
 }
 
@@ -482,8 +499,7 @@
     }
     
     if (view){
-        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.5 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            
+        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             if (view == artImageView1){
                 if (artImageView1.moved){
                     view.transform = CGAffineTransformIdentity;

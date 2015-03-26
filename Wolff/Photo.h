@@ -28,6 +28,7 @@
 @property (nonatomic, retain) NSOrderedSet *icons;
 @property (nonatomic, retain) NSOrderedSet *tables;
 @property (nonatomic, retain) NSOrderedSet *artists;
+@property (nonatomic, retain) NSOrderedSet *notifications;
 @property (nonatomic, retain) Art *art;
 @property (nonatomic, retain) User *user;
 @property (nonatomic, retain) id image;

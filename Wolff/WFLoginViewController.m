@@ -252,7 +252,6 @@
     }];
 }
 
-
 #pragma mark - Shake Animation
 
 - (void)addShakeAnimationForView:(UIView *)view withDuration:(NSTimeInterval)duration {

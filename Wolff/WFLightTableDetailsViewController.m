@@ -15,10 +15,11 @@
 #import "WFAlert.h"
 #import "WFLightTableKeyCell.h"
 #import "WFLightTableContentsCell.h"
+#import "WFUsersViewController.h"
 
 #define kLightTableDescriptionPlaceholder @"Describe your light table..."
 
-@interface WFLightTableDetailsViewController () < UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UITextFieldDelegate, UITextViewDelegate> {
+@interface WFLightTableDetailsViewController () < UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UITextFieldDelegate, UITextViewDelegate, WFSelectUsersDelegate> {
     BOOL iOS8;
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
@@ -28,6 +29,7 @@
     UITextField *titleTextField;
     UITextField *tableKeyTextField;
     UITextField *confirmTableKeyTextField;
+    UITextField *ownersTextField;
     UIButton *joinButton;
     UIButton *actionButton;
     UITextView *descriptionTextView;
@@ -142,6 +144,7 @@
         cell.titleTextField.delegate = self;
         cell.keyTextField.delegate = self;
         cell.confirmKeyTextField.delegate = self;
+        cell.ownersTextField.delegate = self;
         
         titleTextField = cell.titleTextField;
         [cell.titleTextField setPlaceholder:@"e.g. Mesopotamian Pots"];
@@ -175,6 +178,9 @@
         [cell.confirmKeyTextField setPlaceholder:@"Confirm that your table key matches"];
         [cell.confirmKeyTextField setReturnKeyType:UIReturnKeyGo];
         
+        ownersTextField = cell.ownersTextField;
+        [ownersTextField setPlaceholder:@"Select who can manage this light table"];
+        
         actionButton = cell.actionButton;
         return cell;
     } else {
@@ -183,6 +189,8 @@
             [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.03]];
             [cell.label setText:@"TABLE KEY - THE PASSWORD REQUIRED TO JOIN THIS LIGHT TABLE"];
             [cell.textField setPlaceholder:@"The key code for the light table code you'd like to join"];
+            [cell.textField setAutocapitalizationType:UITextAutocapitalizationTypeNone];
+            [cell.textField setAutocorrectionType:UITextAutocorrectionTypeNo];
             cell.textField.delegate = self;
             [cell.joinButton setTitle:@"JOIN" forState:UIControlStateNormal];
             [cell.joinButton addTarget:self action:@selector(joinLightTable) forControlEvents:UIControlEventTouchUpInside];
@@ -196,6 +204,27 @@
             return cell;
         }
     }
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    
+}
+
+- (void)showOwners {
+    WFUsersViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Users"];
+    [vc setSelectedUsers:self.lightTable.owners.mutableCopy];
+    [vc setOwnerMode:YES];
+    vc.userDelegate = self;
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    [nav.navigationBar setTintColor:[UIColor whiteColor]];
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+- (void)usersSelected:(NSOrderedSet *)selectedUsers {
+    self.lightTable.owners = selectedUsers;
+    [self.collectionView reloadData];
 }
 
 #pragma mark – UICollectionViewDelegateFlowLayout
@@ -408,7 +437,10 @@
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
-    
+    if (textField == ownersTextField){
+        [textField resignFirstResponder];
+        [self showOwners];
+    }
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField {

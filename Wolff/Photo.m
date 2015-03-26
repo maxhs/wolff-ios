@@ -32,5 +32,6 @@
 @dynamic art;
 @dynamic user;
 @dynamic artists;
+@dynamic notifications;
 
 @end

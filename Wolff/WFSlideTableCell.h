@@ -13,7 +13,6 @@
 @interface WFSlideTableCell : UITableViewCell <UIScrollViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UILabel *slideNumberLabel;
-@property (weak, nonatomic) IBOutlet UILabel *addPrompt;
 @property (weak, nonatomic) IBOutlet UIView *slideContainerView;
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (weak, nonatomic) IBOutlet UIButton *removeButton;

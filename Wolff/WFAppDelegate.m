@@ -25,10 +25,6 @@
     [self hackForPreloadingKeyboard];
     [self customizeAppearance];
     
-//    SDImageCache *imageCache = [SDImageCache sharedImageCache];
-//    [imageCache clearMemory];
-//    [imageCache clearDisk];
-    
     [Mixpanel sharedInstanceWithToken:MIXPANEL_TOKEN];
     Mixpanel *mixpanel = [Mixpanel sharedInstance];
     [mixpanel track:@"Launch"];
@@ -38,13 +34,34 @@
     [_manager.requestSerializer setValue:(IDIOM == IPAD) ? @"2" : @"1" forHTTPHeaderField:@"device_type"];
     
     [self setupConnectionObserver];
-    // automatically log the user in if they
+
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken]){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken] forKey:@"mobile_token"];
-        [self connectWithParameters:parameters];
+        [self connectWithParameters:parameters];   // automatically log the user in if they
     }
+    //[self initLayer];
     return YES;
 }
+
+//- (void)initLayer {
+//    NSUUID *appID = [[NSUUID alloc] initWithUUIDString:@"7d49bc9e-cd98-11e4-b5f2-eae8c100164f"];
+//    self.layerClient = [LYRClient clientWithAppID:appID];
+//    [self.layerClient connectWithCompletion:^(BOOL success, NSError *error) {
+//        if (!success) {
+//            NSLog(@"Failed to connect to Layer: %@", error);
+//        } else {
+//            // For the purposes of this Quick Start project, let's authenticate as a user named 'Device'.  Alternatively, you can authenticate as a user named 'Simulator' if you're running on a Simulator.
+//            NSString *userIDString = @"Device";
+//            // Once connected, authenticate user.
+//            // Check Authenticate step for authenticateLayerWithUserID source
+//            [self authenticateLayerWithUserID:userIDString completion:^(BOOL success, NSError *error) {
+//                if (!success) {
+//                    NSLog(@"Failed Authenticating Layer Client with error:%@", error);
+//                }
+//            }];
+//        }
+//    }];
+//}
 
 - (void)setupConnectionObserver {
     [[AFNetworkReachabilityManager sharedManager] startMonitoring];
@@ -146,6 +163,33 @@
     
     [self.window setBackgroundColor:[UIColor blackColor]];
     [self.window setTintColor:[UIColor blackColor]];
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)pushMessage {
+    [[Mixpanel sharedInstance] trackPushNotification:pushMessage];
+}
+
+- (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
+    //NSLog(@"didRegisterUserNotificationSettings: %@",notificationSettings);
+    //NSLog(@"Current user notification cettings: %@",[[UIApplication sharedApplication] currentUserNotificationSettings]);
+}
+
+- (void)application:(UIApplication*)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken {
+    [[NSUserDefaults standardUserDefaults] setObject:deviceToken forKey:kUserDefaultsDeviceToken];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [[NSUserDefaults standardUserDefaults]  objectForKey:kUserDefaultsDeviceToken]){
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        [parameters setObject:[[NSUserDefaults standardUserDefaults]  objectForKey:kUserDefaultsDeviceToken] forKey:@"token"];
+        [_manager POST:[NSString stringWithFormat:@"users/%@/push_tokens",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success posting a push token: %@",responseObject);
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failure posting a push token: %@",error.description);
+        }];
+    }
+}
+
+- (void)application:(UIApplication*)application didFailToRegisterForRemoteNotificationsWithError:(NSError*)error {
+    
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {

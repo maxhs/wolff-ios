@@ -1270,9 +1270,12 @@
         [self.view endEditing:YES];
         [self edit];
     } else {
-        [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-            
-        }];
+        // ensure the dismiss happens RIGHT NOW
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+                
+            }];
+        });
     }
 }
 

@@ -156,6 +156,9 @@
 		50A077B61A8EF67300147A0F /* WFIconCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A077B51A8EF67300147A0F /* WFIconCollectionCell.m */; };
 		50A9D41A1A83E6CB000B8DD6 /* WFNewLocationCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9D4191A83E6CB000B8DD6 /* WFNewLocationCell.m */; };
 		50A9D41D1A842590000B8DD6 /* WFDatePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9D41C1A842590000B8DD6 /* WFDatePicker.m */; };
+		50AB427C1AB6769900C4EF5A /* WFUsersViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50AB427B1AB6769900C4EF5A /* WFUsersViewController.m */; };
+		50AB427F1AB6772100C4EF5A /* WFUserCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50AB427E1AB6772100C4EF5A /* WFUserCollectionCell.m */; };
+		50AB42821AB677B200C4EF5A /* WFNewUserCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50AB42811AB677B200C4EF5A /* WFNewUserCell.m */; };
 		50AC91F61A998135004148D2 /* WFCreditTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 50AC91F51A998135004148D2 /* WFCreditTextField.m */; };
 		50AC91FA1A99868C004148D2 /* WFMetadataModalAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = 50AC91F91A99868C004148D2 /* WFMetadataModalAnimator.m */; };
 		50AC91FE1A9A6A30004148D2 /* menuProfile.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC91FB1A9A6A30004148D2 /* menuProfile.png */; };
@@ -180,6 +183,10 @@
 		50B325611AA14B96003B7DB2 /* blueLock.png in Resources */ = {isa = PBXBuildFile; fileRef = 50B3255B1AA14B96003B7DB2 /* blueLock.png */; };
 		50B325621AA14B96003B7DB2 /* blueLock@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50B3255C1AA14B96003B7DB2 /* blueLock@2x.png */; };
 		50B325631AA14B96003B7DB2 /* blueLock@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50B3255D1AA14B96003B7DB2 /* blueLock@3x.png */; };
+		50B6FA6F1AC47A6C006703AA /* WFNewSlideTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B6FA6E1AC47A6C006703AA /* WFNewSlideTableCell.m */; };
+		50B6FA721AC4916E006703AA /* SlideText.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B6FA711AC4916E006703AA /* SlideText.m */; };
+		50B6FA751AC491F4006703AA /* SlideText+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B6FA741AC491F4006703AA /* SlideText+helper.m */; };
+		50B6FA781AC4969C006703AA /* WFSlideTextViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B6FA771AC4969C006703AA /* WFSlideTextViewController.m */; };
 		50C589511A8528970094DBBF /* WFDateMetadataCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589501A8528970094DBBF /* WFDateMetadataCell.m */; };
 		50C589541A8558070094DBBF /* WFMaterialsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589531A8558070094DBBF /* WFMaterialsViewController.m */; };
 		50C589571A8558450094DBBF /* WFMaterialCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589561A8558450094DBBF /* WFMaterialCollectionCell.m */; };
@@ -369,7 +376,6 @@
 		F2CE054B198E72AC0061DB94 /* User.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE054A198E72AC0061DB94 /* User.m */; };
 		F2CE0552198E72CC0061DB94 /* User+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE0551198E72CC0061DB94 /* User+helper.m */; };
 		F2CE0555198E73940061DB94 /* WFWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE0554198E73940061DB94 /* WFWebViewController.m */; };
-		F2CE0570198E85740061DB94 /* WFSlideCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE056F198E85740061DB94 /* WFSlideCollectionCell.m */; };
 		F2CE0573198E85850061DB94 /* WFPhotoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE0572198E85850061DB94 /* WFPhotoCell.m */; };
 		F2CE0576198E85DA0061DB94 /* Art+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE0575198E85DA0061DB94 /* Art+helper.m */; };
 		F2CE0579198E91910061DB94 /* Art.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE0578198E91910061DB94 /* Art.m */; };
@@ -582,6 +588,12 @@
 		50A9D4191A83E6CB000B8DD6 /* WFNewLocationCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFNewLocationCell.m; sourceTree = "<group>"; };
 		50A9D41B1A842590000B8DD6 /* WFDatePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFDatePicker.h; sourceTree = "<group>"; };
 		50A9D41C1A842590000B8DD6 /* WFDatePicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFDatePicker.m; sourceTree = "<group>"; };
+		50AB427A1AB6769900C4EF5A /* WFUsersViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFUsersViewController.h; sourceTree = "<group>"; };
+		50AB427B1AB6769900C4EF5A /* WFUsersViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFUsersViewController.m; sourceTree = "<group>"; };
+		50AB427D1AB6772100C4EF5A /* WFUserCollectionCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFUserCollectionCell.h; sourceTree = "<group>"; };
+		50AB427E1AB6772100C4EF5A /* WFUserCollectionCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFUserCollectionCell.m; sourceTree = "<group>"; };
+		50AB42801AB677B200C4EF5A /* WFNewUserCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNewUserCell.h; sourceTree = "<group>"; };
+		50AB42811AB677B200C4EF5A /* WFNewUserCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFNewUserCell.m; sourceTree = "<group>"; };
 		50AC91F41A998135004148D2 /* WFCreditTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFCreditTextField.h; sourceTree = "<group>"; };
 		50AC91F51A998135004148D2 /* WFCreditTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFCreditTextField.m; sourceTree = "<group>"; };
 		50AC91F81A99868C004148D2 /* WFMetadataModalAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMetadataModalAnimator.h; sourceTree = "<group>"; };
@@ -609,6 +621,14 @@
 		50B3255B1AA14B96003B7DB2 /* blueLock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blueLock.png; sourceTree = "<group>"; };
 		50B3255C1AA14B96003B7DB2 /* blueLock@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "blueLock@2x.png"; sourceTree = "<group>"; };
 		50B3255D1AA14B96003B7DB2 /* blueLock@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "blueLock@3x.png"; sourceTree = "<group>"; };
+		50B6FA6D1AC47A6C006703AA /* WFNewSlideTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNewSlideTableCell.h; sourceTree = "<group>"; };
+		50B6FA6E1AC47A6C006703AA /* WFNewSlideTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFNewSlideTableCell.m; sourceTree = "<group>"; };
+		50B6FA701AC4916E006703AA /* SlideText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SlideText.h; sourceTree = "<group>"; };
+		50B6FA711AC4916E006703AA /* SlideText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SlideText.m; sourceTree = "<group>"; };
+		50B6FA731AC491F4006703AA /* SlideText+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SlideText+helper.h"; sourceTree = "<group>"; };
+		50B6FA741AC491F4006703AA /* SlideText+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SlideText+helper.m"; sourceTree = "<group>"; };
+		50B6FA761AC4969C006703AA /* WFSlideTextViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideTextViewController.h; sourceTree = "<group>"; };
+		50B6FA771AC4969C006703AA /* WFSlideTextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideTextViewController.m; sourceTree = "<group>"; };
 		50C5894F1A8528970094DBBF /* WFDateMetadataCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFDateMetadataCell.h; sourceTree = "<group>"; };
 		50C589501A8528970094DBBF /* WFDateMetadataCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFDateMetadataCell.m; sourceTree = "<group>"; };
 		50C589521A8558070094DBBF /* WFMaterialsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMaterialsViewController.h; sourceTree = "<group>"; };
@@ -889,8 +909,6 @@
 		F2CE0551198E72CC0061DB94 /* User+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "User+helper.m"; sourceTree = "<group>"; };
 		F2CE0553198E73940061DB94 /* WFWebViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFWebViewController.h; sourceTree = "<group>"; };
 		F2CE0554198E73940061DB94 /* WFWebViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFWebViewController.m; sourceTree = "<group>"; };
-		F2CE056E198E85740061DB94 /* WFSlideCollectionCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideCollectionCell.h; sourceTree = "<group>"; };
-		F2CE056F198E85740061DB94 /* WFSlideCollectionCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideCollectionCell.m; sourceTree = "<group>"; };
 		F2CE0571198E85850061DB94 /* WFPhotoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFPhotoCell.h; sourceTree = "<group>"; };
 		F2CE0572198E85850061DB94 /* WFPhotoCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFPhotoCell.m; sourceTree = "<group>"; };
 		F2CE0574198E85DA0061DB94 /* Art+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Art+helper.h"; sourceTree = "<group>"; };
@@ -959,7 +977,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		50AC91F71A998172004148D2 /*  Custom Objects */ = {
+		50AC91F71A998172004148D2 /* Custom Objects */ = {
 			isa = PBXGroup;
 			children = (
 				50DB44641A57901800856174 /* WFInteractiveImageView.h */,
@@ -971,7 +989,7 @@
 				50AC91F41A998135004148D2 /* WFCreditTextField.h */,
 				50AC91F51A998135004148D2 /* WFCreditTextField.m */,
 			);
-			name = " Custom Objects";
+			name = "Custom Objects";
 			sourceTree = "<group>";
 		};
 		50DB445C1A57476E00856174 /* User */ = {
@@ -1077,6 +1095,8 @@
 				F2CE057E198E929A0061DB94 /* WFArtMetadataViewController.m */,
 				50D6EC0F1A8284F200DAE52E /* WFArtistsViewController.h */,
 				50D6EC101A8284F200DAE52E /* WFArtistsViewController.m */,
+				50AB427A1AB6769900C4EF5A /* WFUsersViewController.h */,
+				50AB427B1AB6769900C4EF5A /* WFUsersViewController.m */,
 				50D6EC181A82E53B00DAE52E /* WFLocationsViewController.h */,
 				50D6EC191A82E53B00DAE52E /* WFLocationsViewController.m */,
 				50C589521A8558070094DBBF /* WFMaterialsViewController.h */,
@@ -1095,6 +1115,8 @@
 				F28C67041A33F4BE00B82FD8 /* WFSlideshowViewController.m */,
 				504926501A59CB6F000C6FD9 /* WFGesturableCollectionView.h */,
 				504926511A59CB6F000C6FD9 /* WFGesturableCollectionView.m */,
+				50B6FA761AC4969C006703AA /* WFSlideTextViewController.h */,
+				50B6FA771AC4969C006703AA /* WFSlideTextViewController.m */,
 				50DB44791A586A3A00856174 /* WFSaveMenuViewController.h */,
 				50DB447A1A586A3A00856174 /* WFSaveMenuViewController.m */,
 				50DB44561A57456C00856174 /* WFSlideshowSettingsViewController.h */,
@@ -1117,7 +1139,7 @@
 				50DB43FB1A53D35400856174 /* WFImagePickerController.m */,
 				50DB44231A54C04800856174 /* WFSearchResultsViewController.h */,
 				50DB44241A54C04800856174 /* WFSearchResultsViewController.m */,
-				50AC91F71A998172004148D2 /*  Custom Objects */,
+				50AC91F71A998172004148D2 /* Custom Objects */,
 				F2A9581119E2293800A3B471 /* Transitions / Animators */,
 				F2CE055E198E76450061DB94 /* Images */,
 				F2CE0548198E6C5E0061DB94 /* Fonts */,
@@ -1133,6 +1155,8 @@
 				F28C77EE18E1E4950088B4C9 /* InfoPlist.strings */,
 				F28C77F118E1E4950088B4C9 /* main.m */,
 				F2139D7B193A561600EE5C96 /* Constants.h */,
+				50DB02211A5A6FDE005A4E2F /* WFUtilities.h */,
+				50DB02221A5A6FDE005A4E2F /* WFUtilities.m */,
 				F20FB2FF1A24E0850007C905 /* NSArray+ToSentence.h */,
 				F20FB3001A24E0850007C905 /* NSArray+ToSentence.m */,
 			);
@@ -1206,8 +1230,6 @@
 				5026DF621A3CCB80000CD26F /* WFTablesAnimator.m */,
 				50DB44911A588AA500856174 /* WFAlert.h */,
 				50DB44921A588AA500856174 /* WFAlert.m */,
-				50DB02211A5A6FDE005A4E2F /* WFUtilities.h */,
-				50DB02221A5A6FDE005A4E2F /* WFUtilities.m */,
 				50DB022A1A5A7BE3005A4E2F /* WFDismissableNavigationController.h */,
 				50DB022B1A5A7BE3005A4E2F /* WFDismissibaleNavigationController.m */,
 				50D7A9D21A62306D007FE14C /* WFWalkthroughAnimator.h */,
@@ -1254,6 +1276,10 @@
 				F2CE05AE199117990061DB94 /* Slide.m */,
 				F2CE05B319911AA10061DB94 /* Slide+helper.h */,
 				F2CE05B419911AA10061DB94 /* Slide+helper.m */,
+				50B6FA701AC4916E006703AA /* SlideText.h */,
+				50B6FA711AC4916E006703AA /* SlideText.m */,
+				50B6FA731AC491F4006703AA /* SlideText+helper.h */,
+				50B6FA741AC491F4006703AA /* SlideText+helper.m */,
 				F2CE05AA199117990061DB94 /* Slideshow.h */,
 				F2CE05AB199117990061DB94 /* Slideshow.m */,
 				F2CE05B019911A9A0061DB94 /* Slideshow+helper.h */,
@@ -1548,14 +1574,14 @@
 				F28C67071A33F4D900B82FD8 /* WFSlideshowSlideCell.m */,
 				503CD5961A72BF2B00F4FF85 /* WFSlideshowTitleCell.h */,
 				503CD5971A72BF2B00F4FF85 /* WFSlideshowTitleCell.m */,
-				F2CE056E198E85740061DB94 /* WFSlideCollectionCell.h */,
-				F2CE056F198E85740061DB94 /* WFSlideCollectionCell.m */,
 				F2CE0580198E937B0061DB94 /* WFArtMetadataCell.h */,
 				F2CE0581198E937B0061DB94 /* WFArtMetadataCell.m */,
 				5049263C1A593262000C6FD9 /* WFSlideMetadataCell.h */,
 				5049263D1A593262000C6FD9 /* WFSlideMetadataCell.m */,
 				F2CE058B198EAA730061DB94 /* WFSlideTableCell.h */,
 				F2CE058C198EAA730061DB94 /* WFSlideTableCell.m */,
+				50B6FA6D1AC47A6C006703AA /* WFNewSlideTableCell.h */,
+				50B6FA6E1AC47A6C006703AA /* WFNewSlideTableCell.m */,
 				F2CE0596198EAB7A0061DB94 /* WFSettingsCell.h */,
 				F2CE0597198EAB7A0061DB94 /* WFSettingsCell.m */,
 				F20FB2C91A22B1A60007C905 /* WFNewArtCell.h */,
@@ -1604,6 +1630,10 @@
 				50D6EC131A8285E500DAE52E /* WFArtistCollectionCell.m */,
 				50D6EC211A832D8D00DAE52E /* WFNewArtistCell.h */,
 				50D6EC221A832D8D00DAE52E /* WFNewArtistCell.m */,
+				50AB427D1AB6772100C4EF5A /* WFUserCollectionCell.h */,
+				50AB427E1AB6772100C4EF5A /* WFUserCollectionCell.m */,
+				50AB42801AB677B200C4EF5A /* WFNewUserCell.h */,
+				50AB42811AB677B200C4EF5A /* WFNewUserCell.m */,
 				50C589551A8558450094DBBF /* WFMaterialCollectionCell.h */,
 				50C589561A8558450094DBBF /* WFMaterialCollectionCell.m */,
 				50C589581A8558500094DBBF /* WFNewMaterialCell.h */,
@@ -2039,12 +2069,12 @@
 				F20FB2E61A24DBF50007C905 /* Artist+helper.m in Sources */,
 				F2CE0598198EAB7A0061DB94 /* WFSettingsCell.m in Sources */,
 				50D6EC171A82E52800DAE52E /* WFLocationCollectionCell.m in Sources */,
+				50B6FA751AC491F4006703AA /* SlideText+helper.m in Sources */,
 				50DB44581A57456C00856174 /* WFSlideshowSettingsViewController.m in Sources */,
 				F2CE058D198EAA730061DB94 /* WFSlideTableCell.m in Sources */,
 				504237F01A9399320064408C /* WFBillingCell.m in Sources */,
 				F20FB30A1A24F08E0007C905 /* Movement.m in Sources */,
 				F2CE0552198E72CC0061DB94 /* User+helper.m in Sources */,
-				F2CE0570198E85740061DB94 /* WFSlideCollectionCell.m in Sources */,
 				50D7A9D41A62306D007FE14C /* WFWalkthroughAnimator.m in Sources */,
 				50DB43AB1A5363C200856174 /* Discussion.m in Sources */,
 				F28C670E1A34139600B82FD8 /* WFInstitutionSearchViewController.m in Sources */,
@@ -2054,10 +2084,13 @@
 				50A9D41A1A83E6CB000B8DD6 /* WFNewLocationCell.m in Sources */,
 				F2CE054B198E72AC0061DB94 /* User.m in Sources */,
 				F20A3ECA19EB37A4008E0D4C /* Photo.m in Sources */,
+				50AB427F1AB6772100C4EF5A /* WFUserCollectionCell.m in Sources */,
 				F20FB2C51A22AFDE0007C905 /* Favorite+helper.m in Sources */,
 				F2139D80193A56BE00EE5C96 /* UIImage+ImageEffects.m in Sources */,
 				50DB02261A5A7285005A4E2F /* WFLightTableDetailsViewController.m in Sources */,
 				504237ED1A93991F0064408C /* WFBillingViewController.m in Sources */,
+				50B6FA781AC4969C006703AA /* WFSlideTextViewController.m in Sources */,
+				50B6FA6F1AC47A6C006703AA /* WFNewSlideTableCell.m in Sources */,
 				F2CE0555198E73940061DB94 /* WFWebViewController.m in Sources */,
 				50D6EC111A8284F200DAE52E /* WFArtistsViewController.m in Sources */,
 				503CD57A1A6F44DA00F4FF85 /* Alternate+helper.m in Sources */,
@@ -2094,6 +2127,7 @@
 				50FB5F801A3F3734004D6062 /* Citation.m in Sources */,
 				F28C67051A33F4BE00B82FD8 /* WFSlideshowViewController.m in Sources */,
 				F28C66FC1A33DA0000B82FD8 /* WFSlideshowsViewController.m in Sources */,
+				50AB427C1AB6769900C4EF5A /* WFUsersViewController.m in Sources */,
 				F28C67141A34176D00B82FD8 /* WFSettingsAnimator.m in Sources */,
 				F28C77F618E1E4950088B4C9 /* WFAppDelegate.m in Sources */,
 				50AC91FA1A99868C004148D2 /* WFMetadataModalAnimator.m in Sources */,
@@ -2107,6 +2141,7 @@
 				50952E7B1A478EA100485831 /* WFMenuViewController.m in Sources */,
 				50DB444C1A564EB600856174 /* WFProfileHeader.m in Sources */,
 				503CD5981A72BF2B00F4FF85 /* WFSlideshowTitleCell.m in Sources */,
+				50B6FA721AC4916E006703AA /* SlideText.m in Sources */,
 				F2CE05B219911A9A0061DB94 /* Slideshow+helper.m in Sources */,
 				50DB43EA1A53946A00856174 /* WFNewArtAnimator.m in Sources */,
 				503CD5771A6F44C700F4FF85 /* Alternate.m in Sources */,
@@ -2118,6 +2153,7 @@
 				50DB02231A5A6FDE005A4E2F /* WFUtilities.m in Sources */,
 				504926291A58E101000C6FD9 /* WFSlideMetadataViewController.m in Sources */,
 				F2CE0573198E85850061DB94 /* WFPhotoCell.m in Sources */,
+				50AB42821AB677B200C4EF5A /* WFNewUserCell.m in Sources */,
 				50300ADC1A97A6F900DBAC86 /* WFCardViewController.m in Sources */,
 				50C589511A8528970094DBBF /* WFDateMetadataCell.m in Sources */,
 				5026DF601A3CC4D1000CD26F /* WFTableCell.m in Sources */,

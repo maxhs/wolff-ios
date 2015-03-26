@@ -70,4 +70,9 @@
     [stringFormatter setTimeStyle:NSDateFormatterShortStyle];
     return [stringFormatter stringFromDate:theDate];
 }
+
++ (UIImage *)fixOrientation:(UIImage*)image {
+    return [UIImage imageWithCGImage:image.CGImage scale:[UIScreen mainScreen].scale orientation:UIImageOrientationUp];
+}
+
 @end

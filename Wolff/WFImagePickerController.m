@@ -88,17 +88,15 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 - (void)loadPhotos {
     if([ALAssetsLibrary authorizationStatus]) {
         ALAssetsGroupEnumerationResultsBlock assetsEnumerationBlock = ^(ALAsset *result, NSUInteger index, BOOL *stop) {
-            if (result) {
-                [_assets addObject:result];
-            }
+            if (result) { [_assets addObject:result]; }
         };
-        
         ALAssetsFilter *onlyPhotosFilter = [ALAssetsFilter allPhotos];
         [_assetsGroup setAssetsFilter:onlyPhotosFilter];
         [_assetsGroup enumerateAssetsUsingBlock:assetsEnumerationBlock];
         [self.collectionView reloadData];
+        NSInteger item = _assets.count-1;
+        [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:item inSection:0] atScrollPosition:UICollectionViewScrollPositionTop animated:YES];
     } else {
-        NSLog(@"not authorized");
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Permission Denied" message:@"Please allow the application to access your photo and videos in settings panel of your device" delegate:self cancelButtonTitle:@"Okay" otherButtonTitles: nil];
         [alertView show];
     }
@@ -214,14 +212,13 @@ static NSString * const reuseIdentifier = @"PhotoCell";
         if (self.delegate && [self.delegate respondsToSelector:@selector(didFinishPickingPhotos:)]){
             NSMutableArray *imageArray = [NSMutableArray arrayWithCapacity:_selectedAssets.count];
             [_selectedAssets enumerateObjectsUsingBlock:^(ALAsset *asset, NSUInteger idx, BOOL *stop) {
-                UIImage *fullImage = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullResolutionImage]];
+                ALAssetRepresentation *imageRep = [asset defaultRepresentation];
+                UIImage *fullImage = [UIImage imageWithCGImage:[imageRep fullResolutionImage] scale:imageRep.scale orientation:(UIImageOrientation)imageRep.orientation];
                 [imageArray addObject:fullImage];
             }];
             [self.delegate didFinishPickingPhotos:imageArray];
         } else {
-            [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                
-            }];
+            [self dismiss];
         }
     });
 }

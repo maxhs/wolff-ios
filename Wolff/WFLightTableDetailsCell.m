@@ -26,10 +26,13 @@
     [_keyLabel setText:@"TABLE KEY - THE PASSWORD REQUIRED TO JOIN THIS LIGHT TABLE"];
     [self labelTreatment:_confirmKeyLabel];
     [_confirmKeyLabel setText:@"CONFIRM TABLE KEY"];
+    [self labelTreatment:_ownersLabel];
+    [_ownersLabel setText:@"OWNERS"];
     
     [self textFieldTreatment:_titleTextField];
     [self textFieldTreatment:_keyTextField];
     [self textFieldTreatment:_confirmKeyTextField];
+    [self textFieldTreatment:_ownersTextField];
     
     [self.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [self.textView setBackgroundColor:kTextFieldBackground];
@@ -54,6 +57,7 @@
     textField.leftView = paddingView;
     textField.leftViewMode = UITextFieldViewModeAlways;
     [textField setTintColor:[UIColor blackColor]];
+    textField.autocorrectionType = UITextAutocorrectionTypeNo;
 }
 
 - (void)labelTreatment:(UILabel*)label {

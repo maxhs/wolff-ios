@@ -59,7 +59,7 @@ typedef enum {
 - (void)commonInit {
     self.tintColor = [UIColor whiteColor];
     self.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0];
-    self.calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    self.calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
     [self setLocale:[NSLocale currentLocale]];
     self.picker = [[UIPickerView alloc] initWithFrame:self.bounds];
     self.picker.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
@@ -95,7 +95,7 @@ typedef enum {
 }
 
 - (void)setDate:(NSDate *)date animated:(BOOL)animated {
-    self.currentDateComponents = [self.calendar components:(NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit | NSHourCalendarUnit /*| NSMinuteCalendarUnit*/)
+    self.currentDateComponents = [self.calendar components:(NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitHour /*| NSMinuteCalendarUnit*/)
                                                   fromDate:date];
     
     [self.picker reloadAllComponents];
@@ -174,13 +174,13 @@ typedef enum {
 
 - (NSCalendarUnit)unitForComponent:(WFDatePickerComponent)component {
     if (component == kWFDatePickerEra) {
-        return NSYearCalendarUnit;
+        return NSCalendarUnitEra;
     } else if (component == kWFDatePickerYear) {
-        return NSYearCalendarUnit;
+        return NSCalendarUnitYear;
     } else if (component == kWFDatePickerCirca) {
-        return NSMonthCalendarUnit;
+        return NSCalendarUnitEra;
     } else {
-        return NSMinuteCalendarUnit;
+        return NSCalendarUnitMinute;
         assert(NO);
     }
 }

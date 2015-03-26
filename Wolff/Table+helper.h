@@ -15,10 +15,13 @@
 - (void)populateFromDictionary:(NSDictionary*)dict;
 - (void)addPhoto:(Photo*)photo;
 - (void)removePhoto:(Photo*)photo;
+- (void)addOwner:(User*)owner;
+- (void)removeOwner:(User*)owner;
 - (void)addSlideshow:(Slideshow*)slideshow;
 - (void)removeSlideshow:(Slideshow*)slideshow;
 - (void)addPhotos:(NSArray*)array;
 - (void)removePhotos:(NSArray*)array;
 - (void)addUser:(User*)user;
 - (void)removeUser:(User*)user;
+- (BOOL)includesOwnerId:(NSNumber*)ownerId;
 @end

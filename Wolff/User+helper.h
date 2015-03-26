@@ -19,6 +19,7 @@
 - (void)populateFromDictionary:(NSDictionary*)dict;
 - (NSString *)fullName;
 - (Institution*)institution;
+- (NSString*)institutionsToSentence;
 - (Favorite *)getFavoriteArt:(Art*)art;
 - (Favorite *)getFavoritePhoto:(Photo*)photo;
 - (void)addFavorite:(Favorite*)favorite;

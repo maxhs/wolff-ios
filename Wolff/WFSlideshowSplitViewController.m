@@ -8,8 +8,8 @@
 
 #import "WFAppDelegate.h"
 #import "WFSlideshowSplitViewController.h"
-#import "WFSlideCollectionCell.h"
 #import "WFSlideTableCell.h"
+#import "WFNewSlideTableCell.h"
 #import "WFSlideDetailViewController.h"
 #import "WFSlideshowViewController.h"
 #import "WFSlideAnimator.h"
@@ -25,6 +25,7 @@
 #import "WFAlert.h"
 #import "WFLightTablesViewController.h"
 #import <QuartzCore/QuartzCore.h>
+#import "WFSlideTextViewController.h"
 
 @interface WFSlideshowSplitViewController () <UIViewControllerTransitioningDelegate, UIAlertViewDelegate, WFSearchDelegate,WFSlideshowSettingsDelegate, UIPopoverControllerDelegate,  UITextFieldDelegate, WFImageViewDelegate, WFSaveSlideshowDelegate, WFLightTablesDelegate> {
     WFAppDelegate *delegate;
@@ -92,12 +93,18 @@
     
     [self registerKeyboardNotifications];
     
+    UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(slideSingleTap:)];
+    singleTap.numberOfTapsRequired = 1;
+    [self.tableView addGestureRecognizer:singleTap];
+    
     UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(slideDoubleTap:)];
     doubleTap.numberOfTapsRequired = 2;
     [self.tableView addGestureRecognizer:doubleTap];
     
+    [singleTap requireGestureRecognizerToFail:doubleTap];
+    
     UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
-    longPressRecognizer.minimumPressDuration = .07;
+    longPressRecognizer.minimumPressDuration = .23;
     [self.view addGestureRecognizer:longPressRecognizer];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
@@ -249,11 +256,105 @@
         
         return cell;
     } else {
-        // prompt to add new cell
-        WFSlideTableCell *cell = (WFSlideTableCell *)[tableView dequeueReusableCellWithIdentifier:@"SlideTableCell"];
-        [cell configureForSlide:nil withSlideNumber:indexPath.row];
+        WFNewSlideTableCell *cell = (WFNewSlideTableCell *)[tableView dequeueReusableCellWithIdentifier:@"NewSlideCell"];
+        [cell.addPromptButton addTarget:self action:@selector(addNewSlide) forControlEvents:UIControlEventTouchUpInside];
         return cell;
     }
+}
+
+- (void)addNewSlide {
+    NSInteger slideCount = self.slideshow.slides.count;
+    Slide *newSlide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    [newSlide setSlideshow:self.slideshow];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    [self.tableView beginUpdates];
+    NSIndexPath *indexPathForNewSlide = [NSIndexPath indexPathForRow:slideCount inSection:0];
+    [self.tableView insertRowsAtIndexPaths:@[indexPathForNewSlide] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self.tableView endUpdates];
+}
+
+- (void)slideSingleTap:(UITapGestureRecognizer*)gestureRecognizer {
+    CGPoint loc = [gestureRecognizer locationInView:self.tableView];
+    NSIndexPath *selectedIndexPath = [self.tableView indexPathForRowAtPoint:loc];
+    [self becomeFirstResponder];
+    activeIndexPath = selectedIndexPath;
+    activeSlide = self.slideshow.slides[selectedIndexPath.row];
+    
+    WFSlideTableCell *cell = (WFSlideTableCell*)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
+    if (activeSlide.photos.count > 1){
+        if (loc.x <= 150.f){
+            activeImageView = cell.artImageView2;
+        } else {
+            activeImageView = cell.artImageView3;
+        }
+    } else if (activeSlide.photos.count == 1) {
+        activeImageView = cell.artImageView1;
+    }
+    
+    NSString *addTextItemTitle = NSLocalizedString(@"Add text", @"Add text to slide");
+    UIMenuItem *addTextItem = [[UIMenuItem alloc] initWithTitle:addTextItemTitle action:@selector(addText:)];
+    NSString *editTextItemTitle = NSLocalizedString(@"Edit text", @"Edit slide text");
+    UIMenuItem *editTextItem = [[UIMenuItem alloc] initWithTitle:editTextItemTitle action:@selector(editText:)];
+    NSString *removeItemTitle = NSLocalizedString(@"Remove", @"Remove art from slide");
+    UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:removeItemTitle action:@selector(removeArt:)];
+    
+    UIMenuController *menuController = [UIMenuController sharedMenuController];
+    if (activeSlide.slideTexts.count && activeSlide.photos.count){
+        [menuController setMenuItems:@[editTextItem, resetMenuItem]];
+    } else {
+        [menuController setMenuItems:@[addTextItem, resetMenuItem]];
+    }
+    
+    CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
+    CGRect menuLocation = CGRectMake(location.x, location.y, 0, 0);
+    [menuController setTargetRect:menuLocation inView:[gestureRecognizer view]];
+    [menuController setMenuVisible:YES animated:YES];
+}
+
+- (void)removeArt:(UIMenuController*)menuController {
+    [activeSlide removePhoto:activeImageView.photo];
+    if (activeSlide.photos.count){
+        [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+    } else {
+        [self.tableView beginUpdates];
+        [self.slideshow removeSlide:activeSlide fromIndex:activeSlide.index.integerValue];
+        [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
+        [self.tableView endUpdates];
+        
+        activeSlide = nil;
+        activeImageView = nil;
+        activeIndexPath = nil;
+    }
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        
+    }];
+}
+
+- (void)addText:(UIMenuController*)menuController {
+    WFSlideTextViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideText"];
+    [vc setSlide:activeSlide];
+    [vc setSlideshow:self.slideshow];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+- (void)editText:(UIMenuController*)menuController {
+    WFSlideTextViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideText"];
+    [vc setSlide:activeSlide];
+    [vc setSlideshow:self.slideshow];
+    [vc setSlideText:activeSlide.slideTexts.firstObject];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+// UIMenuController requires that we can become first responder or it won't display
+- (BOOL)canBecomeFirstResponder {
+    return YES;
 }
 
 - (void)slideDoubleTap:(UITapGestureRecognizer*)gestureRecognizer {
@@ -262,19 +363,6 @@
     [self playSlideshow:selectedIndexPath.row];
 }
 
-//- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-//    return YES;
-//}
-//
-//- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-//    if (editingStyle == UITableViewCellEditingStyleDelete) {
-//        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-//    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-//        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-//    }   
-//}
-
-// Override to support rearranging the table view.
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
     Slide *slide = self.slideshow.slides[fromIndexPath.row];
     NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshow.slides];
@@ -284,8 +372,7 @@
 }
 
 - (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
+    return YES; // Return NO if you do not want the item to be re-orderable.
 }
 
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -357,54 +444,9 @@
     }];
 }
 
-//        [self becomeFirstResponder];
-//        activeIndexPath = [self.tableView indexPathForCell:slideTableCell];
-//        activeImageView = imageView;
-//        activeSlide = self.slideshow.slides[activeIndexPath.row];
-//
-//        NSString *menuItemTitle = NSLocalizedString(@"Remove", @"Remove art from slide");
-//        UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeArt:)];
-//
-//        UIMenuController *menuController = [UIMenuController sharedMenuController];
-//        [menuController setMenuItems:@[resetMenuItem]];
-//
-//        CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
-//        CGRect menuLocation = CGRectMake(location.x, location.y, 0, 0);
-//        [menuController setTargetRect:menuLocation inView:[gestureRecognizer view]];
-//        [menuController setMenuVisible:YES animated:YES];
-
-- (void)removeArt:(UIMenuController*)menuController {
-    [activeSlide removePhoto:activeImageView.photo];
-    if (activeSlide.photos.count){
-        [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else {
-        [self.tableView beginUpdates];
-        [self.slideshow removeSlide:activeSlide fromIndex:activeSlide.index.integerValue];
-        [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
-        [self.tableView endUpdates];
-        
-        activeSlide = nil;
-        activeImageView = nil;
-        activeIndexPath = nil;
-    }
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        
-    }];
-}
-
-// UIMenuController requires that we can become first responder or it won't display
-- (BOOL)canBecomeFirstResponder {
-    return YES;
-}
-
 - (void)longPressed:(UILongPressGestureRecognizer*)gestureRecognizer {
     CGPoint loc = [gestureRecognizer locationInView:self.view];
-    //CGFloat photoHeightInScreen = fmodf((loc.y - self.collectionView.contentOffset.y), CGRectGetHeight(self.collectionView.frame));
-    //CGPoint photoLocInScreen = CGPointMake( loc.x-kSidebarWidth-self.collectionView.contentOffset.x, photoHeightInScreen);
     CGPoint photoLoc = CGPointMake(loc.x - kSidebarWidth, loc.y + self.collectionView.contentOffset.y);
-    //CGFloat slideHeightInScreen = fmodf((loc.y + self.tableView.contentOffset.y), CGRectGetHeight(self.tableView.frame));
-    //CGPoint slideLocInScreen = CGPointMake(loc.x, slideHeightInScreen);
     CGPoint slideLoc = CGPointMake(loc.x, loc.y + self.tableView.contentOffset.y);
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
@@ -504,7 +546,11 @@
                         [self confirmRemovePhoto];
                     } else if (loc.x >= (self.view.frame.size.width - 23.f)){
                         [self confirmRemovePhoto];
+                    } else {
+                        [self endPressAnimation];
                     }
+                } else {
+                    [self endPressAnimation];
                 }
                 
             } else if (self.selectedSlide) {
@@ -673,14 +719,30 @@
         if (slide && ![slide.identifier isEqualToNumber:@0]){
             [slideObject setObject:slide.identifier forKey:@"slide_id"];
         }
-        NSMutableArray *artIds = [NSMutableArray arrayWithCapacity:slide.photos.count];
-        [slide.photos enumerateObjectsUsingBlock:^(Art *art, NSUInteger idx, BOOL *stop) {
-            [artIds addObject:art.identifier];
-        }];
-        [slideObject setObject:artIds forKey:@"photo_ids"];
+        if (slide.photos.count){
+            NSMutableArray *artIds = [NSMutableArray arrayWithCapacity:slide.photos.count];
+            [slide.photos enumerateObjectsUsingBlock:^(Art *art, NSUInteger idx, BOOL *stop) {
+                [artIds addObject:art.identifier];
+            }];
+            [slideObject setObject:artIds forKey:@"photo_ids"];
+        } else if (slide.slideTexts.count){
+            [slide.slideTexts enumerateObjectsUsingBlock:^(SlideText *slideText, NSUInteger idx, BOOL *stop) {
+                NSMutableDictionary *slideTextDict = [NSMutableDictionary dictionary];
+                if (![slideText.identifier isEqualToNumber:@0]){
+                    [slideTextDict setObject:slideText.identifier forKey:@"id"];
+                }
+                if (slideText.body.length){
+                    [slideTextDict setObject:slideText.body forKey:@"body"];
+                }
+
+                [slideObject setObject:slideTextDict forKey:@"slide_text"];
+            }];
+        } else {
+            [slideObject setObject:@"" forKey:@"text"];
+        }
+        
         [parameters setObject:slideObject forKey:[NSString stringWithFormat:@"slides[%lu]",(unsigned long)idx]];
     }];
-    
     
     if ([self.slideshow.identifier isEqualToNumber:@0]){
         if (self.slideshow.title.length){
@@ -861,6 +923,7 @@
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         if (add){
             [self.collectionView insertItemsAtIndexPaths:@[indexPathToReload]];
+            [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0] atScrollPosition:UICollectionViewScrollPositionTop animated:YES];
         } else {
             [self.collectionView deleteItemsAtIndexPaths:@[indexPathToReload]];
         }

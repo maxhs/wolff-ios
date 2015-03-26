@@ -28,5 +28,7 @@
 @dynamic artist;
 @dynamic discussion;
 @dynamic slideshow;
+@dynamic lightTable;
+@dynamic photo;
 
 @end

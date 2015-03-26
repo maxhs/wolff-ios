@@ -293,7 +293,6 @@
 }
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
-    NSLog(@"searchbar text length: %d",searchBar.text.length);
     noResults = NO;
     searching = YES;
 }
@@ -395,6 +394,8 @@
             } else if ([predicate evaluateWithObject:art.artistsToSentence]){
                 [_filteredPhotos addObject:photo];
             } else if ([predicate evaluateWithObject:art.locationsToSentence]){
+                [_filteredPhotos addObject:photo];
+            } else if ([predicate evaluateWithObject:art.user.fullName]){
                 [_filteredPhotos addObject:photo];
             }
         }

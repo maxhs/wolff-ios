@@ -26,9 +26,6 @@
 @end
 
 @implementation WFSlideMetadataViewController
-@synthesize photos = _photos;
-@synthesize slide = _slide;
-@synthesize slideshow = _slideshow;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -37,7 +34,7 @@
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"right"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.03]];
-    self.navigationItem.title = _slideshow.title;
+    self.navigationItem.title = self.slideshow.title;
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     
     [self setupDateFormatter];
@@ -52,11 +49,11 @@
     NSMutableSet *artSet = [NSMutableSet set];
     if (_slide.photos.count){
         for (Photo *photo in _slide.photos){
-            [artSet addObject:photo.art];
+            if (photo.art) [artSet addObject:photo.art];
         }
     } else {
         for (Photo *photo in _photos){
-            [artSet addObject:photo.art];
+            if (photo.art) [artSet addObject:photo.art];
         }
     }
     for (Art *art in artSet){
@@ -97,113 +94,124 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 7;
+    if (self.slide.photos.count){
+        return 7;
+    } else {
+        return 1;
+    }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideMetadataCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
-    if (!iOS8){
-        [cell awakeFromNib];
-    }
+    if (!iOS8) [cell awakeFromNib]; // hack to ensure proper slide cell background color
     [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
-    NSArray *photosArray = _photos.count ? _photos.array : _slide.photos.array;
-    Photo *photo;
-    if (photosArray.count > 1){
-        photo = indexPath.section == 0 ? photosArray.firstObject : photosArray[1];
-    } else {
-        photo = photosArray.firstObject;
-    }
-    Art *art = photo.art;
-    [cell.textLabel setTextColor:[UIColor whiteColor]];
-    [cell.textLabel setNumberOfLines:0];
     
-    switch (indexPath.row) {
-        case 0:
-            [cell.textLabel setText:art.title];
-            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]];
-            break;
-        case 1:
-        {
-            NSString *artists = [photo.art artistsToSentence];
-            if (artists.length > 1){
-                [cell.textLabel setText:artists];
-            } else {
-                [cell.textLabel setText:@"Artist(s) Unknown"];
-                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
-                [cell.textLabel setTextColor:[UIColor lightGrayColor]];
-            }
+    if (self.slide.photos.count){
+        NSArray *photosArray = _photos.count ? _photos.array : _slide.photos.array;
+        Photo *photo;
+        if (photosArray.count > 1){
+            photo = indexPath.section == 0 ? photosArray.firstObject : photosArray[1];
+        } else {
+            photo = photosArray.firstObject;
         }
-            break;
-        case 2:
-        {
-            if (art.interval.single){
-                //check exact date
-                [cell.textLabel setText:[dateFormatter stringFromDate:art.interval.single]];
-            } else if (art.interval.beginRange && ![art.interval.beginRange isEqualToNumber:@0] && art.interval.endRange && ![art.interval.endRange isEqualToNumber:@0]) {
-                //check for range
-                NSString *beginSuffix = art.interval.beginSuffix.length ? art.interval.beginSuffix : @"CE";
-                NSString *endSuffix = art.interval.endSuffix.length ? art.interval.endSuffix : @"CE";
-                [cell.textLabel setText:[NSString stringWithFormat:@"%@ %@ - %@ %@",art.interval.beginRange, beginSuffix, art.interval.endRange, endSuffix]];
-            } else if (art.interval.year && ![art.interval.year isEqualToNumber:@0]){
-                NSString *suffix = art.interval.suffix.length ? art.interval.suffix : @"CE";
-                [cell.textLabel setText:[NSString stringWithFormat:@"%@ %@",art.interval.year, suffix]];
-            } else {
-                [cell.textLabel setText:@"No date listed"];
-                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
-                [cell.textLabel setTextColor:[UIColor lightGrayColor]];
+        Art *art = photo.art;
+        [cell.textLabel setTextColor:[UIColor whiteColor]];
+        [cell.textLabel setNumberOfLines:0];
+        
+        switch (indexPath.row) {
+            case 0:
+                [cell.textLabel setText:art.title];
+                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]];
+                break;
+            case 1:
+            {
+                NSString *artists = [photo.art artistsToSentence];
+                if (artists.length > 1){
+                    [cell.textLabel setText:artists];
+                } else {
+                    [cell.textLabel setText:@"Artist(s) Unknown"];
+                    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
+                    [cell.textLabel setTextColor:[UIColor lightGrayColor]];
+                }
             }
-        }
-            break;
-        case 3:
-        {
-            NSString *materials = [art materialsToSentence];
-            if (materials.length){
-                [cell.textLabel setText:materials];
-            } else {
-                [cell.textLabel setText:@"No materials listed"];
-                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
-                [cell.textLabel setTextColor:[UIColor lightGrayColor]];
+                break;
+            case 2:
+            {
+                if (art.interval.single){
+                    //check exact date
+                    [cell.textLabel setText:[dateFormatter stringFromDate:art.interval.single]];
+                } else if (art.interval.beginRange && ![art.interval.beginRange isEqualToNumber:@0] && art.interval.endRange && ![art.interval.endRange isEqualToNumber:@0]) {
+                    //check for range
+                    NSString *beginSuffix = art.interval.beginSuffix.length ? art.interval.beginSuffix : @"CE";
+                    NSString *endSuffix = art.interval.endSuffix.length ? art.interval.endSuffix : @"CE";
+                    [cell.textLabel setText:[NSString stringWithFormat:@"%@ %@ - %@ %@",art.interval.beginRange, beginSuffix, art.interval.endRange, endSuffix]];
+                } else if (art.interval.year && ![art.interval.year isEqualToNumber:@0]){
+                    NSString *suffix = art.interval.suffix.length ? art.interval.suffix : @"CE";
+                    [cell.textLabel setText:[NSString stringWithFormat:@"%@ %@",art.interval.year, suffix]];
+                } else {
+                    [cell.textLabel setText:@"No date listed"];
+                    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
+                    [cell.textLabel setTextColor:[UIColor lightGrayColor]];
+                }
             }
-        }
-            break;
-        case 4:
-        {
-            NSString *locations = [art locationsToSentence];
-            if (locations.length){
-                [cell.textLabel setText:locations];
-            } else {
-                [cell.textLabel setText:@"No locations listed"];
-                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
-                [cell.textLabel setTextColor:[UIColor lightGrayColor]];
+                break;
+            case 3:
+            {
+                NSString *materials = [art materialsToSentence];
+                if (materials.length){
+                    [cell.textLabel setText:materials];
+                } else {
+                    [cell.textLabel setText:@"No materials listed"];
+                    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
+                    [cell.textLabel setTextColor:[UIColor lightGrayColor]];
+                }
             }
-        }
-            break;
-        case 5:
-        {
-            NSString *icons = [photo iconsToSentence];
-            if (icons.length){
-                [cell.textLabel setText:icons];
-            } else {
-                [cell.textLabel setText:@"No iconography listed"];
-                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
-                [cell.textLabel setTextColor:[UIColor lightGrayColor]];
+                break;
+            case 4:
+            {
+                NSString *locations = [art locationsToSentence];
+                if (locations.length){
+                    [cell.textLabel setText:locations];
+                } else {
+                    [cell.textLabel setText:@"No locations listed"];
+                    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
+                    [cell.textLabel setTextColor:[UIColor lightGrayColor]];
+                }
             }
-        }
-            break;
-        case 6:
-        {
-            NSMutableAttributedString *creditString = [[NSMutableAttributedString alloc] initWithString:@"CREDIT / RIGHTS:   " attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor colorWithWhite:1 alpha:.33]}];
-            NSAttributedString *credit = photo.credit.length ? [[NSAttributedString alloc] initWithString:photo.credit attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0], NSForegroundColorAttributeName : [UIColor whiteColor]}] : [[NSAttributedString alloc] initWithString:photo.user.fullName attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0], NSForegroundColorAttributeName : [UIColor whiteColor]}];
-            [creditString appendAttributedString:credit];
-            if (credit.length){
-                [cell.textLabel setAttributedText:creditString];
-            } else {
-                [cell.textLabel setText:@"N/A"];
+                break;
+            case 5:
+            {
+                NSString *icons = [photo iconsToSentence];
+                if (icons.length){
+                    [cell.textLabel setText:icons];
+                } else {
+                    [cell.textLabel setText:@"No iconography listed"];
+                    [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThinItalic] size:0]];
+                    [cell.textLabel setTextColor:[UIColor lightGrayColor]];
+                }
             }
+                break;
+            case 6:
+            {
+                NSMutableAttributedString *creditString = [[NSMutableAttributedString alloc] initWithString:@"CREDIT / RIGHTS:   " attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor colorWithWhite:1 alpha:.33]}];
+                if (photo){
+                    NSAttributedString *credit = photo.credit.length ? [[NSAttributedString alloc] initWithString:photo.credit attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0], NSForegroundColorAttributeName : [UIColor whiteColor]}] : [[NSAttributedString alloc] initWithString:photo.user.fullName attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0], NSForegroundColorAttributeName : [UIColor whiteColor]}];
+                    [creditString appendAttributedString:credit];
+                    if (credit.length){
+                        [cell.textLabel setAttributedText:creditString];
+                    } else {
+                        [cell.textLabel setText:@"N/A"];
+                    }
+                } else {
+                    [cell.textLabel setText:@"N/A"];
+                }
+            }
+                break;
+            default:
+                break;
         }
-            break;
-        default:
-            break;
+    } else {
+        
     }
     return cell;
 }

@@ -54,6 +54,12 @@
 #define COCOAPODS_VERSION_MINOR_DateTools 4
 #define COCOAPODS_VERSION_PATCH_DateTools 3
 
+// LayerKit
+#define COCOAPODS_POD_AVAILABLE_LayerKit
+#define COCOAPODS_VERSION_MAJOR_LayerKit 0
+#define COCOAPODS_VERSION_MINOR_LayerKit 11
+#define COCOAPODS_VERSION_PATCH_LayerKit 0
+
 // MagicalRecord
 #define COCOAPODS_POD_AVAILABLE_MagicalRecord
 #define COCOAPODS_VERSION_MAJOR_MagicalRecord 2

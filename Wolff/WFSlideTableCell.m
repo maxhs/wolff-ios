@@ -50,7 +50,6 @@
 - (void)configureForSlide:(Slide *)slide withSlideNumber:(NSInteger)number {
     [_slideNumberLabel setText:[NSString stringWithFormat:@"%ld.",(long)number]];
     if (slide){
-        [_addPrompt setHidden:YES];
         if (slide.photos.count == 1){
             [_artImageView1 setHidden:NO];
             [_artImageView2 setHidden:YES];
@@ -85,17 +84,6 @@
         }
         //clear the background
         [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:0]];
-    } else {
-        // no slide, this means this is a new slide prompt cell
-        [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
-        [_addPrompt setFont:[UIFont fontWithName:kLatoHairline size:63]];
-        [_addPrompt setHidden:NO];
-        [_addPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.33]];
-        [_addPrompt setNumberOfLines:0];
-        [_slideNumberLabel setText:@""];
-        [_artImageView1 setImage:nil];
-        [_artImageView2 setImage:nil];
-        [_artImageView3 setImage:nil];
     }
 }
 

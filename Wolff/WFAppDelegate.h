@@ -13,6 +13,7 @@
 #import "Constants.h"
 #import "ProgressHUD.h"
 #import "User+helper.h"
+#import <LayerKit/LayerKit.h>
 
 @protocol WFLoginDelegate <NSObject>
 @optional
@@ -28,6 +29,7 @@
 @property (strong, nonatomic) AFHTTPRequestOperationManager *manager;
 @property (strong, nonatomic) User *currentUser;
 @property (weak, nonatomic) id<WFLoginDelegate> loginDelegate;
+@property (strong, nonatomic) LYRClient *layerClient;
 @property BOOL connected;
 
 - (void)connectWithParameters:(NSMutableDictionary*)parameters;
