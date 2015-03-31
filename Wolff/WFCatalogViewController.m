@@ -172,7 +172,7 @@
     [self setUpSearch];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loginSuccessful) name:@"LoginSuccessful" object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loggedOut) name:@"LoggedOut" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(logout) name:@"Logout" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didHideEditMenu:) name:UIMenuControllerDidHideMenuNotification object:nil];
 }
@@ -382,7 +382,7 @@
     }
 }
 
-#pragma mark - Login
+#pragma mark - Login/Logout Delegate
 - (void)loginSuccessful {
     self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     [self setUpNavBar];
@@ -390,20 +390,18 @@
     if (tableIsVisible){
         [self.tableView reloadData];
     }
-    //only ask for push notifications when a user has successfully logged in
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
-        [[UIApplication sharedApplication] registerForRemoteNotifications];
-    } else {
-        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
-    }
+    
+    [ProgressHUD dismiss];
 }
 
-- (void)loggedOut {
-    // reset the views now that we're logged out
-    [self setUpNavBar];
-    [self.tableView reloadData];
+- (void)logout {
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+        [WFAlert show:kLogoutMessage withTime:3.3f];
+    }
     self.currentUser = nil;
+    [self setUpNavBar];
+    [self loadPhotos];
 }
 
 - (void)loadPhotos {
@@ -1259,23 +1257,22 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
         self.startIndex = [self.collectionView indexPathForItemAtPoint:loc];
-        
         if (self.startIndex) {
             WFPhotoCell *cell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
             self.dragViewStartLocation = [self.view convertPoint:cell.center fromView:nil];
             
             Photo *photo;
-            if (showPrivate){
+            if (showPrivate && _privatePhotos.count){
                 photo = _privatePhotos[self.startIndex.item];
-            } else if (showLightTable){
+            } else if (showLightTable && _table.photos.count){
                 photo = _table.photos[self.startIndex.item];
-            } else if (showFavorites){
+            } else if (showFavorites && _favoritePhotos.count){
                 photo = _favoritePhotos[self.startIndex.item];
             } else if (searching){
                 if (_filteredPhotos.count){
                     photo = _filteredPhotos[self.startIndex.item];
                 }
-            } else {
+            } else if (_photos.count) {
                 photo = _photos[self.startIndex.item];
             }
             
@@ -1300,9 +1297,7 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
         // comparison mode
-        // 128 is half the width of an art slide, since the point we're grabbing is a center point, not the origin
-        if (loc.x < 0 && loc.y > (_comparisonContainerView.frame.origin.y - 128)){
-            NSLog(@"loc x: %f",loc.x);
+        if (loc.x < 0 && loc.y > (_comparisonContainerView.frame.origin.y - 128)){ // 128 is half the width of an art slide, since the point we're grabbing is a center point, not the origin
             if (!comparison1) {
                 comparison1 = [[WFInteractiveImageView alloc] initWithFrame:CGRectMake(10, 10, 125, 130) andPhoto:self.draggingView.photo];
                 comparison1.imageViewDelegate = self;
@@ -1499,14 +1494,15 @@
 
 - (void)showMetadata:(Photo*)photo{
     WFArtMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"ArtMetadata"];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.view.clipsToBounds = YES;
     vc.metadataDelegate = self;
     [vc setPhoto:photo];
-    vc.transitioningDelegate = self;
-    vc.modalPresentationStyle = UIModalPresentationCustom;
     [self resetTransitionBooleans];
     metadata = YES;
-    
-    [self presentViewController:vc animated:YES completion:^{
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self presentViewController:nav animated:YES completion:^{
         
     }];
 }
@@ -1727,16 +1723,6 @@
     } else {
         [self showLogin];
     }
-}
-
-- (void)logout {
-    if (self.popover){
-        [self.popover dismissPopoverAnimated:YES];
-        [WFAlert show:kLogoutMessage withTime:3.3f];
-    }
-    self.currentUser = nil;
-    [self setUpNavBar];
-    [self loadPhotos];
 }
 
 - (void)newSlideshow {

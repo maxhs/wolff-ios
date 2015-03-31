@@ -13,6 +13,7 @@
 #import "WFUtilities.h"
 #import "WFProfileAnimator.h"
 #import "WFProfileViewController.h"
+#import "SlideText+helper.h"
 
 @interface WFSlideMetadataViewController () <UITableViewDataSource, UITableViewDelegate, UIViewControllerTransitioningDelegate> {
     WFAppDelegate *delegate;
@@ -30,6 +31,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     iOS8 = SYSTEM_VERSION >= 8.f ? YES : NO;
+    delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
+    manager = delegate.manager;
     
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"right"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
@@ -48,16 +51,17 @@
     self.tableView.tableFooterView = [UIView new];
     NSMutableSet *artSet = [NSMutableSet set];
     if (_slide.photos.count){
-        for (Photo *photo in _slide.photos){
+        for (Photo *photo in self.slide.photos){
             if (photo.art) [artSet addObject:photo.art];
         }
     } else {
-        for (Photo *photo in _photos){
+        for (Photo *photo in self.photos){
             if (photo.art) [artSet addObject:photo.art];
         }
     }
     for (Art *art in artSet){
-        [self loadMetadata:art];
+        Art *a = [art MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+        [self loadMetadata:a];
     }
 }
 
@@ -94,10 +98,10 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if (self.slide.photos.count){
-        return 7;
-    } else {
+    if (self.slide.slideTexts.count){
         return 1;
+    } else {
+        return 7;
     }
 }
 
@@ -106,8 +110,8 @@
     if (!iOS8) [cell awakeFromNib]; // hack to ensure proper slide cell background color
     [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
     
-    if (self.slide.photos.count){
-        NSArray *photosArray = _photos.count ? _photos.array : _slide.photos.array;
+    NSArray *photosArray = _photos.count ? _photos.array : _slide.photos.array;
+    if (photosArray.count){
         Photo *photo;
         if (photosArray.count > 1){
             photo = indexPath.section == 0 ? photosArray.firstObject : photosArray[1];
@@ -210,8 +214,9 @@
             default:
                 break;
         }
-    } else {
-        
+    } else if (_slide.slideTexts.count) {
+        SlideText *slideText = _slide.slideTexts.firstObject;
+        [cell.textLabel setText:slideText.body];
     }
     return cell;
 }

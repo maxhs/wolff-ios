@@ -24,6 +24,7 @@
 @property (nonatomic, retain) NSNumber * index;
 @property (nonatomic, retain) Slideshow *slideshow;
 @property (nonatomic, retain) NSOrderedSet *photos;
+@property (nonatomic, retain) NSOrderedSet *slidePhotos;
 @property (nonatomic, retain) NSOrderedSet *slideTexts;
 @end
 @interface Slide (CoreDataGeneratedAccessors)

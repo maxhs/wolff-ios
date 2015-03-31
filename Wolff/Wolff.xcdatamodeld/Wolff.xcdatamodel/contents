@@ -203,16 +203,18 @@
     <entity name="Slide" representedClassName="Slide" syncable="YES">
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
-        <attribute name="originalRectString1" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="originalRectString2" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="originalRectString3" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="rectString1" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="rectString2" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="rectString3" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="photos" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Photo" inverseName="slides" inverseEntity="Photo" syncable="YES"/>
+        <relationship name="slidePhotos" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SlidePhoto" inverseName="slide" inverseEntity="SlidePhoto" syncable="YES"/>
         <relationship name="slideshow" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Slideshow" inverseName="slides" inverseEntity="Slideshow" syncable="YES"/>
         <relationship name="slideTexts" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="SlideText" inverseName="slide" inverseEntity="SlideText" syncable="YES"/>
+    </entity>
+    <entity name="SlidePhoto" representedClassName="SlidePhoto" syncable="YES">
+        <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="positionX" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="positionY" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="scale" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
+        <relationship name="slide" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Slide" inverseName="slidePhotos" inverseEntity="Slide" syncable="YES"/>
     </entity>
     <entity name="Slideshow" representedClassName="Slideshow" syncable="YES">
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0.0" syncable="YES"/>
@@ -301,10 +303,11 @@
         <element name="Movement" positionX="324" positionY="387" width="128" height="88"/>
         <element name="Notification" positionX="288" positionY="342" width="128" height="253"/>
         <element name="Photo" positionX="279" positionY="324" width="128" height="390"/>
-        <element name="Slide" positionX="297" positionY="315" width="128" height="223"/>
+        <element name="Slide" positionX="297" positionY="315" width="128" height="148"/>
         <element name="Slideshow" positionX="288" positionY="306" width="128" height="195"/>
         <element name="Table" positionX="288" positionY="270" width="128" height="240"/>
         <element name="User" positionX="261" positionY="189" width="128" height="480"/>
         <element name="SlideText" positionX="288" positionY="342" width="128" height="148"/>
+        <element name="SlidePhoto" positionX="297" positionY="351" width="128" height="118"/>
     </elements>
 </model>

@@ -10,6 +10,8 @@
 
 @interface WFFlagCell : UITableViewCell
 @property (weak, nonatomic) IBOutlet UILabel *label;
+@property (weak, nonatomic) IBOutlet UILabel *textFieldLabel;
 @property (weak, nonatomic) IBOutlet UITextField *textField;
+@property (weak, nonatomic) IBOutlet UITextView *textView;
 @property (weak, nonatomic) IBOutlet UISwitch *flagSwitch;
 @end

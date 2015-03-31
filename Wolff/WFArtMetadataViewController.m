@@ -36,6 +36,8 @@
 @interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectIconsDelegate, WFSelectMaterialsDelegate, UIActionSheetDelegate, UITextFieldDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
+    CGFloat width;
+    CGFloat height;
     BOOL iOS8;
     NSDateFormatter *dateFormatter;
     BOOL editMode;
@@ -48,6 +50,7 @@
     UITextView *creditTextView;
     UISwitch *privateSwitch;
     CGRect originalViewFrame;
+    CGRect originalNavFrame;
     UIView *saveContainerView;
     UIButton *saveButton;
     UIImageView *navBarShadowView;
@@ -77,8 +80,12 @@
     [super viewDidLoad];
     if (SYSTEM_VERSION >= 8.f){
         iOS8 = YES;
+        width = screenWidth();
+        height = screenHeight();
     } else {
         iOS8 = NO;
+        width = screenWidth();
+        height = screenHeight();
     }
     self.automaticallyAdjustsScrollViewInsets = NO;
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
@@ -87,7 +94,7 @@
         self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     }
     rowHeight = 60.f;
-    textViewWidth = self.view.frame.size.width - 160.f; // 160.f is a spacer
+    textViewWidth = width - 160.f; // 160.f is a spacer
     editMode = NO;
     [self setupDateFormatter];
     [self registerForKeyboardNotifications];
@@ -96,12 +103,16 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    [self.navigationController setNavigationBarHidden:YES animated:YES];
+    textViewWidth = self.view.frame.size.width - 160.f; // 160.f is a spacer
     [self setupHeader];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     originalViewFrame = self.view.frame;
+    originalNavFrame = self.navigationController.view.frame;
+    
 }
 
 - (void)setupDateFormatter {
@@ -317,7 +328,7 @@
             vc.preferredContentSize = CGSizeMake(420, vcHeight+34.f); // add the header height
             self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
             self.popover.delegate = self;
-            [self.popover presentPopoverFromRect:CGRectMake(_dropToTableButton.center.x,(_dropToTableButton.center.y+_dropToTableButton.frame.size.height/2)+ 23,1,1) inView:self.view permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES]; // added 23 points to the popover rect to make the arrow look nicerp
+            [self.popover presentPopoverFromRect:CGRectMake(_dropToTableButton.center.x,(_dropToTableButton.center.y+_dropToTableButton.frame.size.height/2),1,1) inView:self.view permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES]; // added 23 points to the popover rect to make the arrow look nicerp
         } else {
             [WFAlert show:@"Dropping images onto a light table requires a billing plan.\n\nPlease either set up an individual billing plan or add yourself as a member to an institution that's been registered with Wölff." withTime:4.7f];
         }
@@ -393,9 +404,14 @@
             newViewFrame.origin.y -= 100;
             newViewFrame.size.height += 200;
         }
+        CGRect navFrame = self.navigationController.view.frame;
+        navFrame.size.width = newViewFrame.size.width;
+        navFrame.origin.x = (width-navFrame.size.width)/2;
+        [self.navigationController.view setFrame:navFrame];
         self.tableView.tableFooterView = saveContainerView;
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self.view setFrame:newViewFrame];
+            
             [_nextPhotoButton setAlpha:0.0];
             [_lastPhotoButton setAlpha:0.0];
             if (iOS8){
@@ -421,6 +437,7 @@
         [self.tableView setBackgroundColor:[UIColor whiteColor]];
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self.view setFrame:originalViewFrame];
+            [self.navigationController.view setFrame:originalNavFrame];
             self.tableView.tableFooterView = nil;
             [_nextPhotoButton setHidden:NO];
             [_lastPhotoButton setHidden:NO];
@@ -435,8 +452,13 @@
 }
 
 - (void)loginSuccessful {
-    NSLog(@"Login Successful.");
     [self setUpButtons];
+    [ProgressHUD dismiss];
+}
+
+- (void)logout {
+    [self setUpButtons];
+    [ProgressHUD dismiss];
 }
 
 - (void)showProfile {
@@ -1013,7 +1035,6 @@
 
 - (void)presentFlagActionSheet {
     UIActionSheet *flagActionSheet = [[UIActionSheet alloc] initWithTitle:[NSString stringWithFormat:@"Why do you want to flag \"%@\"?",self.photo.art.title] delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Inappropriate", @"Copyright", @"Incorrect metadata", nil];
-    
     flagActionSheet.tintColor = kElectricBlue;
     [flagActionSheet showInView:self.view];
 }
@@ -1022,21 +1043,20 @@
     if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Inappropriate"]){
         [self flag];
     } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Copyright"]) {
-        [self flag];
-        /*WFFlagViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Flag"];
-        [vc setCopyright:YES];
-        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-        [self presentViewController:nav animated:YES completion:^{
-            
-        }];*/
+        [self performSegueWithIdentifier:@"Flag" sender:kCopyright];
     } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Incorrect metadata"]) {
-        [self flag];
-        /*WFFlagViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Flag"];
-        [vc setCopyright:NO];
-        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-        [self presentViewController:nav animated:YES completion:^{
-            
-        }];*/
+        [self performSegueWithIdentifier:@"Flag" sender:nil];
+    }
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    [super prepareForSegue:segue sender:sender];
+    if ([segue.identifier isEqualToString:@"Flag"]){
+        WFFlagViewController *vc = [segue destinationViewController];
+        if (self.photo.art)[vc setArt:self.photo.art];
+        if (self.photo)[vc setPhoto:self.photo];
+        [vc setCurrentUser:self.currentUser];
+        [vc setCopyright:[sender isEqualToString:kCopyright] ? YES : NO];
     }
 }
 
@@ -1266,12 +1286,16 @@
 }
 
 - (void)dismiss {
-    if (editMode){
+    if ([self.navigationController.viewControllers.lastObject isKindOfClass:[WFFlagViewController class]]){
+        WFFlagViewController *flagVC = self.navigationController.viewControllers.lastObject;
+        if (flagVC.keyboardVisible){
+            [flagVC.view endEditing:YES];
+        }
+    } else if (editMode){
         [self.view endEditing:YES];
         [self edit];
     } else {
-        // ensure the dismiss happens RIGHT NOW
-        dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{ // ensure the dismiss happens RIGHT NOW
             [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
                 
             }];

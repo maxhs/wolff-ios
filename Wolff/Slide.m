@@ -25,5 +25,6 @@
 @dynamic photos;
 @dynamic index;
 @dynamic slideTexts;
+@dynamic slidePhotos;
 
 @end

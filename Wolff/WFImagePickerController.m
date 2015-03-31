@@ -94,8 +94,7 @@ static NSString * const reuseIdentifier = @"PhotoCell";
         [_assetsGroup setAssetsFilter:onlyPhotosFilter];
         [_assetsGroup enumerateAssetsUsingBlock:assetsEnumerationBlock];
         [self.collectionView reloadData];
-        NSInteger item = _assets.count-1;
-        [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:item inSection:0] atScrollPosition:UICollectionViewScrollPositionTop animated:YES];
+        [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:_assets.count-1 inSection:0] atScrollPosition:UICollectionViewScrollPositionBottom animated:NO];
     } else {
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Permission Denied" message:@"Please allow the application to access your photo and videos in settings panel of your device" delegate:self cancelButtonTitle:@"Okay" otherButtonTitles: nil];
         [alertView show];

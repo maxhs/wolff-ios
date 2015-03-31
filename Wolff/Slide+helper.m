@@ -8,6 +8,7 @@
 
 #import "Slide+helper.h"
 #import "SlideText+helper.h"
+#import "SlidePhoto+helper.h"
 #import "Art+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
@@ -21,6 +22,18 @@
     }
     if ([dictionary objectForKey:@"index"] && [dictionary objectForKey:@"index"] != [NSNull null]){
         self.index = [dictionary objectForKey:@"index"];
+    }
+    if ([dictionary objectForKey:@"slide_photos"] && [dictionary objectForKey:@"slide_photos"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (NSDictionary *photoDict in [dictionary objectForKey:@"slide_photos"]){
+            SlidePhoto *slidePhoto = [SlidePhoto MR_findFirstByAttribute:@"identifier" withValue:[photoDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!slidePhoto){
+                slidePhoto = [SlidePhoto MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [slidePhoto populateFromDictionary:photoDict];
+            [set addObject:slidePhoto];
+        }
+        self.slidePhotos = set;
     }
     if ([dictionary objectForKey:@"slide_texts"] && [dictionary objectForKey:@"slide_texts"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];

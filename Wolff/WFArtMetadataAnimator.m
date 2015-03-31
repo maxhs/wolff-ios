@@ -10,6 +10,7 @@
 #import "Constants.h"
 #import "WFCatalogViewController.h"
 #import "WFArtMetadataViewController.h"
+#import "WFFlagViewController.h"
 
 @interface WFArtMetadataAnimator () {
     CGFloat width;
@@ -55,8 +56,9 @@
 
         [darkBackground setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
         [darkBackground setTag:kDarkBackgroundConstant];
-        [darkBackground addTarget:(WFArtMetadataViewController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-        
+        UINavigationController *nav = (UINavigationController*)toViewController;
+        WFArtMetadataViewController *artvc = (WFArtMetadataViewController*)nav.viewControllers.firstObject;
+        [darkBackground addTarget:artvc action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         [darkBackground setFrame:mainScreen];
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:darkBackground];
@@ -65,7 +67,7 @@
         [toView setAlpha:0.0];
         
         CGFloat offset = height/2-350;
-        UITableView *metadataTableView = [(WFArtMetadataViewController*)toViewController tableView];
+        UITableView *metadataTableView = artvc.tableView;
         [metadataTableView setContentInset:UIEdgeInsetsMake(offset, 0, offset, 0)];
         [metadataTableView setContentOffset:CGPointMake(0, -offset)];
         int lowerBound = 1; int upperBound = 3;
@@ -87,7 +89,6 @@
             toView.frame = metadataFrame;
             [toView setAlpha:1.0];
             [darkBackground setAlpha:1.0];
-            
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];

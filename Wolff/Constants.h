@@ -84,6 +84,7 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kNoPhoto @"No photo"
 #define kNoSlideshow @"No slideshow"
 #define kArtDeleted @"Art deleted"
+#define kCopyright @"Copyright"
 #define kIncorrectLightTableCode @"Incorrect light table code"
 #define kNoLightTable @"No light table"
 #define kNotAuthorized @"Not authorized"

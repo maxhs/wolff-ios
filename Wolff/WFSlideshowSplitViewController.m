@@ -299,10 +299,12 @@
     UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:removeItemTitle action:@selector(removeArt:)];
     
     UIMenuController *menuController = [UIMenuController sharedMenuController];
-    if (activeSlide.slideTexts.count && activeSlide.photos.count){
+    if (activeSlide.photos.count){
+        [menuController setMenuItems:@[resetMenuItem]];
+    } else if (activeSlide.slideTexts.count) {
         [menuController setMenuItems:@[editTextItem, resetMenuItem]];
     } else {
-        [menuController setMenuItems:@[addTextItem, resetMenuItem]];
+        [menuController setMenuItems:@[addTextItem]];
     }
     
     CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];

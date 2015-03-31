@@ -112,7 +112,7 @@
 
 -(UIImage *)blurredSnapshotForWindow {
     UIGraphicsBeginImageContextWithOptions(mainScreen.size, NO, [UIScreen mainScreen].scale);
-    [window drawViewHierarchyInRect:mainScreen afterScreenUpdates:NO];
+    [window drawViewHierarchyInRect:mainScreen afterScreenUpdates:YES];
     UIImage *snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
     UIImage *blurredSnapshotImage = [snapshotImage applyDarkEffect];
     UIGraphicsEndImageContext();

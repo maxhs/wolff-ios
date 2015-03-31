@@ -32,36 +32,14 @@
     _manager = [[AFHTTPRequestOperationManager manager] initWithBaseURL:[NSURL URLWithString:kApiBaseUrl]];
     [_manager.requestSerializer setAuthorizationHeaderFieldWithUsername:@"wolff_mobile" password:@"0fd11d82b574e0b13fc66b6227c4925c"];
     [_manager.requestSerializer setValue:(IDIOM == IPAD) ? @"2" : @"1" forHTTPHeaderField:@"device_type"];
-    
-    [self setupConnectionObserver];
+    [self setupConnectionObserver]; // determine if the 
 
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken]){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken] forKey:@"mobile_token"];
-        [self connectWithParameters:parameters];   // automatically log the user in if they
+        [self connectWithParameters:parameters forSignup:NO];   // automatically log the user in if they
     }
-    //[self initLayer];
     return YES;
 }
-
-//- (void)initLayer {
-//    NSUUID *appID = [[NSUUID alloc] initWithUUIDString:@"7d49bc9e-cd98-11e4-b5f2-eae8c100164f"];
-//    self.layerClient = [LYRClient clientWithAppID:appID];
-//    [self.layerClient connectWithCompletion:^(BOOL success, NSError *error) {
-//        if (!success) {
-//            NSLog(@"Failed to connect to Layer: %@", error);
-//        } else {
-//            // For the purposes of this Quick Start project, let's authenticate as a user named 'Device'.  Alternatively, you can authenticate as a user named 'Simulator' if you're running on a Simulator.
-//            NSString *userIDString = @"Device";
-//            // Once connected, authenticate user.
-//            // Check Authenticate step for authenticateLayerWithUserID source
-//            [self authenticateLayerWithUserID:userIDString completion:^(BOOL success, NSError *error) {
-//                if (!success) {
-//                    NSLog(@"Failed Authenticating Layer Client with error:%@", error);
-//                }
-//            }];
-//        }
-//    }];
-//}
 
 - (void)setupConnectionObserver {
     [[AFNetworkReachabilityManager sharedManager] startMonitoring];
@@ -90,19 +68,25 @@
     [lagFreeField removeFromSuperview];
 }
 
-- (void)connectWithParameters:(NSMutableDictionary *)parameters {
+- (void)connectWithParameters:(NSMutableDictionary *)parameters forSignup:(BOOL)signup {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken] forKey:@"device_token"];
+    }
+    if (signup){
+        [parameters setObject:@YES forKey:@"signup"];
+        [ProgressHUD show:@"Signing up..."];
+    } else {
+        [ProgressHUD show:@"Logging in..."];
     }
     [_manager POST:[NSString stringWithFormat:@"%@/sessions",kApiBaseUrl] parameters:@{@"user":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success connecting: %@",responseObject);
         if ([responseObject objectForKey:@"user"]){
             NSDictionary *userDict = [responseObject objectForKey:@"user"];
-            _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[userDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!_currentUser){
-                _currentUser = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[userDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!self.currentUser){
+                self.currentUser = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [_currentUser populateFromDictionary:userDict];
+            [self.currentUser populateFromDictionary:userDict];
             
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 [self setUserDefaults];
@@ -111,23 +95,34 @@
                 }
                 [[NSNotificationCenter defaultCenter] postNotificationName:@"LoginSuccessful" object:nil];
             }];
+            
+            //only ask for push notifications when a user has successfully logged in
+            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+                [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
+                [[UIApplication sharedApplication] registerForRemoteNotifications];
+            } else {
+                [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
+            }
         }
     
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        
         if (!_connected) {
             [self offlineNotification];
         } else if ([operation.responseString isEqualToString:kNoEmail]){
             if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(incorrectEmail)]) {
                 [self.loginDelegate incorrectEmail];
             }
+        } else if ([operation.responseString isEqualToString:kUserAlreadyExists]){
+            if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(userAlreadyExists)]) {
+                [self.loginDelegate userAlreadyExists];
+            }
         } else if ([operation.responseString isEqualToString:kIncorrectPassword]){
             if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(incorrectPassword)]) {
                 [self.loginDelegate incorrectPassword];
             }
         } else if ([operation.responseString isEqualToString:kInvalidToken]){
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"LoggedOut" object:nil];
             [self logout];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"LoggedOut" object:nil];
         } else {
             [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to log you in." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
         }
@@ -221,6 +216,9 @@
     [NSUserDefaults resetStandardUserDefaults];
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kExistingUser];
     [[NSUserDefaults standardUserDefaults] synchronize];
+    if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(logout)]){
+        [self.loginDelegate logout];
+    }
     [ProgressHUD dismiss];
 }
 

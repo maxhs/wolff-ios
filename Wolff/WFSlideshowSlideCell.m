@@ -211,7 +211,6 @@
             }];
         }
     } else {
-        NSLog(@"it's a text slide");
         [self.mainTextLabel setHidden:NO];
         [self.mainTextLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
         [self.mainTextLabel setTextColor:[UIColor whiteColor]];

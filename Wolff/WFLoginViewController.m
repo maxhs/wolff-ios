@@ -10,6 +10,7 @@
 #import "WFLoginViewController.h"
 #import "WFWebViewController.h"
 #import <Mixpanel/Mixpanel.h>
+#import "WFAlert.h"
 
 @interface WFLoginViewController () <UIScrollViewDelegate,UITextFieldDelegate, WFLoginDelegate> {
     WFAppDelegate *delegate;
@@ -17,7 +18,8 @@
     CGFloat height;
     CGFloat width;
     UIButton *doneEditingButton;
-    BOOL login;
+    BOOL signup;
+    BOOL keyboardShowing;
     CGFloat keyboardHeight;
     void (^completionBlock)();
 }
@@ -49,11 +51,16 @@
     [_emailTextField setPlaceholder:@"albrecht@durer.com"];
     [self textFieldTreatment:_passwordTextField];
     [_passwordTextField setPlaceholder:@"password"];
+    [self textFieldTreatment:_firstNameTextField];
+    [self textFieldTreatment:_lastNameTextField];
     
-    login = YES;
+    signup = NO;
     [self setUpLoginButton];
     [self styleTermsButton];
     [self styleForgotPasswordButton];
+    [_switchModesButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_switchModesButton addTarget:self action:@selector(switchModes) forControlEvents:UIControlEventTouchUpInside];
+    [_switchModesButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
 }
@@ -69,22 +76,90 @@
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    CGFloat x = scrollView.contentOffset.x;
-    CGFloat pageWidth = scrollView.frame.size.width;
-    int currentPage = floor((x - pageWidth / 2) / pageWidth) + 1;
-    _pageControl.currentPage = currentPage;
+    //CGFloat x = scrollView.contentOffset.x;
+    //CGFloat pageWidth = scrollView.frame.size.width;
+    //int currentPage = floor((x - pageWidth / 2) / pageWidth) + 1;
+    //_pageControl.currentPage = currentPage;
+}
+
+- (void)switchModes {
+    if (signup){
+        [_switchModesButton setTitle:@"Sign up" forState:UIControlStateNormal];
+        [_forgotPasswordButton setHidden:NO];
+        [_emailTextField becomeFirstResponder];
+        signup = NO;
+        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            [_loginButton setTitle:@"LOGIN" forState:UIControlStateNormal];
+            [_firstNameTextField setAlpha:0.0];
+            [_lastNameTextField setAlpha:0.0];
+            [_forgotPasswordButton setAlpha:1.0];
+            if (keyboardShowing){
+                
+                _emailTextField.transform = CGAffineTransformMakeTranslation(0, -50);
+                _passwordTextField.transform = CGAffineTransformMakeTranslation(0, -50);
+                _loginButton.transform = CGAffineTransformMakeTranslation(0, -50);
+            } else {
+                _logoImageView.transform = CGAffineTransformMakeTranslation(0, 0);
+            }
+        } completion:^(BOOL finished) {
+            
+            [_firstNameTextField setHidden:YES];
+            [_lastNameTextField setHidden:YES];
+        }];
+    } else {
+        [_switchModesButton setTitle:@"Log in" forState:UIControlStateNormal];
+        [_firstNameTextField setAlpha:0.0];
+        [_lastNameTextField setAlpha:0.0];
+        [_firstNameTextField setHidden:NO];
+        [_lastNameTextField setHidden:NO];
+        
+        signup = YES;
+        [_firstNameTextField becomeFirstResponder];
+        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            [_loginButton setTitle:@"SIGNUP" forState:UIControlStateNormal];
+            [_firstNameTextField setAlpha:1.0];
+            [_lastNameTextField setAlpha:1.0];
+            [_forgotPasswordButton setAlpha:0.0];
+            if (keyboardShowing){
+                _emailTextField.transform = CGAffineTransformMakeTranslation(0, 0);
+                _passwordTextField.transform = CGAffineTransformMakeTranslation(0, 0);
+                _loginButton.transform = CGAffineTransformMakeTranslation(0, 0);
+                _logoImageView.transform = CGAffineTransformMakeTranslation(0, -54);
+            } else {
+                _logoImageView.transform = CGAffineTransformMakeTranslation(0, -50);
+            }
+        } completion:^(BOOL finished) {
+            
+            [_forgotPasswordButton setHidden:YES];
+        }];
+    }
+}
+
+- (void)userAlreadyExists {
+    [self addShakeAnimationForView:_emailTextField withDuration:.75f];
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (double).6f * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [WFAlert show:@"We already have that email address on file. Please try logging in instead!" withTime:3.3f];
+    });
+    dispatch_time_t secondPopTime = dispatch_time(DISPATCH_TIME_NOW, (double)2.f * NSEC_PER_SEC);
+    dispatch_after(secondPopTime, dispatch_get_main_queue(), ^(void){
+        [self switchModes];
+    });
 }
 
 - (void)incorrectEmail {
     [self addShakeAnimationForView:_emailTextField withDuration:.75f];
 }
-
 - (void)incorrectPassword {
     [self addShakeAnimationForView:_passwordTextField withDuration:.75f];
 }
 
 - (void)loginSuccessful {
     [self dismiss];
+}
+
+- (void)logout {
+
 }
 
 - (void)connect {
@@ -96,16 +171,28 @@
         [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Please include a valid email / username before logging in." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
         return;
     }
-    
     if (_passwordTextField.text.length) {
         [parameters setObject:_passwordTextField.text forKey:@"password"];
     } else {
         [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Please add a password before logging in." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
         return;
     }
+    if (signup){
+        if (_firstNameTextField.text.length) {
+            [parameters setObject:_firstNameTextField.text forKey:@"first_name"];
+        } else {
+            [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Please make sure you've added your first name before signing up." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
+            return;
+        }
+        if (_lastNameTextField.text.length) {
+            [parameters setObject:_lastNameTextField.text forKey:@"last_name"];
+        } else {
+            [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Please make sure you've added your last name before signing up." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
+            return;
+        }
+    }
     
-    //login from the delegate
-    [delegate connectWithParameters:parameters];
+    [delegate connectWithParameters:parameters forSignup:signup]; // connect is in the app delegate!
     [self doneEditing];
 }
 
@@ -129,13 +216,11 @@
                     [[[UIAlertView alloc] initWithTitle:@"No such luck." message:@"We couldn't find that email address in our system." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
                 }
             } else {
-                
                 #ifndef DEBUG
                                 
                 #else
                 [[Mixpanel sharedInstance] track:@"Password reset"];
                 #endif
-                
             }
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed with password reset: %@",error.description);
@@ -163,13 +248,17 @@
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
     if ([string isEqualToString:@"\n"]) {
-        if (textField == _emailTextField){
+        if (textField == _firstNameTextField){
+            [_lastNameTextField becomeFirstResponder];
+        } else if (textField == _lastNameTextField){
+            [_emailTextField becomeFirstResponder];
+        } else if (textField == _emailTextField){
             [_passwordTextField becomeFirstResponder];
         } else if (textField == _passwordTextField) {
             [self connect];
         }
-    } else if (textField == _passwordTextField){
-        if (textField.text.length && _emailTextField.text.length){
+    } else {
+        if (_passwordTextField.text.length && _emailTextField.text.length){
             [_loginButton setBackgroundColor:[UIColor blackColor]];
             [_loginButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         } else {
@@ -205,26 +294,29 @@
     
     [UIView animateWithDuration:animationDuration.doubleValue delay:0 options:(animationCurve << 16) animations:^{
         if (IDIOM == IPAD){
-            if (login){
+            if (signup){
+                _emailTextField.transform = CGAffineTransformMakeTranslation(0, -20);
+                _passwordTextField.transform = CGAffineTransformMakeTranslation(0, -20);
+                _firstNameTextField.transform = CGAffineTransformMakeTranslation(0, -20);
+                _lastNameTextField.transform = CGAffineTransformMakeTranslation(0, -20);
+                _loginButton.transform = CGAffineTransformMakeTranslation(0, -20);
+                _logoImageView.transform = CGAffineTransformMakeTranslation(0, -54);
+                _termsButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
+                _forgotPasswordButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
+            } else {
                 _logoImageView.transform = CGAffineTransformMakeTranslation(0, -36);
                 _emailTextField.transform = CGAffineTransformMakeTranslation(0, -60);
                 _passwordTextField.transform = CGAffineTransformMakeTranslation(0, -60);
                 _loginButton.transform = CGAffineTransformMakeTranslation(0, -52);
                 _termsButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
                 _forgotPasswordButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
-            } else {
-                _emailTextField.transform = CGAffineTransformMakeTranslation(0, -height/5);
-                _passwordTextField.transform = CGAffineTransformMakeTranslation(0, -height/5);
-                _firstNameTextField.transform = CGAffineTransformMakeTranslation(0, -height/5);
-                _lastNameTextField.transform = CGAffineTransformMakeTranslation(0, -height/5);
-                _loginButton.transform = CGAffineTransformMakeTranslation(0, -height/5);
-                _termsButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
-                _forgotPasswordButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
             }
+        } else {
+            
         }
         
     } completion:^(BOOL finished) {
-        
+        keyboardShowing = YES;
     }];
 }
 
@@ -238,7 +330,11 @@
     UIViewAnimationCurve animationCurve = curveValue.intValue;
     
     [UIView animateWithDuration:animationDuration.doubleValue delay:0 options:(animationCurve << 16) animations:^{
-        _logoImageView.transform = CGAffineTransformIdentity;
+        if (signup){
+            
+        } else {
+            _logoImageView.transform = CGAffineTransformIdentity;
+        }
         _emailTextField.transform = CGAffineTransformIdentity;
         _firstNameTextField.transform = CGAffineTransformIdentity;
         _lastNameTextField.transform = CGAffineTransformIdentity;
@@ -246,9 +342,8 @@
         _loginButton.transform = CGAffineTransformIdentity;
         _termsButton.transform = CGAffineTransformIdentity;
         _forgotPasswordButton.transform = CGAffineTransformIdentity;
-        
     } completion:^(BOOL finished) {
-        
+        keyboardShowing = NO;
     }];
 }
 
