@@ -61,7 +61,17 @@
 }
 
 - (void)configureForPhoto:(Photo *)photo {
-    if (photo.isLandscape){
+    if (!photo.slideImageUrl.length && photo.image){
+        [self.portraitArtImageView setHidden:NO];
+        [self.landscapeArtImageView setHidden:YES];
+        [self.portraitArtImageView setImage:photo.image];
+        [UIView animateWithDuration:.23 animations:^{
+            [self.portraitArtImageView setAlpha:1.0];
+        } completion:^(BOOL finished) {
+            [self.portraitArtImageView.layer setShouldRasterize:YES];
+            self.portraitArtImageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+        }];
+    } else if (photo.isLandscape){
         [self.portraitArtImageView setHidden:YES];
         [self.landscapeArtImageView setHidden:NO];
         [self.landscapeArtImageView sd_setImageWithURL:[NSURL URLWithString:photo.slideImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {

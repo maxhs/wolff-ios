@@ -15,6 +15,7 @@
 
 @optional
 - (void)newArtAdded:(Art*)art;
+- (void)updateNewArt:(Art*)art;
 - (void)failedToAddArt:(Art*)art;
 
 @end

@@ -72,6 +72,7 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kLatoBoldItalic @"Lato-BoldItalic"
 
 #define kAddLocationPlaceholder @"+  add a new location"
+#define kAddTagPlaceholder @"+  add a new tag"
 #define kIncorrectPassword @"Incorrect password"
 #define kNoEmail @"No email"
 #define kInvalidToken @"Invalid token"
@@ -87,6 +88,7 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kCopyright @"Copyright"
 #define kIncorrectLightTableCode @"Incorrect light table code"
 #define kNoLightTable @"No light table"
+#define kLightTableDescriptionPlaceholder @"Describe your light table..."
 #define kNotAuthorized @"Not authorized"
 #define kExistingUser @"Existing user"
 #define kExistingLightTable @"Existing light table"

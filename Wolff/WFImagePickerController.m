@@ -11,6 +11,8 @@
 #import "Constants.h"
 #import "WFUtilities.h"
 #import "ProgressHUD.h"
+#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import "Photo+helper.h"
 
 @interface WFImagePickerController () {
     CGFloat width;
@@ -205,17 +207,20 @@ static NSString * const reuseIdentifier = @"PhotoCell";
             [ProgressHUD show:@"Fetching images..."];
         }
     });
-    double delayInSeconds = .07f;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+    
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (double).07f * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         if (self.delegate && [self.delegate respondsToSelector:@selector(didFinishPickingPhotos:)]){
-            NSMutableArray *imageArray = [NSMutableArray arrayWithCapacity:_selectedAssets.count];
+            NSMutableArray *photoArray = [NSMutableArray arrayWithCapacity:_selectedAssets.count];
             [_selectedAssets enumerateObjectsUsingBlock:^(ALAsset *asset, NSUInteger idx, BOOL *stop) {
                 ALAssetRepresentation *imageRep = [asset defaultRepresentation];
                 UIImage *fullImage = [UIImage imageWithCGImage:[imageRep fullResolutionImage] scale:imageRep.scale orientation:(UIImageOrientation)imageRep.orientation];
-                [imageArray addObject:fullImage];
+                Photo *photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                [photo setImage:fullImage];
+                [photo setFileName:[imageRep filename]];
+                [photoArray addObject:photo];
             }];
-            [self.delegate didFinishPickingPhotos:imageArray];
+            [self.delegate didFinishPickingPhotos:photoArray];
         } else {
             [self dismiss];
         }

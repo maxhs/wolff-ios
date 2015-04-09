@@ -8,10 +8,12 @@
 
 #import "Slide.h"
 #import "Art+helper.h"
+#import "PhotoSlide+helper.h"
 
 @interface Slide (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
-- (void)addPhoto:(Photo*)photo;
-- (void)removePhoto:(Photo*)photo;
-- (void)replacePhotoAtIndex:(NSInteger)index withPhoto:(Photo*)photo;
+- (void)addPhotoSlide:(PhotoSlide*)photoSlide;
+- (void)removePhotoSlide:(PhotoSlide*)photoSlide;
+- (void)replacePhotoSlideAtIndex:(NSInteger)index withPhotoSlide:(PhotoSlide*)photoSlide;
+- (NSOrderedSet*)photos;
 @end

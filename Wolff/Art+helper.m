@@ -10,13 +10,14 @@
 #import "Photo+helper.h"
 #import "Artist+helper.h"
 #import "Material+helper.h"
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 #import "Citation+helper.h"
 #import "Location+helper.h"
 #import "Movement+helper.h"
 #import "Institution+helper.h"
 #import "Interval+helper.h"
 #import "Icon+helper.h"
+#import "Tag+helper.h"
 #import "User+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 #import "NSArray+ToSentence.h"
@@ -40,6 +41,9 @@
     }
     if ([dictionary objectForKey:@"visible"] && [dictionary objectForKey:@"visible"] != [NSNull null]){
         self.visible = [dictionary objectForKey:@"visible"];
+    }
+    if ([dictionary objectForKey:@"flagged"] && [dictionary objectForKey:@"flagged"] != [NSNull null]){
+        self.flagged = [dictionary objectForKey:@"flagged"];
     }
     if ([dictionary objectForKey:@"uploaded_epoch_time"] && [dictionary objectForKey:@"uploaded_epoch_time"] != [NSNull null]) {
         NSTimeInterval _interval = [[dictionary objectForKey:@"uploaded_epoch_time"] doubleValue];
@@ -156,6 +160,19 @@
         }
         self.icons = set;
     }
+    if ([dictionary objectForKey:@"tags"] && [dictionary objectForKey:@"tags"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"tags"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Tag *tag = [Tag MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!tag){
+                tag = [Tag MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [tag populateFromDictionary:dict];
+            [set addObject:tag];
+        }
+        self.tags = set;
+    }
 }
 
 - (void)addPhoto:(Photo *)photo {
@@ -186,6 +203,14 @@
         [names addObject:artist.name];
     }];
     return [names toSentence];
+}
+
+- (NSString *)tagsToSentence {
+    NSMutableArray *tags = [NSMutableArray arrayWithCapacity:self.tags.count];
+    [self.tags enumerateObjectsUsingBlock:^(Tag *tag, NSUInteger idx, BOOL *stop) {
+        [tags addObject:tag.name];
+    }];
+    return [tags toSentence];
 }
 
 - (NSString *)locationsToSentence {

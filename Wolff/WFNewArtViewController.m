@@ -20,10 +20,11 @@
 #import "WFDateMetadataCell.h"
 #import "WFMaterialsViewController.h"
 #import "WFIconsViewController.h"
+#import "WFTagsViewController.h"
 #import "Icon+helper.h"
 #import "WFCreditTextField.h"
 
-@interface WFNewArtViewController () <UITableViewDataSource, UITableViewDelegate , UIScrollViewDelegate, UITextFieldDelegate, WFImagePickerControllerDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectMaterialsDelegate, WFSelectIconsDelegate> {
+@interface WFNewArtViewController () <UITableViewDataSource, UITableViewDelegate , UIScrollViewDelegate, UITextFieldDelegate, WFImagePickerControllerDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectMaterialsDelegate, WFSelectIconsDelegate, WFSelectTagsDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     BOOL iOS8;
@@ -43,7 +44,7 @@
     UIButton *_ceEndButton;
     UIButton *_bceEndButton;
     NSInteger currentPhotoIdx;
-    NSMutableArray *_selectedImages;
+    NSMutableArray *_selectedPhotos;
     CGFloat imageWidth;
     CGFloat imageHeight;
 }
@@ -104,6 +105,7 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
+    [ProgressHUD dismiss]; // just in case
     [titleTextField becomeFirstResponder];
 }
 
@@ -131,15 +133,14 @@
     [self presentViewController:nav animated:YES completion:NULL];
 }
 
-- (void)didFinishPickingPhotos:(NSMutableArray *)selectedImages {
-    _selectedImages = selectedImages;
-    for (UIImage *image in selectedImages){
-        Photo *photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-        [photo setImage:image];
+- (void)didFinishPickingPhotos:(NSMutableArray *)selectedPhotos {
+    _selectedPhotos = selectedPhotos;
+    for (Photo *p in selectedPhotos){
+        Photo *photo = [p MR_inContext:[NSManagedObjectContext MR_defaultContext]];
         [self.art addPhoto:photo];
     }
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    if (selectedImages.count && _submitButton.isHidden){
+    if (selectedPhotos.count && _submitButton.isHidden){
         [_submitButton setHidden:NO];
     }
 
@@ -310,6 +311,12 @@
     }
     [parameters setObject:locationIds forKey:@"location_ids"];
     
+    NSMutableArray *tagIds = [NSMutableArray arrayWithCapacity:self.art.tags.count];
+    for (Tag *tag in self.art.tags){
+        [tagIds addObject:tag.identifier];
+    }
+    [parameters setObject:tagIds forKey:@"tag_ids"];
+    
     NSMutableArray *materialIds = [NSMutableArray arrayWithCapacity:self.art.materials.count];
     for (Material *material in self.art.materials){
         [materialIds addObject:material.identifier];
@@ -347,12 +354,21 @@
     } else {
         [parameters setObject:@0 forKey:@"private"];
     }
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    if (self.artDelegate && [self.artDelegate respondsToSelector:@selector(newArtAdded:)]){
+        [self.artDelegate newArtAdded:self.art];
+    }
+    [ProgressHUD dismiss];
     
     [manager POST:@"arts" parameters:@{@"art":parameters} constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
         NSString *userId = [NSString stringWithFormat:@"%@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
         for (Photo *photo in self.art.photos){
             if (photo.credit.length){
                 [formData appendPartWithFormData:[photo.credit dataUsingEncoding:NSUTF8StringEncoding] name:@"photos[][credit]"];
+            }
+            if ([self.art.privateArt isEqualToNumber:@YES]){
+                [photo setPrivatePhoto:@YES];
+                [formData appendPartWithFormData:[@"1" dataUsingEncoding:NSUTF8StringEncoding] name:@"photos[][private]"];
             }
             NSMutableArray *iconIds = [NSMutableArray arrayWithCapacity:photo.icons.count];
             for (Icon *icon in photo.icons){
@@ -362,15 +378,14 @@
             [formData appendPartWithFormData:[[iconIds componentsJoinedByString:@","] dataUsingEncoding:NSUTF8StringEncoding]  name:@"photos[][icon_ids]"];
             
             NSData *imageData = UIImageJPEGRepresentation(photo.image, 1);
-            [formData appendPartWithFileData:imageData name:@"photos[][image]" fileName:@"photo.jpg" mimeType:@"image/jpg"];
-            
+            [formData appendPartWithFileData:imageData name:@"photos[][image]" fileName:photo.fileName mimeType:@"image/jpg"];
         }
     } success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success creating art: %@",responseObject);
+        //NSLog(@"Success creating art: %@",responseObject);
         [self.art populateFromDictionary:[responseObject objectForKey:@"art"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            if (self.artDelegate && [self.artDelegate respondsToSelector:@selector(newArtAdded:)]){
-                [self.artDelegate newArtAdded:self.art];
+            if (self.artDelegate && [self.artDelegate respondsToSelector:@selector(updateNewArt:)] && ![self.art.privateArt isEqualToNumber:@YES]){
+                [self.artDelegate updateNewArt:self.art];
             }
         }];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -381,7 +396,11 @@
     }];
     
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        [WFAlert show:@"We're adding your art to the catalog!\n\nThis may take a few minutes. You can also add additional metadata on wolffapp.com." withTime:3.3f];
+        if ([self.art.privateArt isEqualToNumber:@YES]){
+            [WFAlert show:@"Congratulations! We've added this art to your private collection." withTime:3.3f];
+        } else {
+            [WFAlert show:@"Congratulations! We've added your art to the catalog." withTime:3.3f];
+        }
     }];
 }
 
@@ -391,7 +410,7 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 6;
+    return 7;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -471,6 +490,12 @@
             [cell.textField setUserInteractionEnabled:NO];
             break;
         case 4:
+            [cell.label setText:@"TAGS"];
+            [cell.textField setPlaceholder:@"e.g. Impressionism, German, etc"];
+            [cell.textField setText:self.art.tagsToSentence];
+            [cell.textField setUserInteractionEnabled:NO];
+            break;
+        case 5:
             [cell.label setText:@"MATERIALS"];
             [cell.textField setPlaceholder:@"e.g. clay, wrought iron, etc."];
             [cell.textField setAutocapitalizationType:UITextAutocapitalizationTypeSentences];
@@ -478,7 +503,7 @@
             [cell.textField setText:self.art.materialsToSentence];
             [cell.textField setUserInteractionEnabled:NO];
             break;
-        case 5:
+        case 6:
             [cell.label setText:@"NOTES"];
             notesTextField = cell.textField;
             [cell.textField setPlaceholder:@"Any miscellaneous notes you may have"];
@@ -547,6 +572,8 @@
     } else if (indexPath.row == 3){
         [self showLocations];
     } else if (indexPath.row == 4){
+        [self showTags];
+    } else if (indexPath.row == 5){
         [self showMaterials];
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -584,6 +611,22 @@
     [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:3 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
 }
 
+- (void)showTags {
+    WFTagsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tags"];
+    [vc setSelectedTags:self.art.tags.mutableCopy];
+    vc.tagDelegate = self;
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    [nav.navigationBar setTintColor:[UIColor whiteColor]];
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+- (void)tagsSelected:(NSOrderedSet *)selectedTags {
+    self.art.tags = selectedTags;
+    [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:4 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
+}
+
 - (void)showMaterials {
     WFMaterialsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Materials"];
     [vc setSelectedMaterials:self.art.materials.mutableCopy];
@@ -597,7 +640,7 @@
 
 - (void)materialsSelected:(NSOrderedSet *)selectedMaterials {
     self.art.materials = selectedMaterials;
-    [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:4 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
+    [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:5 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
 }
 
 - (void)showIcons {

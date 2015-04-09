@@ -10,11 +10,18 @@
 #import "SlideText+helper.h"
 #import "Slideshow+helper.h"
 
-@interface WFSlideTextViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+@protocol WFSlideTextDelegate <NSObject>
 
-@property (weak, nonatomic) IBOutlet UITableView *tableView;
+@optional
+- (void)createdSlideText:(SlideText*)slideText;
+- (void)updatedSlideText:(SlideText*)slideText;
+@end
+
+@interface WFSlideTextViewController : UIViewController
+
 @property (strong, nonatomic) Slideshow *slideshow;
 @property (strong, nonatomic) Slide *slide;
 @property (strong, nonatomic) SlideText *slideText;
 @property (weak, nonatomic) IBOutlet UITextView *textView;
+@property (weak, nonatomic) id<WFSlideTextDelegate>slideTextDelegate;
 @end

@@ -14,6 +14,8 @@
 #import "WFUtilities.h"
 #import "WFSlideshowTitleCell.h"
 #import "WFInteractiveImageView.h"
+#import "PhotoSlide+helper.h"
+
 @interface WFSlideshowViewController () <UIToolbarDelegate, UIViewControllerTransitioningDelegate, UIGestureRecognizerDelegate> {
     CGFloat width;
     CGFloat height;
@@ -53,8 +55,6 @@
 @end
 
 @implementation WFSlideshowViewController
-
-@synthesize startIndex = _startIndex;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -108,13 +108,18 @@
     [_panGesture requireGestureRecognizerToFail:leftScreenEdgePanGesture];
     
     [_slideshowTitleButtonItem setTitle:self.slideshow.title];
-    currentPage = _startIndex;
-    if (_startIndex == 0){
+    if (!_startIndex){
         [_previousButton setEnabled:NO];
         [_slideNumberButtonItem setTitle:@""];
-    } else {
-        [_collectionView setContentOffset:CGPointMake(width*(_startIndex+1), 0) animated:NO]; // offset by 1 because of the title slide
+        currentPage = 0;
+    } else if (_startIndex == 0){
+        [_collectionView setContentOffset:CGPointMake(width, 0) animated:NO]; // offset by 1 because of the title slide
         [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
+        currentPage = _startIndex.integerValue;
+    } else {
+        [_collectionView setContentOffset:CGPointMake(width*(_startIndex.integerValue+1), 0) animated:NO]; // offset by 1 because of the title slide
+        [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
+        currentPage = _startIndex.integerValue;
     }
     
     [_slideNumberButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
@@ -183,12 +188,13 @@
     CGFloat pageWidth = scrollView.frame.size.width;
     float fractionalPage = scrollView.contentOffset.x / pageWidth;
     NSInteger page = lround(fractionalPage);
+    
     if (currentPage != page) {
         currentPage = page;
         if (currentPage > 0){
             [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
             currentSlide = self.slideshow.slides[currentPage-1]; // offset by 1 because the index starts at 0, not 1
-            if (currentSlide.photos.count){ // remove the metadata button if it's a blank slide
+            if (currentSlide.photoSlides.count){ // remove the metadata button if it's a blank slide
                 self.navigationItem.rightBarButtonItem = metadataButton;
             } else {
                 self.navigationItem.rightBarButtonItem = nil;
@@ -246,16 +252,20 @@
 #pragma mark <UICollectionViewDataSource>
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
-    return 2;
+    if ([self.slideshow.showTitleSlide isEqualToNumber:@YES]){
+        return 2;
+    } else {
+        return 1;
+    }
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    if (section == 0) return 1;
+    if (section == 0 && [self.slideshow.showTitleSlide isEqualToNumber:@YES]) return 1;
     else return self.slideshow.slides.count;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.section == 0){
+    if (indexPath.section == 0 && [self.slideshow.showTitleSlide isEqualToNumber:@YES]){
         WFSlideshowTitleCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"TitleCell" forIndexPath:indexPath];
         [cell configureForSlideshow:self.slideshow];
         return cell;
@@ -263,7 +273,6 @@
         WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
         currentSlide = self.slideshow.slides[indexPath.item];
         [cell configureForPhotos:currentSlide.photos.mutableCopy inSlide:currentSlide];
-       
         if (!artImageView1){
             artImageView1 = cell.artImageView1;
             containerView1 = cell.containerView1;
@@ -285,37 +294,6 @@
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
     return UIEdgeInsetsMake(0, 0, 0, 0);
 }
-
-#pragma mark <UICollectionViewDelegate>
-
-/*
-// Uncomment this method to specify if the specified item should be highlighted during tracking
-- (BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
-	return YES;
-}
-*/
-
-/*
-// Uncomment this method to specify if the specified item should be selected
-- (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    return YES;
-}
-*/
-
-/*
-// Uncomment these methods to specify if an action menu should be displayed for the specified item, and react to actions performed on the item
-- (BOOL)collectionView:(UICollectionView *)collectionView shouldShowMenuForItemAtIndexPath:(NSIndexPath *)indexPath {
-	return NO;
-}
-
-- (BOOL)collectionView:(UICollectionView *)collectionView canPerformAction:(SEL)action forItemAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
-	return NO;
-}
-
-- (void)collectionView:(UICollectionView *)collectionView performAction:(SEL)action forItemAtIndexPath:(NSIndexPath *)indexPath withSender:(id)sender {
-	
-}
-*/
 
 #pragma mark - Handle Gestures
 - (void)singleTap:(UIGestureRecognizer*)gestureRecognizer {
@@ -345,7 +323,6 @@
 }
 
 - (void)handlePan:(UIPanGestureRecognizer*)gestureRecognizer {
-    
     CGPoint fullTranslation = [gestureRecognizer locationInView:self.view];
     CGPoint translation = [gestureRecognizer translationInView:_collectionView];
     NSIndexPath *indexPathForGesture = [_collectionView indexPathForItemAtPoint:[gestureRecognizer locationInView:_collectionView]];
@@ -367,22 +344,33 @@
     view.center = newPoint;
     [gestureRecognizer setTranslation:CGPointMake(0, 0) inView:_collectionView];
 
-    [(WFInteractiveImageView*)view setMoved:YES]; //offset and/or save pre-position
-    if (cell){
-        if (view == cell.artImageView1){
-            [currentSlide setRectString1:NSStringFromCGRect(cell.artImageView1.frame)];
-        } else if (view == cell.artImageView2){
-            [currentSlide setRectString2:NSStringFromCGRect(cell.artImageView2.frame)];
-        } else if (view == cell.artImageView3){
-            [currentSlide setRectString3:NSStringFromCGRect(cell.artImageView3.frame)];
-        }
-    }
     if (view && cell){
         if (gestureRecognizer.state == UIGestureRecognizerStateBegan){
             [_collectionView setScrollEnabled:NO];
         } else if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
             [_collectionView setScrollEnabled:YES];
         }
+    }
+    
+    if (cell && gestureRecognizer.state == UIGestureRecognizerStateEnded && currentSlide && currentSlide.photoSlides.count){
+        [(WFInteractiveImageView*)view setMoved:YES]; //offset and/or save pre-position
+        PhotoSlide *photoSlide;
+        if (view == cell.artImageView1){
+            photoSlide = currentSlide.photoSlides[0];
+        } else if (view == cell.artImageView2){
+            photoSlide = currentSlide.photoSlides[0];
+        } else if (view == cell.artImageView3){
+            photoSlide = currentSlide.photoSlides[1];
+        }
+        [photoSlide setPositionX:@(view.frame.origin.x)];
+        [photoSlide setPositionY:@(view.frame.origin.y)];
+        [photoSlide setWidth:@(view.frame.size.width)];
+        [photoSlide setHeight:@(view.frame.size.height)];
+        [photoSlide setScale:@([[view.layer valueForKeyPath:@"transform.scale"] floatValue])];
+        
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            NSLog(@"slide photo after save: %@, %@, %@, %@ and scale: %@",photoSlide.positionX, photoSlide.positionY, photoSlide.width, photoSlide.height, photoSlide.scale);
+        }];
     }
 }
 
@@ -438,6 +426,7 @@
         [self adjustAnchorPointForGestureRecognizer:gestureRecognizer forView:view];
         
         const CGFloat kMaxScale = CGFLOAT_MAX;
+        
         if (gestureRecognizer.state == UIGestureRecognizerStateBegan || gestureRecognizer.state == UIGestureRecognizerStateChanged) {
             CGFloat currentScale = [[view.layer valueForKeyPath:@"transform.scale"] floatValue];
             const CGFloat kMinScale = .5;
@@ -467,17 +456,23 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
         [_collectionView setScrollEnabled:YES];
-    }
-    if (cell){
-        if (view == cell.artImageView1){
-            [currentSlide setRectString1:NSStringFromCGRect(cell.artImageView1.frame)];
-            [cell.artImageView1 setMoved:YES];
-        } else if (view == cell.artImageView2){
-            [currentSlide setRectString2:NSStringFromCGRect(cell.artImageView2.frame)];
-            [cell.artImageView2 setMoved:YES];
-        } else if (view == cell.artImageView3){
-            [currentSlide setRectString3:NSStringFromCGRect(cell.artImageView3.frame)];
-            [cell.artImageView3 setMoved:YES];
+        if (cell && currentSlide && currentSlide.photoSlides.count){
+            PhotoSlide *photoSlide;
+            if (view == cell.artImageView1){
+                photoSlide = currentSlide.photoSlides[0];
+            } else if (view == cell.artImageView2){
+                photoSlide = currentSlide.photoSlides[0];
+            } else if (view == cell.artImageView3){
+                photoSlide = currentSlide.photoSlides[1];
+            }
+            [photoSlide setPositionX:@(view.frame.origin.x)];
+            [photoSlide setPositionY:@(view.frame.origin.y)];
+            [photoSlide setWidth:@(view.frame.size.width)];
+            [photoSlide setHeight:@(view.frame.size.height)];
+            [photoSlide setScale:@(gestureRecognizer.scale)];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                NSLog(@"slide photo after save: %@, %@, %@, %@ and scale: %@",photoSlide.positionX, photoSlide.positionY, photoSlide.width, photoSlide.height, photoSlide.scale);
+            }];
         }
     }
 }
@@ -498,13 +493,14 @@
         }
     }
     
-    if (view){
+    if (view && currentSlide && currentSlide.photoSlides.count){
         [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             if (view == artImageView1){
                 if (artImageView1.moved){
                     view.transform = CGAffineTransformIdentity;
                     [artImageView1 setFrame:kOriginalArtImageFrame1];
-                    [currentSlide setRectString1:@""];
+                    PhotoSlide *photoSlide = currentSlide.photoSlides[0];
+                    [photoSlide resetFrame];
                     [artImageView1 setMoved:NO];
                 } else {
                     view.transform = CGAffineTransformMakeScale(3.f, 3.f);
@@ -518,7 +514,8 @@
                 if (artImageView2.moved){
                     view.transform = CGAffineTransformIdentity;
                     [artImageView2 setFrame:kOriginalArtImageFrame2];
-                    [currentSlide setRectString2:@""];
+                    PhotoSlide *photoSlide = currentSlide.photoSlides[0];
+                    [photoSlide resetFrame];
                     [artImageView2 setMoved:NO];
                 } else {
                     CGPoint absolutePoint2 = [gestureRecognizer locationInView:containerView2];
@@ -532,7 +529,8 @@
                 if (artImageView3.moved){
                     view.transform = CGAffineTransformIdentity;
                     [artImageView3 setFrame:kOriginalArtImageFrame3];
-                    [currentSlide setRectString3:@""];
+                    PhotoSlide *photoSlide = currentSlide.photoSlides[1];
+                    [photoSlide resetFrame];
                     [artImageView3 setMoved:NO];
                 } else {
                     view.transform = CGAffineTransformMakeScale(3.f, 3.f);
@@ -544,7 +542,23 @@
                 }
             }
         } completion:^(BOOL finished) {
+            PhotoSlide *photoSlide;
+            if (view == artImageView1){
+                photoSlide = currentSlide.photoSlides[0];
+            } else if (view == artImageView2){
+                photoSlide = currentSlide.photoSlides[0];
+            } else if (view == artImageView3){
+                photoSlide = currentSlide.photoSlides[1];
+            }
+            [photoSlide setPositionX:@(view.frame.origin.x)];
+            [photoSlide setPositionY:@(view.frame.origin.y)];
+            [photoSlide setWidth:@(view.frame.size.width)];
+            [photoSlide setHeight:@(view.frame.size.height)];
+            [photoSlide setScale:@([[view.layer valueForKeyPath:@"transform.scale"] floatValue])];
             
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                NSLog(@"slide photo after save: %@, %@, %@, %@ and scale: %@",photoSlide.positionX, photoSlide.positionY, photoSlide.width, photoSlide.height, photoSlide.scale);
+            }];
         }];
     }
 }

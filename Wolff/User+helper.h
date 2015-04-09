@@ -10,7 +10,7 @@
 #import "Art+helper.h"
 #import "Photo+helper.h"
 #import "Favorite+helper.h"
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 #import "Slideshow+helper.h"
 #import "Institution+helper.h"
 #import "Card+helper.h"
@@ -24,8 +24,8 @@
 - (Favorite *)getFavoritePhoto:(Photo*)photo;
 - (void)addFavorite:(Favorite*)favorite;
 - (void)removeFavorite:(Favorite*)favorite;
-- (void)addLightTable:(Table*)lightTable;
-- (void)removeLightTable:(Table*)lightTable;
+- (void)addLightTable:(LightTable*)lightTable;
+- (void)removeLightTable:(LightTable*)lightTable;
 - (void)addInstitution:(Institution*)institution;
 - (void)removeInstitution:(Institution*)institution;
 - (void)removeSlideshow:(Slideshow*)slideshow;

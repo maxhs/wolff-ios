@@ -10,14 +10,12 @@
 #import "Slideshow+helper.h"
 
 @protocol WFSlideshowSettingsDelegate <NSObject>
-
-- (void)deleteSlideshow;
-- (void)updateSlideshow;
-
+- (void)didDeleteSlideshow;
+- (void)didUpdateSlideshow;
 @end
 
 @interface WFSlideshowSettingsViewController : UITableViewController
-@property (strong, nonatomic) Slideshow *slideshowId;
+@property (strong, nonatomic) Slideshow *slideshow;
 @property (weak, nonatomic) id<WFSlideshowSettingsDelegate>settingsDelegate;
 
 @end

@@ -24,7 +24,7 @@
     // Configure the view for the selected state
 }
 
-- (void)configureForTable:(Table *)table {
+- (void)configureForTable:(LightTable *)table {
     
 }
 @end

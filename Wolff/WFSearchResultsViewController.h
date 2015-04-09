@@ -10,16 +10,16 @@
 #import "Art+helper.h"
 #import "Photo+helper.h"
 #import "Slideshow+helper.h"
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 
 @protocol WFSearchDelegate <NSObject>
-- (void)searchDidSelectPhotoWithId:(NSNumber *)photoId;
+- (void)searchDidSelectPhoto:(Photo *)photo;
 - (void)endSearch;
 @optional
 - (void)removeAllSelected;
 - (void)batchFavorite;
 - (void)newLightTableForSelected;
-- (void)batchSelectForLightTableWithId:(NSNumber*)lightTableId;
+- (void)batchSelectForLightTable:(LightTable*)lightTable;
 - (void)slideshowForSelected:(Slideshow*)slideshow;
 @end
 

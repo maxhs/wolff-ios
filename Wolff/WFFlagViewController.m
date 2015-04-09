@@ -29,7 +29,7 @@
     UITextField *materialTextField;
     UITextField *iconographyTextField;
     UITextField *creditTextField;
-    
+    UITextField *notesTextField;
     UITextField *copyrightOwnerTextField;
     UITextField *myNameTextField;
     UITextField *emailTextField;
@@ -66,7 +66,7 @@
     self.currentUser = [self.currentUser MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     
     [_headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
-    [_headerLabel setTextColor:[UIColor darkGrayColor]];
+    [_headerLabel setTextColor:[UIColor redColor]];
     self.tableView.tableHeaderView = _headerLabel;
     self.tableView.rowHeight = 60.f;
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:0 alpha:.1]];
@@ -158,12 +158,16 @@
                     userAddressTextField = cell.textField;
                     break;
                 case 5:
-                    [cell.textField setReturnKeyType:UIReturnKeyDone];
                     [cell.textFieldLabel setText:@"CITY/STATE/COUNTRY"];
                     [cell.textField setPlaceholder:@"City, State, Country"];
                     cityStateCountryTextField = cell.textField;
                     break;
-                    
+                case 6:
+                    [cell.textFieldLabel setText:@"NOTES"];
+                    notesTextField = cell.textField;
+                    notesTextField.placeholder = @"Why are you creating this flag?";
+                    [cell.textField setReturnKeyType:UIReturnKeyDone];
+                    break;
                 default:
                     break;
             }
@@ -232,6 +236,8 @@
                 break;
             case 7:
                 [cell.textFieldLabel setText:@"NOTES"];
+                notesTextField = cell.textField;
+                notesTextField.placeholder = @"Why are you creating this flag?";
                 break;                
             default:
                 break;
@@ -351,6 +357,8 @@
             } else if (textField == userAddressTextField){
                 [cityStateCountryTextField becomeFirstResponder];
             } else if (textField == cityStateCountryTextField){
+                [notesTextField becomeFirstResponder];
+            } else if (textField == notesTextField){
                 [self createFlag];
             }
         }
@@ -365,13 +373,17 @@
                 [artistTextField becomeFirstResponder];
             } else if (textField == artistTextField) {
                 [dateTextField becomeFirstResponder];
-            } else if (textField == emailTextField){
-                [phoneTextField becomeFirstResponder];
-            } else if (textField == phoneTextField){
-                [userAddressTextField becomeFirstResponder];
-            } else if (textField == userAddressTextField){
-                [cityStateCountryTextField becomeFirstResponder];
-            } else if (textField == cityStateCountryTextField){
+            } else if (textField == dateTextField){
+                [locationTextField becomeFirstResponder];
+            } else if (textField == locationTextField){
+                [materialTextField becomeFirstResponder];
+            } else if (textField == materialTextField){
+                [iconographyTextField becomeFirstResponder];
+            } else if (textField == iconographyTextField){
+                [creditTextField becomeFirstResponder];
+            } else if (textField == creditTextField){
+                [notesTextField becomeFirstResponder];
+            } else if (textField == notesTextField){
                 [self createFlag];
             }
         }

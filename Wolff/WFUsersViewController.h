@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 
 @protocol WFSelectUsersDelegate <NSObject>
+- (void)lightTableOwnersSelected:(NSOrderedSet*)selectedOwners;
 - (void)usersSelected:(NSOrderedSet*)selectedUsers;
 @end
 

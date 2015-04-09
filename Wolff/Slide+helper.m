@@ -8,12 +8,13 @@
 
 #import "Slide+helper.h"
 #import "SlideText+helper.h"
-#import "SlidePhoto+helper.h"
+#import "PhotoSlide+helper.h"
 #import "Art+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Slide (helper)
 - (void)populateFromDictionary:(NSDictionary *)dictionary {
+    //NSLog(@"slide helper: %@",dictionary);
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }
@@ -23,17 +24,18 @@
     if ([dictionary objectForKey:@"index"] && [dictionary objectForKey:@"index"] != [NSNull null]){
         self.index = [dictionary objectForKey:@"index"];
     }
-    if ([dictionary objectForKey:@"slide_photos"] && [dictionary objectForKey:@"slide_photos"] != [NSNull null]){
+    if ([dictionary objectForKey:@"photo_slides"] && [dictionary objectForKey:@"photo_slides"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (NSDictionary *photoDict in [dictionary objectForKey:@"slide_photos"]){
-            SlidePhoto *slidePhoto = [SlidePhoto MR_findFirstByAttribute:@"identifier" withValue:[photoDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!slidePhoto){
-                slidePhoto = [SlidePhoto MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        for (NSDictionary *photoDict in [dictionary objectForKey:@"photo_slides"]){
+            PhotoSlide *photoSlide = [PhotoSlide MR_findFirstByAttribute:@"identifier" withValue:[photoDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!photoSlide){
+                photoSlide = [PhotoSlide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [slidePhoto populateFromDictionary:photoDict];
-            [set addObject:slidePhoto];
+            [photoSlide populateFromDictionary:photoDict];
+            photoSlide.slide = self;
+            [set addObject:photoSlide];
         }
-        self.slidePhotos = set;
+        self.photoSlides = set;
     }
     if ([dictionary objectForKey:@"slide_texts"] && [dictionary objectForKey:@"slide_texts"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
@@ -47,40 +49,33 @@
         }
         self.slideTexts = set;
     }
-    if ([dictionary objectForKey:@"photos"] && [dictionary objectForKey:@"photos"] != [NSNull null]){
-        NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSet];
-        for (NSDictionary *photoDict in [dictionary objectForKey:@"photos"]){
-            Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[photoDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!photo){
-                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-            }
-            [photo populateFromDictionary:photoDict];
-            [photos addObject:photo];
-        }
-        self.photos = photos;
-    }
 }
 
-- (void)addPhoto:(Photo *)photo {
-    NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
-    if ([self.photos containsObject:photo]){
-        
-    }
-    [photos addObject:photo];
-    self.photos = photos;
+- (void)addPhotoSlide:(PhotoSlide *)photoSlide {
+    NSMutableOrderedSet *photoSlides = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photoSlides];
+    [photoSlides addObject:photoSlide];
+    self.photoSlides = photoSlides;
 }
 
-- (void)removePhoto:(Photo*)photo {
-    NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
-    [photos removeObject:photo];
-    self.photos = photos;
+- (void)removePhotoSlide:(PhotoSlide *)photoSlide {
+    NSMutableOrderedSet *photoSlides = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photoSlides];
+    [photoSlides removeObject:photoSlide];
+    self.photoSlides = photoSlides;
 }
 
-- (void)replacePhotoAtIndex:(NSInteger)index withPhoto:(Photo *)photo {
-    NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
-    [photos removeObjectAtIndex:index];
-    [photos insertObject:photo atIndex:index];
-    self.photos = photos;
+- (void)replacePhotoSlideAtIndex:(NSInteger)index withPhotoSlide:(PhotoSlide *)photoSlide {
+    NSMutableOrderedSet *photoSlides = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photoSlides];
+    [photoSlides removeObjectAtIndex:index];
+    [photoSlides insertObject:photoSlide atIndex:index];
+    self.photoSlides = photoSlides;
+}
+
+- (NSOrderedSet *)photos {
+    NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSetWithCapacity:self.photoSlides.count];
+    [self.photoSlides enumerateObjectsUsingBlock:^(PhotoSlide *photoSlide, NSUInteger idx, BOOL *stop) {
+        [photos addObject:photoSlide.photo];
+    }];
+    return photos;
 }
 
 @end

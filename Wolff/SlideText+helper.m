@@ -10,7 +10,7 @@
 
 @implementation SlideText (helper)
 - (void)populateFromDictionary:(NSDictionary *)dictionary {
-    NSLog(@"Slide text helper: %@",dictionary);
+    //NSLog(@"Slide text helper: %@",dictionary);
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }
@@ -22,6 +22,12 @@
     }
     if ([dictionary objectForKey:@"font_size"] && [dictionary objectForKey:@"font_size"] != [NSNull null]){
         self.fontSize = [dictionary objectForKey:@"font_size"];
+    }
+    if ([dictionary objectForKey:@"position_x"] && [dictionary objectForKey:@"position_x"] != [NSNull null]){
+        self.positionX = [dictionary objectForKey:@"position_x"];
+    }
+    if ([dictionary objectForKey:@"position_y"] && [dictionary objectForKey:@"position_y"] != [NSNull null]){
+        self.positionY = [dictionary objectForKey:@"position_y"];
     }
 }
 @end

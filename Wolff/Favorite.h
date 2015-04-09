@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class Art, Artist, User, Photo, Table;
+@class Art, Artist, User, Photo, LightTable;
 
 @interface Favorite : NSManagedObject
 
@@ -19,6 +19,6 @@
 @property (nonatomic, retain) Art *art;
 @property (nonatomic, retain) Photo *photo;
 @property (nonatomic, retain) Artist *artist;
-@property (nonatomic, retain) Table *table;
+@property (nonatomic, retain) LightTable *table;
 
 @end

@@ -8,7 +8,7 @@
 
 #import "Slideshow+helper.h"
 #import "Slide+helper.h"
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 #import "User+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
@@ -26,6 +26,9 @@
     }
     if ([dictionary objectForKey:@"description"] && [dictionary objectForKey:@"description"] != [NSNull null]){
         self.slideshowDescription = [dictionary objectForKey:@"description"];
+    }
+    if ([dictionary objectForKey:@"show_title_slide"] && [dictionary objectForKey:@"show_title_slide"] != [NSNull null]){
+        self.showTitleSlide = [dictionary objectForKey:@"show_title_slide"];
     }
     if ([dictionary objectForKey:@"slides"] && [dictionary objectForKey:@"slides"] != [NSNull null]){
         NSMutableOrderedSet *slides = [NSMutableOrderedSet orderedSet];
@@ -61,9 +64,9 @@
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"public_light_tables"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Table *lightTable = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            LightTable *lightTable = [LightTable MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!lightTable){
-                lightTable = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [lightTable populateFromDictionary:dict];
             [set addObject:lightTable];

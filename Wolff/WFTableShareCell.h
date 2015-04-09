@@ -7,10 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 
 @interface WFTableShareCell : UITableViewCell
 
-- (void)configureForTable:(Table*)table;
+- (void)configureForTable:(LightTable*)table;
 
 @end

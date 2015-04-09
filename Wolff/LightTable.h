@@ -1,5 +1,5 @@
 //
-//  Table.h
+//  LightTable.h
 //  Wolff
 //
 //  Created by Max Haines-Stiles on 11/25/14.
@@ -11,7 +11,7 @@
 
 @class User;
 
-@interface Table : NSManagedObject
+@interface LightTable : NSManagedObject
 
 @property (nonatomic, retain) NSNumber * identifier;
 @property (nonatomic, retain) NSNumber * visible;
@@ -26,6 +26,6 @@
 @property (nonatomic, retain) NSOrderedSet *owners;
 @end
 
-@interface Table (CoreDataGeneratedAccessors)
+@interface LightTable (CoreDataGeneratedAccessors)
 
 @end

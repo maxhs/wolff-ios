@@ -10,7 +10,7 @@
 #import "Art+helper.h"
 #import "Photo+helper.h"
 #import "User+helper.h"
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Favorite (helper)
@@ -49,9 +49,9 @@
         self.user = user;
     }
     if ([dictionary objectForKey:@"light_table_id"] && [dictionary objectForKey:@"light_table_id"] != [NSNull null]){
-        Table *table = [Table MR_findFirstByAttribute:@"identifier" withValue:[dictionary objectForKey:@"light_table_id"]inContext:[NSManagedObjectContext MR_defaultContext]];
+        LightTable *table = [LightTable MR_findFirstByAttribute:@"identifier" withValue:[dictionary objectForKey:@"light_table_id"]inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!table){
-            table = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            table = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             table.identifier = [dictionary objectForKey:@"light_table_id"];
         }
         self.table = table;

@@ -11,6 +11,7 @@
 #import "Constants.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 #import <SDWebImage/UIButton+WebCache.h>
+#import "SlideText+helper.h"
 
 @implementation WFSlideTableCell
 
@@ -26,10 +27,7 @@
     [_artImageView3 setContentMode:UIViewContentModeScaleAspectFit];
     
     [_scrollView setBackgroundColor:[UIColor clearColor]];
-    [_removeButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThin] size:0]];
-    [_removeButton setTitle:@"Remove" forState:UIControlStateNormal];
-    [_moveButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansThin] size:0]];
-    [_moveButton setTitle:@"Move" forState:UIControlStateNormal];
+    [_slideTextLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0]];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -38,6 +36,7 @@
 
 - (void)prepareForReuse {
     [super prepareForReuse];
+    [_slideTextLabel setHidden:YES];
     [_artImageView1 setImage:nil];
     [_artImageView2 setImage:nil];
     [_artImageView3 setImage:nil];
@@ -50,40 +49,42 @@
 - (void)configureForSlide:(Slide *)slide withSlideNumber:(NSInteger)number {
     [_slideNumberLabel setText:[NSString stringWithFormat:@"%ld.",(long)number]];
     if (slide){
-        if (slide.photos.count == 1){
+        if (slide.photoSlides.count == 1){
             [_artImageView1 setHidden:NO];
             [_artImageView2 setHidden:YES];
             [_artImageView3 setHidden:YES];
-            Photo *photo = (Photo*)[slide.photos firstObject];
-            [_artImageView1 sd_setImageWithURL:[NSURL URLWithString:photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                [_artImageView1 setPhoto:photo];
+            PhotoSlide *photoSlide = slide.photoSlides.firstObject;
+            [_artImageView1 sd_setImageWithURL:[NSURL URLWithString:photoSlide.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                [_artImageView1 setPhoto:photoSlide.photo];
                 [self rasterize:_artImageView1];
             }];
-        } else if (slide.photos.count > 1) {
+        } else if (slide.photoSlides.count > 1) {
             [_artImageView1 setHidden:YES];
             [_artImageView2 setHidden:NO];
             [_artImageView3 setHidden:NO];
             
-            Photo *photo2 = (Photo*)slide.photos[0];
-            [_artImageView2 sd_setImageWithURL:[NSURL URLWithString:photo2.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                [_artImageView2 setPhoto:photo2];
+            PhotoSlide *photoSlide = slide.photoSlides[0];
+            [_artImageView2 sd_setImageWithURL:[NSURL URLWithString:photoSlide.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                [_artImageView2 setPhoto:photoSlide.photo];
                 [self rasterize:_artImageView2];
             }];
-            Photo *photo3 = (Photo*)slide.photos[1];
-            [_artImageView3 sd_setImageWithURL:[NSURL URLWithString:photo3.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                [_artImageView3 setPhoto:photo3];
+            PhotoSlide *photoSlide1 = slide.photoSlides[1];
+            [_artImageView3 sd_setImageWithURL:[NSURL URLWithString:photoSlide1.photo.slideImageUrl] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                [_artImageView3 setPhoto:photoSlide1.photo];
                 [self rasterize:_artImageView3];
             }];
             
         } else {
-            
+            if (slide.slideTexts.count){
+                SlideText *slideText = slide.slideTexts.firstObject;
+                [_slideTextLabel setText:slideText.body];
+                [_slideTextLabel setHidden:NO];
+            }
             [_artImageView1 setImage:nil];
             [_artImageView2 setImage:nil];
             [_artImageView3 setImage:nil];
-            
         }
-        //clear the background
-        [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:0]];
+        [_artImageView1 setBackgroundColor:[UIColor colorWithWhite:1 alpha:0]];  // clear the background
     }
 }
 

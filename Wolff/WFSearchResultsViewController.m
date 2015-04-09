@@ -168,8 +168,8 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0){
         Photo *photo = _photos[indexPath.row];
-        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhotoWithId:)]) {
-            [self.searchDelegate searchDidSelectPhotoWithId:photo.identifier];
+        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhoto:)]) {
+            [self.searchDelegate searchDidSelectPhoto:photo];
         }
     } else {
         [self removeSelected];
@@ -196,14 +196,18 @@
     }
 }
 
-- (void)lightTableSelected:(NSNumber *)lightTableId {
-    if ([lightTableId isEqualToNumber:@0]){
+- (void)lightTableSelected:(LightTable *)l {
+    LightTable *lightTable;
+    if (l){
+        lightTable = [l MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+    }
+    if (!lightTable || [lightTable.identifier isEqualToNumber:@0]){
         if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(newLightTableForSelected)]) {
             [self.searchDelegate newLightTableForSelected];
         }
     } else {
-        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(batchSelectForLightTableWithId:)]) {
-            [self.searchDelegate batchSelectForLightTableWithId:lightTableId];
+        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(batchSelectForLightTable:)]) {
+            [self.searchDelegate batchSelectForLightTable:lightTable];
         }
     }
 }
@@ -287,8 +291,8 @@
         [selectedPhotos addObject:photo];
     }
     [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
-    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhotoWithId:)]) {
-        [self.searchDelegate searchDidSelectPhotoWithId:photo.identifier];
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhoto:)]) {
+        [self.searchDelegate searchDidSelectPhoto:photo];
     }
 }
 

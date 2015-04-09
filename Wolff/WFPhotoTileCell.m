@@ -12,7 +12,7 @@
 @implementation WFPhotoTileCell
 
 - (void)configureForPhoto:(Photo*)photo {
-    [self.artImageView sd_setImageWithURL:[NSURL URLWithString:photo.mediumImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+    [self.artImageView sd_setImageWithURL:[NSURL URLWithString:photo.thumbImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
         [UIView animateWithDuration:.23 animations:^{
             [self.artImageView setAlpha:1.0];
         } completion:^(BOOL finished) {

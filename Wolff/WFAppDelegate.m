@@ -162,6 +162,7 @@
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)pushMessage {
     [[Mixpanel sharedInstance] trackPushNotification:pushMessage];
+    NSLog(@"Did receive a push: %@",pushMessage);
 }
 
 - (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
@@ -176,7 +177,7 @@
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         [parameters setObject:[[NSUserDefaults standardUserDefaults]  objectForKey:kUserDefaultsDeviceToken] forKey:@"token"];
         [_manager POST:[NSString stringWithFormat:@"users/%@/push_tokens",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success posting a push token: %@",responseObject);
+            //NSLog(@"Success posting a push token: %@",responseObject);
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failure posting a push token: %@",error.description);
         }];

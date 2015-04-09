@@ -11,7 +11,7 @@
 #import "Slideshow+helper.h"
 #import "Photo+helper.h"
 #import "Art+helper.h"
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 #import "Discussion+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
@@ -41,9 +41,9 @@
     }
     if ([dictionary objectForKey:@"light_table"] && [dictionary objectForKey:@"light_table"] != [NSNull null]){
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"light_table"] objectForKey:@"id"]];
-        Table *lightTable = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        LightTable *lightTable = [LightTable MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!lightTable){
-            lightTable = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [lightTable populateFromDictionary:[dictionary objectForKey:@"light_table"]];
         self.lightTable = lightTable;

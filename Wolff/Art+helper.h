@@ -19,4 +19,5 @@
 - (NSString*)materialsToSentence;
 - (NSString*)artistsToSentence;
 - (NSString*)locationsToSentence;
+- (NSString*)tagsToSentence;
 @end

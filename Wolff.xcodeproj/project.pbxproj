@@ -48,6 +48,11 @@
 		503CD5B41A773A6900F4FF85 /* whiteLogo.png in Resources */ = {isa = PBXBuildFile; fileRef = 503CD5B11A773A6900F4FF85 /* whiteLogo.png */; };
 		503CD5B51A773A6900F4FF85 /* whiteLogo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 503CD5B21A773A6900F4FF85 /* whiteLogo@2x.png */; };
 		503CD5B61A773A6900F4FF85 /* whiteLogo@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 503CD5B31A773A6900F4FF85 /* whiteLogo@3x.png */; };
+		504192AD1AD2198E0017405D /* Tag.m in Sources */ = {isa = PBXBuildFile; fileRef = 504192AC1AD2198E0017405D /* Tag.m */; };
+		504192B01AD22FA00017405D /* Tag+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 504192AF1AD22FA00017405D /* Tag+helper.m */; };
+		504192B31AD2315E0017405D /* WFTagsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 504192B21AD2315E0017405D /* WFTagsViewController.m */; };
+		504192B61AD232960017405D /* WFNewTagCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 504192B51AD232960017405D /* WFNewTagCell.m */; };
+		504192B91AD232A70017405D /* WFTagCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 504192B81AD232A70017405D /* WFTagCollectionCell.m */; };
 		504237ED1A93991F0064408C /* WFBillingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 504237EC1A93991F0064408C /* WFBillingViewController.m */; };
 		504237F01A9399320064408C /* WFBillingCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 504237EF1A9399320064408C /* WFBillingCell.m */; };
 		504237F31A93A18C0064408C /* WFNewPhotoContainerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 504237F21A93A18C0064408C /* WFNewPhotoContainerView.m */; };
@@ -183,12 +188,13 @@
 		50B325611AA14B96003B7DB2 /* blueLock.png in Resources */ = {isa = PBXBuildFile; fileRef = 50B3255B1AA14B96003B7DB2 /* blueLock.png */; };
 		50B325621AA14B96003B7DB2 /* blueLock@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50B3255C1AA14B96003B7DB2 /* blueLock@2x.png */; };
 		50B325631AA14B96003B7DB2 /* blueLock@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50B3255D1AA14B96003B7DB2 /* blueLock@3x.png */; };
+		50B525561AD58EAA00C84856 /* WFLightTableTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B525551AD58EAA00C84856 /* WFLightTableTableCell.m */; };
 		50B6FA6F1AC47A6C006703AA /* WFNewSlideTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B6FA6E1AC47A6C006703AA /* WFNewSlideTableCell.m */; };
 		50B6FA721AC4916E006703AA /* SlideText.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B6FA711AC4916E006703AA /* SlideText.m */; };
 		50B6FA751AC491F4006703AA /* SlideText+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B6FA741AC491F4006703AA /* SlideText+helper.m */; };
 		50B6FA781AC4969C006703AA /* WFSlideTextViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B6FA771AC4969C006703AA /* WFSlideTextViewController.m */; };
-		50B6FA7B1AC53009006703AA /* SlidePhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B6FA7A1AC53009006703AA /* SlidePhoto.m */; };
-		50B6FA7E1AC53025006703AA /* SlidePhoto+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B6FA7D1AC53025006703AA /* SlidePhoto+helper.m */; };
+		50B6FA7B1AC53009006703AA /* PhotoSlide.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B6FA7A1AC53009006703AA /* PhotoSlide.m */; };
+		50B6FA7E1AC53025006703AA /* PhotoSlide+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 50B6FA7D1AC53025006703AA /* PhotoSlide+helper.m */; };
 		50C589511A8528970094DBBF /* WFDateMetadataCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589501A8528970094DBBF /* WFDateMetadataCell.m */; };
 		50C589541A8558070094DBBF /* WFMaterialsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589531A8558070094DBBF /* WFMaterialsViewController.m */; };
 		50C589571A8558450094DBBF /* WFMaterialCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589561A8558450094DBBF /* WFMaterialCollectionCell.m */; };
@@ -324,9 +330,9 @@
 		F20FB2E61A24DBF50007C905 /* Artist+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB2E51A24DBF50007C905 /* Artist+helper.m */; };
 		F20FB2E91A24DCBE0007C905 /* Material.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB2E81A24DCBE0007C905 /* Material.m */; };
 		F20FB2EC1A24DCCE0007C905 /* Material+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB2EB1A24DCCE0007C905 /* Material+helper.m */; };
-		F20FB2F51A24DF3A0007C905 /* Table.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB2F41A24DF3A0007C905 /* Table.m */; };
+		F20FB2F51A24DF3A0007C905 /* LightTable.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB2F41A24DF3A0007C905 /* LightTable.m */; };
 		F20FB2FB1A24DF580007C905 /* Citation+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB2FA1A24DF580007C905 /* Citation+helper.m */; };
-		F20FB2FE1A24DF620007C905 /* Table+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB2FD1A24DF620007C905 /* Table+helper.m */; };
+		F20FB2FE1A24DF620007C905 /* LightTable+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB2FD1A24DF620007C905 /* LightTable+helper.m */; };
 		F20FB3011A24E0850007C905 /* NSArray+ToSentence.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB3001A24E0850007C905 /* NSArray+ToSentence.m */; };
 		F20FB3041A24E9650007C905 /* Icon.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB3031A24E9650007C905 /* Icon.m */; };
 		F20FB3071A24E9730007C905 /* Icon+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB3061A24E9730007C905 /* Icon+helper.m */; };
@@ -467,6 +473,16 @@
 		503CD5B11A773A6900F4FF85 /* whiteLogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteLogo.png; sourceTree = "<group>"; };
 		503CD5B21A773A6900F4FF85 /* whiteLogo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "whiteLogo@2x.png"; sourceTree = "<group>"; };
 		503CD5B31A773A6900F4FF85 /* whiteLogo@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "whiteLogo@3x.png"; sourceTree = "<group>"; };
+		504192AB1AD2198E0017405D /* Tag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tag.h; sourceTree = "<group>"; };
+		504192AC1AD2198E0017405D /* Tag.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Tag.m; sourceTree = "<group>"; };
+		504192AE1AD22FA00017405D /* Tag+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Tag+helper.h"; sourceTree = "<group>"; };
+		504192AF1AD22FA00017405D /* Tag+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "Tag+helper.m"; sourceTree = "<group>"; };
+		504192B11AD2315E0017405D /* WFTagsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFTagsViewController.h; sourceTree = "<group>"; };
+		504192B21AD2315E0017405D /* WFTagsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFTagsViewController.m; sourceTree = "<group>"; };
+		504192B41AD232960017405D /* WFNewTagCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNewTagCell.h; sourceTree = "<group>"; };
+		504192B51AD232960017405D /* WFNewTagCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFNewTagCell.m; sourceTree = "<group>"; };
+		504192B71AD232A70017405D /* WFTagCollectionCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFTagCollectionCell.h; sourceTree = "<group>"; };
+		504192B81AD232A70017405D /* WFTagCollectionCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFTagCollectionCell.m; sourceTree = "<group>"; };
 		504237EB1A93991F0064408C /* WFBillingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBillingViewController.h; sourceTree = "<group>"; };
 		504237EC1A93991F0064408C /* WFBillingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFBillingViewController.m; sourceTree = "<group>"; };
 		504237EE1A9399320064408C /* WFBillingCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBillingCell.h; sourceTree = "<group>"; };
@@ -623,6 +639,8 @@
 		50B3255B1AA14B96003B7DB2 /* blueLock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blueLock.png; sourceTree = "<group>"; };
 		50B3255C1AA14B96003B7DB2 /* blueLock@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "blueLock@2x.png"; sourceTree = "<group>"; };
 		50B3255D1AA14B96003B7DB2 /* blueLock@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "blueLock@3x.png"; sourceTree = "<group>"; };
+		50B525541AD58EAA00C84856 /* WFLightTableTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFLightTableTableCell.h; sourceTree = "<group>"; };
+		50B525551AD58EAA00C84856 /* WFLightTableTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFLightTableTableCell.m; sourceTree = "<group>"; };
 		50B6FA6D1AC47A6C006703AA /* WFNewSlideTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNewSlideTableCell.h; sourceTree = "<group>"; };
 		50B6FA6E1AC47A6C006703AA /* WFNewSlideTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFNewSlideTableCell.m; sourceTree = "<group>"; };
 		50B6FA701AC4916E006703AA /* SlideText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SlideText.h; sourceTree = "<group>"; };
@@ -631,10 +649,10 @@
 		50B6FA741AC491F4006703AA /* SlideText+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SlideText+helper.m"; sourceTree = "<group>"; };
 		50B6FA761AC4969C006703AA /* WFSlideTextViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFSlideTextViewController.h; sourceTree = "<group>"; };
 		50B6FA771AC4969C006703AA /* WFSlideTextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFSlideTextViewController.m; sourceTree = "<group>"; };
-		50B6FA791AC53009006703AA /* SlidePhoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SlidePhoto.h; sourceTree = "<group>"; };
-		50B6FA7A1AC53009006703AA /* SlidePhoto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SlidePhoto.m; sourceTree = "<group>"; };
-		50B6FA7C1AC53025006703AA /* SlidePhoto+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SlidePhoto+helper.h"; sourceTree = "<group>"; };
-		50B6FA7D1AC53025006703AA /* SlidePhoto+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SlidePhoto+helper.m"; sourceTree = "<group>"; };
+		50B6FA791AC53009006703AA /* PhotoSlide.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PhotoSlide.h; sourceTree = "<group>"; };
+		50B6FA7A1AC53009006703AA /* PhotoSlide.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PhotoSlide.m; sourceTree = "<group>"; };
+		50B6FA7C1AC53025006703AA /* PhotoSlide+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "PhotoSlide+helper.h"; sourceTree = "<group>"; };
+		50B6FA7D1AC53025006703AA /* PhotoSlide+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "PhotoSlide+helper.m"; sourceTree = "<group>"; };
 		50C5894F1A8528970094DBBF /* WFDateMetadataCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFDateMetadataCell.h; sourceTree = "<group>"; };
 		50C589501A8528970094DBBF /* WFDateMetadataCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFDateMetadataCell.m; sourceTree = "<group>"; };
 		50C589521A8558070094DBBF /* WFMaterialsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMaterialsViewController.h; sourceTree = "<group>"; };
@@ -835,12 +853,12 @@
 		F20FB2E81A24DCBE0007C905 /* Material.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Material.m; sourceTree = "<group>"; };
 		F20FB2EA1A24DCCE0007C905 /* Material+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Material+helper.h"; sourceTree = "<group>"; };
 		F20FB2EB1A24DCCE0007C905 /* Material+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "Material+helper.m"; sourceTree = "<group>"; };
-		F20FB2F31A24DF3A0007C905 /* Table.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Table.h; sourceTree = "<group>"; };
-		F20FB2F41A24DF3A0007C905 /* Table.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Table.m; sourceTree = "<group>"; };
+		F20FB2F31A24DF3A0007C905 /* LightTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LightTable.h; sourceTree = "<group>"; };
+		F20FB2F41A24DF3A0007C905 /* LightTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LightTable.m; sourceTree = "<group>"; };
 		F20FB2F91A24DF580007C905 /* Citation+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Citation+helper.h"; sourceTree = "<group>"; };
 		F20FB2FA1A24DF580007C905 /* Citation+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "Citation+helper.m"; sourceTree = "<group>"; };
-		F20FB2FC1A24DF620007C905 /* Table+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Table+helper.h"; sourceTree = "<group>"; };
-		F20FB2FD1A24DF620007C905 /* Table+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "Table+helper.m"; sourceTree = "<group>"; };
+		F20FB2FC1A24DF620007C905 /* LightTable+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "LightTable+helper.h"; sourceTree = "<group>"; };
+		F20FB2FD1A24DF620007C905 /* LightTable+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "LightTable+helper.m"; sourceTree = "<group>"; };
 		F20FB2FF1A24E0850007C905 /* NSArray+ToSentence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+ToSentence.h"; sourceTree = "<group>"; };
 		F20FB3001A24E0850007C905 /* NSArray+ToSentence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+ToSentence.m"; sourceTree = "<group>"; };
 		F20FB3021A24E9650007C905 /* Icon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Icon.h; sourceTree = "<group>"; };
@@ -1107,6 +1125,8 @@
 				50AB427B1AB6769900C4EF5A /* WFUsersViewController.m */,
 				50D6EC181A82E53B00DAE52E /* WFLocationsViewController.h */,
 				50D6EC191A82E53B00DAE52E /* WFLocationsViewController.m */,
+				504192B11AD2315E0017405D /* WFTagsViewController.h */,
+				504192B21AD2315E0017405D /* WFTagsViewController.m */,
 				50C589521A8558070094DBBF /* WFMaterialsViewController.h */,
 				50C589531A8558070094DBBF /* WFMaterialsViewController.m */,
 				50A077AE1A8EF3E900147A0F /* WFIconsViewController.h */,
@@ -1282,10 +1302,10 @@
 				F2CE05AE199117990061DB94 /* Slide.m */,
 				F2CE05B319911AA10061DB94 /* Slide+helper.h */,
 				F2CE05B419911AA10061DB94 /* Slide+helper.m */,
-				50B6FA791AC53009006703AA /* SlidePhoto.h */,
-				50B6FA7A1AC53009006703AA /* SlidePhoto.m */,
-				50B6FA7C1AC53025006703AA /* SlidePhoto+helper.h */,
-				50B6FA7D1AC53025006703AA /* SlidePhoto+helper.m */,
+				50B6FA791AC53009006703AA /* PhotoSlide.h */,
+				50B6FA7A1AC53009006703AA /* PhotoSlide.m */,
+				50B6FA7C1AC53025006703AA /* PhotoSlide+helper.h */,
+				50B6FA7D1AC53025006703AA /* PhotoSlide+helper.m */,
 				50B6FA701AC4916E006703AA /* SlideText.h */,
 				50B6FA711AC4916E006703AA /* SlideText.m */,
 				50B6FA731AC491F4006703AA /* SlideText+helper.h */,
@@ -1318,6 +1338,10 @@
 				F2CE0578198E91910061DB94 /* Art.m */,
 				F2CE0574198E85DA0061DB94 /* Art+helper.h */,
 				F2CE0575198E85DA0061DB94 /* Art+helper.m */,
+				504192AB1AD2198E0017405D /* Tag.h */,
+				504192AC1AD2198E0017405D /* Tag.m */,
+				504192AE1AD22FA00017405D /* Tag+helper.h */,
+				504192AF1AD22FA00017405D /* Tag+helper.m */,
 				5026DF521A3B470A000CD26F /* Interval.h */,
 				5026DF531A3B470A000CD26F /* Interval.m */,
 				5026DF551A3B473E000CD26F /* Interval+helper.h */,
@@ -1350,10 +1374,10 @@
 				F20FB2C11A22AFC60007C905 /* Favorite.m */,
 				F20FB2C31A22AFDE0007C905 /* Favorite+helper.h */,
 				F20FB2C41A22AFDE0007C905 /* Favorite+helper.m */,
-				F20FB2F31A24DF3A0007C905 /* Table.h */,
-				F20FB2F41A24DF3A0007C905 /* Table.m */,
-				F20FB2FC1A24DF620007C905 /* Table+helper.h */,
-				F20FB2FD1A24DF620007C905 /* Table+helper.m */,
+				F20FB2F31A24DF3A0007C905 /* LightTable.h */,
+				F20FB2F41A24DF3A0007C905 /* LightTable.m */,
+				F20FB2FC1A24DF620007C905 /* LightTable+helper.h */,
+				F20FB2FD1A24DF620007C905 /* LightTable+helper.m */,
 				50FB5F7E1A3F3734004D6062 /* Citation.h */,
 				50FB5F7F1A3F3734004D6062 /* Citation.m */,
 				F20FB2F91A24DF580007C905 /* Citation+helper.h */,
@@ -1626,16 +1650,22 @@
 				50DB447D1A586B8F00856174 /* WFSaveMenuCell.m */,
 				50DB02271A5A72D8005A4E2F /* WFLightTableDetailsCell.h */,
 				50DB02281A5A72D8005A4E2F /* WFLightTableDetailsCell.m */,
-				505D3B791A64D56B00CD70DE /* WFLightTableKeyCell.h */,
-				505D3B7A1A64D56B00CD70DE /* WFLightTableKeyCell.m */,
+				50B525541AD58EAA00C84856 /* WFLightTableTableCell.h */,
+				50B525551AD58EAA00C84856 /* WFLightTableTableCell.m */,
 				50D6EC0C1A7C79CA00DAE52E /* WFLightTableContentsCell.h */,
 				50D6EC0D1A7C79CA00DAE52E /* WFLightTableContentsCell.m */,
+				505D3B791A64D56B00CD70DE /* WFLightTableKeyCell.h */,
+				505D3B7A1A64D56B00CD70DE /* WFLightTableKeyCell.m */,
 				503CD5931A715D7300F4FF85 /* WFFlagCell.h */,
 				503CD5941A715D7300F4FF85 /* WFFlagCell.m */,
 				50D6EC151A82E52800DAE52E /* WFLocationCollectionCell.h */,
 				50D6EC161A82E52800DAE52E /* WFLocationCollectionCell.m */,
 				50A9D4181A83E6CB000B8DD6 /* WFNewLocationCell.h */,
 				50A9D4191A83E6CB000B8DD6 /* WFNewLocationCell.m */,
+				504192B41AD232960017405D /* WFNewTagCell.h */,
+				504192B51AD232960017405D /* WFNewTagCell.m */,
+				504192B71AD232A70017405D /* WFTagCollectionCell.h */,
+				504192B81AD232A70017405D /* WFTagCollectionCell.m */,
 				50D6EC121A8285E500DAE52E /* WFArtistCollectionCell.h */,
 				50D6EC131A8285E500DAE52E /* WFArtistCollectionCell.m */,
 				50D6EC211A832D8D00DAE52E /* WFNewArtistCell.h */,
@@ -2044,10 +2074,10 @@
 				50DB44281A54CA4E00856174 /* WFSearchResultsCell.m in Sources */,
 				505D3B7B1A64D56B00CD70DE /* WFLightTableKeyCell.m in Sources */,
 				F20A3EB719EB1A29008E0D4C /* UIFontDescriptor+Custom.m in Sources */,
-				50B6FA7B1AC53009006703AA /* SlidePhoto.m in Sources */,
+				50B6FA7B1AC53009006703AA /* PhotoSlide.m in Sources */,
 				50A077B01A8EF3E900147A0F /* WFIconsViewController.m in Sources */,
 				F20FB3011A24E0850007C905 /* NSArray+ToSentence.m in Sources */,
-				F20FB2FE1A24DF620007C905 /* Table+helper.m in Sources */,
+				F20FB2FE1A24DF620007C905 /* LightTable+helper.m in Sources */,
 				50DB445B1A5745B300856174 /* WFSlideshowSettingsCell.m in Sources */,
 				5049263E1A593262000C6FD9 /* WFSlideMetadataCell.m in Sources */,
 				50DB44401A55DF4C00856174 /* WFCatalogHeaderView.m in Sources */,
@@ -2071,6 +2101,7 @@
 				F20A3ECD19EB37B1008E0D4C /* Photo+helper.m in Sources */,
 				F28C77FF18E1E4950088B4C9 /* Wolff.xcdatamodeld in Sources */,
 				F20A3EBA19EB1AFD008E0D4C /* Location.m in Sources */,
+				504192B91AD232A70017405D /* WFTagCollectionCell.m in Sources */,
 				F28C670B1A34086500B82FD8 /* WFSlideshowFocusAnimator.m in Sources */,
 				F20FB3071A24E9730007C905 /* Icon+helper.m in Sources */,
 				50C5895A1A8558500094DBBF /* WFNewMaterialCell.m in Sources */,
@@ -2079,7 +2110,7 @@
 				50DB449C1A58C82700856174 /* WFComparisonViewController.m in Sources */,
 				F20FB2E61A24DBF50007C905 /* Artist+helper.m in Sources */,
 				F2CE0598198EAB7A0061DB94 /* WFSettingsCell.m in Sources */,
-				50B6FA7E1AC53025006703AA /* SlidePhoto+helper.m in Sources */,
+				50B6FA7E1AC53025006703AA /* PhotoSlide+helper.m in Sources */,
 				50D6EC171A82E52800DAE52E /* WFLocationCollectionCell.m in Sources */,
 				50B6FA751AC491F4006703AA /* SlideText+helper.m in Sources */,
 				50DB44581A57456C00856174 /* WFSlideshowSettingsViewController.m in Sources */,
@@ -2096,6 +2127,7 @@
 				50A9D41A1A83E6CB000B8DD6 /* WFNewLocationCell.m in Sources */,
 				F2CE054B198E72AC0061DB94 /* User.m in Sources */,
 				F20A3ECA19EB37A4008E0D4C /* Photo.m in Sources */,
+				504192B61AD232960017405D /* WFNewTagCell.m in Sources */,
 				50AB427F1AB6772100C4EF5A /* WFUserCollectionCell.m in Sources */,
 				F20FB2C51A22AFDE0007C905 /* Favorite+helper.m in Sources */,
 				F2139D80193A56BE00EE5C96 /* UIImage+ImageEffects.m in Sources */,
@@ -2127,6 +2159,7 @@
 				5026DF571A3B473E000CD26F /* Interval+helper.m in Sources */,
 				F2CE0582198E937B0061DB94 /* WFArtMetadataCell.m in Sources */,
 				50DB44011A545DA700856174 /* WFAssetGroupPickerController.m in Sources */,
+				50B525561AD58EAA00C84856 /* WFLightTableTableCell.m in Sources */,
 				F20FB2FB1A24DF580007C905 /* Citation+helper.m in Sources */,
 				503CD59E1A76F83600F4FF85 /* WFPhotoTileCell.m in Sources */,
 				50A077B61A8EF67300147A0F /* WFIconCollectionCell.m in Sources */,
@@ -2168,6 +2201,7 @@
 				50AB42821AB677B200C4EF5A /* WFNewUserCell.m in Sources */,
 				50300ADC1A97A6F900DBAC86 /* WFCardViewController.m in Sources */,
 				50C589511A8528970094DBBF /* WFDateMetadataCell.m in Sources */,
+				504192B31AD2315E0017405D /* WFTagsViewController.m in Sources */,
 				5026DF601A3CC4D1000CD26F /* WFTableCell.m in Sources */,
 				5026DF5A1A3CBE80000CD26F /* WFGroupsInteractor.m in Sources */,
 				50DB43BA1A5363EA00856174 /* Discussion+helper.m in Sources */,
@@ -2177,15 +2211,17 @@
 				F2CE0588198EA3A50061DB94 /* WFArtMetadataAnimator.m in Sources */,
 				F28C67081A33F4D900B82FD8 /* WFSlideshowSlideCell.m in Sources */,
 				F2CE05A91991167F0061DB94 /* WFSlideshowSplitViewController.m in Sources */,
+				504192B01AD22FA00017405D /* Tag+helper.m in Sources */,
 				F20FB2CB1A22B1A60007C905 /* WFNewArtCell.m in Sources */,
 				50DB44661A57901800856174 /* WFInteractiveImageView.m in Sources */,
-				F20FB2F51A24DF3A0007C905 /* Table.m in Sources */,
+				F20FB2F51A24DF3A0007C905 /* LightTable.m in Sources */,
 				F28C67021A33F2D500B82FD8 /* WFSlideDetailViewController.m in Sources */,
 				50DB447B1A586A3A00856174 /* WFSaveMenuViewController.m in Sources */,
 				F28C66FF1A33F27500B82FD8 /* WFSlideAnimator.m in Sources */,
 				F2CE05C2199141C40061DB94 /* WFLoginAnimator.m in Sources */,
 				F298A1BE19523065005B13EA /* WFLoginViewController.m in Sources */,
 				50A9D41D1A842590000B8DD6 /* WFDatePicker.m in Sources */,
+				504192AD1AD2198E0017405D /* Tag.m in Sources */,
 				508DC9A31A5B9ABD00B1C008 /* WFSearchOptionsCell.m in Sources */,
 				50C589541A8558070094DBBF /* WFMaterialsViewController.m in Sources */,
 				50DB43B11A5363C300856174 /* Comment.m in Sources */,

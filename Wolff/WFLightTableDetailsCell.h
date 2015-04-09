@@ -7,20 +7,26 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LightTable+helper.h"
 
-@interface WFLightTableDetailsCell : UICollectionViewCell
+@protocol WFLightTableDetailsDelegate <NSObject>
 
-@property (weak, nonatomic) IBOutlet UILabel *headerLabel;
-@property (weak, nonatomic) IBOutlet UILabel *titleLabel;
-@property (weak, nonatomic) IBOutlet UILabel *descriptionLabel;
-@property (weak, nonatomic) IBOutlet UILabel *keyLabel;
-@property (weak, nonatomic) IBOutlet UILabel *confirmKeyLabel;
-@property (weak, nonatomic) IBOutlet UILabel *ownersLabel;
-@property (weak, nonatomic) IBOutlet UITextView *textView;
-@property (weak, nonatomic) IBOutlet UITextField *titleTextField;
-@property (weak, nonatomic) IBOutlet UITextField *keyTextField;
-@property (weak, nonatomic) IBOutlet UITextField *confirmKeyTextField;
-@property (weak, nonatomic) IBOutlet UITextField *ownersTextField;
+- (void)doneEditing;
+- (void)didCreateLightTable:(LightTable*)table;
+- (void)didUpdateLightTable:(LightTable*)table;
+- (void)showOwners;
+- (void)showMembers;
+//- (void)didDeleteLightTable:(LightTable*)table;
+@end
+
+@interface WFLightTableDetailsCell : UICollectionViewCell <UITableViewDataSource, UITableViewDelegate>
+
+@property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (weak, nonatomic) IBOutlet UIView *topContainerView;
+@property (weak, nonatomic) UILabel *headerLabel;
 @property (weak, nonatomic) IBOutlet UIButton *actionButton;
+@property (weak, nonatomic) id<WFLightTableDetailsDelegate>lightTableDelegate;
+@property (strong, nonatomic) NSMutableOrderedSet *photos;
+- (void)configureForLightTable:(LightTable*)lightTable;
 
 @end

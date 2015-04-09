@@ -7,10 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 
 @interface WFTableCell : UITableViewCell
 
 @property (weak, nonatomic) IBOutlet UILabel *tableLabel;
-- (void)configureForTable:(Table*)table;
+- (void)configureForTable:(LightTable*)table;
 @end

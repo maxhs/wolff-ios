@@ -29,7 +29,7 @@
 
 - (void)configureForPhoto:(Photo *)photo {
     [_titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
-    [_titleLabel setTextColor:[UIColor blackColor]];
+    [_titleLabel setTextColor:[UIColor whiteColor]];
     [_titleLabel setText:photo.art.title];
     if (photo.isLandscape){
         [self.portraitArtImageView setHidden:YES];

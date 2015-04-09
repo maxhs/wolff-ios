@@ -72,7 +72,7 @@
     [super setSelected:selected animated:animated];
 }
 
-- (void)configureForTable:(Table *)table {
+- (void)configureForTable:(LightTable *)table {
     //set up the action button
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [table includesOwnerId:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
         [_deleteButton setTitle:@"Delete" forState:UIControlStateNormal];

@@ -15,6 +15,7 @@
 
 @property (nonatomic, retain) NSNumber * identifier;
 @property (nonatomic, retain) NSNumber * visible;
+@property (nonatomic, retain) NSNumber * showTitleSlide;
 @property (nonatomic, retain) NSString * title;
 @property (nonatomic, retain) NSString * slideshowDescription;
 @property (nonatomic, retain) NSOrderedSet *slides;

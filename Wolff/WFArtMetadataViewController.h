@@ -8,17 +8,17 @@
 
 #import <UIKit/UIKit.h>
 #import "Art+helper.h"
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 
 @protocol WFMetadataDelegate <NSObject>
 @optional
 - (void)artFlagged:(Art*)art;
 - (void)photoFlagged:(Photo*)photo;
 - (void)favoritedPhoto:(Photo*)photo;
-- (void)droppedPhoto:(Photo*)photo toLightTable:(Table*)lightTable;
-- (void)removedPhoto:(Photo*)photo fromLightTable:(Table*)lightTable;
-- (void)photoDeleted:(NSNumber*)photoId;
-- (void)artDeleted:(NSNumber*)artId;
+- (void)droppedPhoto:(Photo*)photo toLightTable:(LightTable*)lightTable;
+- (void)removedPhoto:(Photo*)photo fromLightTable:(LightTable*)lightTable;
+- (void)photoDeleted:(Photo*)photo;
+- (void)artDeleted:(Art*)art;
 @end
 
 @interface WFArtMetadataViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate>

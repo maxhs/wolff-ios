@@ -9,7 +9,7 @@
 #import "User+helper.h"
 #import "Institution+helper.h"
 #import "Slideshow+helper.h"
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 #import "Alternate+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 #import "WFUtilities.h"
@@ -176,14 +176,14 @@ typedef enum {
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"light_tables"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Table *table = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            LightTable *table = [LightTable MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!table){
-                table = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                table = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [table populateFromDictionary:dict];
             [set addObject:table];
         }
-        for (Table *table in self.lightTables){
+        for (LightTable *table in self.lightTables){
             if (![set containsObject:table]){
                 [table MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
             }
@@ -195,14 +195,14 @@ typedef enum {
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"public_light_tables"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Table *table = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            LightTable *table = [LightTable MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!table){
-                table = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                table = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [table populateFromDictionary:dict];
             [set addObject:table];
         }
-        for (Table *table in self.lightTables){
+        for (LightTable *table in self.lightTables){
             if (![set containsObject:table]){
                 [table MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
             }
@@ -371,13 +371,13 @@ typedef enum {
     self.favorites = favorites;
 }
 
-- (void)addLightTable:(Table *)lightTable {
+- (void)addLightTable:(LightTable *)lightTable {
     NSMutableOrderedSet *lightTables = [NSMutableOrderedSet orderedSetWithOrderedSet:self.lightTables];
     [lightTables addObject:lightTable];
     self.lightTables = lightTables;
 }
 
-- (void)removeLightTable:(Table *)lightTable {
+- (void)removeLightTable:(LightTable *)lightTable {
     NSMutableOrderedSet *lightTables = [NSMutableOrderedSet orderedSetWithOrderedSet:self.lightTables];
     [lightTables removeObject:lightTable];
     self.lightTables = lightTables;

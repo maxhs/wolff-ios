@@ -26,6 +26,7 @@
 #import "WFProfileViewController.h"
 #import "WFArtistsViewController.h"
 #import "WFLocationsViewController.h"
+#import "WFTagsViewController.h"
 #import "Art+helper.h"
 #import "WFMaterialsViewController.h"
 #import "WFIconsViewController.h"
@@ -33,7 +34,7 @@
 #import "WFMetadataModalAnimator.h"
 #import "Icon+helper.h"
 
-@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectIconsDelegate, WFSelectMaterialsDelegate, UIActionSheetDelegate, UITextFieldDelegate> {
+@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectIconsDelegate, WFSelectMaterialsDelegate, WFSelectTagsDelegate, UIActionSheetDelegate, UITextFieldDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     CGFloat width;
@@ -57,7 +58,6 @@
     CGFloat rowHeight;
     CGFloat textViewWidth;
     NSInteger currentPhotoIdx;
-    CGFloat imageWidth;
     
     UITextField *beginYearTextField;
     UITextField *endYearTextField;
@@ -149,10 +149,10 @@
         [_lastPhotoButton setHidden:NO];
     }
     
-    if (self.photoScrollView.contentOffset.x < imageWidth/2){
+    if (self.photoScrollView.contentOffset.x < 380.f/2){
         [_lastPhotoButton setEnabled:NO];
         [_nextPhotoButton setEnabled:YES];
-    } else if (self.photoScrollView.contentOffset.x >= ((self.photo.art.photos.count-1)*imageWidth)-imageWidth/2) {
+    } else if (self.photoScrollView.contentOffset.x >= ((self.photo.art.photos.count-1)*380.f)-380.f/2) {
         [_nextPhotoButton setEnabled:NO];
         [_lastPhotoButton setEnabled:YES];
     } else {
@@ -167,11 +167,13 @@
     [self.photoScrollView setBackgroundColor:[UIColor clearColor]];
     self.photoScrollView.delegate = self;
     self.photoScrollView.pagingEnabled = YES;
-    imageWidth = 360.f;
-    CGFloat imageHeight = 360.f;
     [self.photoScrollView setCanCancelContentTouches:YES];
     
     NSInteger idx = 0;
+    CGFloat landscapeWidth = 380.f;
+    CGFloat landscapeHeight = 260.f;
+    CGFloat portraitWidth = 260.f;
+    CGFloat portraitHeight = 380.f;
     for (Photo *photo in self.photo.art.photos){
         
         UIButton *imageButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -181,14 +183,17 @@
         imageButton.imageView.contentMode = UIViewContentModeScaleAspectFill;
         imageButton.imageView.layer.cornerRadius = 3.f;
         imageButton.imageView.layer.backgroundColor = [UIColor clearColor].CGColor;
-        [imageButton setFrame:CGRectMake(0+(idx*imageWidth), 0, imageWidth, imageHeight)];
+        if (photo.isLandscape){
+            [imageButton setFrame:CGRectMake(0+(idx*landscapeWidth), 60, landscapeWidth, landscapeHeight)];
+        } else {
+            [imageButton setFrame:CGRectMake(60+(idx*landscapeWidth), 0, portraitWidth, portraitHeight)];
+        }
         [self.photoScrollView addSubview:imageButton];
-        
         if (!imageButton.imageView.image){
             [imageButton setAlpha:0.0];
         }
         
-        [[SDWebImageManager sharedManager] downloadImageWithURL:[NSURL URLWithString:photo.mediumImageUrl] options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+        [[SDWebImageManager sharedManager] downloadImageWithURL:[NSURL URLWithString:photo.slideImageUrl] options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
             [_progressIndicator setProgress:((CGFloat)receivedSize / (CGFloat)expectedSize)];
         } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
             [imageButton setImage:image forState:UIControlStateNormal];
@@ -204,8 +209,8 @@
         idx ++;
     }
     
-    [self.photoScrollView setContentSize:CGSizeMake(self.photo.art.photos.count * imageWidth, imageHeight)];
-    [self.photoScrollView setContentOffset:CGPointMake(imageWidth * currentPhotoIdx, 0) animated:YES];
+    [self.photoScrollView setContentSize:CGSizeMake(self.photo.art.photos.count * landscapeWidth, landscapeWidth)]; //  use 380 as a max
+    [self.photoScrollView setContentOffset:CGPointMake(380.f * currentPhotoIdx, 0) animated:YES];
 }
 
 - (void)setPhotoCredit {
@@ -226,16 +231,16 @@
     } else {
         [_postedByButton setHidden:YES];
     }
-    [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:5 inSection:0],[NSIndexPath indexPathForRow:6 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
+    [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:6 inSection:0],[NSIndexPath indexPathForRow:7 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
 }
 
 - (void)nextPhoto {
-    [self.photoScrollView setContentOffset:CGPointMake(self.photoScrollView.contentOffset.x + imageWidth, 0) animated:YES];
+    [self.photoScrollView setContentOffset:CGPointMake(self.photoScrollView.contentOffset.x + 380.f, 0) animated:YES];
     currentPhotoIdx ++;
 }
 
 - (void)lastPhoto {
-    [self.photoScrollView setContentOffset:CGPointMake(self.photoScrollView.contentOffset.x - imageWidth, 0) animated:YES];
+    [self.photoScrollView setContentOffset:CGPointMake(self.photoScrollView.contentOffset.x - 380.f, 0) animated:YES];
     currentPhotoIdx --;
 }
 
@@ -253,7 +258,7 @@
             }
             [self setPhotoCount:currentPhotoIdx + 1]; // make sure to offset by 1
         }
-        if (offsetX > self.photoScrollView.contentSize.width - imageWidth/2){
+        if (offsetX > self.photoScrollView.contentSize.width - 380.f/2){
             [_nextPhotoButton setEnabled:NO];
         }
     }
@@ -335,9 +340,9 @@
     }
 }
 
-- (void)lightTableSelected:(NSNumber *)lightTableId {
+- (void)lightTableSelected:(LightTable *)l {
     //refetch the light table
-    Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
+    LightTable *lightTable = [l MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     [lightTable addPhoto:self.photo];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     
@@ -361,9 +366,9 @@
     }
 }
 
-- (void)undropPhotoFromLightTable:(NSNumber *)lightTableId {
+- (void)undropPhotoFromLightTable:(LightTable *)l {
     //refetch the light table
-    Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:lightTableId inContext:[NSManagedObjectContext MR_defaultContext]];
+    LightTable *lightTable = [l MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     [lightTable removePhoto:self.photo];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     [self setUpButtons];
@@ -432,7 +437,6 @@
             [titleTextView becomeFirstResponder];
         });
     } else {
-        
         // temporarily set the tableView background color to white so that the cell backgrounds don't get exposed
         [self.tableView setBackgroundColor:[UIColor whiteColor]];
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
@@ -473,36 +477,37 @@
 }
 
 - (void)loadPhotoMetadata {
-    [manager GET:[NSString stringWithFormat:@"photos/%@",self.photo.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success fetching metadata: %@",responseObject);
-        if ([responseObject objectForKey:@"text"]){
-            if ([[responseObject objectForKey:@"text"] isEqualToString:kNoPhoto]){
-                [self.photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-                [WFAlert show:@"Sorry, but something went wrong while trying to fetch this art.\n\nThe creator likely expunged it from our database." withTime:3.7f];
-                if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(photoDeleted:)]){
-                    [self.metadataDelegate photoDeleted:self.photo.identifier];
+    if (![self.photo.identifier isEqualToNumber:@0]){
+        [manager GET:[NSString stringWithFormat:@"photos/%@",self.photo.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            //NSLog(@"Success fetching metadata: %@",responseObject);
+            if ([responseObject objectForKey:@"text"]){
+                if ([[responseObject objectForKey:@"text"] isEqualToString:kNoPhoto]){
+                    [self.photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+                    [WFAlert show:@"Sorry, but something went wrong while trying to fetch this art.\n\nThe creator likely expunged it from our database." withTime:3.7f];
+                    if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(photoDeleted:)]){
+                        [self.metadataDelegate photoDeleted:self.photo];
+                    }
+                    
+                } else if ([[responseObject objectForKey:@"text"] isEqualToString:kArtDeleted]){
+                    [self.photo.art MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+                    if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(artDeleted:)]){
+                        [self.metadataDelegate artDeleted:self.photo.art];
+                    }
                 }
-                
-            } else if ([[responseObject objectForKey:@"text"] isEqualToString:kArtDeleted]){
-                NSLog(@"art deleted");
-                [self.photo.art MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-                if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(artDeleted:)]){
-                    [self.metadataDelegate artDeleted:self.photo.art.identifier];
-                }
+                [self dismiss];
+            } else {
+                [self.photo populateFromDictionary:[responseObject objectForKey:@"photo"]];
+                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                    [self setupHeader];
+                    [self.tableView reloadData];
+                }];
             }
-            [self dismiss];
-        } else {
-            [self.photo populateFromDictionary:[responseObject objectForKey:@"photo"]];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [self setupHeader];
-                [self.tableView reloadData];
-            }];
-        }
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"Error fetching art metadata: %@",error.description);
-    }];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Error fetching art metadata: %@",error.description);
+        }];
+    }
 }
 
 - (void)saveMetadata {
@@ -539,6 +544,12 @@
     }
     [artParameters setObject:locationIds forKey:@"location_ids"];
     
+    NSMutableArray *tagIds = [NSMutableArray arrayWithCapacity:self.photo.art.tags.count];
+    for (Tag *tag in self.photo.art.tags){
+        [tagIds addObject:tag.identifier];
+    }
+    [artParameters setObject:tagIds forKey:@"tag_ids"];
+    
     NSMutableArray *materialIds = [NSMutableArray arrayWithCapacity:self.photo.art.materials.count];
     for (Material *material in self.photo.art.materials){
         [materialIds addObject:material.identifier];
@@ -556,11 +567,9 @@
         if (![self.photo.art.interval.year isEqualToNumber:@0]){
             [artParameters setObject:self.photo.art.interval.year forKey:@"interval[year]"];
         }
-        
         if (self.photo.art.interval.circa){
             [artParameters setObject:self.photo.art.interval.circa forKey:@"interval[circa]"];
         }
-        
         if (self.photo.art.interval.suffix && self.photo.art.interval.suffix.length){
             [artParameters setObject:self.photo.art.interval.suffix forKey:@"interval[suffix]"];
         }
@@ -592,19 +601,15 @@
 
 #pragma mark - Table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    if (iOS8){
-        textViewWidth = self.view.frame.size.width - 160.f; // 160.f is a spacer
-    } else {
-        textViewWidth = self.view.frame.size.height - 160.f; // 160.f is a spacer
-    }
+    textViewWidth = iOS8 ? self.view.frame.size.width - 160.f : self.view.frame.size.height - 160.f; // 160.f is a spacer
     return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (editMode){
-        return 9;
+        return 10;
     } else {
-        return 8;
+        return 9;
     }
 }
 
@@ -624,8 +629,8 @@
         case 1:
         {
             [cell.label setText:@"ARTIST(S)"];
-            NSString *artists = [self.photo.art artistsToSentence];
-            if (artists.length > 0){
+            if (self.photo.art.artists.count){
+                NSString *artists = [self.photo.art artistsToSentence];
                 [cell.textView setText:artists];
             } else {
                 [cell.textView setText:@"Artist(s) Unknown"];
@@ -694,9 +699,8 @@
         case 3:
         {
             [cell.label setText:@"LOCATION"];
-            NSString *locations = [self.photo.art locationsToSentence];
-            
-            if (locations.length){
+            if (self.photo.art.locations.count){
+                NSString *locations = [self.photo.art locationsToSentence];
                 [cell.textView setText:locations];
             } else {
                 [cell.textView setText:@"No locations listed"];
@@ -708,9 +712,23 @@
             break;
         case 4:
         {
+            [cell.label setText:@"TAGS"];
+            if (self.photo.art.tags.count){
+                NSString *tags = [self.photo.art tagsToSentence];
+                [cell.textView setText:tags];
+            } else {
+                [cell.textView setText:@"No tags listed"];
+                [cell.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+                [cell.textView setTextColor:[UIColor lightGrayColor]];
+            }
+            [cell.textView setUserInteractionEnabled:NO];
+        }
+            break;
+        case 5:
+        {
             [cell.label setText:@"MATERIAL(S)"];
-            NSString *materials = [self.photo.art materialsToSentence];
-            if (materials.length){
+            if (self.photo.art.materials.count){
+                NSString *materials = [self.photo.art materialsToSentence];
                 [cell.textView setText:materials];
             } else {
                 [cell.textView setText:@"No materials listed"];
@@ -720,11 +738,11 @@
             [cell.textView setUserInteractionEnabled:NO];
         }
             break;
-        case 5:
+        case 6:
         {
             [cell.label setText:@"ICONOGRAPHY"];
-            NSString *icons = [self.photo iconsToSentence];
-            if (icons.length){
+            if (self.photo.art.icons.count){
+                NSString *icons = [self.photo iconsToSentence];
                 [cell.textView setText:icons];
             } else {
                 [cell.textView setText:@"N/A"];
@@ -734,12 +752,12 @@
             [cell.textView setUserInteractionEnabled:NO];
         }
             break;
-        case 6:
+        case 7:
             [cell.label setText:@"CREDIT / RIGHTS"];
             [cell.textView setText:(self.photo.credit.length ? self.photo.credit : self.photo.user.fullName)];
             creditTextView = cell.textView;
             break;
-        case 7:
+        case 8:
             [cell.label setText:@"NOTES"];
             [cell.textView setHidden:YES];
             [cell.notesTextView setHidden:NO];
@@ -759,7 +777,7 @@
             
             [cell.notesTextView setFrame:notesRect];
             break;
-        case 8:
+        case 9:
             [cell.label setText:@"PRIVATE"];
             [cell.privateSwitch setHidden:NO];
             privateSwitch = cell.privateSwitch;
@@ -814,30 +832,36 @@
             return rowHeight;
         }
     } else if (indexPath.row == 3){
-        [sizingTextView setText:self.photo.art.materialsToSentence];
+        [sizingTextView setText:self.photo.art.tagsToSentence];
         CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
         CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
         sizingTextView = nil;
         return newRowHeight;
     } else if (indexPath.row == 4){
-        [sizingTextView setText:[self.photo iconsToSentence]];
+        [sizingTextView setText:self.photo.art.materialsToSentence];
         CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
         CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
         sizingTextView = nil;
         return newRowHeight;
     } else if (indexPath.row == 5){
-        [sizingTextView setText:self.photo.art.locationsToSentence];
+        [sizingTextView setText:[self.photo iconsToSentence]];
         CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
         CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
         sizingTextView = nil;
         return newRowHeight;
     } else if (indexPath.row == 6){
+        [sizingTextView setText:self.photo.art.locationsToSentence];
+        CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
+        CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
+        sizingTextView = nil;
+        return newRowHeight;
+    } else if (indexPath.row == 7){
         [sizingTextView setText:self.photo.credit];
         CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
         CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
         sizingTextView = nil;
         return newRowHeight;
-    } else if (indexPath.row == 7) {
+    } else if (indexPath.row == 8) {
         if (self.photo.art.notes.length){
             [sizingTextView setText:self.photo.art.notes];
             CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
@@ -859,8 +883,10 @@
         } else if (indexPath.row == 3){
             [self showLocations];
         } else if (indexPath.row == 4){
-            [self showMaterials];
+            [self showTags];
         } else if (indexPath.row == 5){
+            [self showMaterials];
+        } else if (indexPath.row == 6){
             [self showIcons];
         }
     }
@@ -909,6 +935,27 @@
     }];
 }
 
+- (void)showTags {
+    [self resetTransitionBooleans];
+    metadataModal = YES;
+    WFTagsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tags"];
+    [vc setSelectedTags:self.photo.art.locations.mutableCopy];
+    vc.tagDelegate = self;
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
+- (void)tagsSelected:(NSOrderedSet *)selectedTags {
+    self.photo.art.tags = selectedTags;
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:4 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
+    }];
+}
+
 - (void)showMaterials {
     [self resetTransitionBooleans];
     metadataModal = YES;
@@ -926,7 +973,7 @@
 - (void)materialsSelected:(NSOrderedSet *)selectedMaterials {
     self.photo.art.materials = selectedMaterials;
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:4 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
+        [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:5 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
     }];
     
 }
@@ -947,7 +994,7 @@
 
 - (void)iconsSelected:(NSOrderedSet *)selectedIcons {
     self.photo.icons = selectedIcons;
-    [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:5 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
+    [_tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:6 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
 }
 
 - (void)createFavorite {
@@ -1098,15 +1145,12 @@
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         [manager DELETE:[NSString stringWithFormat:@"photos/%@",self.photo.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success deleting photo: %@",responseObject);
-            NSNumber *photoId = self.photo.identifier;
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [ProgressHUD dismiss];
-                if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(photoDeleted:)]){
-                    [self.metadataDelegate photoDeleted:photoId];
-                }
-                [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                    [WFAlert show:@"Image expunged" withTime:2.7f];
-                }];
+            [ProgressHUD dismiss];
+            if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(photoDeleted:)]){
+                [self.metadataDelegate photoDeleted:self.photo];
+            }
+            [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+                [WFAlert show:@"Image expunged" withTime:2.7f];
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to delete a photo: %@",error.description);
@@ -1238,7 +1282,7 @@
     if (textView == titleTextView){
         [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:YES];
     } else if (textView == notesTextView){
-        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:7 inSection:0] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
+        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:9 inSection:0] atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
     }
 }
 

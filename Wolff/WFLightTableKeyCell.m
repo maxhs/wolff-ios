@@ -15,10 +15,10 @@
     [super awakeFromNib];
     [self setBackgroundColor:[UIColor clearColor]];
     [_headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
-    [_headerLabel setTextColor:[UIColor colorWithWhite:0 alpha:.9]];
+    [_headerLabel setTextColor:[UIColor colorWithWhite:1 alpha:.9]];
     
     [self.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
-    [self.label setTextColor:[UIColor colorWithWhite:0 alpha:.23]];
+    [self.label setTextColor:[UIColor colorWithWhite:1 alpha:.37]];
     
     [self.textField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [self.textField setBackgroundColor:kTextFieldBackground];

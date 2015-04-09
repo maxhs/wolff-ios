@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "Art+helper.h"
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 
 @interface WFLightTableCell : UITableViewCell <UIScrollViewDelegate>
 
@@ -20,6 +20,6 @@
 @property (weak, nonatomic) IBOutlet UIButton *leaveButton;
 @property (weak, nonatomic) IBOutlet UIButton *deleteButton;
 @property (weak, nonatomic) IBOutlet UIButton *editButton;
-- (void)configureForTable:(Table*)lightTable;
+- (void)configureForTable:(LightTable*)lightTable;
 
 @end

@@ -10,9 +10,10 @@
 #import "Art+helper.h"
 #import "User+helper.h"
 #import "Icon+helper.h"
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 #import "NSArray+ToSentence.h"
+#import "Tag+helper.h"
 
 @implementation Photo (helper)
 - (void)populateFromDictionary:(NSDictionary*)dictionary {
@@ -29,8 +30,14 @@
     if ([dictionary objectForKey:@"height"] && [dictionary objectForKey:@"height"] != [NSNull null]){
         self.height = [dictionary objectForKey:@"height"];
     }
+    if ([dictionary objectForKey:@"image_file_name"] && [dictionary objectForKey:@"image_file_name"] != [NSNull null]){
+        self.fileName = [dictionary objectForKey:@"image_file_name"];
+    }
     if ([dictionary objectForKey:@"orientation"] && [dictionary objectForKey:@"orientation"] != [NSNull null]){
         self.orientation = [dictionary objectForKey:@"orientation"];
+    }
+    if ([dictionary objectForKey:@"flagged"] && [dictionary objectForKey:@"flagged"] != [NSNull null]){
+        self.flagged = [dictionary objectForKey:@"flagged"];
     }
     if ([dictionary objectForKey:@"created_epoch"] && [dictionary objectForKey:@"created_epoch"] != [NSNull null]) {
         NSTimeInterval _interval = [[dictionary objectForKey:@"created_epoch"] doubleValue];
@@ -42,9 +49,7 @@
     if ([dictionary objectForKey:@"slide_image_url"] && [dictionary objectForKey:@"slide_image_url"] != [NSNull null]){
         self.slideImageUrl = [dictionary objectForKey:@"slide_image_url"];
     }
-    if ([dictionary objectForKey:@"medium_image_url"] && [dictionary objectForKey:@"medium_image_url"] != [NSNull null]){
-        self.mediumImageUrl = [dictionary objectForKey:@"medium_image_url"];
-    }
+
     if ([dictionary objectForKey:@"large_image_url"] && [dictionary objectForKey:@"large_image_url"] != [NSNull null]){
         self.largeImageUrl = [dictionary objectForKey:@"large_image_url"];
     }
@@ -108,13 +113,26 @@
         }
         self.icons = set;
     }
+    if ([dictionary objectForKey:@"tags"] && [dictionary objectForKey:@"tags"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"tags"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Tag *tag = [Tag MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!tag){
+                tag = [Tag MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [tag populateFromDictionary:dict];
+            [set addObject:tag];
+        }
+        self.tags = set;
+    }
     if ([dictionary objectForKey:@"light_tables"] && [dictionary objectForKey:@"light_tables"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"light_tables"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Table *lightTable = [Table MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            LightTable *lightTable = [LightTable MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!lightTable){
-                lightTable = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [lightTable populateFromDictionary:dict];
             [set addObject:lightTable];

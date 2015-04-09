@@ -15,7 +15,7 @@
     [super awakeFromNib];
     [self setBackgroundColor:[UIColor clearColor]];
     [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [self.textLabel setTextColor:[UIColor whiteColor]];
+    [self.textLabel setTextColor:[UIColor blackColor]];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

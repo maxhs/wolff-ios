@@ -7,14 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 @protocol WFLightTableDelegate <NSObject>
 
-- (void)didCreateLightTable:(Table*)table;
-- (void)didJoinLightTable:(Table*)table;
+- (void)didCreateLightTable:(LightTable*)table;
+- (void)didJoinLightTable:(LightTable*)table;
 @optional
-- (void)didSaveLightTable:(Table*)table;
-- (void)didDeleteLightTable:(Table*)table;
+- (void)didUpdateLightTable:(LightTable*)table;
+- (void)didDeleteLightTable:(LightTable*)table;
 @end
 @interface WFLightTableDetailsViewController : UIViewController
 

@@ -43,7 +43,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFTableShareCell *cell = [tableView dequeueReusableCellWithIdentifier:@"TableShareCell" forIndexPath:indexPath];
-    Table *table = _currentUser.lightTables[indexPath.row];
+    LightTable *table = _currentUser.lightTables[indexPath.row];
     [cell configureForTable:table];
     
     return cell;

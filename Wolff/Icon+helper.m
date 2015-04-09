@@ -50,5 +50,4 @@
     return (self.photos.count ? self.photos.firstObject : nil);
 }
 
-
 @end

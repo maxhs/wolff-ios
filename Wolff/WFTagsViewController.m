@@ -1,47 +1,46 @@
 //
-//  WFUsersViewController.m
+//  WFTagsViewController.m
 //  Wolff
 //
-//  Created by Max Haines-Stiles on 3/15/15.
+//  Created by Max Haines-Stiles on 4/5/15.
 //  Copyright (c) 2015 Wolff. All rights reserved.
 //
 
-#import "WFUsersViewController.h"
+#import "WFTagsViewController.h"
 #import "WFAppDelegate.h"
 #import "WFUtilities.h"
-#import "User+helper.h"
 #import "WFAlert.h"
-#import "WFNewUserCell.h"
-#import "WFUserCollectionCell.h"
+#import "WFNewTagCell.h"
+#import "WFTagCollectionCell.h"
 
-@interface WFUsersViewController () <UITextFieldDelegate> {
+@interface WFTagsViewController () <UITextFieldDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     BOOL iOS8;
-    BOOL loading;
-    BOOL searching;
-    BOOL editing;
     CGFloat width;
     CGFloat height;
-    CGFloat topInset;
     NSString *searchText;
-    NSMutableOrderedSet *_users;
-    NSMutableOrderedSet *_filteredUsers;
+    BOOL searching;
+    BOOL loading;
+    BOOL editing;
+    BOOL noResults;
+    NSMutableOrderedSet *_filteredTags;
+    NSMutableOrderedSet *_tags;
     UIBarButtonItem *dismissButton;
     UIBarButtonItem *saveButton;
     UIBarButtonItem *doneButton;
-    UITextField *userNameField;
-    UIButton *noUsersButton;
-    UIBarButtonItem *noUsersBarButton;
+    UIButton *noTagsButton;
+    UIBarButtonItem *noTagBarButton;
     UIBarButtonItem *spacerBarButton;
+    UITextField *tagNameTextField;
+    CGFloat topInset;
     UIImageView *navBarShadowView;
 }
-
 @end
 
-@implementation WFUsersViewController
+@implementation WFTagsViewController
 
-static NSString * const reuseIdentifier = @"UserCell";
+static NSString * const reuseIdentifier = @"TagCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -54,34 +53,46 @@ static NSString * const reuseIdentifier = @"UserCell";
     manager = delegate.manager;
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     
-    _users = [NSMutableOrderedSet orderedSetWithArray:[User MR_findAllSortedBy:@"firstName" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
-    _filteredUsers = [NSMutableOrderedSet orderedSet];
+    _filteredTags = [NSMutableOrderedSet orderedSet];
+    _tags = [NSMutableOrderedSet orderedSetWithArray:[Tag MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
+    
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     saveButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(save)];
     doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneEditing)];
     
-    noUsersButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [noUsersButton.titleLabel setFont:[UIFont fontWithName:kMuseoSans size:12]];
-    [noUsersButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
-    [noUsersButton addTarget:self action:@selector(noUsersToggled) forControlEvents:UIControlEventTouchUpInside];
-    [noUsersButton setFrame:CGRectMake(0, 0, 170.f, 44.f)];
-    if (self.ownerMode){
-        [noUsersButton setTitle:@"NO OWNERS" forState:UIControlStateNormal];
-    } else {
-        [noUsersButton setTitle:@"NO USERS" forState:UIControlStateNormal];
-    }
-    noUsersBarButton = [[UIBarButtonItem alloc] initWithCustomView:noUsersButton];
+    noTagsButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [noTagsButton.titleLabel setFont:[UIFont fontWithName:kMuseoSans size:12]];
+    [noTagsButton addTarget:self action:@selector(noTagsToggled) forControlEvents:UIControlEventTouchUpInside];
+    [noTagsButton setFrame:CGRectMake(0, 0, 170.f, 44.f)];
+    [noTagsButton setTitle:@"NO TAGS" forState:UIControlStateNormal];
+    noTagBarButton = [[UIBarButtonItem alloc] initWithCustomView:noTagsButton];
     spacerBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
     spacerBarButton.width = 23.f;
-    [self adjustUnknownButtonColor];
-    self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noUsersBarButton];
     
     [self registerKeyboardNotifications];
-    topInset = self.navigationController.navigationBar.frame.size.height; // matches the navigation bar
+    topInset = self.navigationController.navigationBar.frame.size.height;
     [self setUpSearch];
     
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
+    self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noTagBarButton];
+    [self adjustTagButtonColor];
+}
+
+- (void)noTagsToggled {
+    [self.selectedTags removeAllObjects];
+    [_collectionView reloadData];
+    [self adjustTagButtonColor];
+}
+
+- (void)adjustTagButtonColor {
+    if (self.selectedTags.count){
+        [noTagsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [noTagsButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:0.f]];
+    } else {
+        [noTagsButton setTitleColor:kSaffronColor forState:UIControlStateNormal];
+        [noTagsButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -89,22 +100,8 @@ static NSString * const reuseIdentifier = @"UserCell";
     navBarShadowView.hidden = YES;
 }
 
-- (void)noUsersToggled {
-    [self.selectedUsers removeAllObjects];
-    [self adjustUnknownButtonColor];
-    [_collectionView reloadData];
-}
-
-- (void)adjustUnknownButtonColor {
-    if (self.selectedUsers.count){
-        [noUsersButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    } else {
-        [noUsersButton setTitleColor:kSaffronColor forState:UIControlStateNormal];
-    }
-}
-
-- (void)loadUsersWithSearch:(NSString*)searchString {
-    if (!loading && searchString.length){
+- (void)loadTagsWithSearch:(NSString *)searchString {
+    if (!loading && searchString.length && !noResults){
         loading = YES;
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
@@ -113,84 +110,93 @@ static NSString * const reuseIdentifier = @"UserCell";
         if (searchString.length){
             [parameters setObject:searchString forKey:@"search"];
         }
-        [manager POST:@"users/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success loading users: %@",responseObject);
-            for (id dict in [responseObject objectForKey:@"users"]){
-                User *user = [User MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
-                if (!user){
-                    user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        [manager POST:@"tags/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success loading tags: %@",responseObject);
+            if ([responseObject objectForKey:@"tags"]){
+                NSDictionary *tagsDict = [responseObject objectForKey:@"tags"];
+                if (tagsDict.count){
+                    for (id dict in tagsDict){
+                        Tag *tag = [Tag MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+                        if (!tag){
+                            tag = [Tag MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                        }
+                        [tag populateFromDictionary:dict];
+                    }
+                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                        _tags = [NSMutableOrderedSet orderedSetWithArray:[Tag MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
+                        [self filterContentForSearchText:searchText scope:nil];
+                        [ProgressHUD dismiss];
+                        loading = NO;
+                    }];
+                } else {
+                    noResults = YES;
                 }
-                [user populateFromDictionary:dict];
-            }
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            } else {
+                [self.searchBar resignFirstResponder];
+                noResults = YES;
                 [ProgressHUD dismiss];
-                _users = [NSMutableOrderedSet orderedSetWithArray:[User MR_findAllSortedBy:@"firstName" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
-                [self filterContentForSearchText:searchString scope:nil];
-                loading = NO;
-            }];
-            
+            }
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            [WFAlert show:@"Sorry, something went wrong while trying to fetch user info.\n\nPlease try again soon." withTime:3.3f];
+            [WFAlert show:@"Sorry, something went wrong while trying to fetch tag info.\n\nPlease try again soon." withTime:3.3f];
             [ProgressHUD dismiss];
-            NSLog(@"Failed to load users: %@",error.description);
-            loading = NO;
+            NSLog(@"Failed to load tags: %@",error.description);
         }];
     }
 }
 
 #pragma mark <UICollectionViewDataSource>
-
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
     return 1;
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     if (searching){
-        return _filteredUsers.count + 1;
+        return _filteredTags.count + 1;
     } else {
-        return _users.count + 1;
+        return _tags.count + 1;
     }
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if ((searching && indexPath.row == _filteredUsers.count) || (indexPath.row == _users.count)){
-        WFNewUserCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"NewUserCell" forIndexPath:indexPath];
+    if ((searching && indexPath.row == _filteredTags.count) || (indexPath.row == _tags.count)){
+        WFNewTagCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"NewTagCell" forIndexPath:indexPath];
+        
         if (editing){
-            [cell.userPrompt setHidden:YES];
+            [cell.tagPrompt setHidden:YES];
             [cell.nameLabel setHidden:NO];
-            [cell.nameTextField setHidden:NO];
-            [cell.nameTextField setPlaceholder:@"+  add a new user"];
             
-            if (searchText.length){
-                [cell.nameTextField setText:searchText];
-            } else {
-                [cell.nameTextField setText:@""];
-            }
-            [cell.createButton setHidden:NO];
-            [cell.createButton addTarget:self action:@selector(createUser) forControlEvents:UIControlEventTouchUpInside];
             [cell.nameTextField becomeFirstResponder];
+            [cell.nameTextField setPlaceholder:kAddTagPlaceholder];
+            [cell.nameTextField setHidden:NO];
+            [cell.nameTextField setReturnKeyType:UIReturnKeyNext];
             [cell.nameTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
             [cell.nameTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
             [cell.nameTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
             cell.nameTextField.delegate = self;
-            userNameField = cell.nameTextField;
+            
+            [cell.createButton setHidden:NO];
+            [cell.createButton addTarget:self action:@selector(createTag) forControlEvents:UIControlEventTouchUpInside];
+            
+            (searchText.length) ? [cell.nameTextField setText:searchText] : [cell.nameTextField setText:@""];
+        
+            tagNameTextField = cell.nameTextField;
         } else {
-            [cell.createButton setHidden:YES];
-            [cell.userPrompt setHidden:NO];
+            [cell.tagPrompt setHidden:NO];
             [cell.nameTextField setHidden:YES];
             [cell.nameLabel setHidden:YES];
             if (searchText.length){
-                [cell.userPrompt setText:[NSString stringWithFormat:@"+  add \"%@\"",searchText]];
+                [cell.tagPrompt setText:[NSString stringWithFormat:@"+ add \"%@\"",searchText]];
             } else {
-                [cell.userPrompt setText:@"+  add a new user"];
+                [cell.tagPrompt setText:@"+  add a new tag"];
             }
+            [cell.createButton setHidden:YES];
         }
         return cell;
     } else {
-        WFUserCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
-        User * user = searching ? _filteredUsers[indexPath.item] : _users[indexPath.item];
-        [cell configureForUser:user];
-        if ([self.selectedUsers containsObject:user]){
+        WFTagCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
+        Tag *tag = searching ? _filteredTags[indexPath.item] : _tags[indexPath.item];
+        [cell configureForTag:tag];
+        if ([self.selectedTags containsObject:tag]){
             [cell.checkmark setHidden:NO];
         } else {
             [cell.checkmark setHidden:YES];
@@ -202,7 +208,14 @@ static NSString * const reuseIdentifier = @"UserCell";
 #pragma mark – UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(width/4,width/4);
+    if (editing){
+        if ((searching && indexPath.row == _filteredTags.count) || (indexPath.row == _tags.count)){
+            return CGSizeMake(width/2,height/4);
+        }
+        return CGSizeMake(width/2,height/4);
+    } else {
+        return CGSizeMake(width/2,height/4);
+    }
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -211,21 +224,15 @@ static NSString * const reuseIdentifier = @"UserCell";
 
 #pragma mark <UICollectionViewDelegate>
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    if ((searching && indexPath.row == _filteredUsers.count) || (indexPath.row == _users.count)){
+    if ((searching && indexPath.row == _filteredTags.count) || (indexPath.row == _tags.count)){
         [self toggleEditMode];
-        [_collectionView reloadItemsAtIndexPaths:@[indexPath]];
+        [collectionView reloadItemsAtIndexPaths:@[indexPath]];
     } else {
-        User *user = searching ? _filteredUsers[indexPath.item] : _users[indexPath.item];
-        if ([self.selectedUsers containsObject:user]){
-            [self.selectedUsers removeObject:user];
-        } else {
-            [self.selectedUsers addObject:user];
-        }
-        
-        [_collectionView reloadItemsAtIndexPaths:@[indexPath]];
-        [collectionView deselectItemAtIndexPath:indexPath animated:YES];
+        Tag *tag = searching ? _filteredTags[indexPath.item] : _tags[indexPath.item];
+        [self.selectedTags addObject:tag];
+        [collectionView reloadItemsAtIndexPaths:@[indexPath]];
     }
-    [self adjustUnknownButtonColor];
+    [self adjustTagButtonColor];
 }
 
 - (void) toggleEditMode {
@@ -239,7 +246,7 @@ static NSString * const reuseIdentifier = @"UserCell";
     [_noSearchResultsLabel setText:@"No search results..."];
     [_noSearchResultsLabel setHidden:YES];
     
-    [self.searchBar setPlaceholder:@"Search for a user"];
+    [self.searchBar setPlaceholder:@"Search for relevant tags"];
     //reset the search bar font
     for (id subview in [self.searchBar.subviews.firstObject subviews]){
         if ([subview isKindOfClass:[UITextField class]]){
@@ -247,6 +254,7 @@ static NSString * const reuseIdentifier = @"UserCell";
             [searchTextField setTextColor:[UIColor whiteColor]];
             [searchTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
             searchTextField.keyboardAppearance = UIKeyboardAppearanceDark;
+            [searchTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
             break;
         }
     }
@@ -255,10 +263,18 @@ static NSString * const reuseIdentifier = @"UserCell";
     [self.searchBar setSearchBarStyle:UISearchBarStyleMinimal];
 }
 
+- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
+    searching = YES;
+}
+
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
     if (searchBar.text.length){
-        [ProgressHUD show:@"Searching..."];
-        [self loadUsersWithSearch:searchBar.text];
+        if (noResults){
+            [searchBar resignFirstResponder];
+        } else {
+            [ProgressHUD show:@"Searching..."];
+            [self loadTagsWithSearch:searchBar.text];
+        }
     }
 }
 
@@ -270,25 +286,36 @@ static NSString * const reuseIdentifier = @"UserCell";
 
 - (void)filterContentForSearchText:(NSString*)text scope:(NSString*)scope {
     if (text.length) {
-        [_filteredUsers removeAllObjects];
-        for (User *user in _users){
+        [_filteredTags removeAllObjects];
+        for (Tag *tag in _tags){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF contains[cd] %@", text];
-            if ([predicate evaluateWithObject:user.fullName]) {
-                [_filteredUsers addObject:user];
+            if ([predicate evaluateWithObject:tag.name]) {
+                [_filteredTags addObject:tag];
             }
         }
-        if (!_filteredUsers.count) {
-            [self loadUsersWithSearch:text];
+        
+        if (!_filteredTags.count) {
+            [self loadTagsWithSearch:text];
+        } else {
+            noResults = NO;
         }
     } else {
-        _filteredUsers = [NSMutableOrderedSet orderedSetWithOrderedSet:_users];
+        _filteredTags = [NSMutableOrderedSet orderedSetWithOrderedSet:_tags];
     }
     
     [self.collectionView reloadData];
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
-    self.navigationItem.rightBarButtonItems = @[doneButton,spacerBarButton,noUsersBarButton];
+    self.navigationItem.rightBarButtonItems = @[doneButton, spacerBarButton, noTagBarButton];
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    if (tagNameTextField.text.length && [string isEqualToString:@"\n"]) {
+        [self createTag];
+        return NO;
+    }
+    return YES;
 }
 
 - (void)doneEditing {
@@ -296,69 +323,57 @@ static NSString * const reuseIdentifier = @"UserCell";
     if (self.searchBar.isFirstResponder){
         [self.searchBar resignFirstResponder];
     }
-    self.navigationItem.rightBarButtonItems = @[saveButton,spacerBarButton,noUsersBarButton];
+    self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noTagBarButton];
 }
 
-- (void)createUser {
+- (void)createTag {
     dispatch_async(dispatch_get_main_queue(), ^(void){
         [self.view endEditing:YES];
     });
     
-    User *user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-    
-    NSArray *wordsAndEmptyStrings = [userNameField.text componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-    NSArray *words = [wordsAndEmptyStrings filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"length > 0"]];
-    user.firstName = words[0];
-    user.lastName = words[1];
-    
+    Tag *tag = [Tag MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    tag.name = tagNameTextField.text;
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    [parameters setObject:user.fullName forKey:@"name"];
-    [ProgressHUD show:[NSString stringWithFormat:@"Adding \"%@\"",user.fullName]];
-    [manager POST:@"users" parameters:@{@"user":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success creating a new user: %@",responseObject);
-        if ([responseObject objectForKey:@"user"]){
-            [user populateFromDictionary:[responseObject objectForKey:@"user"]];
+    if (tag.name.length){
+        [parameters setObject:tag.name forKey:@"name"];
+    }
+    
+    [ProgressHUD show:[NSString stringWithFormat:@"Adding \"%@\"",tag.name]];
+    [manager POST:@"tags" parameters:@{@"tag":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success creating a new tag: %@",responseObject);
+        if ([responseObject objectForKey:@"tag"]){
+            [tag populateFromDictionary:[responseObject objectForKey:@"tag"]];
         }
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         
-        //add the new user to the selection
-        [self.selectedUsers addObject:user];
+        //add the new tag to the selection
+        [self.selectedTags addObject:tag];
         [ProgressHUD dismiss];
         
-        if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(usersSelected:)]){
-            [self.userDelegate usersSelected:self.selectedUsers];
+        if (self.tagDelegate && [self.tagDelegate respondsToSelector:@selector(tagsSelected:)]){
+            [self.tagDelegate tagsSelected:self.selectedTags];
         }
         [self dismiss];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         [WFAlert show:@"Sorry, but something went wrong while. Please try again soon." withTime:2.7f];
         [ProgressHUD dismiss];
-        NSLog(@"Failed to create a new user: %@",error.description);
+        NSLog(@"Failed to create a new tag: %@",error.description);
     }];
 }
 
 - (void)save {
-    if (self.ownerMode){
-        if (self.selectedUsers.count){
-            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(lightTableOwnersSelected:)]){
-                [self.userDelegate lightTableOwnersSelected:self.selectedUsers];
-            }
-        } else {
-            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(lightTableOwnersSelected:)]){
-                [self.userDelegate lightTableOwnersSelected:nil];
-            }
+    if (self.selectedTags.count){
+        if (self.tagDelegate && [self.tagDelegate respondsToSelector:@selector(tagsSelected:)]){
+            [self.tagDelegate tagsSelected:self.selectedTags];
         }
+        [self dismiss];
+        
     } else {
-        if (self.selectedUsers.count){
-            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(usersSelected:)]){
-                [self.userDelegate usersSelected:self.selectedUsers];
-            }
-        } else {
-            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(usersSelected:)]){
-                [self.userDelegate usersSelected:nil];
-            }
+        if (self.tagDelegate && [self.tagDelegate respondsToSelector:@selector(tagsSelected:)]){
+            [self.tagDelegate tagsSelected:nil];
         }
+        [self dismiss];
     }
-    [self dismiss];
 }
 
 - (void)registerKeyboardNotifications {
@@ -402,13 +417,8 @@ static NSString * const reuseIdentifier = @"UserCell";
     }];
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-}
-
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
 }
-
 
 @end

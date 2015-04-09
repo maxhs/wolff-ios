@@ -17,6 +17,7 @@
 @dynamic icons;
 @dynamic artists;
 @dynamic tables;
+@dynamic flagged;
 @dynamic privateArt;
 @dynamic visible;
 @dynamic photos;
@@ -35,5 +36,6 @@
 @dynamic discussions;
 @dynamic notifications;
 @dynamic slideshows;
+@dynamic tags;
 
 @end

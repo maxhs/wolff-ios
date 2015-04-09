@@ -131,7 +131,7 @@
                           delay:0
                         options:curve | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
-                         self.textView.transform = CGAffineTransformIdentity;
+                         //self.textView.transform = CGAffineTransformIdentity;
                      } completion:nil];
 }
 
@@ -145,9 +145,19 @@
             [self.slideText setSlide:self.slide];
             [self.slideText setBody:self.textView.text];
         }
-        if (![self.slideText.identifier isEqualToNumber:@0]){
-            NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-            [parameters setObject:self.slideText.body forKey:@"body"];
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        NSMutableDictionary *slideTextDict = [NSMutableDictionary dictionary];
+        [parameters setObject:self.slideText.slide.identifier forKey:@"slide_id"];
+        [slideTextDict setObject:self.slideText.body forKey:@"body"];
+        [parameters setObject:slideTextDict forKey:@"slide_text"];
+
+        if ([self.slideText.identifier isEqualToNumber:@0]){
+            [manager POST:@"slide_texts" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                NSLog(@"Success creating slide text: %@",responseObject);
+            } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                NSLog(@"Failed to create slide text: %@",error.description);
+            }];
+        } else {
             [manager PATCH:[NSString stringWithFormat:@"slide_texts/%@",self.slideText.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
                 NSLog(@"Success updating slide text: %@",responseObject);
             } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -168,64 +178,18 @@
     }];
 }
 
-#pragma mark - Table view data source
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 0;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 0;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideTextCell" forIndexPath:indexPath];
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    if (self.slideText) {
+        if (self.slideTextDelegate && [self.slideTextDelegate respondsToSelector:@selector(updatedSlideText:)]){
+            [self.slideTextDelegate updatedSlideText:self.slideText];
+        }
+    } else {
+        if (self.slideTextDelegate && [self.slideTextDelegate respondsToSelector:@selector(updatedSlideText:)]){
+            [self.slideTextDelegate updatedSlideText:self.slideText];
+        }
+    }
     
-    return cell;
 }
-
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

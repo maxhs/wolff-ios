@@ -174,13 +174,15 @@
 
 - (void)showMetadata:(Photo*)photo{
     WFArtMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"ArtMetadata"];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.view.clipsToBounds = YES;
     vc.metadataDelegate = self;
     [vc setPhoto:photo];
-    vc.transitioningDelegate = self;
-    vc.modalPresentationStyle = UIModalPresentationCustom;
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
     [self resetBooleans];
     photos = YES;
-    [self presentViewController:vc animated:YES completion:^{
+    [self presentViewController:nav animated:YES completion:^{
         
     }];
 }

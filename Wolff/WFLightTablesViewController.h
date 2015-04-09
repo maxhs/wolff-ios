@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 #import "Slideshow+helper.h"
 #import "Photo+helper.h"
 
@@ -15,9 +15,9 @@
 
 @optional
 - (void)userDidPan:(UIScreenEdgePanGestureRecognizer *)gestureRecognizer;
-- (void)lightTableSelected:(NSNumber*)lightTableId;
-- (void)lightTableDeselected:(NSNumber*)lightTableId;
-- (void)undropPhotoFromLightTable:(NSNumber*)lightTableId;
+- (void)lightTableSelected:(LightTable*)lightTable;
+- (void)lightTableDeselected:(LightTable*)lightTable;
+- (void)undropPhotoFromLightTable:(LightTable*)lightTable;
 - (void)batchFavorite;
 @end
 

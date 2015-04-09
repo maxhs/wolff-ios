@@ -48,7 +48,6 @@
     manager = delegate.manager;
     
     self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
-    
     self.title = @"Your Light Tables";
     
     UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
@@ -59,7 +58,7 @@
     [super viewWillAppear:animated];
     [self setUpFooter];
     [self loadLightTables];
-    NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES];
+    NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
     _lightTables = self.currentUser.ownedTables.array.mutableCopy;
     [_lightTables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
     
@@ -80,9 +79,9 @@
     [manager GET:[NSString stringWithFormat:@"users/%@/light_tables",_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success getting light tables: %@", responseObject);
         for (NSDictionary *dict in [responseObject objectForKey:@"light_tables"]){
-            Table *lightTable = [Table MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+            LightTable *lightTable = [LightTable MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!lightTable){
-                lightTable = [Table MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [lightTable populateFromDictionary:dict];
             [_currentUser addLightTable:lightTable];
@@ -96,7 +95,7 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES];
+    NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
     _lightTables = self.currentUser.ownedTables.array.mutableCopy;
     [_lightTables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
     
@@ -131,7 +130,7 @@
             [cell.textLabel setText:@"My Favorites"];
         }
     } else {
-        Table *table = (Table*)_lightTables[indexPath.row];
+        LightTable *table = (LightTable*)_lightTables[indexPath.row];
         [cell configureForTable:table];
         if (_slideshow){
             if ([_slideshow.tables containsObject:table]){
@@ -174,30 +173,29 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    
     if (indexPath.section == 0 && !_slideshowShareMode){
         if (indexPath.row == 0){
             if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableSelected:)]){
-                [self.lightTableDelegate lightTableSelected:@0];
+                [self.lightTableDelegate lightTableSelected:nil]; // TODO
             }
         } else {
             [self favorite];
         }
     } else {
-        Table *lightTable = (Table*)_lightTables[indexPath.row];
+        LightTable *lightTable = (LightTable*)_lightTables[indexPath.row];
         if (_slideshow && [_slideshow.tables containsObject:lightTable]){
             if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableDeselected:)]){
-                [self.lightTableDelegate lightTableDeselected:lightTable.identifier];
+                [self.lightTableDelegate lightTableDeselected:lightTable];
                 [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
             }
         } else {
             if (_photo && [lightTable.photos containsObject:_photo]){
                 if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(undropPhotoFromLightTable:)]){
-                    [self.lightTableDelegate undropPhotoFromLightTable:lightTable.identifier];
+                    [self.lightTableDelegate undropPhotoFromLightTable:lightTable];
                     [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
                 }
             } else if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableSelected:)]){
-                [self.lightTableDelegate lightTableSelected:lightTable.identifier];
+                [self.lightTableDelegate lightTableSelected:lightTable];
                 [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
             }
         }

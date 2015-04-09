@@ -100,11 +100,11 @@
 
 - (void)loadUserDetails {
     [manager GET:[NSString stringWithFormat:@"%@/users/%@/edit",kApiBaseUrl,self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success getting user details: %@",responseObject);
-        
+        //NSLog(@"Success getting user details: %@",responseObject);
         [self.currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
-        [self.tableView reloadData];
-        
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [self.tableView reloadData];
+        }];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to get user details: %@",error.description);
     }];

@@ -9,7 +9,7 @@
 #import "Discussion.h"
 #import "Art.h"
 #import "Artist.h"
-#import "Table.h"
+#import "LightTable.h"
 #import "Slideshow+helper.h"
 
 @implementation Discussion

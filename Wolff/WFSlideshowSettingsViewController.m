@@ -9,26 +9,29 @@
 #import "WFSlideshowSettingsViewController.h"
 #import "WFSlideshowSettingsCell.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
+#import "Constants.h"
 
 @interface WFSlideshowSettingsViewController () <UIAlertViewDelegate> {
     UIAlertView *confirmDeletionAlertView;
     UISwitch *slideshowVisibilitySwitch;
-    Slideshow *_slideshow;
+    UISwitch *showTitleSlideSwitch;
+    UIImageView *trashImageView;
+    BOOL shouldSave;
 }
-
 @end
 
 @implementation WFSlideshowSettingsViewController
-@synthesize slideshowId = _slideshowId;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self.view setBackgroundColor:[UIColor clearColor]];
     [self.tableView setBackgroundColor:[UIColor clearColor]];
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.1]];
-    
-    _slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:_slideshowId inContext:[NSManagedObjectContext MR_defaultContext]];
+    self.tableView.rowHeight = 54.f;
+    self.slideshow = [self.slideshow MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     slideshowVisibilitySwitch = [[UISwitch alloc] init];
+    showTitleSlideSwitch = [[UISwitch alloc] init];
+    trashImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"trash"]];
 }
 
 - (void)confirmDeletion {
@@ -39,18 +42,6 @@
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     if (alertView == confirmDeletionAlertView && [[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"Delete"]){
         [self delete];
-    }
-}
-
-- (void)delete{
-    if (self.settingsDelegate && [self.settingsDelegate respondsToSelector:@selector(deleteSlideshow)]){
-        [self.settingsDelegate deleteSlideshow];
-    }
-}
-
-- (void)updateSlideshow {
-    if (self.settingsDelegate && [self.settingsDelegate respondsToSelector:@selector(updateSlideshow)]){
-        [self.settingsDelegate updateSlideshow];
     }
 }
 
@@ -66,17 +57,27 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideshowSettingsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideshowSettingsCell" forIndexPath:indexPath];
+    [cell.textLabel setTextAlignment:NSTextAlignmentLeft];
     switch (indexPath.row) {
+//        case 0:
+//            [cell.imageView setImage:nil];
+//            [cell.textLabel setText:@"Public"];
+//            cell.accessoryView = slideshowVisibilitySwitch;
+//            [slideshowVisibilitySwitch setOn:[_slideshow.visible boolValue]];
+//            [slideshowVisibilitySwitch addTarget:self action:@selector(switchSwitched:) forControlEvents:UIControlEventValueChanged];
+//            break;
         case 0:
             [cell.imageView setImage:nil];
-            [cell.textLabel setText:@"Private"];
-            cell.accessoryView = slideshowVisibilitySwitch;
-            [slideshowVisibilitySwitch setOn:[_slideshow.visible boolValue]];
-            [slideshowVisibilitySwitch addTarget:self action:@selector(visiblitySwitched) forControlEvents:UIControlEventValueChanged];
+            [cell.textLabel setText:@"Show title slide"];
+            cell.accessoryView = showTitleSlideSwitch;
+            [showTitleSlideSwitch setOn:[_slideshow.showTitleSlide boolValue]];
+            [showTitleSlideSwitch addTarget:self action:@selector(switchSwitched:) forControlEvents:UIControlEventValueChanged];
             break;
         case 1:
-            [cell.imageView setImage:[UIImage imageNamed:@"whiteTrash"]];
+            cell.accessoryView = trashImageView;
             [cell.textLabel setText:@"Delete Slideshow"];
+            [cell.textLabel setTextAlignment:NSTextAlignmentCenter];
+            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
             break;
             
         default:
@@ -86,59 +87,54 @@
     return cell;
 }
 
-- (void)visiblitySwitched {
-    
+- (void)switchSwitched:(UISwitch*)theSwitch {
+    if (theSwitch == showTitleSlideSwitch){
+        [self.slideshow setShowTitleSlide:@(theSwitch.isOn)];
+        shouldSave = YES;
+    } else if (theSwitch == slideshowVisibilitySwitch){
+        [self.slideshow setVisible:@(theSwitch.isOn)];
+        shouldSave = YES;
+    }
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (indexPath.row == 0){
+    /*if (indexPath.row == 0){
+        shouldSave = YES;
+        NSNumber *visibilityOpposite = self.slideshow.visible.boolValue ? @0 : @1;
+        [self.slideshow setVisible:visibilityOpposite];
+        [slideshowVisibilitySwitch setOn:self.slideshow.visible.boolValue animated:YES];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    } else*/ if (indexPath.row == 0){
+        shouldSave = YES;
+        NSNumber *showTitleOpposite = self.slideshow.showTitleSlide.boolValue ? @0 : @1;
+        [self.slideshow setShowTitleSlide:showTitleOpposite];
+        [showTitleSlideSwitch setOn:self.slideshow.showTitleSlide.boolValue animated:YES];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    } else if (indexPath.row == 1){
         [self confirmDeletion];
+    }
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (void)delete{
+    if (self.settingsDelegate && [self.settingsDelegate respondsToSelector:@selector(didDeleteSlideshow)]){
+        [self.settingsDelegate didDeleteSlideshow];
     }
 }
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
+- (void)updateSlideshow {
+    if (self.settingsDelegate && [self.settingsDelegate respondsToSelector:@selector(didUpdateSlideshow)]){
+        [self.settingsDelegate didUpdateSlideshow];
+    }
 }
-*/
 
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    if (shouldSave){
+        [self updateSlideshow];
+    }
 }
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

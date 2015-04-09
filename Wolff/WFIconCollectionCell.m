@@ -26,9 +26,9 @@
 
 - (void)configureForIcon:(Icon *)icon{
     [_iconLabel setText:icon.name];
-    if (icon.photos.count && icon.coverPhoto.mediumImageUrl){
+    if (icon.photos.count && icon.coverPhoto.thumbImageUrl){
         [_iconImageView setBackgroundColor:[UIColor colorWithWhite:1 alpha:0]];
-        [_iconImageView sd_setImageWithURL:[NSURL URLWithString:icon.coverPhoto.mediumImageUrl] placeholderImage:nil options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+        [_iconImageView sd_setImageWithURL:[NSURL URLWithString:icon.coverPhoto.thumbImageUrl] placeholderImage:nil options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
             
         } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:kDefaultAnimationDuration animations:^{

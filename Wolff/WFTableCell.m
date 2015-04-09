@@ -27,8 +27,8 @@
     [super setSelected:selected animated:animated];
 }
 
-- (void)configureForTable:(Table *)table {
-    [_tableLabel setText:table.name];
+- (void)configureForTable:(LightTable *)lightTable {
+    [_tableLabel setText:lightTable.name];
 }
 
 @end

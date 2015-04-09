@@ -6,16 +6,19 @@
 //  Copyright (c) 2015 Wolff. All rights reserved.
 //
 
-#import "SlidePhoto.h"
+#import "PhotoSlide.h"
 #import "Slide.h"
 
-
-@implementation SlidePhoto
+@implementation PhotoSlide
 
 @dynamic identifier;
 @dynamic scale;
 @dynamic positionX;
 @dynamic positionY;
+@dynamic width;
+@dynamic height;
 @dynamic slide;
+@dynamic photo;
+@dynamic index;
 
 @end

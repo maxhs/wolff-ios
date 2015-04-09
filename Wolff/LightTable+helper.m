@@ -6,14 +6,15 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
-#import "Table+helper.h"
+#import "LightTable+helper.h"
 #import "Slideshow+helper.h"
 #import "Art+helper.h"
 #import "Discussion+helper.h"
 #import "User+helper.h"
 #import <MagicalRecord/CoreData+MagicalRecord.h>
+#import "NSArray+ToSentence.h"
 
-@implementation Table (helper)
+@implementation LightTable (helper)
 
 - (void)populateFromDictionary:(NSDictionary*)dictionary {
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
@@ -73,25 +74,6 @@
         }
         self.users = set;
     }
-    if ([dictionary objectForKey:@"owner_id"] && [dictionary objectForKey:@"owner_id"] != [NSNull null]){
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"owner_id"]];
-        User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-        if (!user){
-            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-        }
-        user.identifier = [dictionary objectForKey:@"owner_id"];
-        [self addOwner:user];
-    }
-    if ([dictionary objectForKey:@"owner"] && [dictionary objectForKey:@"owner"] != [NSNull null]){
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"owner"] objectForKey:@"id"]];
-        User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-        if (!user){
-            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-        }
-        [user populateFromDictionary:[dictionary objectForKey:@"owner"]];
-        [self addOwner:user];
-    }
-    
     if ([dictionary objectForKey:@"owners"] && [dictionary objectForKey:@"owners"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"owners"]){
@@ -191,4 +173,19 @@
     return ownership;
 }
 
+- (NSString *)ownersToSentence {
+    NSMutableArray *owners = [NSMutableArray arrayWithCapacity:self.owners.count];
+    [self.owners enumerateObjectsUsingBlock:^(User *user, NSUInteger idx, BOOL *stop) {
+        [owners addObject:user.fullName];
+    }];
+    return [owners toSentence];
+}
+
+- (NSString *)membersToSentence {
+    NSMutableArray *users = [NSMutableArray arrayWithCapacity:self.users.count];
+    [self.users enumerateObjectsUsingBlock:^(User *user, NSUInteger idx, BOOL *stop) {
+        [users addObject:user.fullName];
+    }];
+    return [users toSentence];
+}
 @end

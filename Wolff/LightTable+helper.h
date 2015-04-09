@@ -6,12 +6,12 @@
 //  Copyright (c) 2014 Wolff. All rights reserved.
 //
 
-#import "Table.h"
+#import "LightTable.h"
 #import "Photo+helper.h"
 #import "User+helper.h"
 #import "Slideshow+helper.h"
 
-@interface Table (helper)
+@interface LightTable (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
 - (void)addPhoto:(Photo*)photo;
 - (void)removePhoto:(Photo*)photo;
@@ -24,4 +24,7 @@
 - (void)addUser:(User*)user;
 - (void)removeUser:(User*)user;
 - (BOOL)includesOwnerId:(NSNumber*)ownerId;
+
+- (NSString *)membersToSentence;
+- (NSString *)ownersToSentence;
 @end
