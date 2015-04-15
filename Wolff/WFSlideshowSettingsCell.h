@@ -9,5 +9,5 @@
 #import <UIKit/UIKit.h>
 
 @interface WFSlideshowSettingsCell : UITableViewCell
-
+@property (weak, nonatomic) IBOutlet UIImageView *centerImageView;
 @end

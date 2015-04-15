@@ -39,17 +39,16 @@
     [_tableLabel setTextColor:[UIColor whiteColor]];
     [_pieceCountLabel setTextColor:[UIColor colorWithWhite:1 alpha:.33]];
 
+    [_deleteButton setImage:[UIImage imageNamed:@"whiteTrash"] forState:UIControlStateNormal];
     [_deleteButton setBackgroundColor:[UIColor redColor]];
     [_deleteButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_deleteButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     
-    [_editButton setBackgroundColor:kElectricBlue];
-    [_editButton setTitle:@"Edit" forState:UIControlStateNormal];
+    [_editButton setImage:[UIImage imageNamed:@"settings"] forState:UIControlStateNormal];
     [_editButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_editButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     
-    [_leaveButton setTitle:@"Remove" forState:UIControlStateNormal];
-    [_leaveButton setBackgroundColor:kSaffronColor];
+    [_leaveButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
     _leaveButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     _leaveButton.titleLabel.layer.shadowRadius = 1.4f;
     _leaveButton.titleLabel.layer.shadowOpacity = .23f;
@@ -75,8 +74,6 @@
 - (void)configureForTable:(LightTable *)table {
     //set up the action button
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [table includesOwnerId:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
-        [_deleteButton setTitle:@"Delete" forState:UIControlStateNormal];
-        [_deleteButton setBackgroundColor:[UIColor redColor]];
         [_editButton setHidden:NO];
         [_deleteButton setHidden:NO];
         [_leaveButton setHidden:YES];

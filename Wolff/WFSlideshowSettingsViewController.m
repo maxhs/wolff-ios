@@ -15,7 +15,6 @@
     UIAlertView *confirmDeletionAlertView;
     UISwitch *slideshowVisibilitySwitch;
     UISwitch *showTitleSlideSwitch;
-    UIImageView *trashImageView;
     BOOL shouldSave;
 }
 @end
@@ -30,9 +29,7 @@
     self.tableView.rowHeight = 54.f;
     self.slideshow = [self.slideshow MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     slideshowVisibilitySwitch = [[UISwitch alloc] init];
-    showTitleSlideSwitch = [[UISwitch alloc] init];
-    trashImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"trash"]];
-}
+    showTitleSlideSwitch = [[UISwitch alloc] init];}
 
 - (void)confirmDeletion {
     confirmDeletionAlertView = [[UIAlertView alloc] initWithTitle:@"Confirmation Needed" message:@"Are you sure you want to delete this slideshow?" delegate:self cancelButtonTitle:@"No" otherButtonTitles:@"Delete", nil];
@@ -57,7 +54,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideshowSettingsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideshowSettingsCell" forIndexPath:indexPath];
-    [cell.textLabel setTextAlignment:NSTextAlignmentLeft];
+    [cell.centerImageView setHidden:YES];
     switch (indexPath.row) {
 //        case 0:
 //            [cell.imageView setImage:nil];
@@ -74,10 +71,13 @@
             [showTitleSlideSwitch addTarget:self action:@selector(switchSwitched:) forControlEvents:UIControlEventValueChanged];
             break;
         case 1:
-            cell.accessoryView = trashImageView;
-            [cell.textLabel setText:@"Delete Slideshow"];
-            [cell.textLabel setTextAlignment:NSTextAlignmentCenter];
-            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
+            [cell.textLabel setText:@""];
+            CGRect centerRect = cell.centerImageView.frame;
+            centerRect.origin.x = cell.frame.size.width/2-(centerRect.size.width/2);
+            centerRect.origin.y = cell.frame.size.height/2-(centerRect.size.height/2);
+            [cell.centerImageView setFrame:centerRect];
+            [cell.centerImageView setHidden:NO];
+            [cell.centerImageView setImage:[UIImage imageNamed:@"trash"]];
             break;
             
         default:

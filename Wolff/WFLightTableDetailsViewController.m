@@ -31,8 +31,6 @@
     CGFloat keyboardHeight;
 }
 
-@property (strong, nonatomic) LightTable *lightTable;
-
 @end
 
 @implementation WFLightTableDetailsViewController
@@ -67,23 +65,28 @@
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     self.title = @"New Light Table";
     
-    if (!_tableId || [_tableId isEqualToNumber:@0]){
-        _lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-    } else {
-        _lightTable = [LightTable MR_findFirstByAttribute:@"identifier" withValue:_tableId inContext:[NSManagedObjectContext MR_defaultContext]];
-    }
     if (!_lightTable){
-        [manager GET:[NSString stringWithFormat:@"light_tables/%@",_tableId] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success loading table from internet: %@",responseObject);
-            [_lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
-            [_collectionView reloadData];
-        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Failed to get light table from API: %@",error.description);
-        }];
+        self.lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    } else {
+        self.lightTable = [_lightTable MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+        [self loadLightTable];
     }
 
     [_scrollBackButton addTarget:self action:@selector(scrollBack) forControlEvents:UIControlEventTouchUpInside];
     [self registerForKeyboardNotifications];
+}
+
+- (void)loadLightTable {
+    [manager GET:[NSString stringWithFormat:@"light_tables/%@",self.lightTable.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //NSLog(@"Success loading table from internet: %@",responseObject);
+        [self.lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [_collectionView reloadData];
+        }];
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed to get light table from API: %@",error.description);
+    }];
 }
 
 - (void)viewWillAppear:(BOOL)animated {

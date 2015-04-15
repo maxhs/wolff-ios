@@ -321,9 +321,8 @@
 }
 
 - (void)removeArt:(UIMenuController*)menuController {
-    NSPredicate *photoSlidePredicate = [NSPredicate predicateWithFormat:@"slideshow.identifier == %@ and photo.identifier == %@",self.slideshow.identifier, activeImageView.photo.identifier];
+    NSPredicate *photoSlidePredicate = [NSPredicate predicateWithFormat:@"slide.identifier == %@ and photo.identifier == %@",activeSlide.identifier, activeImageView.photo.identifier];
     PhotoSlide *photoSlide = [PhotoSlide MR_findFirstWithPredicate:photoSlidePredicate inContext:[NSManagedObjectContext MR_defaultContext]];
-    NSLog(@"found photo slide: %@",photoSlide);
     [activeSlide removePhotoSlide:photoSlide];
     if (activeSlide.photos.count){
         [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
@@ -384,7 +383,11 @@
 - (void)slideDoubleTap:(UITapGestureRecognizer*)gestureRecognizer {
     CGPoint loc = [gestureRecognizer locationInView:self.tableView];
     NSIndexPath *selectedIndexPath = [self.tableView indexPathForRowAtPoint:loc];
-    [self playSlideshow:@(selectedIndexPath.row)];
+    if ([self.slideshow.showTitleSlide isEqualToNumber:@YES]) {
+        [self playSlideshow:@(selectedIndexPath.row)];
+    } else {
+        [self playSlideshow:@(selectedIndexPath.row-1)];
+    }
 }
 
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
@@ -797,7 +800,6 @@
                 if (self.lightTable){
                     [self lightTableSelected:self.lightTable];
                 } else {
-                    [WFAlert show:@"Slideshow saved" withTime:2.3f];
                     [ProgressHUD dismiss];
                 }
                 if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(slideshowCreatedWithId:)]){
@@ -816,7 +818,6 @@
             //NSLog(@"Success saving a slideshow: %@",responseObject);
             [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [WFAlert show:@"Slideshow saved" withTime:2.3f];
                 [ProgressHUD dismiss];
                 [self.collectionView reloadData];
                 [self.tableView reloadData];
@@ -975,8 +976,7 @@
 }
 
 - (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController {
-    // ensure it's really gone
-    self.popover = nil;
+    self.popover = nil; // ensure it's really gone
 }
 
 - (void)showSettings {
@@ -1145,7 +1145,7 @@
     [ProgressHUD show:@"Saving..."];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         NSLog(@"Success saving slideshow? %u",success);
-        [ProgressHUD showSuccess:@"Saved"];
+        [ProgressHUD dismiss];
     }];
 }
 

@@ -53,9 +53,9 @@
         UIButton *darkBackground = [UIButton buttonWithType:UIButtonTypeCustom];
         [darkBackground setBackgroundColor:[UIColor colorWithWhite:.1 alpha:.5]];
         [darkBackground setAlpha:0.0];
-
         [darkBackground setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
         [darkBackground setTag:kDarkBackgroundConstant];
+        
         UINavigationController *nav = (UINavigationController*)toViewController;
         WFArtMetadataViewController *artvc = (WFArtMetadataViewController*)nav.viewControllers.firstObject;
         [darkBackground addTarget:artvc action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
@@ -65,8 +65,8 @@
         [transitionContext.containerView addSubview:toView];
 
         [toView setAlpha:0.0];
-        
-        CGFloat offset = height/2-350;
+        CGFloat widthOffset = IDIOM == IPAD ? 350 : width/2;
+        CGFloat offset = height/2-widthOffset;
         UITableView *metadataTableView = artvc.tableView;
         [metadataTableView setContentInset:UIEdgeInsetsMake(offset, 0, offset, 0)];
         [metadataTableView setContentOffset:CGPointMake(0, -offset)];
@@ -76,16 +76,23 @@
         
         CGRect metadataFrame;
         if (iOS8) {
-            metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
-            CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
-            toView.frame = metadataStartFrame;
+            if (IDIOM == IPAD){
+                metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
+                CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
+                toView.frame = metadataStartFrame;
+            } else {
+                metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
+                CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
+                toView.frame = metadataStartFrame;
+            }
+            
         } else {
             metadataFrame = CGRectMake(0, width/2-kMetadataWidth/2, height, kMetadataWidth);
             CGRect metadataStartFrame = CGRectMake(0, (width/2-kMetadataWidth/2)-xOffset, height, kMetadataWidth);
             toView.frame = metadataStartFrame;
         }
     
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             toView.frame = metadataFrame;
             [toView setAlpha:1.0];
             [darkBackground setAlpha:1.0];

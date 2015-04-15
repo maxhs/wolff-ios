@@ -127,6 +127,7 @@
             [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to log you in." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
         }
         //NSLog(@"Failed to connect: %@",error.description);
+        [ProgressHUD dismiss];
         NSLog(@"Response string: %@",operation.responseString);
     }];
 }

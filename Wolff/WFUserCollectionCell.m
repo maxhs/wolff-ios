@@ -42,6 +42,8 @@
                 [_userProfileImage setAlpha:1.0];
             }];
         }];
+    } else {
+        [_userProfileImage setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
     }
 }
 @end

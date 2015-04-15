@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		500A1C591AD8B03900284212 /* Main_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 500A1C581AD8B03900284212 /* Main_iPhone.storyboard */; };
 		501473F31A3EA136000422B8 /* image.png in Resources */ = {isa = PBXBuildFile; fileRef = 501473E41A3EA136000422B8 /* image.png */; };
 		501473F41A3EA136000422B8 /* image@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 501473E51A3EA136000422B8 /* image@2x.png */; };
 		501473F51A3EA136000422B8 /* image@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 501473E61A3EA136000422B8 /* image@3x.png */; };
@@ -105,6 +106,16 @@
 		505D3BBA1A66129300CD70DE /* favorite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 505D3BB71A66129300CD70DE /* favorite@2x.png */; };
 		505D3BC11A6630C800CD70DE /* walkthrough1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 505D3BBF1A6630C800CD70DE /* walkthrough1.jpg */; };
 		505D3BC21A6630C800CD70DE /* walkthrough1@2x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 505D3BC01A6630C800CD70DE /* walkthrough1@2x.jpg */; };
+		5080E6AD1AD8B3760097BD9F /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 5080E6AA1AD8B3760097BD9F /* Default.png */; };
+		5080E6AE1AD8B3760097BD9F /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5080E6AB1AD8B3760097BD9F /* Default@2x.png */; };
+		5080E6AF1AD8B3760097BD9F /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5080E6AC1AD8B3760097BD9F /* Default-568h@2x.png */; };
+		5080E6B11AD8B49C0097BD9F /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5080E6B01AD8B49C0097BD9F /* Launch Screen.xib */; };
+		5080E6B51AD8C5EB0097BD9F /* search20.png in Resources */ = {isa = PBXBuildFile; fileRef = 5080E6B21AD8C5EB0097BD9F /* search20.png */; };
+		5080E6B61AD8C5EB0097BD9F /* search20@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5080E6B31AD8C5EB0097BD9F /* search20@2x.png */; };
+		5080E6B71AD8C5EB0097BD9F /* search20@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5080E6B41AD8C5EB0097BD9F /* search20@3x.png */; };
+		5080E6BB1AD8CA880097BD9F /* search15.png in Resources */ = {isa = PBXBuildFile; fileRef = 5080E6B81AD8CA880097BD9F /* search15.png */; };
+		5080E6BC1AD8CA880097BD9F /* search15@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5080E6B91AD8CA880097BD9F /* search15@2x.png */; };
+		5080E6BD1AD8CA880097BD9F /* search15@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5080E6BA1AD8CA880097BD9F /* search15@3x.png */; };
 		508DC9381A5B6FA900B1C008 /* refresh.png in Resources */ = {isa = PBXBuildFile; fileRef = 508DC9351A5B6FA900B1C008 /* refresh.png */; };
 		508DC9391A5B6FA900B1C008 /* refresh@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 508DC9361A5B6FA900B1C008 /* refresh@2x.png */; };
 		508DC93A1A5B6FA900B1C008 /* refresh@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 508DC9371A5B6FA900B1C008 /* refresh@3x.png */; };
@@ -417,6 +428,7 @@
 /* Begin PBXFileReference section */
 		06ADCAD831A6A6A91CE03B9B /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		278A29F5F94F48DE9193F246 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		500A1C581AD8B03900284212 /* Main_iPhone.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main_iPhone.storyboard; sourceTree = "<group>"; };
 		501473E41A3EA136000422B8 /* image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = image.png; sourceTree = "<group>"; };
 		501473E51A3EA136000422B8 /* image@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "image@2x.png"; sourceTree = "<group>"; };
 		501473E61A3EA136000422B8 /* image@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "image@3x.png"; sourceTree = "<group>"; };
@@ -543,6 +555,16 @@
 		505D3BB71A66129300CD70DE /* favorite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "favorite@2x.png"; sourceTree = "<group>"; };
 		505D3BBF1A6630C800CD70DE /* walkthrough1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = walkthrough1.jpg; sourceTree = "<group>"; };
 		505D3BC01A6630C800CD70DE /* walkthrough1@2x.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "walkthrough1@2x.jpg"; sourceTree = "<group>"; };
+		5080E6AA1AD8B3760097BD9F /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
+		5080E6AB1AD8B3760097BD9F /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
+		5080E6AC1AD8B3760097BD9F /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		5080E6B01AD8B49C0097BD9F /* Launch Screen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "Launch Screen.xib"; sourceTree = "<group>"; };
+		5080E6B21AD8C5EB0097BD9F /* search20.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = search20.png; sourceTree = "<group>"; };
+		5080E6B31AD8C5EB0097BD9F /* search20@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "search20@2x.png"; sourceTree = "<group>"; };
+		5080E6B41AD8C5EB0097BD9F /* search20@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "search20@3x.png"; sourceTree = "<group>"; };
+		5080E6B81AD8CA880097BD9F /* search15.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = search15.png; sourceTree = "<group>"; };
+		5080E6B91AD8CA880097BD9F /* search15@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "search15@2x.png"; sourceTree = "<group>"; };
+		5080E6BA1AD8CA880097BD9F /* search15@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "search15@3x.png"; sourceTree = "<group>"; };
 		508DC9351A5B6FA900B1C008 /* refresh.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = refresh.png; sourceTree = "<group>"; };
 		508DC9361A5B6FA900B1C008 /* refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "refresh@2x.png"; sourceTree = "<group>"; };
 		508DC9371A5B6FA900B1C008 /* refresh@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "refresh@3x.png"; sourceTree = "<group>"; };
@@ -1103,7 +1125,9 @@
 				F2139D82193A56C200EE5C96 /* Libraries */,
 				F28C77F418E1E4950088B4C9 /* WFAppDelegate.h */,
 				F28C77F518E1E4950088B4C9 /* WFAppDelegate.m */,
+				500A1C581AD8B03900284212 /* Main_iPhone.storyboard */,
 				F28C77FA18E1E4950088B4C9 /* Main_iPad.storyboard */,
+				5080E6B01AD8B49C0097BD9F /* Launch Screen.xib */,
 				F28C77FD18E1E4950088B4C9 /* Wolff.xcdatamodeld */,
 				F2CE054F198E72B10061DB94 /* Models */,
 				F2CE0583198E937F0061DB94 /* Cells */,
@@ -1398,6 +1422,12 @@
 			isa = PBXGroup;
 			children = (
 				F28C780618E1E4950088B4C9 /* Images.xcassets */,
+				5080E6B81AD8CA880097BD9F /* search15.png */,
+				5080E6B91AD8CA880097BD9F /* search15@2x.png */,
+				5080E6BA1AD8CA880097BD9F /* search15@3x.png */,
+				5080E6B21AD8C5EB0097BD9F /* search20.png */,
+				5080E6B31AD8C5EB0097BD9F /* search20@2x.png */,
+				5080E6B41AD8C5EB0097BD9F /* search20@3x.png */,
 				50B325581AA14B96003B7DB2 /* blueFavorite.png */,
 				50B325591AA14B96003B7DB2 /* blueFavorite@2x.png */,
 				50B3255A1AA14B96003B7DB2 /* blueFavorite@3x.png */,
@@ -1584,6 +1614,9 @@
 				5026DF6D1A3D1F62000CD26F /* remove.png */,
 				5026DF6E1A3D1F62000CD26F /* remove@2x.png */,
 				5026DF6F1A3D1F62000CD26F /* remove@3x.png */,
+				5080E6AA1AD8B3760097BD9F /* Default.png */,
+				5080E6AB1AD8B3760097BD9F /* Default@2x.png */,
+				5080E6AC1AD8B3760097BD9F /* Default-568h@2x.png */,
 				F2A9580D19E2245F00A3B471 /* Default_iPad_landscape.png */,
 				F2A9580E19E2245F00A3B471 /* Default_iPad_landscape@2x.png */,
 				F2A9580619E220F600A3B471 /* App Icons */,
@@ -1808,18 +1841,23 @@
 				50FB5FE81A40E6CC004D6062 /* Lato-Bla.ttf in Resources */,
 				50D7A9DB1A6234E3007FE14C /* logout.png in Resources */,
 				505D3B8B1A6516DE00CD70DE /* leftArrow@3x.png in Resources */,
+				5080E6BC1AD8CA880097BD9F /* search15@2x.png in Resources */,
 				50952E861A47F70E00485831 /* MuseoSans-100italic.ttf in Resources */,
 				508DC9441A5B702200B1C008 /* blackSettings.png in Resources */,
+				5080E6BD1AD8CA880097BD9F /* search15@3x.png in Resources */,
 				504926251A58DFB9000C6FD9 /* infoCircle@2x.png in Resources */,
 				50952EA41A47FE3300485831 /* edit@3x.png in Resources */,
+				500A1C591AD8B03900284212 /* Main_iPhone.storyboard in Resources */,
 				505D3B761A64AF3400CD70DE /* whiteSlideshow.png in Resources */,
 				505D3BB81A66129300CD70DE /* favorite.png in Resources */,
 				50952E871A47F70E00485831 /* MuseoSans-300.ttf in Resources */,
 				508DC99E1A5B836800B1C008 /* alert.png in Resources */,
+				5080E6B71AD8C5EB0097BD9F /* search20@3x.png in Resources */,
 				50DB44971A58C40200856174 /* transparentIconWhite.png in Resources */,
 				508DC9601A5B764100B1C008 /* whiteTables@2x.png in Resources */,
 				503CD5B41A773A6900F4FF85 /* whiteLogo.png in Resources */,
 				505D3BBA1A66129300CD70DE /* favorite@2x.png in Resources */,
+				5080E6B51AD8C5EB0097BD9F /* search20.png in Resources */,
 				505D3B701A64AECA00CD70DE /* slideshow.png in Resources */,
 				505D3BC11A6630C800CD70DE /* walkthrough1.jpg in Resources */,
 				505D3B571A64ABA300CD70DE /* blueTables@3x.png in Resources */,
@@ -1828,6 +1866,7 @@
 				50952EA31A47FE3300485831 /* edit@2x.png in Resources */,
 				50AC920B1A9A6AAA004148D2 /* menuBlackSettings@2x.png in Resources */,
 				F2A9580319E220F100A3B471 /* icon-120.png in Resources */,
+				5080E6AD1AD8B3760097BD9F /* Default.png in Resources */,
 				F2A957FB19E220F100A3B471 /* icon-40.png in Resources */,
 				50D7A9E61A623A5C007FE14C /* login@3x.png in Resources */,
 				50DB44451A56211D00856174 /* transparentIcon@2x.png in Resources */,
@@ -1852,6 +1891,7 @@
 				50DB44721A5867C100856174 /* cloud@3x.png in Resources */,
 				505D3BB41A660FCD00CD70DE /* lock@3x.png in Resources */,
 				503CD5A91A77203A00F4FF85 /* miniRemove@2x.png in Resources */,
+				5080E6BB1AD8CA880097BD9F /* search15.png in Resources */,
 				50DB44551A57054500856174 /* people@3x.png in Resources */,
 				5026DF721A3D1F63000CD26F /* blackRemove@3x.png in Resources */,
 				50952EA51A47FE3300485831 /* share.png in Resources */,
@@ -1889,6 +1929,7 @@
 				50952E9B1A47FD8100485831 /* flag@3x.png in Resources */,
 				508DC9551A5B725F00B1C008 /* plus@3x.png in Resources */,
 				50305BD21A5A0D0C00D2CAD1 /* info@3x.png in Resources */,
+				5080E6B11AD8B49C0097BD9F /* Launch Screen.xib in Resources */,
 				50DB43DF1A53872200856174 /* cloudDownload.png in Resources */,
 				50D7A9DD1A6234E3007FE14C /* logout@3x.png in Resources */,
 				50952EA71A47FE3300485831 /* share@3x.png in Resources */,
@@ -1914,6 +1955,7 @@
 				50FB5F7D1A3F2AA8004D6062 /* tables@3x.png in Resources */,
 				50DB43D41A537AC500856174 /* dropToLightTable@2x.png in Resources */,
 				50952E891A47F70E00485831 /* MuseoSans-500italic.ttf in Resources */,
+				5080E6AE1AD8B3760097BD9F /* Default@2x.png in Resources */,
 				503CD5A81A77203A00F4FF85 /* miniRemove.png in Resources */,
 				50952E8C1A47F70E00485831 /* MuseoSans-900.ttf in Resources */,
 				F2A9580C19E222FC00A3B471 /* icon-180.png in Resources */,
@@ -1972,6 +2014,7 @@
 				503CD5AA1A77203A00F4FF85 /* miniRemove@3x.png in Resources */,
 				50DB44141A54705B00856174 /* whiteFavorite.png in Resources */,
 				505D3BB21A660FCD00CD70DE /* lock.png in Resources */,
+				5080E6B61AD8C5EB0097BD9F /* search20@2x.png in Resources */,
 				50DB44091A546A8B00856174 /* blueCheck.png in Resources */,
 				50DB44381A5503FC00856174 /* cloudUpload.png in Resources */,
 				508DC9461A5B702200B1C008 /* blackSettings@3x.png in Resources */,
@@ -1998,6 +2041,7 @@
 				505D3BB31A660FCD00CD70DE /* lock@2x.png in Resources */,
 				50DB44111A54705B00856174 /* whiteLock.png in Resources */,
 				50305BD11A5A0D0C00D2CAD1 /* info@2x.png in Resources */,
+				5080E6AF1AD8B3760097BD9F /* Default-568h@2x.png in Resources */,
 				50305BD01A5A0D0C00D2CAD1 /* info.png in Resources */,
 				50952E8B1A47F70E00485831 /* MuseoSans-700italic.ttf in Resources */,
 				508DC9861A5B7C1500B1C008 /* whiteCheckbox.png in Resources */,
@@ -2350,8 +2394,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 06ADCAD831A6A6A91CE03B9B /* Pods.debug.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-2";
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-2";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2365,7 +2409,7 @@
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				TARGETED_DEVICE_FAMILY = 2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -2374,8 +2418,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7317AE0722CA214E63ADDDD9 /* Pods.release.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-2";
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-2";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2389,7 +2433,7 @@
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				TARGETED_DEVICE_FAMILY = 2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

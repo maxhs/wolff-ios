@@ -19,7 +19,7 @@
 @interface WFLightTableDetailsViewController : UIViewController
 
 @property (strong, nonatomic) NSMutableOrderedSet *photos;
-@property (strong, nonatomic) NSNumber *tableId;
+@property (strong, nonatomic) LightTable *lightTable;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UIButton *dismissButton;
 @property (weak, nonatomic) IBOutlet UIButton *scrollBackButton;

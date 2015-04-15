@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7531" systemVersion="14D131" targetRuntime="iOS.CocoaTouch.iPad" propertyAccessControl="none" initialViewController="18p-eV-7vj">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7531" systemVersion="14D131" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="18p-eV-7vj">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7520"/>
@@ -10,11 +10,11 @@
             <objects>
                 <viewController storyboardIdentifier="WebView" id="x2i-cX-zn7" customClass="WFWebViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="b4e-SP-X9w">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <webView contentMode="scaleToFill" id="I6V-qs-WaR">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <dataDetectorType key="dataDetectorTypes" phoneNumber="YES" link="YES" address="YES"/>
@@ -39,15 +39,15 @@
             <objects>
                 <tableViewController storyboardIdentifier="AssetGroupPicker" id="RiT-3h-8Vi" customClass="WFAssetGroupPickerController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="MnE-aC-WaF">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="GroupCell" id="Gst-FS-cIE" customClass="WFAssetGroupPickerCell">
-                                <rect key="frame" x="0.0" y="22" width="1024" height="44"/>
+                                <rect key="frame" x="0.0" y="22" width="568" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Gst-FS-cIE" id="BA5-qC-XoB">
-                                    <rect key="frame" x="0.0" y="0.0" width="1024" height="43"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="568" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableViewCellContentView>
                             </tableViewCell>
@@ -71,11 +71,11 @@
             <objects>
                 <viewController storyboardIdentifier="ImagePicker" id="Nsv-Eh-xUS" customClass="WFImagePickerController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="q98-KG-NtZ">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" id="zj8-jk-F2J">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="fnz-66-Hzq">
                                     <size key="itemSize" width="100" height="100"/>
@@ -131,15 +131,15 @@
             <objects>
                 <tableViewController storyboardIdentifier="SaveMenu" id="RhW-Vi-HBC" customClass="WFSaveMenuViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="pd0-oQ-StU">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="SaveMenuCell" id="vsd-Mk-twB" customClass="WFSaveMenuCell">
-                                <rect key="frame" x="0.0" y="22" width="1024" height="44"/>
+                                <rect key="frame" x="0.0" y="22" width="568" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="vsd-Mk-twB" id="3m4-jT-KGO">
-                                    <rect key="frame" x="0.0" y="0.0" width="1024" height="43"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="568" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableViewCellContentView>
                             </tableViewCell>
@@ -160,7 +160,7 @@
             <objects>
                 <viewController storyboardIdentifier="SlideshowSplitView" id="HZk-Qb-Za2" customClass="WFSlideshowSplitViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Gvx-kN-WWg">
-                        <rect key="frame" x="0.0" y="64" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" minimumZoomScale="0.0" maximumZoomScale="0.0" dataMode="prototypes" id="3sd-Bv-39w">
@@ -190,7 +190,7 @@
                                                     <rect key="frame" x="59" y="29" width="130" height="190"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </imageView>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="y2D-nT-NKf" userLabel="Landscape">
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="y2D-nT-NKf" userLabel="Portrait">
                                                     <rect key="frame" x="29" y="59" width="190" height="130"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </imageView>
@@ -218,15 +218,15 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" delaysContentTouches="NO" canCancelContentTouches="NO" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="faH-Kb-keJ">
-                                <rect key="frame" x="0.0" y="0.0" width="280" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="113" height="736"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="SlideTableCell" rowHeight="180" id="vC0-Wh-0UG" customClass="WFSlideTableCell">
-                                        <rect key="frame" x="0.0" y="22" width="280" height="180"/>
+                                        <rect key="frame" x="0.0" y="22" width="113" height="180"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="vC0-Wh-0UG" id="6Un-fS-F1Z">
-                                            <rect key="frame" x="0.0" y="0.0" width="280" height="179"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="113" height="179"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="vNN-JH-VOU">
@@ -280,10 +280,10 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="NewSlideCell" rowHeight="180" id="HfV-6A-ldF" customClass="WFNewSlideTableCell">
-                                        <rect key="frame" x="0.0" y="202" width="280" height="180"/>
+                                        <rect key="frame" x="0.0" y="202" width="113" height="180"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="HfV-6A-ldF" id="7fO-Nd-Sxa">
-                                            <rect key="frame" x="0.0" y="0.0" width="280" height="179"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="113" height="179"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <view contentMode="scaleToFill" id="JaM-50-z9p">
@@ -317,7 +317,8 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <gestureRecognizers/>
                     </view>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                     <connections>
                         <outlet property="collectionView" destination="3sd-Bv-39w" id="zya-Gm-jb7"/>
                         <outlet property="lightBoxPlaceholderLabel" destination="ByW-u9-HbD" id="qcd-mI-bKr"/>
@@ -326,18 +327,18 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="wjm-iG-cxg" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2002" y="-3053"/>
+            <point key="canvasLocation" x="1870" y="-3261"/>
         </scene>
         <!--Login View Controller-->
         <scene sceneID="drY-W9-s3i">
             <objects>
                 <viewController storyboardIdentifier="Login" id="LWU-Kk-WXu" customClass="WFLoginViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="xYl-Eb-9YG">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <textField hidden="YES" opaque="NO" clipsSubviews="YES" alpha="0.0" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Your first name" minimumFontSize="17" id="4Cf-tW-jn4">
-                                <rect key="frame" x="312" y="135" width="400" height="42"/>
+                                <rect key="frame" x="57" y="135" width="300" height="42"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="no" returnKeyType="next"/>
@@ -346,7 +347,7 @@
                                 </connections>
                             </textField>
                             <textField hidden="YES" opaque="NO" clipsSubviews="YES" alpha="0.0" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Your last name" minimumFontSize="17" id="skZ-3c-onw">
-                                <rect key="frame" x="312" y="181" width="400" height="42"/>
+                                <rect key="frame" x="57" y="181" width="300" height="42"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="words" autocorrectionType="no" returnKeyType="next"/>
@@ -355,7 +356,7 @@
                                 </connections>
                             </textField>
                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Your email" minimumFontSize="17" id="PUq-BT-MLK">
-                                <rect key="frame" x="312" y="227" width="400" height="42"/>
+                                <rect key="frame" x="57" y="227" width="300" height="42"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" keyboardType="emailAddress" returnKeyType="next"/>
@@ -364,7 +365,7 @@
                                 </connections>
                             </textField>
                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Your password" minimumFontSize="17" id="7QK-Ms-Uuj">
-                                <rect key="frame" x="312" y="273" width="400" height="42"/>
+                                <rect key="frame" x="57" y="273" width="300" height="42"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" returnKeyType="go" secureTextEntry="YES"/>
@@ -373,7 +374,7 @@
                                 </connections>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="vYD-iT-NaB">
-                                <rect key="frame" x="362" y="330" width="300" height="44"/>
+                                <rect key="frame" x="57" y="330" width="300" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <state key="normal" title="LOGIN">
                                     <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -381,7 +382,7 @@
                                 </state>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="hK1-7x-taT" userLabel="Terms">
-                                <rect key="frame" x="262" y="729" width="500" height="30"/>
+                                <rect key="frame" x="-43" y="729" width="500" height="30"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <state key="normal">
                                     <color key="titleColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
@@ -389,7 +390,7 @@
                                 </state>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="ogO-ZK-Hw6" userLabel="Forgot Password">
-                                <rect key="frame" x="362" y="681" width="300" height="36"/>
+                                <rect key="frame" x="57" y="681" width="300" height="36"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <state key="normal">
                                     <color key="titleColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
@@ -397,11 +398,11 @@
                                 </state>
                             </button>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="transparentIconWhite.png" id="6pQ-jc-med">
-                                <rect key="frame" x="448" y="52" width="128" height="128"/>
+                                <rect key="frame" x="143" y="52" width="128" height="128"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="lax-fS-wFk">
-                                <rect key="frame" x="800" y="0.0" width="200" height="54"/>
+                                <rect key="frame" x="254" y="0.0" width="140" height="54"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <state key="normal" title="Sign up">
                                     <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -419,7 +420,8 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" id="x5C-EK-tza"/>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                     <connections>
                         <outlet property="backButton" destination="7fm-yC-GcF" id="kMD-ug-jeF"/>
                         <outlet property="emailTextField" destination="PUq-BT-MLK" id="Kb1-yF-ypK"/>
@@ -442,15 +444,15 @@
             <objects>
                 <tableViewController storyboardIdentifier="Menu" id="755-YI-1Hk" customClass="WFMenuViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="4si-z2-I0y">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="MenuCell" rowHeight="50" id="6Ly-iS-6qL" customClass="WFMenuCell">
-                                <rect key="frame" x="0.0" y="22" width="1024" height="50"/>
+                                <rect key="frame" x="0.0" y="22" width="414" height="50"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="6Ly-iS-6qL" id="jnP-SZ-EqW">
-                                    <rect key="frame" x="0.0" y="0.0" width="1024" height="49"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="49"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableViewCellContentView>
                             </tableViewCell>
@@ -460,7 +462,7 @@
                             <outlet property="delegate" destination="755-YI-1Hk" id="bP1-X2-Q3B"/>
                         </connections>
                     </tableView>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="NwG-NG-9BI" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -471,15 +473,15 @@
             <objects>
                 <tableViewController storyboardIdentifier="Notifications" id="0tZ-gM-nyb" customClass="WFNotificationsViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="jBV-d3-HPG">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="NotificationCell" id="Pdj-C7-EX2" customClass="WFNotificationCell">
-                                <rect key="frame" x="0.0" y="22" width="1024" height="44"/>
+                                <rect key="frame" x="0.0" y="22" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Pdj-C7-EX2" id="hnY-mr-wZa">
-                                    <rect key="frame" x="0.0" y="0.0" width="1024" height="43"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableViewCellContentView>
                             </tableViewCell>
@@ -489,7 +491,7 @@
                             <outlet property="delegate" destination="0tZ-gM-nyb" id="kRH-jd-TSP"/>
                         </connections>
                     </tableView>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="VeC-Pj-Mbr" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -500,19 +502,19 @@
             <objects>
                 <viewController storyboardIdentifier="SearchResults" id="qrH-YC-Q2z" customClass="WFSearchResultsViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="gIV-M8-KL7">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="25x-Tl-bTh">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="SearchCell" rowHeight="80" id="nUP-p5-yLr" customClass="WFSearchResultsCell">
-                                        <rect key="frame" x="0.0" y="22" width="1024" height="80"/>
+                                        <rect key="frame" x="0.0" y="22" width="414" height="80"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="nUP-p5-yLr" id="0st-69-X6s">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="79"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="79"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="LhV-pt-fhI">
@@ -542,10 +544,10 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="SearchOptionsCell" rowHeight="80" id="c7M-2J-gBy" customClass="WFSearchOptionsCell">
-                                        <rect key="frame" x="0.0" y="102" width="1024" height="80"/>
+                                        <rect key="frame" x="0.0" y="102" width="414" height="80"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="c7M-2J-gBy" id="b25-3O-vvb">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="79"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="79"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="kss-x1-Pv7" userLabel="Light Table Button">
@@ -592,7 +594,7 @@
                                 </connections>
                             </tableView>
                             <collectionView hidden="YES" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" id="d0u-bH-M70">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <inset key="contentInset" minX="0.0" minY="44" maxX="0.0" maxY="0.0"/>
                                 <inset key="scrollIndicatorInsets" minX="0.0" minY="44" maxX="0.0" maxY="0.0"/>
@@ -633,7 +635,7 @@
                                 </connections>
                             </collectionView>
                             <searchBar hidden="YES" contentMode="redraw" placeholder="Search Wölff Catalog" id="xx2-XL-ySl">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="44"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <textInputTraits key="textInputTraits"/>
                                 <connections>
@@ -650,7 +652,7 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                     <connections>
                         <outlet property="collectionView" destination="d0u-bH-M70" id="dqY-je-Zeh"/>
                         <outlet property="noResultsPrompt" destination="Hnl-sy-H1y" id="jXo-C4-nH4"/>
@@ -669,29 +671,29 @@
             <objects>
                 <viewController storyboardIdentifier="Comparison" automaticallyAdjustsScrollViewInsets="NO" id="Ish-LW-sOv" customClass="WFComparisonViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="YVc-Ex-Kbf">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" pagingEnabled="YES" dataMode="prototypes" id="PDa-dU-I1d">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="10" minimumInteritemSpacing="10" id="qR2-Dh-K9Z">
-                                    <size key="itemSize" width="1024" height="768"/>
+                                    <size key="itemSize" width="1024" height="568"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="ComparisonCell" id="V6Z-Bl-zP3" customClass="WFSlideshowSlideCell">
-                                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                        <rect key="frame" x="0.0" y="84" width="1024" height="568"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="568"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <view multipleTouchEnabled="YES" contentMode="scaleAspectFit" id="2Ya-Kq-FIl" userLabel="containerView1">
                                                     <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <imageView multipleTouchEnabled="YES" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="M5Y-T3-98n" userLabel="artImageView1" customClass="WFInteractiveImageView">
                                                             <rect key="frame" x="62" y="54" width="900" height="660"/>
@@ -706,7 +708,7 @@
                                                 </view>
                                                 <view clipsSubviews="YES" contentMode="scaleAspectFit" id="nez-hy-3Nc" userLabel="containerView2">
                                                     <rect key="frame" x="0.0" y="0.0" width="511" height="768"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="In9-pe-odM" userLabel="artImageView2" customClass="WFInteractiveImageView">
                                                             <rect key="frame" x="25" y="54" width="480" height="660"/>
@@ -721,7 +723,7 @@
                                                 </view>
                                                 <view clipsSubviews="YES" contentMode="scaleAspectFit" id="kqr-rf-yCQ" userLabel="containerView3">
                                                     <rect key="frame" x="513" y="0.0" width="511" height="768"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="jHm-Of-W8V" userLabel="artImageView3" customClass="WFInteractiveImageView">
                                                             <rect key="frame" x="5" y="54" width="480" height="660"/>
@@ -758,7 +760,7 @@
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </view>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                     <connections>
                         <outlet property="collectionView" destination="PDa-dU-I1d" id="iy2-cT-gbQ"/>
                     </connections>
@@ -772,19 +774,19 @@
             <objects>
                 <viewController storyboardIdentifier="SlideMetadata" id="2Aq-if-Unr" customClass="WFSlideMetadataViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Jqr-JT-lTF">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="CVB-Ei-aOt">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="SlideMetadataCell" id="pdo-og-LFE" customClass="WFSlideMetadataCell">
-                                        <rect key="frame" x="0.0" y="22" width="1024" height="44"/>
+                                        <rect key="frame" x="0.0" y="22" width="568" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="pdo-og-LFE" id="7JM-zV-DWU">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="43"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="568" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -811,11 +813,11 @@
             <objects>
                 <viewController storyboardIdentifier="Profile" id="EaB-zb-XBk" customClass="WFProfileViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="gWk-Go-2sP">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" id="CZf-dM-LPt">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="XGw-bn-Rpr">
                                     <size key="itemSize" width="256" height="256"/>
@@ -825,7 +827,7 @@
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="PhotoCell" id="DA1-F8-iYO" customClass="WFPhotoCell">
-                                        <rect key="frame" x="0.0" y="270" width="256" height="256"/>
+                                        <rect key="frame" x="79" y="270" width="256" height="256"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="256" height="256"/>
@@ -840,7 +842,7 @@
                                                     <rect key="frame" x="63" y="33" width="130" height="190"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </imageView>
-                                                <imageView userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="Hd7-KQ-Xtv" userLabel="Landscape">
+                                                <imageView userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="Hd7-KQ-Xtv" userLabel="Portrait">
                                                     <rect key="frame" x="33" y="63" width="190" height="130"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </imageView>
@@ -860,7 +862,7 @@
                                     </collectionViewCell>
                                 </cells>
                                 <collectionReusableView key="sectionHeaderView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="ProfileHeader" id="bWB-RJ-cyO" customClass="WFProfileHeader">
-                                    <rect key="frame" x="0.0" y="0.0" width="1024" height="270"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="270"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <button opaque="NO" alpha="0.0" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="z57-8R-Sjk" userLabel="Photo Button">
@@ -947,25 +949,25 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                     <connections>
                         <outlet property="collectionView" destination="CZf-dM-LPt" id="Gdd-pC-NnT"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="C2V-6Q-zq8" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3014" y="-4868"/>
+            <point key="canvasLocation" x="2538" y="-4660"/>
         </scene>
         <!--Artists View Controller-->
         <scene sceneID="pf4-3M-Qkz">
             <objects>
                 <viewController storyboardIdentifier="Artists" id="AU6-6U-Z3X" customClass="WFArtistsViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="BBN-Hk-QK8">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <searchBar contentMode="redraw" id="qn4-K4-WIR">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="768"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <textInputTraits key="textInputTraits"/>
                                 <connections>
@@ -973,7 +975,7 @@
                                 </connections>
                             </searchBar>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" id="fmR-F6-iVx">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="BRq-3X-3E3">
                                     <size key="itemSize" width="256" height="256"/>
@@ -1014,7 +1016,7 @@
                                         </connections>
                                     </collectionViewCell>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="NewArtistCell" id="AA5-Yc-GHO" customClass="WFNewArtistCell">
-                                        <rect key="frame" x="256" y="0.0" width="256" height="256"/>
+                                        <rect key="frame" x="312" y="0.0" width="256" height="256"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="256" height="256"/>
@@ -1081,19 +1083,19 @@
             <objects>
                 <viewController storyboardIdentifier="Slideshows" id="Z7h-eV-PRk" customClass="WFSlideshowsViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="tM7-vF-xFp">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="qdv-N2-6Hi">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="SlideshowCell" id="DKe-be-BF5" customClass="WFSlideshowCell">
-                                        <rect key="frame" x="0.0" y="22" width="1024" height="44"/>
+                                        <rect key="frame" x="0.0" y="22" width="414" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="DKe-be-BF5" id="ywf-xu-I4E">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="43"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -1107,7 +1109,7 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" id="JZm-6F-5zq"/>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                     <connections>
                         <outlet property="tableView" destination="qdv-N2-6Hi" id="I6w-nf-Eql"/>
                     </connections>
@@ -1121,11 +1123,11 @@
             <objects>
                 <viewController storyboardIdentifier="Catalog" id="O6y-Gd-vKT" customClass="WFCatalogViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="M1g-sw-6B9">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <searchBar contentMode="redraw" id="aJn-2j-2rf">
-                                <rect key="frame" x="357" y="362" width="310" height="44"/>
+                                <rect key="frame" x="357" y="362" width="0.0" height="44"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <textInputTraits key="textInputTraits"/>
                                 <connections>
@@ -1133,15 +1135,15 @@
                                 </connections>
                             </searchBar>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="A9p-xi-CmA">
-                                <rect key="frame" x="-280" y="0.0" width="280" height="618"/>
+                                <rect key="frame" x="-280" y="0.0" width="149" height="586"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="LightTableCell" rowHeight="60" id="puY-UC-qq9" customClass="WFLightTableCell">
-                                        <rect key="frame" x="0.0" y="22" width="280" height="60"/>
+                                        <rect key="frame" x="0.0" y="22" width="149" height="60"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="puY-UC-qq9" id="zwj-uZ-vtB">
-                                            <rect key="frame" x="0.0" y="0.0" width="280" height="59"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="149" height="59"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" id="6Tm-WA-9Jp">
@@ -1213,10 +1215,10 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="LightTableDefaultCell" rowHeight="60" id="iKi-PP-fgu" customClass="WFLightTableDefaultCell">
-                                        <rect key="frame" x="0.0" y="82" width="280" height="60"/>
+                                        <rect key="frame" x="0.0" y="82" width="149" height="60"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="iKi-PP-fgu" id="lhY-Vh-GEm">
-                                            <rect key="frame" x="0.0" y="0.0" width="280" height="59"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="149" height="59"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="cwK-mk-o18" userLabel="iconImageView">
@@ -1238,10 +1240,10 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="SlideshowCell" rowHeight="60" id="pT8-uE-cOr" customClass="WFSlideshowCell">
-                                        <rect key="frame" x="0.0" y="142" width="280" height="60"/>
+                                        <rect key="frame" x="0.0" y="142" width="149" height="60"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="pT8-uE-cOr" id="CQS-4t-0bq">
-                                            <rect key="frame" x="0.0" y="0.0" width="280" height="59"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="149" height="59"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" id="lGr-Kd-flZ">
@@ -1249,18 +1251,11 @@
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="SZf-Jm-3IL" userLabel="iconImageView">
-                                                            <rect key="frame" x="23" y="20" width="20" height="20"/>
+                                                            <rect key="frame" x="130" y="20" width="20" height="20"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES"/>
                                                         </imageView>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="jmc-GY-4ZI" userLabel="Slideshow Title">
-                                                            <rect key="frame" x="25" y="18" width="255" height="24"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES"/>
-                                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="dwr-e7-U76">
-                                                            <rect key="frame" x="67" y="10" width="200" height="40"/>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="jmc-GY-4ZI">
+                                                            <rect key="frame" x="10" y="16" width="260" height="24"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
@@ -1283,7 +1278,6 @@
                                         <connections>
                                             <outlet property="actionButton" destination="1Qu-cC-GLx" id="UjG-CO-aXU"/>
                                             <outlet property="iconImageView" destination="SZf-Jm-3IL" id="PPK-2K-NLt"/>
-                                            <outlet property="label" destination="dwr-e7-U76" id="O7B-by-MvJ"/>
                                             <outlet property="scrollView" destination="lGr-Kd-flZ" id="YZN-fM-XFE"/>
                                             <outlet property="slideshowLabel" destination="jmc-GY-4ZI" id="MX2-Jc-6Pz"/>
                                         </connections>
@@ -1295,11 +1289,11 @@
                                 </connections>
                             </tableView>
                             <view contentMode="scaleToFill" id="ZFb-YX-ZH4" userLabel="Comparison View">
-                                <rect key="frame" x="-280" y="618" width="280" height="150"/>
+                                <rect key="frame" x="-280" y="591" width="149" height="145"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES"/>
                                 <subviews>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Drag for comparison" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="9lg-C9-nPZ">
-                                        <rect key="frame" x="10" y="53" width="260" height="44"/>
+                                        <rect key="frame" x="10" y="53" width="129" height="82"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
@@ -1309,8 +1303,8 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                             </view>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" minimumZoomScale="0.0" maximumZoomScale="0.0" dataMode="prototypes" id="iwC-WQ-O3x">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
-                                <autoresizingMask key="autoresizingMask"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="HwD-FA-xxo">
                                     <size key="itemSize" width="256" height="256"/>
@@ -1320,7 +1314,7 @@
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="PhotoCell" id="fGW-nP-vSo" customClass="WFPhotoCell">
-                                        <rect key="frame" x="0.0" y="54" width="256" height="256"/>
+                                        <rect key="frame" x="79" y="54" width="256" height="256"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="256" height="256"/>
@@ -1328,16 +1322,16 @@
                                             <subviews>
                                                 <view contentMode="scaleToFill" id="JRA-ZV-BxT">
                                                     <rect key="frame" x="8" y="8" width="240" height="240"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 </view>
-                                                <imageView userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="dhQ-8D-Tcy" userLabel="Landscape">
+                                                <imageView userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="dhQ-8D-Tcy" userLabel="Portrait">
                                                     <rect key="frame" x="33" y="63" width="190" height="130"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 </imageView>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="4r3-Mr-zpt" userLabel="Portrait">
                                                     <rect key="frame" x="63" y="33" width="130" height="190"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 </imageView>
                                                 <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="blueCheck.png" id="kSo-Fz-FnN">
                                                     <rect key="frame" x="226" y="226" width="25" height="25"/>
@@ -1355,7 +1349,7 @@
                                     </collectionViewCell>
                                 </cells>
                                 <collectionReusableView key="sectionHeaderView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="HeaderView" id="Zll-Fd-3DH" customClass="WFCatalogHeaderView">
-                                    <rect key="frame" x="0.0" y="0.0" width="1024" height="54"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="54"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="qLt-tO-AVp" userLabel="headerLabel">
@@ -1388,7 +1382,7 @@
                         <gestureRecognizers/>
                     </view>
                     <navigationItem key="navigationItem" id="aCU-MR-EJI"/>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                     <connections>
                         <outlet property="collectionView" destination="iwC-WQ-O3x" id="QYI-Ka-qvd"/>
                         <outlet property="comparisonContainerView" destination="ZFb-YX-ZH4" id="zaW-hd-wdV"/>
@@ -1407,7 +1401,7 @@
             <objects>
                 <viewController storyboardIdentifier="NewArt" id="Ijg-Ys-51V" customClass="WFNewArtViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="oDC-bc-guK">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="x64-fa-3pg">
@@ -1459,7 +1453,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="BzL-Jm-eBH" userLabel="Dismiss">
-                                <rect key="frame" x="960" y="1" width="64" height="44"/>
+                                <rect key="frame" x="350" y="1" width="64" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" image="remove.png">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -1484,15 +1478,15 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="b8d-R4-Ry5">
-                                <rect key="frame" x="340" y="50" width="684" height="700"/>
+                                <rect key="frame" x="340" y="50" width="74" height="668"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="NewArtCell" rowHeight="50" id="U4v-Fv-etu" customClass="WFNewArtCell">
-                                        <rect key="frame" x="0.0" y="22" width="684" height="50"/>
+                                        <rect key="frame" x="0.0" y="22" width="74" height="50"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="U4v-Fv-etu" id="Trm-Dp-FvB">
-                                            <rect key="frame" x="0.0" y="0.0" width="684" height="49"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="74" height="49"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="tdR-ro-6uh" userLabel="Field Label">
@@ -1516,10 +1510,10 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="DateCell" rowHeight="100" id="OE5-Vu-0IH" customClass="WFDateMetadataCell">
-                                        <rect key="frame" x="0.0" y="72" width="684" height="100"/>
+                                        <rect key="frame" x="0.0" y="72" width="74" height="100"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="OE5-Vu-0IH" id="Akk-gp-BD2">
-                                            <rect key="frame" x="0.0" y="0.0" width="684" height="99"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="74" height="99"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="5sO-bU-DNN">
@@ -1642,7 +1636,8 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                     <connections>
                         <outlet property="addPhotoButton" destination="I1s-FP-s8Q" id="Pzm-cH-DVD"/>
                         <outlet property="dismissButton" destination="BzL-Jm-eBH" id="Eqq-Mk-Qxv"/>
@@ -1666,19 +1661,19 @@
             <objects>
                 <viewController storyboardIdentifier="ArtMetadata" id="fcP-NS-BkU" customClass="WFArtMetadataViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="I4M-et-DEs">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="vCW-x4-dsW">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ArtMetadataCell" rowHeight="60" id="2b7-g2-cWV" customClass="WFArtMetadataCell">
-                                        <rect key="frame" x="0.0" y="22" width="1024" height="60"/>
+                                        <rect key="frame" x="0.0" y="22" width="414" height="60"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="2b7-g2-cWV" id="bSn-3x-0B5">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="59"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="59"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="A2n-Xu-c8E">
@@ -1698,6 +1693,10 @@
                                                         <outlet property="delegate" destination="2b7-g2-cWV" id="2Dv-an-jgq"/>
                                                     </connections>
                                                 </textView>
+                                                <switch hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="09R-mI-akH">
+                                                    <rect key="frame" x="155" y="14" width="51" height="31"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                </switch>
                                                 <textView multipleTouchEnabled="YES" contentMode="scaleToFill" id="AgX-Sk-XHk" userLabel="Notes">
                                                     <rect key="frame" x="155" y="-1" width="635" height="60"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES"/>
@@ -1708,10 +1707,6 @@
                                                         <outlet property="delegate" destination="2b7-g2-cWV" id="m5Z-En-0Lo"/>
                                                     </connections>
                                                 </textView>
-                                                <switch hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="09R-mI-akH">
-                                                    <rect key="frame" x="155" y="14" width="51" height="31"/>
-                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                </switch>
                                             </subviews>
                                         </tableViewCellContentView>
                                         <connections>
@@ -1722,10 +1717,10 @@
                                         </connections>
                                     </tableViewCell>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="DateMetadataCell" rowHeight="110" id="mEg-3z-qSS" customClass="WFDateMetadataCell">
-                                        <rect key="frame" x="0.0" y="82" width="1024" height="110"/>
+                                        <rect key="frame" x="0.0" y="82" width="414" height="110"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="mEg-3z-qSS" id="BK4-zL-7MX">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="109"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="109"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="VfS-yG-WlH">
@@ -1907,7 +1902,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="top" lineBreakMode="middleTruncation" id="I68-MF-Apn" userLabel="Dismiss Button">
-                                        <rect key="frame" x="562" y="0.0" width="38" height="38"/>
+                                        <rect key="frame" x="372" y="0.0" width="38" height="38"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" image="blackRemove.png">
                                             <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -1948,7 +1943,8 @@
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </view>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                     <connections>
                         <outlet property="backButton" destination="I68-MF-Apn" id="Cpq-9H-aO8"/>
                         <outlet property="deleteButton" destination="uYO-2W-NEp" id="CtX-cl-5WX"/>
@@ -1969,22 +1965,22 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8cI-0J-uz7" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2002" y="-2090"/>
+            <point key="canvasLocation" x="1239" y="-3053"/>
         </scene>
         <!--Slideshow Settings View Controller-->
         <scene sceneID="lfj-Au-lq4">
             <objects>
                 <tableViewController storyboardIdentifier="SlideshowSettings" id="SSs-5N-7uQ" customClass="WFSlideshowSettingsViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="VKB-zP-1rA">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="SlideshowSettingsCell" rowHeight="54" id="iMh-Lt-KPQ" customClass="WFSlideshowSettingsCell">
-                                <rect key="frame" x="0.0" y="22" width="1024" height="54"/>
+                                <rect key="frame" x="0.0" y="22" width="568" height="54"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="iMh-Lt-KPQ" id="Wnb-ao-U6Z">
-                                    <rect key="frame" x="0.0" y="0.0" width="1024" height="53"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="568" height="53"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="oUh-sg-E84">
@@ -2014,14 +2010,12 @@
             <objects>
                 <viewController storyboardIdentifier="Slideshow" automaticallyAdjustsScrollViewInsets="NO" id="5A9-EG-Bgk" customClass="WFSlideshowViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="QeU-b4-kl7">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" dataMode="prototypes" id="AVM-jT-zAr" customClass="WFGesturableCollectionView">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <inset key="contentInset" minX="1" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                <inset key="scrollIndicatorInsets" minX="1" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="FHt-6f-BG9">
                                     <size key="itemSize" width="1022" height="766"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
@@ -2030,7 +2024,7 @@
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="TitleCell" id="S6j-SC-zBN" customClass="WFSlideshowTitleCell">
-                                        <rect key="frame" x="0.0" y="1" width="1022" height="766"/>
+                                        <rect key="frame" x="0.0" y="-15" width="1022" height="766"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="1022" height="766"/>
@@ -2080,7 +2074,7 @@
                                         </connections>
                                     </collectionViewCell>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="SlideCell" id="6ji-5H-O9y" customClass="WFSlideshowSlideCell">
-                                        <rect key="frame" x="1022" y="1" width="1022" height="766"/>
+                                        <rect key="frame" x="1022" y="-15" width="1022" height="766"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="1022" height="766"/>
@@ -2161,7 +2155,7 @@
                                 </connections>
                             </collectionView>
                             <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="qY7-a7-1m2">
-                                <rect key="frame" x="0.0" y="724" width="1024" height="44"/>
+                                <rect key="frame" x="0.0" y="692" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <items>
                                     <barButtonItem id="Lct-s3-Xwl" userLabel="Title"/>
@@ -2187,7 +2181,7 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                     <connections>
                         <outlet property="bottomToolbar" destination="qY7-a7-1m2" id="PJR-4D-aun"/>
                         <outlet property="collectionView" destination="AVM-jT-zAr" id="DTs-L9-iDd"/>
@@ -2206,7 +2200,7 @@
             <objects>
                 <viewController storyboardIdentifier="Slide" id="qEJ-9c-dns" customClass="WFSlideDetailViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hx8-Ob-Cmf">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
@@ -2221,11 +2215,11 @@
             <objects>
                 <viewController storyboardIdentifier="Settings" automaticallyAdjustsScrollViewInsets="NO" id="sR2-Ju-pFj" customClass="WFSettingsViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="7DH-D7-SqT">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" id="4DY-ie-7Bv">
-                                <rect key="frame" x="0.0" y="608" width="512" height="160"/>
+                                <rect key="frame" x="0.0" y="608" width="0.0" height="248"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="hDi-3m-6Fr" userLabel="Version label">
@@ -2246,17 +2240,17 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                             </view>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="1" sectionFooterHeight="1" id="MDb-Ph-jPc">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <inset key="contentInset" minX="0.0" minY="44" maxX="0.0" maxY="0.0"/>
                                 <inset key="scrollIndicatorInsets" minX="0.0" minY="44" maxX="0.0" maxY="0.0"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="SettingsCell" rowHeight="54" id="wXO-yc-bLh" customClass="WFSettingsCell">
-                                        <rect key="frame" x="0.0" y="50" width="1024" height="54"/>
+                                        <rect key="frame" x="0.0" y="50" width="320" height="54"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="wXO-yc-bLh" id="7eW-93-3Ka">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="53"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="320" height="53"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Placeholder Text" minimumFontSize="17" id="y4J-5m-XAx">
@@ -2294,7 +2288,6 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
                     <connections>
                         <outlet property="footerContainerView" destination="4DY-ie-7Bv" id="GTD-gC-SLY"/>
                         <outlet property="logoutButton" destination="3X6-9G-eNO" id="2Xu-Iz-DG2"/>
@@ -2312,15 +2305,15 @@
             <objects>
                 <viewController storyboardIdentifier="Flag" id="O0c-Ck-p84" customClass="WFFlagViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="6QQ-Mx-2wK">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="jyb-Is-dSM">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <label key="tableHeaderView" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="9YA-8E-SlC">
-                                    <rect key="frame" x="0.0" y="0.0" width="1024" height="100"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="100"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                     <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
@@ -2328,10 +2321,10 @@
                                 </label>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="FlagCell" rowHeight="60" id="7fO-Lb-cg0" customClass="WFFlagCell">
-                                        <rect key="frame" x="0.0" y="122" width="1024" height="60"/>
+                                        <rect key="frame" x="0.0" y="122" width="414" height="60"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="7fO-Lb-cg0" id="zkx-th-HhH">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="59"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="59"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="SLA-cM-fau">
@@ -2380,7 +2373,6 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" id="C6i-SI-aKX"/>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
                     <connections>
                         <outlet property="headerLabel" destination="9YA-8E-SlC" id="2Mc-L2-tSY"/>
                         <outlet property="tableView" destination="jyb-Is-dSM" id="jPj-ai-Glt"/>
@@ -2388,18 +2380,18 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Art-EN-YBp" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2002" y="-1169"/>
+            <point key="canvasLocation" x="1239" y="-2182"/>
         </scene>
         <!--Light Table Details View Controller-->
         <scene sceneID="TTZ-3R-D0x">
             <objects>
                 <viewController storyboardIdentifier="LightTableDetails" automaticallyAdjustsScrollViewInsets="NO" id="xdh-ad-muL" customClass="WFLightTableDetailsViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="64S-IQ-9k7">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" id="wxh-io-MNx">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="vJe-A8-gcc">
                                     <size key="itemSize" width="512" height="768"/>
@@ -2409,7 +2401,7 @@
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="LightTableDetailsCell" id="rO1-Pc-O9L" customClass="WFLightTableDetailsCell">
-                                        <rect key="frame" x="0.0" y="0.0" width="512" height="768"/>
+                                        <rect key="frame" x="0.0" y="-16" width="512" height="768"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="512" height="768"/>
@@ -2466,14 +2458,14 @@
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="NEW LIGHT TABLE" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ZSk-ry-QTw">
-                                                            <rect key="frame" x="8" y="14" width="300" height="34"/>
+                                                            <rect key="frame" x="8" y="9" width="300" height="34"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                             <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="V52-nZ-RME">
-                                                            <rect key="frame" x="332" y="13" width="170" height="36"/>
+                                                            <rect key="frame" x="338" y="8" width="170" height="36"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <state key="normal" title="CREATE">
                                                                 <color key="titleShadowColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -2493,7 +2485,7 @@
                                         </connections>
                                     </collectionViewCell>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="LightTableContentsCell" id="nuz-H5-Sfc" customClass="WFLightTableContentsCell">
-                                        <rect key="frame" x="512" y="0.0" width="512" height="768"/>
+                                        <rect key="frame" x="512" y="-16" width="512" height="768"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="512" height="768"/>
@@ -2511,7 +2503,7 @@
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 </view>
-                                                <imageView userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="UPA-WQ-X2I" userLabel="Landscape">
+                                                <imageView userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="UPA-WQ-X2I" userLabel="Portrait">
                                                     <rect key="frame" x="161" y="79" width="190" height="130"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </imageView>
@@ -2530,14 +2522,14 @@
                                         </connections>
                                     </collectionViewCell>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="LightTableKeyCell" id="GWu-iG-Mfd" customClass="WFLightTableKeyCell">
-                                        <rect key="frame" x="1024" y="0.0" width="512" height="768"/>
+                                        <rect key="frame" x="1024" y="-16" width="512" height="768"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="512" height="768"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="JOIN A LIGHT TABLE" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="aqA-w6-TNf">
-                                                    <rect key="frame" x="24" y="15" width="300" height="34"/>
+                                                    <rect key="frame" x="25" y="15" width="300" height="34"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -2551,14 +2543,14 @@
                                                     </state>
                                                 </button>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enter the key code for the light table you'd like to join:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="jlq-BI-aFd">
-                                                    <rect key="frame" x="24" y="53" width="450" height="27"/>
+                                                    <rect key="frame" x="25" y="53" width="450" height="27"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" minimumFontSize="17" id="lXW-Ao-K66">
-                                                    <rect key="frame" x="24" y="77" width="460" height="34"/>
+                                                    <rect key="frame" x="25" y="77" width="460" height="34"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <textInputTraits key="textInputTraits"/>
@@ -2600,7 +2592,7 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" id="YEh-ZM-ccj"/>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                     <connections>
                         <outlet property="collectionView" destination="wxh-io-MNx" id="i4e-fK-aAC"/>
                         <outlet property="dismissButton" destination="jfF-ma-f7c" id="Knr-m4-LCJ"/>
@@ -2609,26 +2601,26 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="M5Q-gT-n9Y" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3141" y="-1169"/>
+            <point key="canvasLocation" x="1830" y="-2431"/>
         </scene>
         <!--Institution Search View Controller-->
         <scene sceneID="ZPC-Ml-X8z">
             <objects>
                 <viewController storyboardIdentifier="InstitutionSearch" id="yKQ-9l-8iB" customClass="WFInstitutionSearchViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="OwA-k6-pN5">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="jjI-F1-DSz">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="InstitutionCell" id="cMl-8s-lo8" customClass="WFInstitutionSearchCell">
-                                        <rect key="frame" x="0.0" y="22" width="1024" height="44"/>
+                                        <rect key="frame" x="0.0" y="22" width="568" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="cMl-8s-lo8" id="UJO-e8-cPB">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="43"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="568" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -2639,7 +2631,7 @@
                                 </connections>
                             </tableView>
                             <searchBar contentMode="redraw" id="ukL-HQ-DKx">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="44"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="44"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <textInputTraits key="textInputTraits"/>
                                 <connections>
@@ -2664,19 +2656,19 @@
             <objects>
                 <viewController storyboardIdentifier="Billing" id="WJf-Tj-WVG" customClass="WFBillingViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="t9k-LP-A2j">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="CoN-ld-hdN">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="BillingCell" rowHeight="54" id="7dC-Fd-CjS" customClass="WFBillingCell">
-                                        <rect key="frame" x="0.0" y="22" width="1024" height="54"/>
+                                        <rect key="frame" x="0.0" y="22" width="568" height="54"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="7dC-Fd-CjS" id="cfg-mF-oYd">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="53"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="568" height="53"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -2704,7 +2696,7 @@
             <objects>
                 <viewController storyboardIdentifier="Card" id="c2N-Sd-hpU" customClass="WFCardViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="CPT-zv-k8Q">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
@@ -2719,27 +2711,27 @@
             <objects>
                 <viewController storyboardIdentifier="Walkthrough" id="jB6-fu-GPM" customClass="WFWalkthroughViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="fJR-CI-fHv">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="walkthrough3.jpg" id="sPN-Z0-bWi" userLabel="Background 3">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             </imageView>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="walkthrough2.jpg" id="x93-u4-cPi" userLabel="Background 2">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             </imageView>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="walkthrough1.jpg" id="46x-1d-lh3" userLabel="Background 1">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             </imageView>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" id="Ld8-7f-Mcg">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" id="jYU-nX-AAT" userLabel="View 1">
-                                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="transparentIconWhite.png" id="hEJ-YA-By9">
@@ -2764,7 +2756,7 @@
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                     </view>
                                     <view contentMode="scaleToFill" id="s4v-YW-bky" userLabel="View 2">
-                                        <rect key="frame" x="1024" y="0.0" width="1024" height="768"/>
+                                        <rect key="frame" x="1024" y="0.0" width="568" height="320"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="transparentIconWhite.png" id="2zt-XR-b8X">
@@ -2789,7 +2781,7 @@
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                     </view>
                                     <view contentMode="scaleToFill" id="CUZ-2D-CWR" userLabel="View 3">
-                                        <rect key="frame" x="2048" y="0.0" width="1024" height="768"/>
+                                        <rect key="frame" x="2048" y="0.0" width="568" height="320"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="transparentIconWhite.png" id="eAE-3V-EYD">
@@ -2863,19 +2855,19 @@
             <objects>
                 <viewController storyboardIdentifier="LightTables" id="Y51-Ss-H0d" customClass="WFLightTablesViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="7pz-Fx-CTi">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="SPD-01-BAD">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="LightTableCell" rowHeight="54" id="Mm7-63-YYj" customClass="WFTableCell">
-                                        <rect key="frame" x="0.0" y="22" width="1024" height="54"/>
+                                        <rect key="frame" x="0.0" y="22" width="414" height="54"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Mm7-63-YYj" id="OxV-03-kNV">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="53"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="53"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="10" id="0kM-dv-0AR">
@@ -2901,21 +2893,20 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" id="gMR-5A-fuo"/>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
                     <connections>
                         <outlet property="tableView" destination="SPD-01-BAD" id="jLp-bv-kkS"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ZLr-aT-dSp" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-444" y="-3939"/>
+            <point key="canvasLocation" x="-421" y="-3755"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="lBQ-Oc-6ae">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="18p-eV-7vj" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
+                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina55"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="0Yv-JX-fGd">
                         <rect key="frame" x="0.0" y="0.0" width="768" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -2931,7 +2922,7 @@
                     <autoresizingMask key="autoresizingMask"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                 </view>
-                <imageView userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="Vfm-BO-6bf" userLabel="Landscape">
+                <imageView userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="Vfm-BO-6bf" userLabel="Portrait">
                     <rect key="frame" x="0.0" y="0.0" width="190" height="130"/>
                     <autoresizingMask key="autoresizingMask"/>
                 </imageView>
@@ -2940,23 +2931,23 @@
                     <autoresizingMask key="autoresizingMask"/>
                 </imageView>
             </objects>
-            <point key="canvasLocation" x="-527" y="-3053"/>
+            <point key="canvasLocation" x="116" y="-3053"/>
         </scene>
         <!--Locations View Controller-->
         <scene sceneID="8IR-dA-Cdw">
             <objects>
                 <viewController storyboardIdentifier="Locations" id="wWt-DP-ewL" customClass="WFLocationsViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="OrJ-7v-P12">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <searchBar contentMode="redraw" id="NMR-dw-FR6">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="768"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <textInputTraits key="textInputTraits"/>
                             </searchBar>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" id="fp8-S2-Hm7">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="xSS-hr-KfS">
                                     <size key="itemSize" width="512" height="192"/>
@@ -2966,7 +2957,7 @@
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="LocationCell" id="YBB-oB-3v1" customClass="WFLocationCollectionCell">
-                                        <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
+                                        <rect key="frame" x="28" y="0.0" width="512" height="192"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
@@ -2997,7 +2988,7 @@
                                         </connections>
                                     </collectionViewCell>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="NewLocationCell" id="ztE-rg-9uX" customClass="WFNewLocationCell">
-                                        <rect key="frame" x="512" y="0.0" width="512" height="192"/>
+                                        <rect key="frame" x="28" y="192" width="512" height="192"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
@@ -3095,16 +3086,16 @@
             <objects>
                 <viewController storyboardIdentifier="Materials" id="sRw-JC-IeS" customClass="WFMaterialsViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="6y2-6G-acG">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <searchBar contentMode="redraw" id="q3g-xX-veh">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="768"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <textInputTraits key="textInputTraits"/>
                             </searchBar>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" id="CRE-In-0rL">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="DZ8-2Y-WVN">
                                     <size key="itemSize" width="512" height="192"/>
@@ -3114,7 +3105,7 @@
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="MaterialCell" id="66z-3r-1pM" customClass="WFMaterialCollectionCell">
-                                        <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
+                                        <rect key="frame" x="28" y="0.0" width="512" height="192"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
@@ -3145,7 +3136,7 @@
                                         </connections>
                                     </collectionViewCell>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="NewMaterialCell" id="RPS-nv-pIh" customClass="WFNewMaterialCell">
-                                        <rect key="frame" x="512" y="0.0" width="512" height="192"/>
+                                        <rect key="frame" x="28" y="192" width="512" height="192"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
@@ -3212,16 +3203,16 @@
             <objects>
                 <viewController storyboardIdentifier="Icons" id="Ubb-tn-pF3" customClass="WFIconsViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Zzh-li-LKA">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <searchBar contentMode="redraw" id="gLR-Gw-TEB">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="768"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <textInputTraits key="textInputTraits"/>
                             </searchBar>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" id="cih-YE-j4n">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="3TZ-O8-8jY">
                                     <size key="itemSize" width="512" height="192"/>
@@ -3231,7 +3222,7 @@
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="IconCell" id="DC6-uc-V24" customClass="WFIconCollectionCell">
-                                        <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
+                                        <rect key="frame" x="28" y="0.0" width="512" height="192"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
@@ -3262,7 +3253,7 @@
                                         </connections>
                                     </collectionViewCell>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="NewIconCell" id="i0M-tq-73G" customClass="WFNewIconCell">
-                                        <rect key="frame" x="512" y="0.0" width="512" height="192"/>
+                                        <rect key="frame" x="28" y="192" width="512" height="192"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
@@ -3329,11 +3320,11 @@
             <objects>
                 <viewController storyboardIdentifier="Users" id="Wr6-LZ-TEJ" customClass="WFUsersViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Mba-hO-qZ8">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <searchBar contentMode="redraw" id="zgM-16-UFw">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="768"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <textInputTraits key="textInputTraits"/>
                                 <connections>
@@ -3341,7 +3332,7 @@
                                 </connections>
                             </searchBar>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" id="kWH-5o-hPh">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="mfp-oN-G1D">
                                     <size key="itemSize" width="256" height="256"/>
@@ -3382,7 +3373,7 @@
                                         </connections>
                                     </collectionViewCell>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="NewUserCell" id="9dr-S5-L21" customClass="WFNewUserCell">
-                                        <rect key="frame" x="256" y="0.0" width="256" height="256"/>
+                                        <rect key="frame" x="312" y="0.0" width="256" height="256"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="256" height="256"/>
@@ -3449,11 +3440,11 @@
             <objects>
                 <viewController storyboardIdentifier="SlideText" id="2ot-Bh-85L" customClass="WFSlideTextViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="5Sm-pg-iXu">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="center" id="l9m-7v-hQl">
-                                <rect key="frame" x="256" y="234" width="512" height="300"/>
+                                <rect key="frame" x="256" y="234" width="56" height="0.0"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -3479,16 +3470,16 @@
             <objects>
                 <viewController storyboardIdentifier="Tags" id="NFF-nF-juv" customClass="WFTagsViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="R3Y-sW-TV7">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <searchBar contentMode="redraw" id="t44-Qd-TlP">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="768"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <textInputTraits key="textInputTraits"/>
                             </searchBar>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" id="I8E-Bf-rDF">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="Cr5-Dr-RWh">
                                     <size key="itemSize" width="512" height="192"/>
@@ -3498,7 +3489,7 @@
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="TagCell" id="DYt-KP-ALG" customClass="WFTagCollectionCell">
-                                        <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
+                                        <rect key="frame" x="28" y="0.0" width="512" height="192"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
@@ -3529,7 +3520,7 @@
                                         </connections>
                                     </collectionViewCell>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="NewTagCell" id="xLu-Xs-Wph" customClass="WFNewTagCell">
-                                        <rect key="frame" x="512" y="0.0" width="512" height="192"/>
+                                        <rect key="frame" x="28" y="192" width="512" height="192"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
                                             <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
@@ -3611,6 +3602,6 @@
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>
-        <simulatedScreenMetrics key="destination"/>
+        <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
 </document>

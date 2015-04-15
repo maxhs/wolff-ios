@@ -10,6 +10,7 @@
 #import "Constants.h"
 #import "WFProfileViewController.h"
 #import "UIImage+ImageEffects.h"
+#import "WFArtMetadataViewController.h"
 
 @interface WFProfileAnimator (){
     BOOL iOS8;
@@ -52,7 +53,6 @@
         UIButton *blurredButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [blurredButton setBackgroundImage:[self blurredSnapshotForWindow:[transitionContext.containerView window]]  forState:UIControlStateNormal];
         [blurredButton setAdjustsImageWhenHighlighted:NO];
-        
         //this is a little fragile, since if the view hierarchy changes, this will break
         //UINavigationController *nav = (UINavigationController*)toViewController;
         [blurredButton addTarget:(WFProfileViewController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
@@ -86,22 +86,42 @@
         }];
     
     } else {
+        UINavigationController *nav = (UINavigationController*)toViewController;
+        if ([nav.viewControllers.firstObject isKindOfClass:[WFArtMetadataViewController class]]){
+            WFArtMetadataViewController *artvc = (WFArtMetadataViewController*)nav.viewControllers.firstObject;
+            CGFloat offset = height/2-350;
+            UITableView *metadataTableView = artvc.tableView;
+            [metadataTableView setContentInset:UIEdgeInsetsMake(offset, 0, offset, 0)];
+            [metadataTableView setContentOffset:CGPointMake(0, -offset)];
+            int lowerBound = 1; int upperBound = 3;
+            int rndValue = lowerBound + arc4random() % (upperBound - lowerBound);
+            CGFloat xOffset = rndValue == 1 ? width : -width;
+            
+            CGRect metadataFrame;
+            if (iOS8) {
+                metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
+                CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
+                toView.frame = metadataStartFrame;
+            } else {
+                metadataFrame = CGRectMake(0, width/2-kMetadataWidth/2, height, kMetadataWidth);
+                CGRect metadataStartFrame = CGRectMake(0, (width/2-kMetadataWidth/2), height, kMetadataWidth);
+                toView.frame = metadataStartFrame;
+            }
+        }
+        
         UIButton *blurredBackground = (UIButton*)[transitionContext.containerView viewWithTag:kBlurredBackgroundConstant];
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
-        
-        CGRect originEndFrame;
+        CGRect endFrame;
         if (iOS8){
-            originEndFrame = mainScreen;
-            originEndFrame.origin.y -= height;
+            endFrame = mainScreen;
+            endFrame.origin.y = height;
         } else {
-            originEndFrame = mainScreen;
-            originEndFrame.origin.x -= width;
+            endFrame = mainScreen;
+            endFrame.origin.x = width;
         }
-        
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.975 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            fromView.frame = originEndFrame;
-            [fromView setAlpha:0.0];
+            fromView.frame = endFrame;
             [blurredBackground setAlpha:0.0];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];

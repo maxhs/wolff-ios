@@ -170,6 +170,8 @@
     canLoadMorePhotos = YES;
     
     [self setUpSearch];
+    loading = NO;
+    [self loadPhotos:NO];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loginSuccessful) name:@"LoginSuccessful" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(logout) name:@"Logout" object:nil];
@@ -192,9 +194,6 @@
     
     //set up the nav buttons
     [self setUpNavBar];
-    
-    loading = NO;
-    [self loadPhotos];
     
     if (tableIsVisible && _photos.count){
         [self.tableView reloadData];
@@ -286,7 +285,7 @@
 - (void)refreshCollectionView:(id)sender {
     [ProgressHUD show:@"Refreshing Art..."];
     canLoadMorePhotos = YES;
-    [self loadPhotos];
+    [self loadPhotos:NO];
 }
 
 - (void)setUpTableView {
@@ -349,7 +348,6 @@
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"settings"] style:UIBarButtonItemStylePlain target:self action:@selector(settingsPopover:)];
         notificationsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"alert"] style:UIBarButtonItemStylePlain target:self action:@selector(showNotifications:)];
-        
         self.navigationItem.rightBarButtonItems = @[addButton, selectedBarButtonItem, notificationsButton, settingsButton];
         
         //also ensure there's a pull to refresh
@@ -364,7 +362,12 @@
         self.navigationItem.rightBarButtonItems = @[loginButton, addButton];
     }
     
-    self.navigationItem.titleView = self.searchBar;
+    if (IDIOM == IPAD){
+        self.navigationItem.titleView = self.searchBar;
+    } else {
+        
+    }
+    
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     topInset = self.navigationController.navigationBar.frame.size.height;
     self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
@@ -401,15 +404,15 @@
     }
     self.currentUser = nil;
     [self setUpNavBar];
-    [self loadPhotos];
+    [self loadPhotos:NO];
 }
 
-- (void)loadPhotos {
+- (void)loadPhotos:(BOOL)scrolling {
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:@40 forKey:@"count"];
     if (searching && searchText && searchText.length){
         [parameters setObject:searchText forKey:@"search"];
-    } else if (_photos.count) {
+    } else if (_photos.count && scrolling) {
         Photo *lastPhoto = _photos.lastObject;
         [parameters setObject:[NSNumber numberWithDouble:[lastPhoto.createdDate timeIntervalSince1970]] forKey:@"before_date"];
     } else {
@@ -417,11 +420,13 @@
             [ProgressHUD show:@"Loading art..."];
         });
     }
-    
     if (!loading){
         loading = YES;
         [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             if ([[responseObject objectForKey:@"photos"] count]){
+                if (!scrolling){
+                    [_photos removeAllObjects]; // this means it's a refresh
+                }
                 canLoadMorePhotos = YES;
                 [_noSearchResultsLabel setText:@"Searching the full Wölff catalog..."];
                 for (NSDictionary *dict in [responseObject objectForKey:@"photos"]) {
@@ -627,20 +632,20 @@
         WFSlideshowCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideshowCell" forIndexPath:indexPath];
         [cell setBackgroundColor:[UIColor clearColor]];
         if (indexPath.section == 0){
-            [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
-            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
-            [cell.textLabel setText:@"New Slideshow"];
+            [cell.iconImageView setImage:[UIImage imageNamed:@"whitePlus"]];
+            [cell.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
+            [cell.label setText:@"New Slideshow"];
             [cell.scrollView setScrollEnabled:NO];
             
         } else {
             cell.tintColor = [UIColor whiteColor];
             [cell.scrollView setScrollEnabled:YES];
             [cell.contentView addGestureRecognizer:cell.scrollView.panGestureRecognizer];
+            [cell.iconImageView setImage:nil];
+            [cell.label setText:@""];
             if (!loading && _slideshows.count == 0){
                 [cell.slideshowLabel setText:@"No Slideshows"];
                 [cell.slideshowLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
-                [cell.imageView setImage:nil];
-                [cell.textLabel setText:@""];
             } else {
                 Slideshow *slideshow = _slideshows[indexPath.row];
                 [cell configureForSlideshow:slideshow];
@@ -687,6 +692,7 @@
             [cell setBackgroundColor:[UIColor clearColor]];
             [cell.iconImageView setImage:[UIImage imageNamed:@"whitePlus"]];
             [cell.label setText:@"Light Table"];
+            [cell.label setTextColor:[UIColor whiteColor]];
             [cell.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
             return cell;
         } else {
@@ -787,7 +793,7 @@
 - (void)editLightTable:(UIButton *)button {
     LightTable *lightTable = _tables[button.tag];
     WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
-    [vc setTableId:lightTable.identifier];
+    [vc setLightTable:lightTable];
     vc.lightTableDelegate = self;
     vc.modalPresentationStyle = UIModalPresentationCustom;
     vc.transitioningDelegate = self;
@@ -897,7 +903,7 @@
     } else {
         if (indexPath.section == 0){
             indexPath.row == 0 ? [self showPrivateArt] : [self showFavorites];
-            [tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 2)] withRowAnimation:UITableViewRowAnimationAutomatic];
+            [tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 3)] withRowAnimation:UITableViewRowAnimationAutomatic];
         } else if (indexPath.section == 1){
             [self newLightTable];
         } else if (indexPath.section == 2){
@@ -1014,25 +1020,19 @@
 }
 
 - (void)didJoinLightTable:(LightTable *)table {
-    NSLog(@"did join a light table");
     if (!slideshowSidebarMode && tableIsVisible){
-        NSLog(@"inside, should be shwoing");
         [self.tableView reloadData];
     }
 }
 
 - (void)didCreateLightTable:(LightTable *)table {
-    NSLog(@"did create a light table");
     if (!slideshowSidebarMode && tableIsVisible){
-        NSLog(@"inside, should be shwoing");
         [self.tableView reloadData];
     }
 }
 
 - (void)didUpdateLightTable:(LightTable *)table {
-    NSLog(@"did update");
     if (!slideshowSidebarMode && tableIsVisible){
-        NSLog(@"redoing stuff!");
         [self.tableView reloadData];
         [self.collectionView reloadData];
     }
@@ -1048,7 +1048,7 @@
             return CGSizeMake(width/4, width/4);
         }
     } else {
-        return CGSizeMake(width/3,width/3);
+        return CGSizeMake(width/2,width/2);
     }
 }
 
@@ -1176,7 +1176,7 @@
         if (bottomEdge >= scrollView.contentSize.height) {
             // at the bottom of the scrollView
             if (canLoadMorePhotos){
-                [self loadPhotos];
+                [self loadPhotos:YES];
             }
         }
     }
@@ -1558,13 +1558,19 @@
     nav.view.clipsToBounds = YES;
     vc.metadataDelegate = self;
     [vc setPhoto:photo];
-    [self resetTransitionBooleans];
-    metadata = YES;
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    if (IDIOM == IPAD){
+        [self resetTransitionBooleans];
+        metadata = YES;
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        [self presentViewController:nav animated:YES completion:^{
+            
+        }];
+    } else {
+        [self presentViewController:nav animated:YES completion:^{
+            
+        }];
+    }
 }
 
 #pragma mark - Metadata Delegate
@@ -1684,15 +1690,21 @@
 }
 
 - (void)showNotifications:(id)sender {
-    if (self.popover){
-        [self.popover dismissPopoverAnimated:YES];
-    }
     WFNotificationsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Notifications"];
     vc.notificationsDelegate = self;
-    vc.preferredContentSize = CGSizeMake(470, 500);
-    self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
-    self.popover.delegate = self;
-    [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+    if (IDIOM == IPAD){
+        if (self.popover){
+            [self.popover dismissPopoverAnimated:YES];
+        }
+        vc.preferredContentSize = CGSizeMake(470, 500);
+        self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
+        self.popover.delegate = self;
+        [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+    } else {
+        [self presentViewController:vc animated:YES completion:^{
+            
+        }];
+    }
 }
 
 - (void)didSelectNotificationWithId:(NSNumber*)notificationId {
@@ -1714,15 +1726,38 @@
 }
 
 - (void)settingsPopover:(id)sender {
-    if (self.popover){
-        [self.popover dismissPopoverAnimated:YES];
+    if (IDIOM == IPAD) {
+        if (self.popover){
+            [self.popover dismissPopoverAnimated:YES];
+        }
+        WFMenuViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Menu"];
+        vc.menuDelegate = self;
+        vc.preferredContentSize = CGSizeMake(170, 150);
+        self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
+        self.popover.delegate = self;
+        [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+    } else {
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:@"Where do you want to go?" preferredStyle:UIAlertControllerStyleActionSheet];
+        UIAlertAction *a = [UIAlertAction actionWithTitle:@"Account" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+            [self showSettings];
+        }];
+        UIAlertAction *p = [UIAlertAction actionWithTitle:@"Profile" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+            [self showProfile];
+        }];
+        UIAlertAction *l = [UIAlertAction actionWithTitle:@"Logout" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+            [delegate logout];
+        }];
+        UIAlertAction *c = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * action) {
+            [self dismissViewControllerAnimated:YES completion:nil];
+        }];
+        [alertController addAction:a];
+        [alertController addAction:p];
+        [alertController addAction:l];
+        [alertController addAction:c];
+        [self presentViewController:alertController animated:YES completion:^{
+            
+        }];
     }
-    WFMenuViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Menu"];
-    vc.menuDelegate = self;
-    vc.preferredContentSize = CGSizeMake(170, 150);
-    self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
-    self.popover.delegate = self;
-    [self.popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
 - (void)resetTransitionBooleans {
@@ -1740,20 +1775,28 @@
 }
 
 - (void)showSettings {
+    NSLog(@"show settings");
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        if (self.popover){
-            [self.popover dismissPopoverAnimated:YES];
-        }
-        [self resetTransitionBooleans];
-        settings = YES;
         WFSettingsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Settings"];
         vc.settingsDelegate = self;
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-        nav.transitioningDelegate = self;
-        nav.modalPresentationStyle = UIModalPresentationCustom;
-        [self presentViewController:nav animated:YES completion:^{
-            
-        }];
+        NSLog(@"is it getting here?");
+        if (IDIOM == IPAD){
+            if (self.popover){
+                [self.popover dismissPopoverAnimated:YES];
+            }
+            [self resetTransitionBooleans];
+            settings = YES;
+            nav.transitioningDelegate = self;
+            nav.modalPresentationStyle = UIModalPresentationCustom;
+            [self presentViewController:nav animated:YES completion:^{
+                
+            }];
+        } else {
+            [self presentViewController:nav animated:YES completion:^{
+                
+            }];
+        }
     } else {
         [self showLogin];
     }
@@ -1761,19 +1804,21 @@
 
 - (void)showProfile {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        if (self.popover){
-            [self.popover dismissPopoverAnimated:YES];
+        if (IDIOM == IPAD){
+            if (self.popover){
+                [self.popover dismissPopoverAnimated:YES];
+            }
+            [self resetTransitionBooleans];
+            profile = YES;
+            WFProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Profile"];
+            [vc setUser:self.currentUser];
+            UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+            nav.transitioningDelegate = self;
+            nav.modalPresentationStyle = UIModalPresentationCustom;
+            [self presentViewController:nav animated:YES completion:^{
+                
+            }];
         }
-        [self resetTransitionBooleans];
-        profile = YES;
-        WFProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Profile"];
-        [vc setUser:self.currentUser];
-        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-        nav.transitioningDelegate = self;
-        nav.modalPresentationStyle = UIModalPresentationCustom;
-        [self presentViewController:nav animated:YES completion:^{
-            
-        }];
     } else {
         [self showLogin];
     }
@@ -1890,7 +1935,11 @@
         //hide the light table sidebar
         CGRect collectionFrame = self.collectionView.frame;
         collectionFrame.origin.x = 0;
-        collectionFrame.size.width += kSidebarWidth;
+        if (IDIOM == IPAD){
+            collectionFrame.size.width += kSidebarWidth;
+        } else {
+            collectionFrame.size.width += width * .8;
+        }
         slideshowsButton.selected = NO;
         tablesButton.selected = NO;
         [self.collectionView reloadData];
@@ -1913,16 +1962,27 @@
             tablesButton.selected = YES;
         }
         //show the light table sidebar
+        CGFloat iPhoneWidth = width * .8;
         CGRect collectionFrame = self.collectionView.frame;
-        collectionFrame.origin.x = kSidebarWidth;
-        collectionFrame.size.width -= kSidebarWidth;
-        
-         [self.collectionView reloadData];
-        
+        if (IDIOM == IPAD){
+            collectionFrame.origin.x = kSidebarWidth;
+            collectionFrame.size.width -= kSidebarWidth;
+        } else {
+            collectionFrame.origin.x = iPhoneWidth;
+            collectionFrame.size.width -= iPhoneWidth;
+        }
+        [self.collectionView reloadData];
         [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            _tableView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
-            _comparisonContainerView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
-            resetButton.transform = CGAffineTransformMakeTranslation(-kSidebarWidth, 0);
+            if (IDIOM == IPAD){
+                _tableView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
+                _comparisonContainerView.transform = CGAffineTransformMakeTranslation(kSidebarWidth, 0);
+                resetButton.transform = CGAffineTransformMakeTranslation(-kSidebarWidth, 0);
+            } else {
+                _tableView.transform = CGAffineTransformMakeTranslation(iPhoneWidth, 0);
+                _comparisonContainerView.transform = CGAffineTransformMakeTranslation(iPhoneWidth, 0);
+                resetButton.transform = CGAffineTransformMakeTranslation(-iPhoneWidth, 0);
+            }
+            
             [self.collectionView setFrame:collectionFrame];
            
         } completion:^(BOOL finished) {
@@ -2021,7 +2081,7 @@
     [ProgressHUD show:@"Searching..."];
     [searchBar endEditing:YES];
     searchText = searchBar.text;
-    [self loadPhotos];
+    [self loadPhotos:NO];
 }
 
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
@@ -2116,7 +2176,7 @@
             }
         }
         
-        if (!_filteredPhotos.count) [self loadPhotos];
+        if (!_filteredPhotos.count) [self loadPhotos:NO];
     } else {
         _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
     }

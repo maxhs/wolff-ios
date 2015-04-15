@@ -58,7 +58,6 @@
     CGFloat rowHeight;
     CGFloat textViewWidth;
     NSInteger currentPhotoIdx;
-    
     UITextField *beginYearTextField;
     UITextField *endYearTextField;
     UITextField *dateTextField;
@@ -112,7 +111,6 @@
     [super viewDidAppear:animated];
     originalViewFrame = self.view.frame;
     originalNavFrame = self.navigationController.view.frame;
-    
 }
 
 - (void)setupDateFormatter {
@@ -468,6 +466,8 @@
 - (void)showProfile {
     WFProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Profile"];
     [vc setUser:self.photo.user];
+    [self resetTransitionBooleans];
+    profile = YES;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.transitioningDelegate = self;
     nav.modalPresentationStyle = UIModalPresentationCustom;

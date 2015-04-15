@@ -22,18 +22,18 @@
     
     [_slideshowLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [_slideshowLabel setTextColor:[UIColor whiteColor]];
+    [_label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
+    [_label setTextColor:[UIColor whiteColor]];
+    [_label setText:@""];
     
     [_actionButton setBackgroundColor:[UIColor redColor]];
     [_actionButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_actionButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     
-    [_scrollView setContentSize:CGSizeMake(kSidebarWidth+100, self.contentView.frame.size.height)];
-    [_scrollView setUserInteractionEnabled:NO];
-    _scrollView.delegate = self;
+    [self.scrollView setContentSize:CGSizeMake(kSidebarWidth+100, self.contentView.frame.size.height)];
+    [self.scrollView setUserInteractionEnabled:NO];
+    self.scrollView.delegate = self;
     [self.textLabel setTextColor:[UIColor blackColor]];
-    
-    [_iconImageView setImage:nil];
-    [self.imageView setImage:nil];
 }
 
 - (void)prepareForReuse {
@@ -47,11 +47,11 @@
 - (void)configureForSlideshow:(Slideshow *)slideshow {
     [self.textLabel setText:@""];
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
-        [_actionButton setTitle:@"Delete" forState:UIControlStateNormal];
+        [_actionButton setImage:[UIImage imageNamed:@"whiteTrash"] forState:UIControlStateNormal];
         [_actionButton setBackgroundColor:[UIColor redColor]];
     } else {
-        [_actionButton setTitle:@"Remove" forState:UIControlStateNormal];
-        [_actionButton setBackgroundColor:kSaffronColor];
+        [_actionButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
+        [_actionButton setBackgroundColor:[UIColor clearColor]];
     }
     
     //set up the title

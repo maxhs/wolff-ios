@@ -110,14 +110,19 @@
     [_slideshowTitleButtonItem setTitle:self.slideshow.title];
     if (!_startIndex){
         [_previousButton setEnabled:NO];
-        [_slideNumberButtonItem setTitle:@""];
-        currentPage = 0;
+        if ([self.slideshow.showTitleSlide isEqualToNumber:@YES]){
+            currentPage = 0;
+            [_slideNumberButtonItem setTitle:@""];
+        } else {
+            currentPage = 1;
+            [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
+        }
     } else if (_startIndex == 0){
         [_collectionView setContentOffset:CGPointMake(width, 0) animated:NO]; // offset by 1 because of the title slide
         [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
         currentPage = _startIndex.integerValue;
     } else {
-        [_collectionView setContentOffset:CGPointMake(width*(_startIndex.integerValue+1), 0) animated:NO]; // offset by 1 because of the title slide
+        [_collectionView setContentOffset:CGPointMake(width * (_startIndex.integerValue+1), 0) animated:NO]; // offset by 1 because of the title slide
         [_slideNumberButtonItem setTitle:[NSString stringWithFormat:@"Slide %ld",(long)currentPage]];
         currentPage = _startIndex.integerValue;
     }
@@ -188,7 +193,9 @@
     CGFloat pageWidth = scrollView.frame.size.width;
     float fractionalPage = scrollView.contentOffset.x / pageWidth;
     NSInteger page = lround(fractionalPage);
-    
+    if ([self.slideshow.showTitleSlide isEqualToNumber:@NO]){
+        page ++;
+    }
     if (currentPage != page) {
         currentPage = page;
         if (currentPage > 0){
@@ -217,6 +224,9 @@
     CGFloat pageWidth = scrollView.frame.size.width;
     float fractionalPage = scrollView.contentOffset.x / pageWidth;
     NSInteger page = lround(fractionalPage);
+    if ([self.slideshow.showTitleSlide isEqualToNumber:@NO]){
+        page ++; // if we're not showing a title side, we need to offset the slide numbers
+    }
     currentPage = page;
     if (currentPage > 0){
         // ensure the ivars are set to the ACTIVE cell AND slide

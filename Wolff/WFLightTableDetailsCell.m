@@ -47,9 +47,11 @@
 - (void)configureForLightTable:(LightTable *)lightTable{
     self.tableView.tableHeaderView = _topContainerView;
     [self.tableView reloadData];
-    if (lightTable){
+    if (lightTable && lightTable.name.length){
         _lightTable = lightTable;
         [self.headerLabel setText:lightTable.name];
+    } else {
+        [self.headerLabel setText:@"CREATE A LIGHT TABLE"];
     }
     
     if ([_lightTable.identifier isEqualToNumber:@0]){

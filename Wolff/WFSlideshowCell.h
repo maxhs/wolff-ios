@@ -13,6 +13,7 @@
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (weak, nonatomic) IBOutlet UIImageView *iconImageView;
 @property (weak, nonatomic) IBOutlet UILabel *slideshowLabel;
+@property (weak, nonatomic) IBOutlet UILabel *label;
 @property (weak, nonatomic) IBOutlet UIButton *actionButton;
 - (void)configureForSlideshow:(Slideshow*)slideshow;
 @end
