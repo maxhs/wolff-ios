@@ -23,11 +23,11 @@
 #import "WFTagsViewController.h"
 #import "Icon+helper.h"
 #import "WFCreditTextField.h"
+#import "WFUtilities.h"
 
 @interface WFNewArtViewController () <UITableViewDataSource, UITableViewDelegate , UIScrollViewDelegate, UITextFieldDelegate, WFImagePickerControllerDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectMaterialsDelegate, WFSelectIconsDelegate, WFSelectTagsDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-    BOOL iOS8;
     BOOL selectingDate;
     CGFloat width;
     CGFloat height;
@@ -47,6 +47,9 @@
     NSMutableArray *_selectedPhotos;
     CGFloat imageWidth;
     CGFloat imageHeight;
+    BOOL keyboardVisible;
+    CGFloat topInset;
+    UIImageView *navBarShadowView;
 }
 
 @property (strong, nonatomic) User *currentUser;
@@ -58,12 +61,13 @@
 @implementation WFNewArtViewController
 
 - (void)viewDidLoad {
-    [super viewDidLoad];
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-    }
+    [super viewDidLoad];    
+//    if (IDIOM != IPAD) {
+//        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
+//        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+//    }
+    width = screenWidth(); height = screenHeight();
+    
     [self.view setBackgroundColor:[UIColor clearColor]];
     [self.tableView setBackgroundColor:[UIColor clearColor]];
     
@@ -76,16 +80,30 @@
     self.art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
     Interval *interval = [Interval MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
     [self.art setInterval:interval];
-    
-    [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-    [_submitButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
-    [_submitButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
-    [_submitButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [_submitButton addTarget:self action:@selector(post) forControlEvents:UIControlEventTouchUpInside];
-    _submitButton.layer.cornerRadius = 14.f;
-    _submitButton.clipsToBounds = YES;
     [_photoCountLabel setTextColor:[UIColor colorWithWhite:1 alpha:.33]];
     [_photoCountLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0]];
+    
+    if (IDIOM == IPAD){
+        [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+        [_submitButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
+        [_submitButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+        [_submitButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [_submitButton addTarget:self action:@selector(post) forControlEvents:UIControlEventTouchUpInside];
+        _submitButton.layer.cornerRadius = 14.f;
+        _submitButton.clipsToBounds = YES;
+        
+        topInset = 0;
+    } else {
+        [_dismissButton setHidden:YES];
+        UIBarButtonItem *dismissBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+        self.navigationItem.leftBarButtonItem = dismissBarButtonItem;
+        
+        [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
+        self.tableView.tableHeaderView = self.headerContainerView;
+        topInset = self.navigationController.navigationBar.frame.size.height;
+        self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+        navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
+    }
     
     [self registerKeyboardNotifications];
     
@@ -101,6 +119,7 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    navBarShadowView.hidden = YES;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -140,10 +159,12 @@
         [self.art addPhoto:photo];
     }
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    if (selectedPhotos.count && _submitButton.isHidden){
-        [_submitButton setHidden:NO];
+    if (selectedPhotos.count){
+        if (_submitButton.isHidden) [_submitButton setHidden:NO];
+        UIBarButtonItem *submitBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Add Art" style:UIBarButtonItemStylePlain target:self action:@selector(post)];
+        self.navigationItem.rightBarButtonItem = submitBarButtonItem;
     }
-
+    
     [self setPhotoCount];
     [self drawPhotosScrollView];
     self.currentPhoto = self.art.photos.firstObject;
@@ -164,7 +185,6 @@
         [_nextPhotoButton setEnabled:NO];
     } else {
         [_photoCountLabel setText:[NSString stringWithFormat:@"%lu of %lu",(unsigned long)currentPhotoIdx + 1,(unsigned long)self.art.photos.count]];
-        
         [_nextPhotoButton setAlpha:1.0];
         [_nextPhotoButton setEnabled:YES];
         if (currentPhotoIdx > 0){
@@ -219,7 +239,6 @@
         WFNewPhotoContainerView *containerView = [[WFNewPhotoContainerView alloc] initWithFrame:CGRectMake(0 + (idx*_scrollView.frame.size.width), 0, _scrollView.frame.size.width, _scrollView.frame.size.height)];
         [containerView setTag:idx];
         [_scrollView addSubview:containerView];
-        
         containerView.photoImageView = [[UIImageView alloc] initWithImage:photo.image];
         [containerView.photoImageView setFrame:CGRectMake(((_scrollView.frame.size.width-imageWidth)/2), 20, imageWidth, imageHeight)];
         [containerView.photoImageView setContentMode:UIViewContentModeScaleAspectFill];
@@ -396,11 +415,14 @@
     }];
     
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        if ([self.art.privateArt isEqualToNumber:@YES]){
-            [WFAlert show:@"Congratulations! We've added this art to your private collection." withTime:3.3f];
-        } else {
-            [WFAlert show:@"Congratulations! We've added your art to the catalog." withTime:3.3f];
-        }
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            if ([self.art.privateArt isEqualToNumber:@YES]){
+                [WFAlert show:@"Congratulations! We've added this art to your private collection." withTime:3.3f];
+            } else {
+                [WFAlert show:@"Congratulations! We've added your art to the catalog." withTime:3.3f];
+            }
+        });
     }];
 }
 
@@ -524,9 +546,17 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.row == 2){
-        return 100.f;
+        if (IDIOM == IPAD){
+            return 100.f;
+        } else {
+            return 150.f;
+        }
     } else {
-        return 50.f;
+        if (IDIOM == IPAD){
+            return 50.f;
+        } else {
+            return 74.f;
+        }
     }
 }
 
@@ -692,6 +722,7 @@
 }
 
 - (void)willShowKeyboard:(NSNotification*)notification {
+    keyboardVisible = YES;
     NSDictionary* keyboardInfo = [notification userInfo];
     NSValue *keyboardValue = keyboardInfo[UIKeyboardFrameEndUserInfoKey];
     CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
@@ -702,7 +733,7 @@
                           delay:0
                         options:(animationCurve << 16)
                      animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight+70.f, 0); // random bottom spacer
+                         self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight+70.f, 0); // random bottom spacer
                      }
                      completion:^(BOOL finished) {
 
@@ -716,9 +747,11 @@
                           delay:0
                         options:(animationCurve << 16)
                      animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
+                         self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
                      }
-                     completion:NULL];
+                     completion:^(BOOL finished) {
+                         keyboardVisible = NO;
+                     }];
 }
 
 
@@ -771,9 +804,13 @@
 }
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+    if (keyboardVisible){
+        [self.view endEditing:YES];
+    } else {
+        [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+            
+        }];
+    }
 }
 
 - (void)didReceiveMemoryWarning {

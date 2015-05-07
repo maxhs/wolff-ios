@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6751" systemVersion="14C1514" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="7549" systemVersion="14D136" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="Alternate" representedClassName="Alternate" syncable="YES">
         <attribute name="confirmed" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
@@ -240,6 +240,7 @@
     </entity>
     <entity name="Slideshow" representedClassName="Slideshow" syncable="YES">
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="showMetadata" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
         <attribute name="showTitleSlide" optional="YES" attributeType="Boolean" defaultValueString="YES" syncable="YES"/>
         <attribute name="slideshowDescription" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
@@ -320,7 +321,7 @@
         <element name="Photo" positionX="279" positionY="324" width="128" height="418"/>
         <element name="PhotoSlide" positionX="297" positionY="351" width="128" height="178"/>
         <element name="Slide" positionX="297" positionY="315" width="128" height="133"/>
-        <element name="Slideshow" positionX="288" positionY="306" width="128" height="210"/>
+        <element name="Slideshow" positionX="288" positionY="306" width="128" height="225"/>
         <element name="SlideText" positionX="288" positionY="342" width="128" height="148"/>
         <element name="Tag" positionX="288" positionY="342" width="128" height="103"/>
         <element name="User" positionX="261" positionY="189" width="128" height="480"/>

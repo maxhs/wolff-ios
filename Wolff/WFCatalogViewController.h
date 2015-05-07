@@ -12,6 +12,7 @@
 
 @property (strong, nonatomic) UIPopoverController *popover;
 @property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
+@property (weak, nonatomic) IBOutlet UIView *searchBarContainer;
 @property BOOL login;
 
 - (void)dismissMetadata;

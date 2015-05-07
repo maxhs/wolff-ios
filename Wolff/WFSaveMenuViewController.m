@@ -8,8 +8,12 @@
 
 #import "WFSaveMenuViewController.h"
 #import "WFSaveMenuCell.h"
+#import "Constants.h"
+#import "WFUtilities.h"
 
-@interface WFSaveMenuViewController ()
+@interface WFSaveMenuViewController () {
+    UIImageView *navBarShadowView;
+}
 
 @end
 
@@ -17,10 +21,29 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self.view setBackgroundColor:[UIColor blackColor]];
+    [self.view setBackgroundColor:[UIColor clearColor]];
     [self.tableView setBackgroundColor:[UIColor clearColor]];
     self.tableView.rowHeight = 54.f;
-    [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.1]];
+    [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.07]];
+    
+    if (IDIOM == IPAD){
+        
+    } else {
+        UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+        self.navigationItem.leftBarButtonItem = dismissButton;
+        [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
+        
+        UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.view.frame];
+        [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
+        [backgroundToolbar setTranslucent:YES];
+        [self.tableView setBackgroundView:backgroundToolbar];
+    }
+    navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    navBarShadowView.hidden = YES;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -40,12 +63,13 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSaveMenuCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SaveMenuCell" forIndexPath:indexPath];
-    
+    [cell.textLabel setTextColor:(IDIOM == IPAD) ? [UIColor blackColor] : [UIColor whiteColor]];
+     
     if (indexPath.row == 0){
-        [cell.imageView setImage:[UIImage imageNamed:@"cloudUpload"]];
+        [cell.imageView setImage:IDIOM == IPAD ? [UIImage imageNamed:@"cloudUpload"] : [UIImage imageNamed:@"whiteCloudUpload"]];
         [cell.textLabel setText:@"Save"];
     } else {
-        [cell.imageView setImage:[UIImage imageNamed:@"mobile"]];
+        [cell.imageView setImage:IDIOM == IPAD ? [UIImage imageNamed:@"mobile"] : [UIImage imageNamed:@"whiteMobile"]];
         [cell.textLabel setText:@"Enable offline mode"];
     }
     
@@ -108,5 +132,11 @@
     // Pass the selected object to the new view controller.
 }
 */
+
+- (void)dismiss {
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+        
+    }];
+}
 
 @end

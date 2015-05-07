@@ -23,15 +23,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        width = screenWidth();height = screenHeight();
-        mainScreen = [UIScreen mainScreen].bounds;
-        [_scrollView setContentSize:CGSizeMake(width*3, height)];
-    } else {
-        height = screenHeight(); width = screenWidth();
-        mainScreen = CGRectMake(0, 0, height, width);
-        [_scrollView setContentSize:CGSizeMake(height*3, width)];
-    }
+    width = screenWidth();
+    height = screenHeight();
+    mainScreen = [UIScreen mainScreen].bounds;
+    [_scrollView setContentSize:CGSizeMake(width*3, height)];
     
     [self.view setBackgroundColor:[UIColor clearColor]];
     [_scrollView setFrame:CGRectMake(0, 0, width, height)];
@@ -62,6 +57,16 @@
     [self bigLabelTreatment:_bigLabel1];
     [self bigLabelTreatment:_bigLabel2];
     [self bigLabelTreatment:_bigLabel3];
+    
+    CGRect view2rect = self.view2.frame;
+    view2rect.origin.x = width;
+    [self.view2 setFrame:view2rect];
+    CGRect view3rect = self.view3.frame;
+    view3rect.origin.x = width*2;
+    [self.view3 setFrame:view3rect];
+    CGRect view4rect = self.view4.frame;
+    view4rect.origin.x = width*3;
+    [self.view4 setFrame:view4rect];
 }
 
 - (void)setUpMotionEffects {
@@ -79,7 +84,11 @@
 
 - (void)labelTreatment:(UILabel *)label {
     [label setClipsToBounds:NO];
-    [label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+    if (IDIOM == IPAD){
+        [label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+    } else {
+        [label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+    }
     [label setTextColor:[UIColor whiteColor]];
     label.layer.shadowColor = [UIColor colorWithWhite:0 alpha:.5].CGColor;
     label.layer.shadowOffset = CGSizeMake(.9f, .9f);
@@ -89,7 +98,11 @@
 }
 
 - (void)bigLabelTreatment:(UILabel*)label {
-    [label setFont:[UIFont fontWithName:kMuseoSansThin size:66]];
+    if (IDIOM == IPAD){
+        [label setFont:[UIFont fontWithName:kMuseoSansThin size:66]];
+    } else {
+        [label setFont:[UIFont fontWithName:kMuseoSansThin size:36]];
+    }
     [label setTextColor:[UIColor whiteColor]];
     label.layer.shadowColor = [UIColor colorWithWhite:0 alpha:.5].CGColor;
     label.layer.shadowOffset = CGSizeMake(1.2f, 1.2f);
@@ -126,8 +139,8 @@
 }
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
+    [self dismissViewControllerAnimated:YES completion:^{
+       
     }];
 }
 

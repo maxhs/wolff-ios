@@ -27,7 +27,7 @@
 @property (weak, nonatomic) IBOutlet UIView *topImageContainerView;
 @property (weak, nonatomic) IBOutlet UIProgressView *progressIndicator;
 @property (weak, nonatomic) IBOutlet UIButton *postedByButton;
-@property (weak, nonatomic) IBOutlet UIButton *backButton;
+@property (weak, nonatomic) IBOutlet UIButton *dismissButton;
 @property (weak, nonatomic) IBOutlet UIButton *editButton;
 @property (weak, nonatomic) IBOutlet UIButton *deleteButton;
 @property (weak, nonatomic) IBOutlet UIButton *dropToTableButton;

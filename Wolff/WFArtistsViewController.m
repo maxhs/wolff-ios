@@ -198,7 +198,11 @@ static NSString * const reuseIdentifier = @"ArtistCell";
 #pragma mark – UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(width/4,width/4);
+    if (IDIOM == IPAD){
+        return CGSizeMake(width/4,height/4);
+    } else {
+        return CGSizeMake(width/2,height/4);
+    }
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {

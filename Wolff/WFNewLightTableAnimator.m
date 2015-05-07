@@ -62,7 +62,7 @@
         }
         CGRect newArtFrame = mainScreen;
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             toView.frame = newArtFrame;
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];

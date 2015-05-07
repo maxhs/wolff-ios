@@ -128,24 +128,24 @@
 }
 
 - (void)hudOrient {
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        
-    } else {
-        CGFloat rotate;
-        UIInterfaceOrientation orient;
-        
-        if (IDIOM == IPAD){
-            orient = self.window.rootViewController.interfaceOrientation;
-        } else {
-            orient = [[UIApplication sharedApplication] statusBarOrientation];
-        }
-        if (orient == UIInterfaceOrientationPortrait)                   rotate = 0.0;
-        else if (orient == UIInterfaceOrientationPortraitUpsideDown)	rotate = M_PI;
-        else if (orient == UIInterfaceOrientationLandscapeLeft)         rotate = - M_PI_2;
-        else if (orient == UIInterfaceOrientationLandscapeRight)		rotate = + M_PI_2;
-        else rotate = 0.0;
-        hud.transform = CGAffineTransformMakeRotation(rotate);
-    }
+//    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+//        
+//    } else {
+//        CGFloat rotate;
+//        UIInterfaceOrientation orient;
+//        
+//        if (IDIOM == IPAD){
+//            orient = self.window.rootViewController.interfaceOrientation;
+//        } else {
+//            orient = [[UIApplication sharedApplication] statusBarOrientation];
+//        }
+//        if (orient == UIInterfaceOrientationPortrait)                   rotate = 0.0;
+//        else if (orient == UIInterfaceOrientationPortraitUpsideDown)	rotate = M_PI;
+//        else if (orient == UIInterfaceOrientationLandscapeLeft)         rotate = - M_PI_2;
+//        else if (orient == UIInterfaceOrientationLandscapeRight)		rotate = + M_PI_2;
+//        else rotate = 0.0;
+//        hud.transform = CGAffineTransformMakeRotation(rotate);
+//    }
 }
 
 - (void)hudSize {

@@ -75,7 +75,7 @@
         
         [transitionContext.containerView insertSubview:blurredButton belowSubview:toView];
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [blurredButton setAlpha:.23];
             [toView setFrame:toEndFrame];
             [fromView setAlpha:0.5];
@@ -96,7 +96,7 @@
         CGRect toEndFrame = toView.frame;
         toEndFrame.origin.x -= width/3;
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseOut animations:^{
             [blurredButton setAlpha:0.0];
             [fromView setFrame:fromEndFrame];
             [toView setFrame:toEndFrame];

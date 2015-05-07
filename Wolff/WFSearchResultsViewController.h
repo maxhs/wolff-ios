@@ -28,8 +28,10 @@
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
+@property (weak, nonatomic) IBOutlet UIView *searchBarContainerView;
 @property (weak, nonatomic) IBOutlet UILabel *noResultsPrompt;
-@property (strong, nonatomic) NSMutableOrderedSet *photos;
+@property (strong, nonatomic) NSMutableOrderedSet *selectedPhotos;
+@property (strong, nonatomic) NSMutableOrderedSet *slideshowPhotos;
 @property (weak, nonatomic) id<WFSearchDelegate> searchDelegate;
 @property CGFloat originalPopoverHeight;
 @property BOOL shouldShowSearchBar;

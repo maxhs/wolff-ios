@@ -27,25 +27,25 @@
 
 @implementation WFLoginViewController
 
-@synthesize currentUser = _currentUser;
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     delegate = [UIApplication sharedApplication].delegate;
     delegate.loginDelegate = self;
     manager = delegate.manager;
-    
+    [self.navigationController setNavigationBarHidden:YES animated:NO];
     [self.view setBackgroundColor:[UIColor clearColor]];
+    if (IDIOM != IPAD) {
+        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
+        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+    }
     
-    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation) || [[[UIDevice currentDevice] systemName] floatValue] >= 8.f){
+    if (SYSTEM_VERSION >= 8.f){
         width = screenWidth();
         height = screenHeight();
     } else {
         width = screenHeight();
         height = screenWidth();
     }
-    
-    [_backButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
 
     [self textFieldTreatment:_emailTextField];
     [_emailTextField setPlaceholder:@"albrecht@durer.com"];
@@ -53,8 +53,8 @@
     [_passwordTextField setPlaceholder:@"password"];
     [self textFieldTreatment:_firstNameTextField];
     [self textFieldTreatment:_lastNameTextField];
-    
     signup = NO;
+    [_backButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
     [self setUpLoginButton];
     [self styleTermsButton];
     [self styleForgotPasswordButton];
@@ -63,16 +63,20 @@
     [_switchModesButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
+    CGRect switchFrame = self.switchModesButton.frame;
+    switchFrame.origin.x = self.view.frame.size.width-switchFrame.size.width-20;
+    [self.switchModesButton setFrame:switchFrame];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    [_emailTextField becomeFirstResponder];
+    [self.emailTextField becomeFirstResponder];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -88,18 +92,15 @@
         [_forgotPasswordButton setHidden:NO];
         [_emailTextField becomeFirstResponder];
         signup = NO;
-        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:.5 delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [_loginButton setTitle:@"LOGIN" forState:UIControlStateNormal];
             [_firstNameTextField setAlpha:0.0];
             [_lastNameTextField setAlpha:0.0];
             [_forgotPasswordButton setAlpha:1.0];
             if (keyboardShowing){
-                
                 _emailTextField.transform = CGAffineTransformMakeTranslation(0, -50);
                 _passwordTextField.transform = CGAffineTransformMakeTranslation(0, -50);
                 _loginButton.transform = CGAffineTransformMakeTranslation(0, -50);
-            } else {
-                _logoImageView.transform = CGAffineTransformMakeTranslation(0, 0);
             }
         } completion:^(BOOL finished) {
             
@@ -115,7 +116,8 @@
         
         signup = YES;
         [_firstNameTextField becomeFirstResponder];
-        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        
+        [UIView animateWithDuration:.5 delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [_loginButton setTitle:@"SIGNUP" forState:UIControlStateNormal];
             [_firstNameTextField setAlpha:1.0];
             [_lastNameTextField setAlpha:1.0];
@@ -124,9 +126,6 @@
                 _emailTextField.transform = CGAffineTransformMakeTranslation(0, 0);
                 _passwordTextField.transform = CGAffineTransformMakeTranslation(0, 0);
                 _loginButton.transform = CGAffineTransformMakeTranslation(0, 0);
-                _logoImageView.transform = CGAffineTransformMakeTranslation(0, -54);
-            } else {
-                _logoImageView.transform = CGAffineTransformMakeTranslation(0, -50);
             }
         } completion:^(BOOL finished) {
             
@@ -136,7 +135,7 @@
 }
 
 - (void)userAlreadyExists {
-    [self addShakeAnimationForView:_emailTextField withDuration:.75f];
+    [self addShakeAnimationForView:_emailTextField withDuration:.77f];
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (double).6f * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         [WFAlert show:@"We already have that email address on file. Please try logging in instead!" withTime:3.3f];
@@ -148,14 +147,16 @@
 }
 
 - (void)incorrectEmail {
-    [self addShakeAnimationForView:_emailTextField withDuration:.75f];
+    [self addShakeAnimationForView:_emailTextField withDuration:.77f];
 }
 - (void)incorrectPassword {
-    [self addShakeAnimationForView:_passwordTextField withDuration:.75f];
+    [self addShakeAnimationForView:_passwordTextField withDuration:.77f];
 }
 
 - (void)loginSuccessful {
-    [self dismiss];
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+        
+    }];
 }
 
 - (void)logout {
@@ -197,6 +198,7 @@
 }
 
 - (void)forgotPassword:(id)sender {
+    [self.view endEditing:YES];
     NSString *email;
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     if ([sender isKindOfClass:[NSString class]]){
@@ -208,14 +210,15 @@
     }
     
     if (email.length){
-        [parameters setObject:email forKey:@"email_address"];
-        [manager POST:[NSString stringWithFormat:@"%@/password_resets",kApiBaseUrl] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [parameters setObject:email forKey:@"email"];
+        [manager POST:[NSString stringWithFormat:@"%@/forgot_password",kApiBaseUrl] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success with password reset: %@",responseObject);
             if ([responseObject objectForKey:@"error"]){
                 if ([[responseObject objectForKey:@"error"] isEqualToString:@"Email address not found."]){
                     [[[UIAlertView alloc] initWithTitle:@"No such luck." message:@"We couldn't find that email address in our system." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
                 }
             } else {
+                [WFAlert show:@"We've sent password reset instructions to the email on file." withTime:2.7f];
                 #ifndef DEBUG
                                 
                 #else
@@ -229,6 +232,7 @@
         UIAlertView *forgotPasswordAlert = [[UIAlertView alloc] initWithTitle:@"Password Reset" message:@"Please enter your account's email address:" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Submit", nil];
         forgotPasswordAlert.alertViewStyle = UIAlertViewStylePlainTextInput;
         [[forgotPasswordAlert textFieldAtIndex:0] setKeyboardType:UIKeyboardTypeEmailAddress];
+        [[forgotPasswordAlert textFieldAtIndex:0] setKeyboardAppearance:UIKeyboardAppearanceDark];
         [forgotPasswordAlert show];
     }
 }
@@ -283,6 +287,27 @@
     [self.view endEditing:YES];
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        if (IDIOM == IPAD){
+            
+        } else {
+            UIImageView *blurredButton = (UIImageView*)[self.view.window viewWithTag:kBlurredBackgroundConstant];
+            CGRect buttonRect = blurredButton.frame;
+            buttonRect.size.width = size.width;
+            buttonRect.size.height = size.height;
+            [blurredButton setFrame:buttonRect];
+            CGRect switchModesFrame = self.switchModesButton.frame;
+            switchModesFrame.origin.x = size.width-switchModesFrame.size.width-20;
+            [self.switchModesButton setFrame:switchModesFrame];
+
+        }
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        
+    }];
+}
+
 - (void)keyboardWillShow:(NSNotification *)notification {
     NSDictionary *info = [notification userInfo];
     CGRect rawKeyboardRect = [[info objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue];
@@ -291,6 +316,7 @@
     keyboardHeight = properlyRotatedCoords.size.height;
     NSNumber *curveValue = info[UIKeyboardAnimationCurveUserInfoKey];
     UIViewAnimationCurve animationCurve = curveValue.intValue;
+    keyboardShowing = YES;
     
     [UIView animateWithDuration:animationDuration.doubleValue delay:0 options:(animationCurve << 16) animations:^{
         if (IDIOM == IPAD){
@@ -312,11 +338,20 @@
                 _forgotPasswordButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
             }
         } else {
-            
+            if (signup){
+                _termsButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
+                _forgotPasswordButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
+            } else {
+                _emailTextField.transform = CGAffineTransformMakeTranslation(0, -50);
+                _passwordTextField.transform = CGAffineTransformMakeTranslation(0, -50);
+                _loginButton.transform = CGAffineTransformMakeTranslation(0, -50);
+                _termsButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
+                _forgotPasswordButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
+            }
         }
         
     } completion:^(BOOL finished) {
-        keyboardShowing = YES;
+        
     }];
 }
 
@@ -328,6 +363,7 @@
     keyboardHeight = keyboardFrame.size.height;
     NSNumber *curveValue = info[UIKeyboardAnimationCurveUserInfoKey];
     UIViewAnimationCurve animationCurve = curveValue.intValue;
+    keyboardShowing = NO;
     
     [UIView animateWithDuration:animationDuration.doubleValue delay:0 options:(animationCurve << 16) animations:^{
         if (signup){
@@ -342,8 +378,9 @@
         _loginButton.transform = CGAffineTransformIdentity;
         _termsButton.transform = CGAffineTransformIdentity;
         _forgotPasswordButton.transform = CGAffineTransformIdentity;
+        
     } completion:^(BOOL finished) {
-        keyboardShowing = NO;
+        
     }];
 }
 
@@ -366,8 +403,12 @@
 }
 
 - (void)dismiss {
-    [self doneEditing];
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
+    if (keyboardShowing){
+        [self doneEditing];
+    } else {
+        [self doneEditing];
+        [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
+    }
 }
 
 #pragma mark - Basic View Setup
@@ -383,7 +424,7 @@
     [_termsButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     [_termsButton.titleLabel setTextColor:[UIColor lightGrayColor]];
     NSMutableAttributedString *termsString = [[NSMutableAttributedString alloc] initWithString:@"By continuing, you agree to our " attributes:nil];
-    NSMutableAttributedString *linkString = [[NSMutableAttributedString alloc] initWithString:@"Terms of Service" attributes:@{NSUnderlineStyleAttributeName:[NSNumber numberWithInt:NSUnderlineStyleSingle]}];
+    NSMutableAttributedString *linkString = [[NSMutableAttributedString alloc] initWithString:@"Terms" attributes:@{NSUnderlineStyleAttributeName:[NSNumber numberWithInt:NSUnderlineStyleSingle]}];
     [termsString appendAttributedString:linkString];
     _termsButton.titleLabel.numberOfLines = 0;
     _termsButton.titleLabel.textAlignment = NSTextAlignmentCenter;
@@ -401,7 +442,11 @@
 }
 
 - (void)textFieldTreatment:(UITextField*)textField {
-    [textField setBackgroundColor:kTextFieldBackground];
+    if (IDIOM == IPAD){
+        [textField setBackgroundColor:kTextFieldBackground];
+    } else {
+        [textField setBackgroundColor:[UIColor whiteColor]];
+    }
     [textField setKeyboardAppearance:UIKeyboardAppearanceDark];
     textField.layer.cornerRadius = 2.f;
     textField.clipsToBounds = YES;

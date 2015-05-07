@@ -13,6 +13,7 @@
 @dynamic identifier;
 @dynamic visible;
 @dynamic showTitleSlide;
+@dynamic showMetadata;
 @dynamic title;
 @dynamic slideshowDescription;
 @dynamic slides;

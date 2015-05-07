@@ -58,7 +58,6 @@
         
         //this is a little fragile, since if the view hierarchy changes, this will break
         UINavigationController *nav = (UINavigationController*)toViewController;
-        
         [blurredButton addTarget:nav.viewControllers.firstObject action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         [blurredButton setFrame:mainScreen];
         [blurredButton setAlpha:0.0];

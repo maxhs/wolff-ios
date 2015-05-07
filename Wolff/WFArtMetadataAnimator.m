@@ -11,6 +11,7 @@
 #import "WFCatalogViewController.h"
 #import "WFArtMetadataViewController.h"
 #import "WFFlagViewController.h"
+#import "WFSlideMetadataViewController.h"
 
 @interface WFArtMetadataAnimator () {
     CGFloat width;
@@ -57,7 +58,11 @@
         [darkBackground setTag:kDarkBackgroundConstant];
         
         UINavigationController *nav = (UINavigationController*)toViewController;
-        WFArtMetadataViewController *artvc = (WFArtMetadataViewController*)nav.viewControllers.firstObject;
+        WFArtMetadataViewController *artvc;
+        if ([nav.viewControllers.firstObject isKindOfClass:[WFArtMetadataViewController class]]){
+            artvc = (WFArtMetadataViewController*)nav.viewControllers.firstObject;
+        }
+        
         [darkBackground addTarget:artvc action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         [darkBackground setFrame:mainScreen];
         [transitionContext.containerView addSubview:fromView];
@@ -85,7 +90,6 @@
                 CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
                 toView.frame = metadataStartFrame;
             }
-            
         } else {
             metadataFrame = CGRectMake(0, width/2-kMetadataWidth/2, height, kMetadataWidth);
             CGRect metadataStartFrame = CGRectMake(0, (width/2-kMetadataWidth/2)-xOffset, height, kMetadataWidth);

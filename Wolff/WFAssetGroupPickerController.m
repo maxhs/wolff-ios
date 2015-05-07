@@ -13,6 +13,7 @@
 #import "WFNewArtViewController.h"
 #import "Constants.h"
 #import "WFUtilities.h"
+#import "WFNoRotateNavController.h"
 
 @interface WFAssetGroupPickerController () {
     ALAssetsLibrary *_assetsLibrary;
@@ -127,7 +128,10 @@
     if ([segue.identifier isEqualToString:@"AssetGroupSelected"]) {
         WFImagePickerController *imagePicker = [segue destinationViewController];
         if ([self.navigationController.presentingViewController isKindOfClass:[WFNewArtViewController class]]){
+            
             imagePicker.delegate = (WFNewArtViewController*)self.navigationController.presentingViewController;
+        } else if ([self.navigationController.presentingViewController isKindOfClass:[WFNoRotateNavController class]] && [[[(WFNoRotateNavController*)self.navigationController.presentingViewController viewControllers] firstObject] isKindOfClass:[WFNewArtViewController class]]){
+            imagePicker.delegate = (WFNewArtViewController*)[[(WFNoRotateNavController*)self.navigationController.presentingViewController viewControllers] firstObject];
         }
         NSIndexPath *selectedIndexPath = (NSIndexPath*)sender;
         [imagePicker setAssetsGroup:_assetGroups[selectedIndexPath.row]];

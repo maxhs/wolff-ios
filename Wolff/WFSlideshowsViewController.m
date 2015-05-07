@@ -13,12 +13,11 @@
 @interface WFSlideshowsViewController () <UIAlertViewDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-    User *_currentUser;
     UIRefreshControl *refreshControl;
     BOOL loading;
     NSIndexPath *indexPathForDeletion;
 }
-
+@property (strong, nonatomic) User *currentUser;
 @end
 
 @implementation WFSlideshowsViewController
@@ -27,7 +26,7 @@
     [super viewDidLoad];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    _currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+    self.currentUser = [delegate.currentUser MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     [self loadSlideshows];
     
     refreshControl = [[UIRefreshControl alloc] init];
@@ -39,18 +38,18 @@
     [_tableView setBackgroundColor:[UIColor clearColor]];
     [self.view setBackgroundColor:[UIColor clearColor]];
     self.title = @"Your Slideshows";
-    
-    UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
-    self.navigationItem.leftBarButtonItem = backButton;
-}
 
-- (void)back {
-    [self.navigationController popViewControllerAnimated:YES];
+    if (IDIOM != IPAD){
+        UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.view.frame];
+        [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
+        [backgroundToolbar setTranslucent:YES];
+        [self.tableView setBackgroundView:backgroundToolbar];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    CGFloat contentSizeHeight = _currentUser.slideshows.count ? 54.f*(_currentUser.slideshows.count+1) : 54.f * 2;
+    CGFloat contentSizeHeight = self.currentUser.slideshows.count ? 54.f*(self.currentUser.slideshows.count+1) : 54.f * 2;
     [self setPreferredContentSize:CGSizeMake(420, contentSizeHeight)];
 }
 
@@ -63,7 +62,7 @@
     loading = YES;
     [manager GET:[NSString stringWithFormat:@"users/%@/slideshows",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success getting slideshows: %@",responseObject);
-        [_currentUser populateFromDictionary:responseObject];
+        [self.currentUser populateFromDictionary:responseObject];
         [self endLoading];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to get slideshows");
@@ -90,12 +89,12 @@
     if (section == 0){
         return 1;
     } else {
-        if (!loading && _currentUser.slideshows.count == 0){
+        if (!loading && self.currentUser.slideshows.count == 0){
             return 1;
             [tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
         } else {
             [tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
-            return _currentUser.slideshows.count;
+            return self.currentUser.slideshows.count;
         }
     }
 }
@@ -107,18 +106,22 @@
     cell.selectedBackgroundView = selectedView;
     
     if (indexPath.section == 0){
-        [cell.imageView setImage:[UIImage imageNamed:@"plus"]];
+        if (IDIOM == IPAD){
+            [cell.imageView setImage:[UIImage imageNamed:@"plus"]];
+        } else {
+            [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
+        }
         [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
         [cell.textLabel setText:@"New Slideshow"];
         [cell.textLabel setTextAlignment:NSTextAlignmentLeft];
     } else {
         [cell.imageView setImage:nil];
-        if (!loading && _currentUser.slideshows.count == 0){
+        if (!loading && self.currentUser.slideshows.count == 0){
             [cell.textLabel setText:@"No Slideshows"];
             [cell.textLabel setTextAlignment:NSTextAlignmentCenter];
             [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
         } else {
-            Slideshow *slideshow = _currentUser.slideshows[indexPath.row];
+            Slideshow *slideshow = self.currentUser.slideshows[indexPath.row];
             [cell.textLabel setTextAlignment:NSTextAlignmentLeft];
             if (slideshow.title.length){
                 [cell.textLabel setText:slideshow.title];
@@ -129,6 +132,8 @@
             }
         }
     }
+    
+    [cell.textLabel setTextColor:(IDIOM == IPAD) ? [UIColor blackColor] : [UIColor whiteColor]];
     return cell;
 }
 
@@ -139,7 +144,7 @@
         }
     } else {
         if (self.slideshowsDelegate && [self.slideshowsDelegate respondsToSelector:@selector(slideshowSelected:)]) {
-            Slideshow *slideshow = _currentUser.slideshows[indexPath.row];
+            Slideshow *slideshow = self.currentUser.slideshows[indexPath.row];
             [self.slideshowsDelegate slideshowSelected:slideshow];
         }
     }
@@ -158,7 +163,7 @@
 }
 
 - (void)confirmDeletion {
-    Slideshow *slideshow = _currentUser.slideshows[indexPathForDeletion.row];
+    Slideshow *slideshow = self.currentUser.slideshows[indexPathForDeletion.row];
     NSString *title = slideshow.title.length ? [NSString stringWithFormat:@"\"%@\"",slideshow.title] : @"this slideshow";
     [[[UIAlertView alloc] initWithTitle:@"Confirmation Needed" message:[NSString stringWithFormat:@"Are you sure you want to delete %@? This can NOT be undone.",title] delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Delete",nil] show];
 }
@@ -172,12 +177,12 @@
 }
 
 - (void)deleteSlideshow {
-    Slideshow *slideshow = _currentUser.slideshows[indexPathForDeletion.row];
+    Slideshow *slideshow = self.currentUser.slideshows[indexPathForDeletion.row];
     NSLog(@"Slideshow we're about to delete: %@",slideshow);
     if (slideshow && ![slideshow.identifier isEqualToNumber:@0]){
         [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             [self.tableView beginUpdates];
-            [_currentUser removeSlideshow:slideshow];
+            [self.currentUser removeSlideshow:slideshow];
             [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
             [self.tableView endUpdates];
             
@@ -191,7 +196,7 @@
         }];
     } else {
         [self.tableView beginUpdates];
-        [_currentUser removeSlideshow:slideshow];
+        [self.currentUser removeSlideshow:slideshow];
         [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -217,14 +222,11 @@
     [headerLabel setText:@"SLIDESHOWS"];
     
     [headerView addSubview:headerLabel];
-
     return headerView;
 }
 
 - (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    [super didReceiveMemoryWarning]; // Dispose of any resources that can be recreated.
 }
-
 
 @end

@@ -14,21 +14,30 @@
 #import "WFSlideshowsViewController.h"
 #import "WFLightTablesViewController.h"
 #import "WFAlert.h"
+#import "WFUtilities.h"
 
 @interface WFSearchResultsViewController () <UISearchBarDelegate, WFLightTablesDelegate, WFSlideshowsDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
+    CGFloat width;
+    CGFloat height;
+    CGFloat keyboardHeight;
+    CGFloat topInset;
+    NSMutableArray *_photos;
     NSMutableOrderedSet *_filteredPhotos;
-    NSMutableOrderedSet *selectedPhotos;
+    NSMutableOrderedSet *selected;
     NSString *searchText;
+    BOOL landscape;
     BOOL searching;
     BOOL loading;
     BOOL noResults;
-    UIToolbar *backgroundToolbar;
     UIBarButtonItem *lightTableButton;
     UIBarButtonItem *slideshowButton;
     UIButton *clearButton;
     UIBarButtonItem *clearBarButton;
+    UIBarButtonItem *dismissButton;
+    UIBarButtonItem *cancelButton;
+    UIImageView *navBarShadowView;
 }
 
 @end
@@ -39,29 +48,37 @@
     [super viewDidLoad];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    
-    [self.view setBackgroundColor:[UIColor clearColor]];
+    if (SYSTEM_VERSION >= 8.f){
+        width = screenWidth(); height = screenHeight();
+    } else {
+        width = screenHeight(); height = screenWidth();
+    }
+
     [self.tableView setBackgroundColor:[UIColor clearColor]];
-    [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     self.tableView.rowHeight = 80.f;
-    [self.collectionView setBackgroundColor:[UIColor blackColor]];
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     
-    _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
-    selectedPhotos = [NSMutableOrderedSet orderedSet];
+    if (self.selectedPhotos){
+        _photos = self.selectedPhotos.array.mutableCopy;
+    } else {
+        NSPredicate *photoPredicate = [NSPredicate predicateWithFormat:@"privatePhoto != %@ AND art.privateArt != %@",@YES, @YES];
+        _photos = [Photo MR_findAllSortedBy:@"createdDate" ascending:NO withPredicate:photoPredicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
+    }
+    if (self.slideshowPhotos.count){
+        selected = self.slideshowPhotos;
+    } else {
+        selected = [NSMutableOrderedSet orderedSet];
+    }
+    _filteredPhotos = [NSMutableOrderedSet orderedSetWithArray:_photos];
     
-    if (_shouldShowTiles) {
-        // this means we're looking at search results on the "make slideshow" view
+    if (_shouldShowTiles) { // this means we're looking at search results on the "make slideshow" view
         [self.collectionView setHidden:NO];
         [self.tableView setHidden:YES];
         [_noResultsPrompt setTextColor:[UIColor colorWithWhite:1 alpha:.7]];
-        
         [self.collectionView reloadData];
         [_noResultsPrompt setText:kNoSearchResults];
-    } else {
-        // this means we're actually looking at selected slides
+    } else { // this means we're actually looking at selected slides
         [self setPreferredContentSize:CGSizeMake(420, _originalPopoverHeight)];
-        [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
         [_noResultsPrompt setText:@"Nothing selected..."];
         [self.collectionView setHidden:YES];
         [self.tableView setHidden:NO];
@@ -86,13 +103,49 @@
     [clearButton addTarget:self action:@selector(removeSelected) forControlEvents:UIControlEventTouchUpInside];
     [clearButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     clearBarButton = [[UIBarButtonItem alloc] initWithCustomView:clearButton];
-    [self.navigationItem setLeftBarButtonItems:@[lightTableButton, flexibleSpace1, slideshowButton, flexibleSpace2, clearBarButton]];
+    
+    [self.view setBackgroundColor:[UIColor clearColor]];
+    if (IDIOM == IPAD){
+        topInset = 44.f; //the height of the search bar container
+        [self.navigationItem setLeftBarButtonItems:@[lightTableButton, flexibleSpace1, slideshowButton, flexibleSpace2, clearBarButton]];
+        [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+        [self.collectionView setBackgroundColor:[UIColor blackColor]];
+    } else {
+        
+        UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.view.frame];
+        [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
+        [backgroundToolbar setTranslucent:YES];
+        [self.tableView setBackgroundView:backgroundToolbar];
+        
+        topInset = self.navigationController.navigationBar.frame.size.height;
+        [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
+        [self.tableView setSeparatorColor:[UIColor colorWithWhite:0 alpha:.14]];
+        [self.collectionView setBackgroundColor:[UIColor blackColor]];
+        dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+        self.navigationItem.leftBarButtonItem = dismissButton;
+        cancelButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(doneEditing)];
+        if (_shouldShowSearchBar){
+            self.navigationItem.titleView = self.searchBar;
+        }
+        if (!_shouldShowTiles) {
+            [self.navigationItem setRightBarButtonItems:@[lightTableButton, flexibleSpace1, slideshowButton, flexibleSpace2, clearBarButton]];
+        }
+    }
+    
+    self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
+    [self registerKeyboardNotifications];
+    navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     self.searchBar.delegate = self;
+    navBarShadowView.hidden = YES;
+    
     if (_shouldShowSearchBar){
+        [self.searchBarContainerView setBackgroundColor:[UIColor colorWithWhite:0 alpha:.47]];
+        
         if (_shouldShowTiles){
             // don't need to do anything, search bar is already visible for collection view
         } else {
@@ -127,7 +180,11 @@
     
     //hide the navigation bar if there are no photos so that we can see the no photos prompt
     if (!_photos.count){
-        [self.navigationController setNavigationBarHidden:YES];
+        if (IDIOM == IPAD){
+            [self.navigationController setNavigationBarHidden:YES animated:NO];
+        } else {
+            [self.navigationController setNavigationBarHidden:NO animated:NO];
+        }
     } else {
         [self.navigationController setNavigationBarHidden:NO animated:YES];
     }
@@ -137,6 +194,7 @@
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     _noResultsPrompt.center = self.collectionView.center;
+    landscape = self.view.frame.size.width > self.view.frame.size.height ? YES : NO;
 }
 
 #pragma mark - Table view data source
@@ -160,6 +218,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSearchResultsCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SearchCell" forIndexPath:indexPath];
+    [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
     Photo *photo = searching ? _filteredPhotos[indexPath.row] : _photos[indexPath.row];
     [cell configureForPhoto:photo];
     return cell;
@@ -235,12 +294,38 @@
     if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(removeAllSelected)]) {
         [self.searchDelegate removeAllSelected];
     }
+    
+    if (IDIOM != IPAD){
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .23 * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self dismiss];
+        });
+    }
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    width = size.width; height = size.height;
+    landscape = size.width > size.height ? YES : NO;
+    
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        if (IDIOM != IPAD){
+            [self.collectionView reloadData];
+            [self.tableView reloadData];
+        }
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        
+    }];
 }
 
 #pragma mark – UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(100,100);
+    if (IDIOM == IPAD){
+        return CGSizeMake(100,100);
+    } else {
+        return CGSizeMake(width/3, width/3);
+    }
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -248,6 +333,15 @@
 }
 
 #pragma mark - UICollectionView Datasource
+
+- (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
+    if (searching && _filteredPhotos.count == 0){
+        [self.noResultsPrompt setHidden:NO];
+    } else {
+        [self.noResultsPrompt setHidden:YES];
+    }
+    return 1;
+}
 
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
     if (searching){
@@ -257,24 +351,11 @@
     }
 }
 
-- (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
-    if (searching && _filteredPhotos.count == 0){
-        [_noResultsPrompt setHidden:NO];
-    } else {
-        [_noResultsPrompt setHidden:YES];
-    }
-    return 1;
-}
-
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFSearchCollectionCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SearchCollectionCell" forIndexPath:indexPath];
     Photo *photo = searching ? _filteredPhotos[indexPath.row] : _photos[indexPath.row];
     [cell configureForPhoto:photo];
-    if ([selectedPhotos containsObject:photo]){
-        [cell.checkmark setHidden:NO];
-    } else {
-        [cell.checkmark setHidden:YES];
-    }
+    [cell.checkmark setHidden:[selected containsObject:photo] ? NO : YES ];
     return cell;
 }
 
@@ -285,15 +366,65 @@
     } else {
         photo = _photos[indexPath.row];
     }
-    if ([selectedPhotos containsObject:photo]){
-        [selectedPhotos removeObject:photo];
+    if ([selected containsObject:photo]){
+        [selected removeObject:photo];
     } else {
-        [selectedPhotos addObject:photo];
+        [selected addObject:photo];
+    }
+    if (selected.count){
+        [dismissButton setImage:[UIImage imageNamed:@"left"]];
+    } else {
+        [dismissButton setImage:[UIImage imageNamed:@"remove"]];
     }
     [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
     if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhoto:)]) {
         [self.searchDelegate searchDidSelectPhoto:photo];
     }
+}
+
+- (void)registerKeyboardNotifications {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willShowKeyboard:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideKeyboard:) name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)willShowKeyboard:(NSNotification*)notification {
+    NSDictionary* keyboardInfo = [notification userInfo];
+    NSValue *keyboardValue = keyboardInfo[UIKeyboardFrameEndUserInfoKey];
+    CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
+    keyboardHeight = convertedKeyboardFrame.size.height;
+    CGFloat duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+    UIViewAnimationOptions animationCurve = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
+    [UIView animateWithDuration:duration
+                          delay:0
+                        options:(animationCurve << 16)
+                     animations:^{
+                         self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight, 0);
+                         self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight, 0);
+                         self.navigationItem.rightBarButtonItem = cancelButton;
+                     }
+                     completion:^(BOOL finished) {
+                         
+                     }];
+}
+
+- (void)willHideKeyboard:(NSNotification *)notification {
+    CGFloat duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+    UIViewAnimationOptions animationCurve = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
+    [UIView animateWithDuration:duration
+                          delay:0
+                        options:(animationCurve << 16)
+                     animations:^{
+                         self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight, 0);
+                         self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight, 0);
+                         self.navigationItem.rightBarButtonItem = nil;
+                     }
+                     completion:NULL];
+}
+
+- (void)doneEditing {
+    [self.view endEditing:YES];
+    [self.searchBar resignFirstResponder];
+    self.navigationItem.rightBarButtonItem = nil;
 }
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
@@ -343,7 +474,9 @@
             } else {
                 [_noResultsPrompt setText:kNoSearchResults];
                 loading = NO;
-                noResults = YES;
+                if (searchString.length > 7){
+                    noResults = YES;
+                }
             }
             
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -378,6 +511,7 @@
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
     [self endSearch];
     [self.tableView reloadData];
+    [self.collectionView reloadData];
 }
 
 - (BOOL)searchBar:(UISearchBar *)searchBar shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
@@ -426,10 +560,18 @@
     [_filteredPhotos removeAllObjects];
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-    [UIView animateWithDuration:.23 animations:^{
-        [self.view setAlpha:0.0];
+- (void)dismiss {
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+        
     }];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    if (IDIOM == IPAD){
+        [UIView animateWithDuration:.23 animations:^{
+            [self.view setAlpha:0.0];
+        }];
+    }
     [super viewWillDisappear:animated];
 }
 

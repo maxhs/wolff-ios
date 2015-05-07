@@ -401,9 +401,9 @@
                                                  name:UIKeyboardWillHideNotification object:nil];
 }
 
-- (void)keyboardWillShow:(NSNotification *)note {
+- (void)keyboardWillShow:(NSNotification *)notification {
     self.keyboardVisible = YES;
-    NSDictionary* info = [note userInfo];
+    NSDictionary* info = [notification userInfo];
     NSTimeInterval duration = [info[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationOptions curve = [info[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
     NSValue *keyboardValue = info[UIKeyboardFrameEndUserInfoKey];
@@ -413,16 +413,16 @@
                           delay:0
                         options:curve | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight+34, 0);
-                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 0, keyboardHeight+34, 0);
+                         self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight+34, 0);
+                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, keyboardHeight+34, 0);
                      }
-                     completion:nil];
+                     completion:NULL];
 }
 
-- (void)keyboardWillHide:(NSNotification *)note {
+- (void)keyboardWillHide:(NSNotification *)notification {
     self.keyboardVisible = NO;
     self.navigationItem.rightBarButtonItem = submitButton;
-    NSDictionary* info = [note userInfo];
+    NSDictionary* info = [notification userInfo];
     NSTimeInterval duration = [info[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationOptions curve = [info[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
     [UIView animateWithDuration:duration
@@ -432,7 +432,7 @@
                          self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
                          self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, 0, 0);
                      }
-                     completion:nil];
+                     completion:NULL];
 }
 
 - (void)doneEditing {

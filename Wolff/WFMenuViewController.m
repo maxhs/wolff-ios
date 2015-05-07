@@ -84,9 +84,10 @@
             }
             break;
         case 2:
-            [delegate logout];
             if (self.menuDelegate && [self.menuDelegate respondsToSelector:@selector(logout)]) {
                 [self.menuDelegate logout];
+            } else {
+                [delegate logout];
             }
             break;
             

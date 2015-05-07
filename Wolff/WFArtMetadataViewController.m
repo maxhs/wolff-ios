@@ -15,6 +15,7 @@
 #import "Location+helper.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 #import <SDWebImage/UIButton+WebCache.h>
+#import "WFLightTableDetailsViewController.h"
 #import "WFLightTablesViewController.h"
 #import "WFAlert.h"
 #import "WFComparisonViewController.h"
@@ -33,8 +34,11 @@
 #import "WFDateMetadataCell.h"
 #import "WFMetadataModalAnimator.h"
 #import "Icon+helper.h"
+#import "WFNoRotateNavController.h"
+#import "WFNewLightTableAnimator.h"
+#import "WFTransparentBGModalAnimator.h"
 
-@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLoginDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectIconsDelegate, WFSelectMaterialsDelegate, WFSelectTagsDelegate, UIActionSheetDelegate, UITextFieldDelegate> {
+@interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLightTableDelegate, WFLoginDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectIconsDelegate, WFSelectMaterialsDelegate, WFSelectTagsDelegate, UIActionSheetDelegate, UITextFieldDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     CGFloat width;
@@ -44,7 +48,10 @@
     BOOL editMode;
     BOOL login;
     BOOL profile;
+    BOOL newLightTableTransition;
     BOOL metadataModal;
+    BOOL lightTables;
+    BOOL landscape;
     CGFloat keyboardHeight;
     UITextView *titleTextView;
     UITextView *notesTextView;
@@ -97,6 +104,7 @@
     editMode = NO;
     [self setupDateFormatter];
     [self registerForKeyboardNotifications];
+    self.photo = [self.photo MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     [self loadPhotoMetadata];
 }
 
@@ -119,21 +127,57 @@
 }
 
 - (void)setupHeader {
+    CGSize viewSize = self.view.frame.size;
     self.tableView.tableHeaderView = _topImageContainerView;
     currentPhotoIdx = [self.photo.art.photos indexOfObject:self.photo];
     [self setPhotoCount:currentPhotoIdx+1]; // setPhotoCredit called at the end of setPhotoCount... no worries
-    [self setupPhotoScrollView];
     
-    [_backButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+    [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
+    CGRect dismissFrame = self.dismissButton.frame;
+    dismissFrame.origin.x = viewSize.width-dismissFrame.size.width;
+    [self.dismissButton setFrame:dismissFrame];
+    
     [self setUpButtons];
-    
     [_nextPhotoButton addTarget:self action:@selector(nextPhoto) forControlEvents:UIControlEventTouchUpInside];
     [_lastPhotoButton addTarget:self action:@selector(lastPhoto) forControlEvents:UIControlEventTouchUpInside];
     [self.photoCountLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     
+    if (IDIOM == IPAD){
+        
+    } else {
+        if (viewSize.width > viewSize.height){
+            [_favoriteButton setHidden:NO];
+            [_dropToTableButton setHidden:NO];
+            [_flagButton setHidden:NO];
+            [_editButton setHidden:NO];
+            [_deleteButton setHidden:NO];
+            [_postedByButton setHidden:NO];
+            if (self.photo.art.photos.count > 1){
+                [_photoCountLabel setHidden:NO];
+                [_nextPhotoButton setHidden:NO];
+                [_lastPhotoButton setHidden:NO];
+            }
+            landscape = YES;
+        } else {
+            [_favoriteButton setHidden:YES];
+            [_dropToTableButton setHidden:YES];
+            [_flagButton setHidden:YES];
+            [_editButton setHidden:YES];
+            [_deleteButton setHidden:YES];
+            [_postedByButton setHidden:YES];
+            [_photoCountLabel setHidden:YES];
+            [_nextPhotoButton setHidden:YES];
+            [_lastPhotoButton setHidden:YES];
+            landscape = NO;
+        }
+    }
+    
+    [self setupPhotoScrollView];
 }
 
 - (void)setPhotoCount:(NSInteger)currentIdx{
+    CGFloat landscapeWidth = IDIOM == IPAD ? 380.f : width;
+    
     if (self.photo.art.photos.count == 1){
         [self.photoCountLabel setText:@"1 photo"];
     } else {
@@ -142,15 +186,15 @@
     if (self.photo.art.photos.count <= 1){
         [_nextPhotoButton setHidden:YES];
         [_lastPhotoButton setHidden:YES];
-    } else {
+    } else if (landscape) {
         [_nextPhotoButton setHidden:NO];
         [_lastPhotoButton setHidden:NO];
     }
     
-    if (self.photoScrollView.contentOffset.x < 380.f/2){
+    if (self.photoScrollView.contentOffset.x < landscapeWidth/2){
         [_lastPhotoButton setEnabled:NO];
         [_nextPhotoButton setEnabled:YES];
-    } else if (self.photoScrollView.contentOffset.x >= ((self.photo.art.photos.count-1)*380.f)-380.f/2) {
+    } else if (self.photoScrollView.contentOffset.x >= ((self.photo.art.photos.count-1)*landscapeWidth)-landscapeWidth/2) {
         [_nextPhotoButton setEnabled:NO];
         [_lastPhotoButton setEnabled:YES];
     } else {
@@ -166,27 +210,49 @@
     self.photoScrollView.delegate = self;
     self.photoScrollView.pagingEnabled = YES;
     [self.photoScrollView setCanCancelContentTouches:YES];
-    
     NSInteger idx = 0;
-    CGFloat landscapeWidth = 380.f;
-    CGFloat landscapeHeight = 260.f;
-    CGFloat portraitWidth = 260.f;
-    CGFloat portraitHeight = 380.f;
+    CGFloat landscapeWidth, landscapeHeight, portraitWidth, portraitHeight;
+    if (landscape){
+        landscapeWidth = IDIOM == IPAD ? 380.f : height;
+        landscapeHeight = IDIOM == IPAD ? 260.f : height;
+        portraitWidth = IDIOM == IPAD ? 260.f : height;
+        portraitHeight = IDIOM == IPAD ? 380.f : height;
+    } else {
+        landscapeWidth = IDIOM == IPAD ? 380.f : width;
+        landscapeHeight = IDIOM == IPAD ? 260.f : width;
+        portraitWidth = IDIOM == IPAD ? 260.f : width;
+        portraitHeight = IDIOM == IPAD ? 380.f : width;
+    }
+    
+    if (IDIOM != IPAD){
+        [self.photoScrollView setFrame:CGRectMake(0, 44, landscapeWidth, landscapeWidth)];
+    }
+    
     for (Photo *photo in self.photo.art.photos){
-        
         UIButton *imageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [imageButton setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+        [imageButton setAutoresizingMask:UIViewAutoresizingFlexibleHeight];
         [imageButton setShowsTouchWhenHighlighted:NO];
         [imageButton setAdjustsImageWhenHighlighted:NO];
-        [imageButton setBackgroundColor:kSlideBackgroundColor];
         imageButton.imageView.contentMode = UIViewContentModeScaleAspectFill;
         imageButton.imageView.layer.cornerRadius = 3.f;
         imageButton.imageView.layer.backgroundColor = [UIColor clearColor].CGColor;
-        if (photo.isLandscape){
-            [imageButton setFrame:CGRectMake(0+(idx*landscapeWidth), 60, landscapeWidth, landscapeHeight)];
-        } else {
-            [imageButton setFrame:CGRectMake(60+(idx*landscapeWidth), 0, portraitWidth, portraitHeight)];
-        }
+        imageButton.imageView.clipsToBounds = YES;
         [self.photoScrollView addSubview:imageButton];
+        if (photo.isLandscape){
+            if (IDIOM == IPAD){
+                [imageButton setFrame:CGRectMake(0+(idx*landscapeWidth), 60, landscapeWidth, landscapeHeight)];
+            } else {
+                [imageButton setFrame:CGRectMake(0+(idx*landscapeWidth), 0, landscapeWidth, landscapeHeight)];
+            }
+        } else {
+            if (IDIOM == IPAD){
+                [imageButton setFrame:CGRectMake(60+(idx*landscapeWidth), 0, portraitWidth, portraitHeight)];
+            } else {
+                [imageButton setFrame:CGRectMake((idx*landscapeWidth), 0, portraitWidth, portraitHeight)];
+            }
+        }
+        
         if (!imageButton.imageView.image){
             [imageButton setAlpha:0.0];
         }
@@ -201,6 +267,7 @@
                 [_progressIndicator removeFromSuperview];
                 imageButton.imageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
                 imageButton.imageView.layer.shouldRasterize = YES;
+                //NSLog(@"image button width: %@", imageButton);
             }];
         }];
         [imageButton addTarget:self action:@selector(showFullScreen) forControlEvents:UIControlEventTouchUpInside];
@@ -208,7 +275,7 @@
     }
     
     [self.photoScrollView setContentSize:CGSizeMake(self.photo.art.photos.count * landscapeWidth, landscapeWidth)]; //  use 380 as a max
-    [self.photoScrollView setContentOffset:CGPointMake(380.f * currentPhotoIdx, 0) animated:YES];
+    [self.photoScrollView setContentOffset:CGPointMake(landscapeWidth * currentPhotoIdx, 0) animated:YES];
 }
 
 - (void)setPhotoCredit {
@@ -224,8 +291,15 @@
         [_postedByButton setContentVerticalAlignment:UIControlContentVerticalAlignmentBottom];
         [_postedByButton setAttributedTitle:postedByString forState:UIControlStateNormal];
         [_postedByButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
-        [_postedByButton setHidden:NO];
         [_postedByButton.titleLabel setNumberOfLines:0];
+        
+        if (IDIOM == IPAD){
+            [_postedByButton setHidden:NO];
+        } else if (landscape){
+            [_postedByButton setHidden:NO];
+        } else {
+            [_postedByButton setHidden:YES];
+        }
     } else {
         [_postedByButton setHidden:YES];
     }
@@ -233,12 +307,16 @@
 }
 
 - (void)nextPhoto {
-    [self.photoScrollView setContentOffset:CGPointMake(self.photoScrollView.contentOffset.x + 380.f, 0) animated:YES];
+    CGFloat orientationWidth = landscape ? height : width; // depends on orientation, since the iPhone rotates
+    CGFloat landscapeWidth = IDIOM == IPAD ? 380.f : orientationWidth;
+    [self.photoScrollView setContentOffset:CGPointMake(self.photoScrollView.contentOffset.x + landscapeWidth, 0) animated:YES];
     currentPhotoIdx ++;
 }
 
 - (void)lastPhoto {
-    [self.photoScrollView setContentOffset:CGPointMake(self.photoScrollView.contentOffset.x - 380.f, 0) animated:YES];
+    CGFloat orientationWidth = landscape ? height : width; // depends on orientation, since the iPhone rotates
+    CGFloat landscapeWidth = IDIOM == IPAD ? 380.f : orientationWidth;
+    [self.photoScrollView setContentOffset:CGPointMake(self.photoScrollView.contentOffset.x - landscapeWidth, 0) animated:YES];
     currentPhotoIdx --;
 }
 
@@ -256,7 +334,8 @@
             }
             [self setPhotoCount:currentPhotoIdx + 1]; // make sure to offset by 1
         }
-        if (offsetX > self.photoScrollView.contentSize.width - 380.f/2){
+        CGFloat landscapeWidth = IDIOM == IPAD ? 380.f : width;
+        if (offsetX > self.photoScrollView.contentSize.width - landscapeWidth/2){
             [_nextPhotoButton setEnabled:NO];
         }
     }
@@ -301,8 +380,8 @@
         [saveButton setBackgroundColor:kSaffronColor];
         
     } else {
-        [_editButton setHidden:YES];
-        [_deleteButton setHidden:YES];
+        [_editButton removeFromSuperview];
+        [_deleteButton removeFromSuperview];
     }
     
     [_favoriteButton setImage:[UIImage imageNamed:@"favorite"] forState:UIControlStateNormal];
@@ -320,21 +399,68 @@
 - (void)dropToLightTable {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         if (self.currentUser.customerPlan.length){
-            if (self.popover){
-                [self.popover dismissPopoverAnimated:YES];
-            }
             WFLightTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTables"];
             vc.lightTableDelegate = self;
             [vc setPhoto:self.photo];
             [vc setLightTables:self.currentUser.lightTables.array.mutableCopy];
-            CGFloat vcHeight = self.currentUser.lightTables.count*54.f > 260.f ? 260 : (self.currentUser.lightTables.count)*54.f;
-            vc.preferredContentSize = CGSizeMake(420, vcHeight+34.f); // add the header height
-            self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
-            self.popover.delegate = self;
-            [self.popover presentPopoverFromRect:CGRectMake(_dropToTableButton.center.x,(_dropToTableButton.center.y+_dropToTableButton.frame.size.height/2),1,1) inView:self.view permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES]; // added 23 points to the popover rect to make the arrow look nicerp
+            
+            if (IDIOM == IPAD){
+                if (self.popover){
+                    [self.popover dismissPopoverAnimated:YES];
+                }
+                CGFloat vcHeight = self.currentUser.lightTables.count*54.f > 260.f ? 260 : (self.currentUser.lightTables.count)*54.f;
+                vc.preferredContentSize = CGSizeMake(420, vcHeight+34.f); // add the header height
+                self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
+                self.popover.delegate = self;
+                [self.popover presentPopoverFromRect:CGRectMake(_dropToTableButton.center.x,(_dropToTableButton.center.y+_dropToTableButton.frame.size.height/2),1,1) inView:self.view permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES]; // added 23 points to the popover rect to make the arrow look nicerp
+            } else {
+                UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+                [self resetTransitionBooleans];
+                lightTables = YES;
+                nav.transitioningDelegate = self;
+                nav.modalPresentationStyle = UIModalPresentationCustom;
+                [self presentViewController:nav animated:YES completion:^{
+                    
+                }];
+            }
+            
         } else {
             [WFAlert show:@"Dropping images onto a light table requires a billing plan.\n\nPlease either set up an individual billing plan or add yourself as a member to an institution that's been registered with Wölff." withTime:4.7f];
         }
+    } else {
+        [self showLogin];
+    }
+}
+
+- (void)newLightTable {
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
+    
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        if (self.currentUser.customerPlan.length){
+            WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
+            [vc setPhotos:[[NSMutableOrderedSet alloc] initWithObject:self.photo]];
+            vc.lightTableDelegate = self;
+            [self resetTransitionBooleans];
+            newLightTableTransition = YES;
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                if (IDIOM == IPAD){
+                    vc.modalPresentationStyle = UIModalPresentationCustom;
+                    vc.transitioningDelegate = self;
+                    [self presentViewController:vc animated:YES completion:NULL];
+                } else {
+                    WFNoRotateNavController *nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
+                    nav.modalPresentationStyle = UIModalPresentationCustom;
+                    nav.transitioningDelegate = self;
+                    [self presentViewController:nav animated:YES completion:NULL];
+                }
+            }];
+        } else {
+            [WFAlert show:@"Joining or creating light tables requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
+        }
+    } else {
+        [self showLogin];
     }
 }
 
@@ -351,7 +477,6 @@
         [manager POST:[NSString stringWithFormat:@"light_tables/%@/add",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success dropping metadata photo to light table: %@",responseObject);
             if ([responseObject objectForKey:@"success"] && [[responseObject objectForKey:@"success"] isEqualToNumber:@1]){
-                
                 if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(droppedPhoto:toLightTable:)]){
                     [self.metadataDelegate droppedPhoto:self.photo toLightTable:lightTable];
                 }
@@ -469,8 +594,11 @@
     [self resetTransitionBooleans];
     profile = YES;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
+    if (IDIOM == IPAD){
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+    }
+    
     [self presentViewController:nav animated:YES completion:^{
         
     }];
@@ -1054,6 +1182,7 @@
     login = NO;
     metadataModal = NO;
     profile = NO;
+    lightTables = NO;
 }
 
 - (void)showLogin {
@@ -1071,13 +1200,26 @@
 - (void)showFullScreen {
     WFComparisonViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Comparison"];
     [vc setPhotos:[NSMutableOrderedSet orderedSetWithObject:self.photo]];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self resetTransitionBooleans];
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    if (IDIOM == IPAD){
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        [self resetTransitionBooleans];
+        [self presentViewController:nav animated:YES completion:^{
+            
+        }];
+    } else {
+        //WFNoRotateNavController *nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+//        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
+//        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+//        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
+//        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self presentViewController:nav animated:YES completion:^{
+                
+            }];
+//        });
+    }
 }
 
 - (void)presentFlagActionSheet {
@@ -1105,6 +1247,47 @@
         [vc setCurrentUser:self.currentUser];
         [vc setCopyright:[sender isEqualToString:kCopyright] ? YES : NO];
     }
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        landscape = size.width > size.height ? YES : NO;
+        width = size.width; height = size.height;
+        
+        if (IDIOM != IPAD){
+            CGRect dismissFrame = self.dismissButton.frame;
+            dismissFrame.origin.x = size.width-dismissFrame.size.width;
+            [self.dismissButton setFrame:dismissFrame];
+            if (size.width > size.height){
+                [_favoriteButton setHidden:NO];
+                [_dropToTableButton setHidden:NO];
+                [_flagButton setHidden:NO];
+                [_editButton setHidden:NO];
+                [_deleteButton setHidden:NO];
+                [_postedByButton setHidden:NO];
+                if (self.photo.art.photos.count > 1){
+                    [_photoCountLabel setHidden:NO];
+                    [_nextPhotoButton setHidden:NO];
+                    [_lastPhotoButton setHidden:NO];
+                }
+            } else {
+                [_favoriteButton setHidden:YES];
+                [_dropToTableButton setHidden:YES];
+                [_flagButton setHidden:YES];
+                [_editButton setHidden:YES];
+                [_deleteButton setHidden:YES];
+                [_postedByButton setHidden:YES];
+                [_photoCountLabel setHidden:YES];
+                [_nextPhotoButton setHidden:YES];
+                [_lastPhotoButton setHidden:YES];
+            }
+            [self setupPhotoScrollView];
+        }
+        
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        
+    }];
 }
 
 - (void)flag {
@@ -1150,7 +1333,11 @@
                 [self.metadataDelegate photoDeleted:self.photo];
             }
             [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                [WFAlert show:@"Image expunged" withTime:2.7f];
+                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
+                dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                    [ProgressHUD dismiss];
+                    [WFAlert show:@"Image expunged" withTime:2.7f];
+                });
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to delete a photo: %@",error.description);
@@ -1306,6 +1493,14 @@
         WFMetadataModalAnimator *animator = [WFMetadataModalAnimator new];
         animator.presenting = YES;
         return animator;
+    } else if (lightTables){
+        WFTransparentBGModalAnimator *animator = [WFTransparentBGModalAnimator new];
+        animator.presenting = YES;
+        return animator;
+    } else if (newLightTableTransition){
+        WFNewLightTableAnimator *animator = [WFNewLightTableAnimator new];
+        animator.presenting = YES;
+        return animator;
     } else {
         WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
         animator.presenting = YES;
@@ -1322,6 +1517,12 @@
         return animator;
     } else if (metadataModal){
         WFMetadataModalAnimator *animator = [WFMetadataModalAnimator new];
+        return animator;
+    } else if (lightTables){
+        WFTransparentBGModalAnimator *animator = [WFTransparentBGModalAnimator new];
+        return animator;
+    } else if (newLightTableTransition){
+        WFNewLightTableAnimator *animator = [WFNewLightTableAnimator new];
         return animator;
     } else {
         WFLoginAnimator *animator = [WFLoginAnimator new];

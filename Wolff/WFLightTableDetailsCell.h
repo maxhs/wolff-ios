@@ -16,7 +16,8 @@
 - (void)didUpdateLightTable:(LightTable*)table;
 - (void)showOwners;
 - (void)showMembers;
-//- (void)didDeleteLightTable:(LightTable*)table;
+- (void)keyboardUp;
+- (void)keyboardDown;
 @end
 
 @interface WFLightTableDetailsCell : UICollectionViewCell <UITableViewDataSource, UITableViewDelegate>
@@ -25,8 +26,13 @@
 @property (weak, nonatomic) IBOutlet UIView *topContainerView;
 @property (weak, nonatomic) UILabel *headerLabel;
 @property (weak, nonatomic) IBOutlet UIButton *actionButton;
+@property (strong, nonatomic) LightTable *lightTable;
 @property (weak, nonatomic) id<WFLightTableDetailsDelegate>lightTableDelegate;
 @property (strong, nonatomic) NSMutableOrderedSet *photos;
-- (void)configureForLightTable:(LightTable*)lightTable;
 
+- (void)configure;
+- (void)post;
+- (void)save;
+- (void)doneEditing;
+- (void)startTypingTitle;
 @end

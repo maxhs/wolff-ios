@@ -19,6 +19,10 @@
     [_label setTextColor:[UIColor whiteColor]];
     [_rangeLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [_rangeLabel setTextColor:[UIColor whiteColor]];
+    [_fromLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [_fromLabel setTextColor:[UIColor whiteColor]];
+    [_toLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [_toLabel setTextColor:[UIColor whiteColor]];
  
     [_orLabel setText:@"OR"];
     [_orLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLightItalic] size:0]];

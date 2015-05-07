@@ -112,7 +112,7 @@
 
 -(UIImage *)blurredSnapshotForWindow {
     UIGraphicsBeginImageContextWithOptions(mainScreen.size, NO, [UIScreen mainScreen].scale);
-    [window drawViewHierarchyInRect:mainScreen afterScreenUpdates:YES];
+    [window drawViewHierarchyInRect:mainScreen afterScreenUpdates:NO];
     UIImage *snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
     UIImage *blurredSnapshotImage = [snapshotImage applyDarkEffect];
     UIGraphicsEndImageContext();
@@ -123,26 +123,26 @@
     [self orient];
 }
 
-- (void)orient {
-    if (SYSTEM_VERSION >= 8.f){
-        
-    } else {
-        CGFloat rotate;
-        UIInterfaceOrientation orient;
-        
-        if (IDIOM == IPAD){
-            orient = self.window.rootViewController.interfaceOrientation;
-        } else {
-            orient = [[UIApplication sharedApplication] statusBarOrientation];
-        }
-        if (orient == UIInterfaceOrientationPortrait)                   rotate = 0.0;
-        else if (orient == UIInterfaceOrientationPortraitUpsideDown)	rotate = M_PI;
-        else if (orient == UIInterfaceOrientationLandscapeLeft)         rotate = - M_PI_2;
-        else if (orient == UIInterfaceOrientationLandscapeRight)		rotate = + M_PI_2;
-        else rotate = 0.0;
-        //background.transform = CGAffineTransformMakeRotation(rotate);
-        label.transform = CGAffineTransformMakeRotation(rotate);
-    }
+- (void)orient { // only for < iOS 8.0
+//    if (SYSTEM_VERSION >= 8.f){
+//        
+//    } else {
+//        CGFloat rotate;
+//        UIInterfaceOrientation orient;
+//        
+//        if (IDIOM == IPAD){
+//            orient = self.window.rootViewController.interfaceOrientation;
+//        } else {
+//            orient = [[UIApplication sharedApplication] statusBarOrientation];
+//        }
+//        if (orient == UIInterfaceOrientationPortrait)                   rotate = 0.0;
+//        else if (orient == UIInterfaceOrientationPortraitUpsideDown)	rotate = M_PI;
+//        else if (orient == UIInterfaceOrientationLandscapeLeft)         rotate = - M_PI_2;
+//        else if (orient == UIInterfaceOrientationLandscapeRight)		rotate = + M_PI_2;
+//        else rotate = 0.0;
+//        //background.transform = CGAffineTransformMakeRotation(rotate);
+//        label.transform = CGAffineTransformMakeRotation(rotate);
+//    }
 }
 
 - (void)showAlert {

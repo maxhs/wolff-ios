@@ -75,7 +75,11 @@ static NSString * const reuseIdentifier = @"TagCell";
     [self setUpSearch];
     
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
-    self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noTagBarButton];
+    if (IDIOM == IPAD){
+        self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noTagBarButton];
+    } else {
+        self.navigationItem.rightBarButtonItem = saveButton;
+    }
     [self adjustTagButtonColor];
 }
 
@@ -208,13 +212,10 @@ static NSString * const reuseIdentifier = @"TagCell";
 #pragma mark – UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (editing){
-        if ((searching && indexPath.row == _filteredTags.count) || (indexPath.row == _tags.count)){
-            return CGSizeMake(width/2,height/4);
-        }
+    if (IDIOM == IPAD){
         return CGSizeMake(width/2,height/4);
     } else {
-        return CGSizeMake(width/2,height/4);
+        return CGSizeMake(width,height/4);
     }
 }
 

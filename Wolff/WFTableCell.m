@@ -14,8 +14,17 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     [self setBackgroundColor:[UIColor clearColor]];
-    [_tableLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    [self.tableLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    
+    if (IDIOM == IPAD){
+        [self.textLabel setTextColor:[UIColor blackColor]];
+        [self setTintColor:[UIColor blackColor]];
+    } else {
+        [self.textLabel setTextColor:[UIColor whiteColor]];
+        [self setTintColor:[UIColor whiteColor]];
+        [self.tableLabel setTextColor:[UIColor whiteColor]];
+    }
 }
 
 - (void)prepareForReuse {
@@ -28,7 +37,7 @@
 }
 
 - (void)configureForTable:(LightTable *)lightTable {
-    [_tableLabel setText:lightTable.name];
+    [self.tableLabel setText:lightTable.name];
 }
 
 @end

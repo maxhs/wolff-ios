@@ -54,26 +54,26 @@
         toView = toViewController.view;
     }
     
-    differential = width/3;
+    differential = height/4;
     
     if (self.presenting) {
         fromViewController.view.userInteractionEnabled = NO;
     
         CGRect toEndFrame;
         if (iOS8){
-            [toView setFrame:CGRectMake(width, 0, (differential), height)];
-            [toViewController setPreferredContentSize:CGSizeMake((differential), height)];
+            [toView setFrame:CGRectMake(0, height, width, height)];
+            [toViewController setPreferredContentSize:CGSizeMake(width, differential)];
             toEndFrame = toView.frame;
-            toEndFrame.origin.x -= differential;
+            toEndFrame.origin.y = height - differential;
         } else {
             if (_orientation == UIInterfaceOrientationLandscapeLeft){
-                // 4
+                // orientation 4
                 [toView setFrame:CGRectMake(0, -width, width, (differential))];
                 toEndFrame = toView.frame;
                 toEndFrame.origin.x = 0;
                 toEndFrame.origin.y = 0;
             } else {
-                // 3
+                // orientation 3
                 [toView setFrame:CGRectMake(-height/3, width, width, (differential))];
                 toEndFrame = toView.frame;
                 toEndFrame.origin.x = -height/3;
@@ -113,7 +113,7 @@
         CGRect fromEndFrame;
         if (iOS8){
             fromEndFrame = fromView.frame;
-            fromEndFrame.origin.x = width;
+            fromEndFrame.origin.y = height;
         } else {
             if (_orientation == UIInterfaceOrientationLandscapeLeft){
                 fromEndFrame = CGRectMake(0, -width, width, differential);

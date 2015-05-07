@@ -235,4 +235,23 @@
     return [names toSentence];
 }
 
+- (NSString*)readableDate {
+    if (self.interval.single){
+        //check exact date
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        [dateFormatter setDateStyle:NSDateFormatterLongStyle];
+        return [dateFormatter stringFromDate:self.interval.single];
+    } else if (self.interval.beginRange && ![self.interval.beginRange isEqualToNumber:@0] && self.interval.endRange && ![self.interval.endRange isEqualToNumber:@0]) {
+        //check for range
+        NSString *beginSuffix = self.interval.beginSuffix.length ? self.interval.beginSuffix : @"CE";
+        NSString *endSuffix = self.interval.endSuffix.length ? self.interval.endSuffix : @"CE";
+        return [NSString stringWithFormat:@"%@ %@ - %@ %@",self.interval.beginRange, beginSuffix, self.interval.endRange, endSuffix];
+    } else if (self.interval.year && ![self.interval.year isEqualToNumber:@0]){
+        NSString *suffix = self.interval.suffix.length ? self.interval.suffix : @"CE";
+        return [NSString stringWithFormat:@"%@ %@",self.interval.year, suffix];
+    } else {
+        return @"No date listed";
+    }
+}
+
 @end

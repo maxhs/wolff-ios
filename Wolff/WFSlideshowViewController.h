@@ -13,10 +13,9 @@
 @interface WFSlideshowViewController : UIViewController <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
 @property (weak, nonatomic) IBOutlet WFGesturableCollectionView *collectionView;
+@property (weak, nonatomic) IBOutlet UIView *slideMetadataContainerView;
+@property (weak, nonatomic) IBOutlet UICollectionView *metadataCollectionView;
 @property (strong, nonatomic) Slideshow *slideshow;
-@property (weak, nonatomic) IBOutlet UIToolbar *bottomToolbar;
-@property (weak, nonatomic) IBOutlet UIBarButtonItem *nextButton;
-@property (weak, nonatomic) IBOutlet UIBarButtonItem *previousButton;
 @property (strong, nonatomic) NSNumber *startIndex;
 
 - (void)dismiss;

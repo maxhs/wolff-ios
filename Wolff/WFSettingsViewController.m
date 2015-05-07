@@ -184,8 +184,7 @@
             return 1;
             break;
         case 2:
-            // manage institutions
-            return self.currentUser.institutions.count + 1;
+            return self.currentUser.institutions.count; // manage institutions
             break;
         case 3:
             // manage alternate contact info
@@ -203,7 +202,11 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSettingsCell *cell = (WFSettingsCell *)[tableView dequeueReusableCellWithIdentifier:@"SettingsCell"];
     
-    [cell setBackgroundColor:kTextFieldBackground];
+    if (IDIOM == IPAD){
+        [cell setBackgroundColor:kTextFieldBackground];
+    } else {
+        [cell setBackgroundColor:[UIColor whiteColor]];
+    }
     cell.textField.delegate = self;
     
     if (indexPath.section == 0){
@@ -296,17 +299,14 @@
         [cell.textField setHidden:YES];
         switch (indexPath.row) {
             case 0:
-                //email
                 [cell.textLabel setText:@"Email notifications"];
                 [cell.settingsSwitch setOn:self.currentUser.emailPermission.boolValue];
                 break;
             case 1:
-                //push
                 [cell.textLabel setText:@"Push notifications"];
                 [cell.settingsSwitch setOn:self.currentUser.pushPermission.boolValue];
                 break;
             case 2:
-                //text
                 [cell.textLabel setText:@"Wölff texts"];
                 [cell.settingsSwitch setOn:self.currentUser.textPermission.boolValue];
                 break;
@@ -323,18 +323,14 @@
 - (void)switchSwitched:(UISwitch*)s {
     switch (s.tag) {
         case 0:
-            //email
             [self.currentUser setEmailPermission:[NSNumber numberWithBool:s.isOn]];
             break;
         case 1:
-            //push
             [self.currentUser setPushPermission:[NSNumber numberWithBool:s.isOn]];
             break;
         case 2:
-            //text
             [self.currentUser setTextPermission:[NSNumber numberWithBool:s.isOn]];
             break;
-            
         default:
             break;
     }

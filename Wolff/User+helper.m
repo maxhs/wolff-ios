@@ -34,10 +34,13 @@ typedef enum {
     }
     if ([dictionary objectForKey:@"mobile_tokens"] && [dictionary objectForKey:@"mobile_tokens"] != [NSNull null]){
         for (id dict in [dictionary objectForKey:@"mobile_tokens"]){
+            //ipad stuff!
             if (IDIOM == IPAD && [[dict objectForKey:@"device_type"] isEqualToNumber:@2]){
                 self.mobileToken = [dict objectForKey:@"token"];
-            } else if ([[dict objectForKey:@"device_type"] isEqualToNumber:@2]) {
+                [[NSUserDefaults standardUserDefaults] setObject:self.mobileToken forKey:kUserDefaultsiPadToken];
+            } else if ([[dict objectForKey:@"device_type"] isEqualToNumber:@1]) {
                 self.mobileToken = [dict objectForKey:@"token"];
+                [[NSUserDefaults standardUserDefaults] setObject:self.mobileToken forKey:kUserDefaultsiPhoneToken];
             }
         }
     }
@@ -122,6 +125,7 @@ typedef enum {
     }
     
     if ([dictionary objectForKey:@"private_photos"] && [dictionary objectForKey:@"private_photos"] != [NSNull null]){
+        //NSLog(@"private photos: %@",[dictionary objectForKey:@"private_photos"]);
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"private_photos"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];

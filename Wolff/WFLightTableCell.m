@@ -77,7 +77,6 @@
         [_editButton setHidden:NO];
         [_deleteButton setHidden:NO];
         [_leaveButton setHidden:YES];
-        
         //readjust the scrollView depending on if the user should see the edit button
         [_scrollView setContentSize:CGSizeMake(kSidebarWidth+200, self.contentView.frame.size.height)];
     } else {

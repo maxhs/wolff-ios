@@ -23,7 +23,7 @@
 @implementation WFProfileAnimator
 
 - (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext {
-    return .75f;
+    return kDefaultAnimationDuration;
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
@@ -37,7 +37,7 @@
     
     // Grab the from and to view controllers from the context
     UIViewController *fromViewController, *toViewController;
-    UIView *fromView,*toView;
+    UIView *fromView, *toView;
     fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     
@@ -50,21 +50,8 @@
     }
     
     if (self.presenting) {
-        UIButton *blurredButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [blurredButton setBackgroundImage:[self blurredSnapshotForWindow:[transitionContext.containerView window]]  forState:UIControlStateNormal];
-        [blurredButton setAdjustsImageWhenHighlighted:NO];
-        //this is a little fragile, since if the view hierarchy changes, this will break
-        //UINavigationController *nav = (UINavigationController*)toViewController;
-        [blurredButton addTarget:(WFProfileViewController*)toViewController action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-        [blurredButton setFrame:mainScreen];
-        [blurredButton setAlpha:0.0];
-        [blurredButton setTag:kBlurredBackgroundConstant];
-        
         [transitionContext.containerView addSubview:fromView];
-        [transitionContext.containerView addSubview:blurredButton];
         [transitionContext.containerView addSubview:toView];
-        
-        [toView setAlpha:0.0];
         
         CGRect startFrame;
         if (iOS8){
@@ -77,15 +64,14 @@
         
         toViewController.view.frame = startFrame;
         
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.975 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseIn animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseIn animations:^{
             toView.frame = mainScreen;
-            [blurredButton setAlpha:1.0];
-            [toView setAlpha:1.0];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
     
     } else {
+        
         UINavigationController *nav = (UINavigationController*)toViewController;
         if ([nav.viewControllers.firstObject isKindOfClass:[WFArtMetadataViewController class]]){
             WFArtMetadataViewController *artvc = (WFArtMetadataViewController*)nav.viewControllers.firstObject;
@@ -109,9 +95,9 @@
             }
         }
         
-        UIButton *blurredBackground = (UIButton*)[transitionContext.containerView viewWithTag:kBlurredBackgroundConstant];
         [transitionContext.containerView addSubview:toView];
         [transitionContext.containerView addSubview:fromView];
+        
         CGRect endFrame;
         if (iOS8){
             endFrame = mainScreen;
@@ -120,23 +106,12 @@
             endFrame = mainScreen;
             endFrame.origin.x = width;
         }
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.975 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
             fromView.frame = endFrame;
-            [blurredBackground setAlpha:0.0];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
-            [blurredBackground removeFromSuperview];
         }];
     }
-}
-
--(UIImage *)blurredSnapshotForWindow:(UIWindow*)window {
-    UIGraphicsBeginImageContextWithOptions(mainScreen.size, NO, window.screen.scale);
-    [window drawViewHierarchyInRect:mainScreen afterScreenUpdates:NO];
-    UIImage *snapshotImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIImage *blurredSnapshotImage = [snapshotImage applyDarkEffect];
-    UIGraphicsEndImageContext();
-    return blurredSnapshotImage;
 }
 
 @end

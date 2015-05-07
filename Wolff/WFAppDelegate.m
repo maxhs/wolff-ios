@@ -11,11 +11,15 @@
 #import <Crashlytics/Crashlytics.h>
 #import <SDWebImage/SDImageCache.h>
 #import "WFAlert.h"
+#import "WFSlideshowViewController.h"
+#import "WFLoginViewController.h"
 #import <Stripe/Stripe.h>
+#import "WFNoRotateNavController.h"
+#import "WFWalkthroughViewController.h"
+#import "WFNewArtViewController.h"
+#import <AFNetworking/AFNetworkActivityIndicatorManager.h>
 
 @implementation WFAppDelegate
-@synthesize manager = _manager;
-@synthesize connected = _connected;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [Crashlytics startWithAPIKey:@"fdf66a0a10b6fc2a0f7052c9758873dc992773d5"];
@@ -30,13 +34,17 @@
     [mixpanel track:@"Launch"];
     
     _manager = [[AFHTTPRequestOperationManager manager] initWithBaseURL:[NSURL URLWithString:kApiBaseUrl]];
+    [AFNetworkActivityIndicatorManager sharedManager].enabled = YES;
     [_manager.requestSerializer setAuthorizationHeaderFieldWithUsername:@"wolff_mobile" password:@"0fd11d82b574e0b13fc66b6227c4925c"];
     [_manager.requestSerializer setValue:(IDIOM == IPAD) ? @"2" : @"1" forHTTPHeaderField:@"device_type"];
     [self setupConnectionObserver]; // determine if the 
 
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken]){
-        NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsMobileToken] forKey:@"mobile_token"];
-        [self connectWithParameters:parameters forSignup:NO];   // automatically log the user in if they
+    if (IDIOM == IPAD && [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPadToken]){
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPadToken] forKey:@"mobile_token"];
+        [self connectWithParameters:parameters forSignup:NO];   // automatically log the user in
+    } else if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPhoneToken]) {
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPhoneToken] forKey:@"mobile_token"];
+        [self connectWithParameters:parameters forSignup:NO];   // automatically log the user in
     }
     return YES;
 }
@@ -72,6 +80,11 @@
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken] forKey:@"device_token"];
     }
+    if (IDIOM == IPAD && [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPadToken]){
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPadToken] forKey:@"mobile_token"];
+    } else if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPhoneToken]) {
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPhoneToken] forKey:@"mobile_token"];
+    }
     if (signup){
         [parameters setObject:@YES forKey:@"signup"];
         [ProgressHUD show:@"Signing up..."];
@@ -97,15 +110,17 @@
             }];
             
             //only ask for push notifications when a user has successfully logged in
-            if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+            //if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
                 [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
                 [[UIApplication sharedApplication] registerForRemoteNotifications];
-            } else {
-                [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
-            }
+//            } else {
+//                [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
+//            }
         }
     
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Response string: %@",operation.responseString);
+        
         if (!_connected) {
             [self offlineNotification];
         } else if ([operation.responseString isEqualToString:kNoEmail]){
@@ -122,22 +137,40 @@
             }
         } else if ([operation.responseString isEqualToString:kInvalidToken]){
             [self logout];
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"LoggedOut" object:nil];
         } else {
             [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to log you in." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
         }
-        //NSLog(@"Failed to connect: %@",error.description);
         [ProgressHUD dismiss];
-        NSLog(@"Response string: %@",operation.responseString);
     }];
 }
 
+-(NSUInteger)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
+    if (IDIOM == IPAD){
+        return UIInterfaceOrientationMaskLandscape;
+    } else {
+        UIViewController *presentedViewController = window.rootViewController.presentedViewController;
+        if (presentedViewController) {
+            if ([presentedViewController isKindOfClass:[WFLoginViewController class]] || [presentedViewController isKindOfClass:[WFNewArtViewController class]] || [presentedViewController isKindOfClass:[WFWalkthroughViewController class]]) {
+                return UIInterfaceOrientationMaskPortrait;
+            } else if ([presentedViewController isKindOfClass:[WFSlideshowViewController class]]){
+                return UIInterfaceOrientationMaskLandscape;
+            } else if ([presentedViewController isKindOfClass:[WFNoRotateNavController class]]){
+                if ([[[(WFNoRotateNavController*)presentedViewController viewControllers] firstObject] isKindOfClass:[WFSlideshowViewController class]]){
+                    return UIInterfaceOrientationMaskLandscape;
+                } else if ([[[(WFNoRotateNavController*)presentedViewController viewControllers] firstObject] isKindOfClass:[WFNewArtViewController class]]){
+                    return UIInterfaceOrientationMaskPortrait;
+                }
+            }
+        }
+        return UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskLandscape;
+    }
+}
+
 - (void)setUserDefaults {
-    [[NSUserDefaults standardUserDefaults] setObject:_currentUser.identifier forKey:kUserDefaultsId];
-    [[NSUserDefaults standardUserDefaults] setObject:_currentUser.email forKey:kUserDefaultsEmail];
-    [[NSUserDefaults standardUserDefaults] setObject:_currentUser.mobileToken forKey:kUserDefaultsMobileToken];
-    [[NSUserDefaults standardUserDefaults] setObject:_currentUser.firstName forKey:kUserDefaultsFirstName];
-    [[NSUserDefaults standardUserDefaults] setObject:_currentUser.lastName forKey:kUserDefaultsLastName];
+    [[NSUserDefaults standardUserDefaults] setObject:self.currentUser.identifier forKey:kUserDefaultsId];
+    [[NSUserDefaults standardUserDefaults] setObject:self.currentUser.email forKey:kUserDefaultsEmail];
+    [[NSUserDefaults standardUserDefaults] setObject:self.currentUser.firstName forKey:kUserDefaultsFirstName];
+    [[NSUserDefaults standardUserDefaults] setObject:self.currentUser.lastName forKey:kUserDefaultsLastName];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
@@ -221,6 +254,7 @@
     if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(logout)]){
         [self.loginDelegate logout];
     }
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"LoggedOut" object:nil];
     [ProgressHUD dismiss];
 }
 

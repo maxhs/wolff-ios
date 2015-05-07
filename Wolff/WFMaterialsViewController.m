@@ -72,7 +72,12 @@ static NSString * const reuseIdentifier = @"MaterialCell";
     spacerBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
     spacerBarButton.width = 23.f;
     [self adjustUnknownButtonColor];
-    self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, unknownBarButton];
+    
+    if (IDIOM == IPAD){
+        self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, unknownBarButton];
+    } else {
+        self.navigationItem.rightBarButtonItem = saveButton;
+    }
     
     [self registerKeyboardNotifications];
     topInset = self.navigationController.navigationBar.frame.size.height;
@@ -215,7 +220,11 @@ static NSString * const reuseIdentifier = @"MaterialCell";
 #pragma mark – UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(width/2,height/4);
+    if (IDIOM == IPAD){
+        return CGSizeMake(width/2,height/4);
+    } else {
+        return CGSizeMake(width,height/4);
+    }
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {

@@ -28,15 +28,10 @@
     NSMutableOrderedSet *_users;
     NSMutableOrderedSet *_filteredUsers;
     UIBarButtonItem *dismissButton;
-    UIBarButtonItem *saveButton;
     UIBarButtonItem *doneButton;
     UITextField *userNameField;
-    UIButton *noUsersButton;
-    UIBarButtonItem *noUsersBarButton;
-    UIBarButtonItem *spacerBarButton;
     UIImageView *navBarShadowView;
 }
-
 @end
 
 @implementation WFUsersViewController
@@ -50,32 +45,16 @@ static NSString * const reuseIdentifier = @"UserCell";
     } else {
         iOS8 = NO; width = screenHeight(); height = screenWidth();
     }
-    delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
+    delegate = (WFAppDelegate *)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     
     _users = [NSMutableOrderedSet orderedSetWithArray:[User MR_findAllSortedBy:@"firstName" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
     _filteredUsers = [NSMutableOrderedSet orderedSet];
-    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
-    self.navigationItem.leftBarButtonItem = dismissButton;
-    saveButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(save)];
-    doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneEditing)];
     
-    noUsersButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [noUsersButton.titleLabel setFont:[UIFont fontWithName:kMuseoSans size:12]];
-    [noUsersButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
-    [noUsersButton addTarget:self action:@selector(noUsersToggled) forControlEvents:UIControlEventTouchUpInside];
-    [noUsersButton setFrame:CGRectMake(0, 0, 170.f, 44.f)];
-    if (self.ownerMode){
-        [noUsersButton setTitle:@"NO OWNERS" forState:UIControlStateNormal];
-    } else {
-        [noUsersButton setTitle:@"NO USERS" forState:UIControlStateNormal];
-    }
-    noUsersBarButton = [[UIBarButtonItem alloc] initWithCustomView:noUsersButton];
-    spacerBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    spacerBarButton.width = 23.f;
-    [self adjustUnknownButtonColor];
-    self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noUsersBarButton];
+    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"leftWhite"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    self.navigationItem.leftBarButtonItem = dismissButton;
+    doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneEditing)];
     
     [self registerKeyboardNotifications];
     topInset = self.navigationController.navigationBar.frame.size.height; // matches the navigation bar
@@ -87,20 +66,6 @@ static NSString * const reuseIdentifier = @"UserCell";
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     navBarShadowView.hidden = YES;
-}
-
-- (void)noUsersToggled {
-    [self.selectedUsers removeAllObjects];
-    [self adjustUnknownButtonColor];
-    [_collectionView reloadData];
-}
-
-- (void)adjustUnknownButtonColor {
-    if (self.selectedUsers.count){
-        [noUsersButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    } else {
-        [noUsersButton setTitleColor:kSaffronColor forState:UIControlStateNormal];
-    }
 }
 
 - (void)loadUsersWithSearch:(NSString*)searchString {
@@ -188,7 +153,7 @@ static NSString * const reuseIdentifier = @"UserCell";
         return cell;
     } else {
         WFUserCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
-        User * user = searching ? _filteredUsers[indexPath.item] : _users[indexPath.item];
+        User *user = searching ? _filteredUsers[indexPath.item] : _users[indexPath.item];
         [cell configureForUser:user];
         if ([self.selectedUsers containsObject:user]){
             [cell.checkmark setHidden:NO];
@@ -202,7 +167,11 @@ static NSString * const reuseIdentifier = @"UserCell";
 #pragma mark – UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(width/4,width/4);
+    if (IDIOM == IPAD){
+        return CGSizeMake(width/4,width/4);
+    } else {
+        return CGSizeMake(width/2,width/2);
+    }
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -213,7 +182,7 @@ static NSString * const reuseIdentifier = @"UserCell";
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     if ((searching && indexPath.row == _filteredUsers.count) || (indexPath.row == _users.count)){
         [self toggleEditMode];
-        [_collectionView reloadItemsAtIndexPaths:@[indexPath]];
+        [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
     } else {
         User *user = searching ? _filteredUsers[indexPath.item] : _users[indexPath.item];
         if ([self.selectedUsers containsObject:user]){
@@ -221,11 +190,9 @@ static NSString * const reuseIdentifier = @"UserCell";
         } else {
             [self.selectedUsers addObject:user];
         }
-        
-        [_collectionView reloadItemsAtIndexPaths:@[indexPath]];
+        [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
         [collectionView deselectItemAtIndexPath:indexPath animated:YES];
     }
-    [self adjustUnknownButtonColor];
 }
 
 - (void) toggleEditMode {
@@ -240,7 +207,6 @@ static NSString * const reuseIdentifier = @"UserCell";
     [_noSearchResultsLabel setHidden:YES];
     
     [self.searchBar setPlaceholder:@"Search for a user"];
-    //reset the search bar font
     for (id subview in [self.searchBar.subviews.firstObject subviews]){
         if ([subview isKindOfClass:[UITextField class]]){
             UITextField *searchTextField = (UITextField*)subview;
@@ -260,6 +226,11 @@ static NSString * const reuseIdentifier = @"UserCell";
         [ProgressHUD show:@"Searching..."];
         [self loadUsersWithSearch:searchBar.text];
     }
+}
+
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+    [self.searchBar resignFirstResponder];
+    [self doneEditing];
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)text {
@@ -288,15 +259,16 @@ static NSString * const reuseIdentifier = @"UserCell";
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
-    self.navigationItem.rightBarButtonItems = @[doneButton,spacerBarButton,noUsersBarButton];
+    self.navigationItem.rightBarButtonItem = doneButton;
 }
 
 - (void)doneEditing {
     [self.view endEditing:YES];
+    searching = NO;
     if (self.searchBar.isFirstResponder){
         [self.searchBar resignFirstResponder];
     }
-    self.navigationItem.rightBarButtonItems = @[saveButton,spacerBarButton,noUsersBarButton];
+    self.navigationItem.rightBarButtonItem = nil;
 }
 
 - (void)createUser {
@@ -321,10 +293,8 @@ static NSString * const reuseIdentifier = @"UserCell";
         }
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         
-        //add the new user to the selection
-        [self.selectedUsers addObject:user];
+        [self.selectedUsers addObject:user]; //add the new user to the selection
         [ProgressHUD dismiss];
-        
         if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(usersSelected:)]){
             [self.userDelegate usersSelected:self.selectedUsers];
         }
@@ -336,38 +306,13 @@ static NSString * const reuseIdentifier = @"UserCell";
     }];
 }
 
-- (void)save {
-    if (self.ownerMode){
-        if (self.selectedUsers.count){
-            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(lightTableOwnersSelected:)]){
-                [self.userDelegate lightTableOwnersSelected:self.selectedUsers];
-            }
-        } else {
-            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(lightTableOwnersSelected:)]){
-                [self.userDelegate lightTableOwnersSelected:nil];
-            }
-        }
-    } else {
-        if (self.selectedUsers.count){
-            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(usersSelected:)]){
-                [self.userDelegate usersSelected:self.selectedUsers];
-            }
-        } else {
-            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(usersSelected:)]){
-                [self.userDelegate usersSelected:nil];
-            }
-        }
-    }
-    [self dismiss];
-}
-
 - (void)registerKeyboardNotifications {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willShowKeyboard:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideKeyboard:) name:UIKeyboardWillHideNotification object:nil];
 }
 
 - (void)willShowKeyboard:(NSNotification*)notification {
-    NSDictionary* keyboardInfo = [notification userInfo];
+    NSDictionary *keyboardInfo = [notification userInfo];
     NSValue *keyboardValue = keyboardInfo[UIKeyboardFrameEndUserInfoKey];
     CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
     CGFloat keyboardHeight = convertedKeyboardFrame.size.height;
@@ -397,18 +342,34 @@ static NSString * const reuseIdentifier = @"UserCell";
 }
 
 - (void)dismiss {
+    if (self.ownerMode){
+        if (self.selectedUsers.count){
+            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(lightTableOwnersSelected:)]){
+                [self.userDelegate lightTableOwnersSelected:self.selectedUsers];
+            }
+        } else {
+            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(lightTableOwnersSelected:)]){
+                [self.userDelegate lightTableOwnersSelected:[NSOrderedSet orderedSet]];
+            }
+        }
+    } else {
+        if (self.selectedUsers.count){
+            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(usersSelected:)]){
+                [self.userDelegate usersSelected:self.selectedUsers];
+            }
+        } else {
+            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(usersSelected:)]){
+                [self.userDelegate usersSelected:[NSOrderedSet orderedSet]];
+            }
+        }
+    }
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
         
     }];
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-}
-
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
 }
-
 
 @end

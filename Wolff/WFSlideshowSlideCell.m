@@ -131,7 +131,7 @@
                 }];
             }];
             
-        } else if (photos.count == 2) {
+        } else if (photos.count > 1) {
             if (_slide && slide.photoSlides.count > 1){
                 PhotoSlide *photoSlide1 = slide.photoSlides[0];
                 if (photoSlide1.hasValidFrame){

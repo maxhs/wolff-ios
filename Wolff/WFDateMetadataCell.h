@@ -13,6 +13,8 @@
 
 @property (weak, nonatomic) IBOutlet UILabel *label;
 @property (weak, nonatomic) IBOutlet UILabel *rangeLabel;
+@property (weak, nonatomic) IBOutlet UILabel *fromLabel;
+@property (weak, nonatomic) IBOutlet UILabel *toLabel;
 @property (weak, nonatomic) IBOutlet UITextField *singleYearTextField;
 @property (weak, nonatomic) IBOutlet UITextField *beginYearTextField;
 @property (weak, nonatomic) IBOutlet UITextField *endYearTextField;

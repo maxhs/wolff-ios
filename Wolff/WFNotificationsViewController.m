@@ -10,6 +10,7 @@
 #import "WFAppDelegate.h"
 #import "WFNotificationCell.h"
 #import <DateTools/DateTools.h>
+#import "WFUtilities.h"
 
 @interface WFNotificationsViewController () <UIAlertViewDelegate> {
     WFAppDelegate *delegate;
@@ -18,6 +19,7 @@
     NSMutableArray *_notifications;
     Notification *_notificationToDelete;
     NSIndexPath *indexPathForDeletion;
+    UIImageView *navBarShadowView;
 }
 
 @end
@@ -27,7 +29,21 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self.tableView setBackgroundColor:[UIColor clearColor]];
-    [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.23]];
+    if (IDIOM == IPAD){
+        
+    } else {
+        UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.view.frame];
+        [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
+        [backgroundToolbar setTranslucent:YES];
+        [self.tableView setBackgroundView:backgroundToolbar];
+        
+        UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+        self.navigationItem.leftBarButtonItem = dismissButton;
+        navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
+        [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
+        self.title = @"Notifications";
+    }
+    [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.14]];
     self.tableView.rowHeight = 54.f;
     
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
@@ -36,6 +52,15 @@
     
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         [self loadNotifications];
+    }
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    navBarShadowView.hidden = YES;
+    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0]; // reset to 0
+    if (self.notificationsDelegate && [self.notificationsDelegate respondsToSelector:@selector(setNotificationColor)]){
+        [self.notificationsDelegate setNotificationColor];
     }
 }
 
@@ -101,7 +126,9 @@
     WFNotificationCell *cell = [tableView dequeueReusableCellWithIdentifier:@"NotificationCell" forIndexPath:indexPath];
     Notification *notification = _notifications[indexPath.row];
     [cell configureForNotificaiton:notification];
-    
+    if (IDIOM != IPAD){
+        [cell.textLabel setTextColor:[UIColor whiteColor]];
+    }
     return cell;
 }
 
@@ -114,13 +141,18 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    return 34;
+    if (IDIOM == IPAD) {
+        return 34;
+    } else {
+        return 0;
+    }
 }
 
 - (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
-    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 34.f)];
+    CGFloat headerHeight = IDIOM == IPAD ? 34.f : 0.f;
+    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, headerHeight)];
     [headerView setBackgroundColor:[UIColor clearColor]];
-    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, tableView.frame.size.width-10, 34)];
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, tableView.frame.size.width-10, headerHeight)];
     [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     [headerLabel setTextColor:[UIColor colorWithWhite:.5 alpha:.5]];
     [headerLabel setBackgroundColor:[UIColor clearColor]];
@@ -146,29 +178,11 @@
     }*/
 }
 
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
+- (void)dismiss {
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+        
+    }];
 }
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

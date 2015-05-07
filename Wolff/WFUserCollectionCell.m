@@ -15,6 +15,7 @@
 - (void)awakeFromNib{
     [super awakeFromNib];
     [_userProfileImage setContentMode:UIViewContentModeScaleAspectFit];
+    [_userProfileImage setAlpha:0.0];
 }
 
 - (void)prepareForReuse {
@@ -34,8 +35,7 @@
     [_userNameLabel setAttributedText:attributedNameString];
     
     if (user.avatarLarge.length){
-        [_userProfileImage setBackgroundColor:[UIColor colorWithWhite:0 alpha:0]];
-        [_userProfileImage sd_setImageWithURL:[NSURL URLWithString:user.avatarLarge] placeholderImage:nil options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+        [_userProfileImage sd_setImageWithURL:[NSURL URLWithString:user.avatarLarge] placeholderImage:[UIImage imageNamed:@"transparentIconWhite"] options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
             
         } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
             [UIView animateWithDuration:kFastAnimationDuration animations:^{
@@ -43,7 +43,9 @@
             }];
         }];
     } else {
-        [_userProfileImage setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
+        [_userProfileImage setImage:[UIImage imageNamed:@"transparentIconWhite"]];
+        [_userProfileImage setAlpha:1.0];
     }
 }
+
 @end

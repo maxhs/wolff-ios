@@ -30,6 +30,9 @@
     if ([dictionary objectForKey:@"show_title_slide"] && [dictionary objectForKey:@"show_title_slide"] != [NSNull null]){
         self.showTitleSlide = [dictionary objectForKey:@"show_title_slide"];
     }
+    if ([dictionary objectForKey:@"show_metadata"] && [dictionary objectForKey:@"show_metadata"] != [NSNull null]){
+        self.showMetadata = [dictionary objectForKey:@"show_metadata"];
+    }
     if ([dictionary objectForKey:@"slides"] && [dictionary objectForKey:@"slides"] != [NSNull null]){
         NSMutableOrderedSet *slides = [NSMutableOrderedSet orderedSet];
         for (NSDictionary *dict in [dictionary objectForKey:@"slides"]){
@@ -75,11 +78,12 @@
     }
     
     if ([dictionary objectForKey:@"user"] && [dictionary objectForKey:@"user"] != [NSNull null]){
-        User *user = [User MR_findFirstByAttribute:@"identifier" withValue:[[dictionary objectForKey:@"user"] objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+        NSDictionary *userDict = [dictionary objectForKey:@"user"];
+        User *user = [User MR_findFirstByAttribute:@"identifier" withValue:[userDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!user){
             user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
         }
-        [user populateFromDictionary:[dictionary objectForKey:@"user"]];
+        [user populateFromDictionary:userDict];
         self.user = user;
     }
 }

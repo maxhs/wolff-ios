@@ -10,9 +10,9 @@
 #import "LightTable+helper.h"
 @protocol WFLightTableDelegate <NSObject>
 
+@optional
 - (void)didCreateLightTable:(LightTable*)table;
 - (void)didJoinLightTable:(LightTable*)table;
-@optional
 - (void)didUpdateLightTable:(LightTable*)table;
 - (void)didDeleteLightTable:(LightTable*)table;
 @end
@@ -25,6 +25,7 @@
 @property (weak, nonatomic) IBOutlet UIButton *scrollBackButton;
 @property (weak, nonatomic) id<WFLightTableDelegate>lightTableDelegate;
 @property BOOL showKey;
+@property BOOL joinMode;
 - (void)dismiss;
 
 @end

@@ -12,6 +12,7 @@
 @protocol WFNotificationsDelegate <NSObject>
 
 - (void)didSelectNotificationWithId:(NSNumber*)notificationId;
+- (void)setNotificationColor;
 
 @end
 

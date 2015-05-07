@@ -31,6 +31,7 @@
 @property (weak, nonatomic) IBOutlet UIButton *previousPhotoButton;
 @property (weak, nonatomic) IBOutlet UISwitch *privacySwitch;
 @property (weak, nonatomic) IBOutlet UILabel *privateLabel;
+@property (weak, nonatomic) IBOutlet UIView *headerContainerView;
 @property (weak, nonatomic) id<WFNewArtDelegate> artDelegate;
 - (void)dismiss;
 @end

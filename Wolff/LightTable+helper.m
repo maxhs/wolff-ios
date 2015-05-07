@@ -87,6 +87,19 @@
         }
         self.owners = set;
     }
+    if ([dictionary objectForKey:@"owner_ids"] && [dictionary objectForKey:@"owner_ids"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id ownerId in [dictionary objectForKey:@"owner_ids"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", ownerId];
+            User *owner = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!owner){
+                owner = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                owner.identifier = ownerId;
+            }
+            [set addObject:owner];
+        }
+        self.owners = set;
+    }
     if ([dictionary objectForKey:@"discussions"] && [dictionary objectForKey:@"discussions"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"discussions"]){

@@ -81,6 +81,7 @@
     [_singleTapGesture requireGestureRecognizerToFail:_doubleTapGesture];
     //[_rotationGesture requireGestureRecognizerToFail:_panGesture];
     //[_rotationGesture requireGestureRecognizerToFail:_pinchGesture];
+    [self.collectionView setScrollEnabled:NO];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -307,6 +308,18 @@
     }
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    width = size.width; height = size.height;
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        if (IDIOM != IPAD){
+            [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
+        }
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        
+    }];
+}
+
 #pragma mark <UICollectionViewDataSource>
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
@@ -335,7 +348,7 @@
 
 #pragma mark – UICollectionViewDelegateFlowLayout
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(collectionView.frame.size.width,collectionView.frame.size.height);
+    return CGSizeMake(width,height);
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -348,13 +361,11 @@
                                                                       sourceController:(UIViewController *)source {
     WFSlideMetadataAnimator *animator = [WFSlideMetadataAnimator new];
     animator.presenting = YES;
-    animator.orientation = self.interfaceOrientation;
     return animator;
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed {
     WFSlideMetadataAnimator *animator = [WFSlideMetadataAnimator new];
-    animator.orientation = self.interfaceOrientation;
     return animator;
 }
 

@@ -39,7 +39,6 @@
     [self.textField setText:@""];
     [self.textLabel setText:@""];
     [self.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [_settingsSwitch setHidden:YES];
     [self.textField setUserInteractionEnabled:YES];
     [_actionButton setHidden:YES];
 }

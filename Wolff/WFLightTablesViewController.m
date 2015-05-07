@@ -9,12 +9,14 @@
 #import "WFLightTablesViewController.h"
 #import "WFTableCell.h"
 #import "WFAppDelegate.h"
+#import "WFUtilities.h"
 
 @interface WFLightTablesViewController () {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     CGFloat height;
     CGFloat width;
+    UIImageView *navBarShadowView;
 }
 @property (strong, nonatomic) User *currentUser;
 @end
@@ -31,36 +33,56 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self.view setBackgroundColor:[UIColor clearColor]];
-    [self.tableView setBackgroundColor:[UIColor clearColor]];
+    delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
+    manager = delegate.manager;
+    self.currentUser = [delegate.currentUser MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:0 alpha:.07]];
     self.tableView.rowHeight = 54.f;
     
+    NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
+    _lightTables = self.currentUser.ownedTables.array.mutableCopy;
+    [_lightTables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
+    [_lightTables enumerateObjectsUsingBlock:^(LightTable *lightTable, NSUInteger idx, BOOL *stop) {
+        if ([lightTable.identifier isEqualToNumber:@0]){
+            [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+    }];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    
     if (IDIOM == IPAD){
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+        [self.view setBackgroundColor:[UIColor clearColor]];
+        [self.tableView setBackgroundColor:[UIColor clearColor]];
+        if (SYSTEM_VERSION >= 8.f){
             width = screenWidth(); height = screenHeight();
         } else {
             width = screenHeight(); height = screenWidth();
         }
+        UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
+        self.navigationItem.leftBarButtonItem = backButton;
+    } else {
+        [self.view setBackgroundColor:[UIColor clearColor]];
+        [self.tableView setBackgroundColor:[UIColor clearColor]];
+        UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.view.frame];
+        [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
+        backgroundToolbar.translucent = YES;
+        [self.tableView setBackgroundView:backgroundToolbar];
+        
+        width = screenWidth(); height = screenHeight();
+        [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
+        if (self.navigationController.viewControllers.count <= 1){
+            UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+            self.navigationItem.leftBarButtonItem = dismissButton;
+        }
     }
     
-    delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
-    manager = delegate.manager;
-    
-    self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+    navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     self.title = @"Your Light Tables";
-    
-    UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
-    self.navigationItem.leftBarButtonItem = backButton;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self setUpFooter];
+    navBarShadowView.hidden = YES;
     [self loadLightTables];
-    NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
-    _lightTables = self.currentUser.ownedTables.array.mutableCopy;
-    [_lightTables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
     
     if (_slideshowShareMode){
         [self setPreferredContentSize:CGSizeMake(420, (54.f*_lightTables.count)+34.f)];
@@ -69,24 +91,22 @@
     }
 }
 
-- (void)setUpFooter {
-    UIView *footerContainerView = [[UIView alloc] initWithFrame:CGRectMake(10, height-64, self.view.frame.size.width-20, 64)];
-    [footerContainerView setBackgroundColor:[UIColor colorWithWhite:.7 alpha:.7]];
-    [self.view addSubview:footerContainerView];
-}
-
 - (void)loadLightTables {
-    [manager GET:[NSString stringWithFormat:@"users/%@/light_tables",_currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [manager GET:[NSString stringWithFormat:@"users/%@/light_tables",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success getting light tables: %@", responseObject);
-        for (NSDictionary *dict in [responseObject objectForKey:@"light_tables"]){
-            LightTable *lightTable = [LightTable MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!lightTable){
-                lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        for (id dict in [responseObject objectForKey:@"light_tables"]){
+            if ([dict isKindOfClass:[NSDictionary class]]){
+                LightTable *lightTable = [LightTable MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+                if (!lightTable){
+                    lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                }
+                [lightTable populateFromDictionary:dict];
+                [self.currentUser addLightTable:lightTable];
             }
-            [lightTable populateFromDictionary:dict];
-            [_currentUser addLightTable:lightTable];
         }
-        [self.tableView reloadData];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [self.tableView reloadData];
+        }];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error getting groups: %@",error.description);
     }];
@@ -98,7 +118,6 @@
     NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
     _lightTables = self.currentUser.ownedTables.array.mutableCopy;
     [_lightTables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
-    
     if (_slideshowShareMode){
         [self setPreferredContentSize:CGSizeMake(420, (54.f*_lightTables.count)+34.f)];
         return 1;
@@ -123,7 +142,11 @@
     
     if (indexPath.section == 0 && !_slideshowShareMode){
         if (indexPath.row == 0){
-            [cell.imageView setImage:[UIImage imageNamed:@"plus"]];
+            if (IDIOM == IPAD){
+                [cell.imageView setImage:[UIImage imageNamed:@"plus"]];
+            } else {
+                [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
+            }
             [cell.textLabel setText:@"New Table"];
         } else {
             [cell.imageView setImage:[UIImage imageNamed:@"favorite"]];
@@ -154,10 +177,10 @@
     UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 34.f)];
     [headerView setBackgroundColor:[UIColor clearColor]];
     
-    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, tableView.frame.size.width, 34.f)];
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 34.f)];
     [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
-    [headerLabel setTextColor:[UIColor colorWithWhite:.5 alpha:.5]];
-    [headerLabel setText:@"SHARE ON LIGHT TABLE"];
+    [headerLabel setTextColor:IDIOM == IPAD ? [UIColor colorWithWhite:.5 alpha:.5] : [UIColor whiteColor]];
+    [headerLabel setText:@"TAP TO SHARE"];
     [headerLabel setTextAlignment:NSTextAlignmentCenter];
     [headerView addSubview:headerLabel];
     
@@ -175,8 +198,8 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0 && !_slideshowShareMode){
         if (indexPath.row == 0){
-            if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableSelected:)]){
-                [self.lightTableDelegate lightTableSelected:nil]; // TODO
+            if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(newLightTable)]){
+                [self.lightTableDelegate newLightTable];
             }
         } else {
             [self favorite];

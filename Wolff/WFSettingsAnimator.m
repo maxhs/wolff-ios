@@ -65,14 +65,15 @@
         [transitionContext.containerView insertSubview:blurredButton belowSubview:toView];
         
         CGRect toEndFrame;
+        CGFloat differential = IDIOM == IPAD ? width/2 : width*.75;
         if (iOS8){
-            [toView setFrame:CGRectMake(width, 0, width-(width/2), height)];
+            [toView setFrame:CGRectMake(width, 0, differential, height)];
             toEndFrame = toView.frame;
-            toEndFrame.origin.x -= width/2;
+            toEndFrame.origin.x -= differential;
         } else {
-            [toView setFrame:CGRectMake(0, width, height, width-(width/2))];
+            [toView setFrame:CGRectMake(0, width, height, differential)];
             toEndFrame = toView.frame;
-            toEndFrame.origin.x = 0; toEndFrame.origin.y = width/2;
+            toEndFrame.origin.x = 0; toEndFrame.origin.y = differential;
         }
 
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{

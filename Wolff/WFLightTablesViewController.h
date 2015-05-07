@@ -15,6 +15,7 @@
 
 @optional
 - (void)userDidPan:(UIScreenEdgePanGestureRecognizer *)gestureRecognizer;
+- (void)newLightTable;
 - (void)lightTableSelected:(LightTable*)lightTable;
 - (void)lightTableDeselected:(LightTable*)lightTable;
 - (void)undropPhotoFromLightTable:(LightTable*)lightTable;

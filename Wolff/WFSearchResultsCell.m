@@ -34,10 +34,11 @@
 
 - (void)configureForPhoto:(Photo *)photo {
     [self.artLabel setText:photo.art.title];
+    [self.artLabel setTextColor: (IDIOM == IPAD) ? [UIColor blackColor] : [UIColor whiteColor]];
     NSString *artists = photo.art.artistsToSentence;
     if (artists.length){
         [self.artistLabel setText:artists];
-        [self.artistLabel setTextColor:[UIColor blackColor]];
+        [self.artistLabel setTextColor: (IDIOM == IPAD) ? [UIColor blackColor] : [UIColor whiteColor]];
     } else {
         [self.artistLabel setText:@"Artist Uknown"];
         [self.artistLabel setTextColor:[UIColor lightGrayColor]];

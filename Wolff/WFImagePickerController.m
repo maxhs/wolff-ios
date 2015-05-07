@@ -45,15 +45,11 @@ static NSString * const reuseIdentifier = @"PhotoCell";
     [_collectionView setBackgroundView:backgroundToolbar];
     
     if (IDIOM == IPAD){
-        if (SYSTEM_VERSION >= 8.f){
-            width = screenWidth();
-            height = screenHeight();
-        } else {
-            width = screenHeight();
-            height = screenWidth();
-        }
+        width = screenWidth();
+        height = screenHeight();
     } else {
-        
+        width = screenWidth();
+        height = screenHeight();
     }
     _assets = [NSMutableArray array];
     _selectedAssets = [NSMutableOrderedSet orderedSet];

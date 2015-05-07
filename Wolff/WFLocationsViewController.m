@@ -80,7 +80,11 @@ static NSString * const reuseIdentifier = @"LocationCell";
     [self setUpSearch];
     
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
-    self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noLocationBarButton];
+    if (IDIOM == IPAD){
+        self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noLocationBarButton];
+    } else {
+        self.navigationItem.rightBarButtonItem = saveButton;
+    }
     [self adjustLocationButtonColor];
 }
 
@@ -227,13 +231,10 @@ static NSString * const reuseIdentifier = @"LocationCell";
 #pragma mark – UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (editing){
-        if ((searching && indexPath.row == _filteredLocations.count) || (indexPath.row == _locations.count)){
-            return CGSizeMake(width/2,height/4);
-        }
+    if (IDIOM == IPAD){
         return CGSizeMake(width/2,height/4);
     } else {
-        return CGSizeMake(width/2,height/4);
+        return CGSizeMake(width,height/4);
     }
 }
 
@@ -302,7 +303,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
     [_noSearchResultsLabel setText:@"No search results..."];
     [_noSearchResultsLabel setHidden:YES];
     
-    [self.searchBar setPlaceholder:@"Search for the piece's *current* location"];
+    [self.searchBar setPlaceholder:IDIOM == IPAD ? @"Search for the piece's *current* location" : @"Current location..."];
     //reset the search bar font
     for (id subview in [self.searchBar.subviews.firstObject subviews]){
         if ([subview isKindOfClass:[UITextField class]]){

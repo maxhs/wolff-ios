@@ -40,9 +40,9 @@
     [super viewDidLoad];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    [self.view setBackgroundColor:[UIColor clearColor]];
+    [self.view setBackgroundColor:[UIColor blackColor]];
     [self.collectionView setBackgroundColor:[UIColor clearColor]];
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
+    if (SYSTEM_VERSION >= 8.f){
         iOS8 = YES; width = screenWidth(); height = screenHeight();
     } else {
         iOS8 = NO; width = screenHeight(); height = screenWidth();
@@ -62,8 +62,7 @@
     userSinceDateFormatter = [[NSDateFormatter alloc] init];
     [userSinceDateFormatter setDateFormat:@"MMM yy"];
     
-    //photos mode by default
-    photos = YES;
+    photos = YES; //photos mode by default
     [self getPublicPhotos];
 }
 
@@ -112,9 +111,34 @@
     }];
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    width = size.width;
+    height = size.height;
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        if (IDIOM == IPAD){
+            
+        } else {
+            [self.collectionView reloadData];
+        }
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        // Code here will execute after the rotation has finished.
+        // Equivalent to placing it in the deprecated method -[didRotateFromInterfaceOrientation:]
+        
+    }];
+}
+
 #pragma mark – UICollectionViewDelegateFlowLayout
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    return CGSizeMake(width/4, width/4);
+    if (IDIOM == IPAD){
+        return CGSizeMake(width/4, width/4);
+    } else {
+        if (width >= 414.f){
+            return CGSizeMake(width/2, width/2);
+        } else {
+            return CGSizeMake(width, width);
+        }
+    }
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -178,10 +202,12 @@
     nav.view.clipsToBounds = YES;
     vc.metadataDelegate = self;
     [vc setPhoto:photo];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self resetBooleans];
-    photos = YES;
+    if (IDIOM == IPAD){
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        [self resetBooleans];
+        photos = YES;
+    }
     [self presentViewController:nav animated:YES completion:^{
         
     }];

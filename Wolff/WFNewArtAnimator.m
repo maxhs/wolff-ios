@@ -50,6 +50,7 @@
     }
     
     if (self.presenting) {
+        
         UIButton *darkBackground = [UIButton buttonWithType:UIButtonTypeCustom];
         [darkBackground setBackgroundColor:[UIColor colorWithWhite:.1 alpha:.5]];
         [darkBackground setAlpha:0.0];
@@ -61,6 +62,7 @@
         [transitionContext.containerView addSubview:fromView];
         [transitionContext.containerView addSubview:darkBackground];
         [transitionContext.containerView addSubview:toView];
+        
         [toView setAlpha:0.0];
         
         UIToolbar *toolbarBackground; // set the new art view background here, becuase we're resetting the framing (and it's not reflects in either the viewDidLoad or viewWillAppear methods

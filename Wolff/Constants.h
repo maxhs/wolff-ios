@@ -19,9 +19,6 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define IPAD     UIUserInterfaceIdiomPad
 #define SYSTEM_VERSION     [[[UIDevice currentDevice] systemVersion] floatValue]
 
-#define kOriginalArtImageFrame1 CGRectMake(62, 54, 900, 660)
-#define kOriginalArtImageFrame2 CGRectMake(25, 54, 480, 660)
-#define kOriginalArtImageFrame3 CGRectMake(5, 54, 480, 660)
 #define kSidebarWidth 280.f
 #define kFastAnimationDuration .23f
 #define kDefaultAnimationDuration .77f
@@ -45,9 +42,10 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kUserDefaultsAuthToken @"authToken"
 #define kUserDefaultsFirstName @"firstName"
 #define kUserDefaultsLastName @"lastName"
-#define kUserDefaultsDeviceToken @"deviceToken"
+#define kUserDefaultsiPadToken @"iPadToken"
+#define kUserDefaultsiPhoneToken @"iPhoneToken"
 #define kUserDefaultsAdmin @"admin"
-#define kUserDefaultsMobileToken @"mobileToken"
+#define kUserDefaultsDeviceToken @"deviceToken"
 #define kLogoutMessage @"You've been successfully logged out.\n\nSee you again real soon."
 
 #define kMuseoSansThin @"MuseoSans-100"
