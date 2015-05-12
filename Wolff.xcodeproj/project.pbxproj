@@ -1157,8 +1157,6 @@
 			children = (
 				50DB43F11A53C72D00856174 /* WFSlideshowCell.h */,
 				50DB43F21A53C72D00856174 /* WFSlideshowCell.m */,
-				F28C67061A33F4D900B82FD8 /* WFSlideshowSlideCell.h */,
-				F28C67071A33F4D900B82FD8 /* WFSlideshowSlideCell.m */,
 				503CD5961A72BF2B00F4FF85 /* WFSlideshowTitleCell.h */,
 				503CD5971A72BF2B00F4FF85 /* WFSlideshowTitleCell.m */,
 				5049263C1A593262000C6FD9 /* WFSlideMetadataCell.h */,
@@ -1173,6 +1171,8 @@
 				F28C66FB1A33DA0000B82FD8 /* WFSlideshowsViewController.m */,
 				F2CE05A71991167F0061DB94 /* WFSlideshowSplitViewController.h */,
 				F2CE05A81991167F0061DB94 /* WFSlideshowSplitViewController.m */,
+				F28C67061A33F4D900B82FD8 /* WFSlideshowSlideCell.h */,
+				F28C67071A33F4D900B82FD8 /* WFSlideshowSlideCell.m */,
 				F28C67031A33F4BE00B82FD8 /* WFSlideshowViewController.h */,
 				F28C67041A33F4BE00B82FD8 /* WFSlideshowViewController.m */,
 				50DB44561A57456C00856174 /* WFSlideshowSettingsViewController.h */,

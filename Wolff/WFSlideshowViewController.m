@@ -341,14 +341,32 @@
             WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
             currentSlide = self.slideshow.slides[indexPath.item];
             [cell configureForPhotos:currentSlide.photos.mutableCopy inSlide:currentSlide];
+            
+            // temporary
+            [cell.artImageView1 setFrame:kOriginalArtImageFrame1];
+            [cell.artImageView2 setFrame:kOriginalArtImageFrame2];
+            [cell.artImageView3 setFrame:kOriginalArtImageFrame3];
+            
             [self assignViewsForCell:cell];
             return cell;
         }
     } else {
         WFSlideMetadataCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
         currentSlide = self.slideshow.slides[indexPath.section];
+        
         PhotoSlide *photoSlide = currentSlide.photoSlides[indexPath.item];
         [cell configureForPhotoSlide:photoSlide];
+        
+        CGRect titleLabelFrame = cell.titleLabel.frame;
+        if (currentSlide.photoSlides.count == 1 || currentSlide.slideTexts.count == 1){
+            titleLabelFrame.size.width = width-70;
+        } else {
+            titleLabelFrame.size.width = (width-70)/2;
+        }
+        CGSize titleSize = [cell.titleLabel sizeThatFits:CGSizeMake(titleLabelFrame.size.width, CGFLOAT_MAX)];
+        titleLabelFrame.size.height = titleSize.height;
+        [cell.titleLabel setFrame:titleLabelFrame];
+        [cell.titleLabel setNumberOfLines:0];
         return cell;
     }
 }

@@ -35,21 +35,19 @@
     [self resetVisibility:_artImageView1];
     [self resetVisibility:_artImageView2];
     [self resetVisibility:_artImageView3];
-    [_progressView1 setAlpha:1.0];
-    [_progressView1 setHidden:NO];
-    [_progressView2 setAlpha:1.0];
-    [_progressView2 setHidden:NO];
-    [_progressView3 setAlpha:1.0];
-    [_progressView3 setHidden:NO];
-    
-    [self recenterView:_artImageView1];
-    [self recenterView:_artImageView2];
-    [self recenterView:_artImageView3];
+    [self resetVisibility:_progressView1];
+    [self resetVisibility:_progressView2];
+    [self resetVisibility:_progressView3];
+    //[self recenterView:_artImageView1];
+    //[self recenterView:_artImageView2];
+    //[self recenterView:_artImageView3];
 }
 
-- (void)resetVisibility:(WFInteractiveImageView*)view {
+- (void)resetVisibility:(UIView*)view {
     [view setAlpha:0.f];
-    [view setImage:nil];
+    if ([view isKindOfClass:[WFInteractiveImageView class]]){
+        [(WFInteractiveImageView*)view setImage:nil];
+    }
 }
 
 - (void)recenterView:(WFInteractiveImageView*)viewToRecenter{
@@ -72,30 +70,29 @@
 
 - (void)configureForPhotos:(NSOrderedSet *)photos inSlide:(Slide *)slide{
     if (slide) {
-        _slide = slide;
+        self.slide = slide;
     }
+
     if (photos.count){
         [self.mainTextLabel setHidden:YES];
         _photos = photos;
         
-        [_artImageView1 setUserInteractionEnabled:YES];
-        [_artImageView2 setUserInteractionEnabled:YES];
-        [_artImageView3 setUserInteractionEnabled:YES];
+        [self.artImageView1 setUserInteractionEnabled:YES];
+        [self.artImageView2 setUserInteractionEnabled:YES];
+        [self.artImageView3 setUserInteractionEnabled:YES];
         
         if (photos.count == 1){
-            if (_slide && slide.photoSlides.count){
-                PhotoSlide *photoSlide1 = slide.photoSlides[0];
-                NSLog(@"photo slide 1: %@",photoSlide1);
-                if (photoSlide1.hasValidFrame){
-                    [_artImageView1 setFrame:CGRectMake(photoSlide1.positionX.floatValue, photoSlide1.positionY.floatValue, photoSlide1.width.floatValue, photoSlide1.height.floatValue)];
-                    //CGAffineTransform transform = CGAffineTransformScale(_artImageView1.transform, photoSlide1.scale.floatValue, photoSlide1.scale.floatValue);
-                    //_artImageView1.transform = transform;
-                }
-            }
+//            if (_slide && slide.photoSlides.count){
+//                PhotoSlide *photoSlide1 = slide.photoSlides[0];
+//                NSLog(@"photo slide 1: %@",photoSlide1);
+//                if (photoSlide1.hasValidFrame){
+//                    [_artImageView1 setFrame:CGRectMake(photoSlide1.positionX.floatValue, photoSlide1.positionY.floatValue, photoSlide1.width.floatValue, photoSlide1.height.floatValue)];
+//                }
+//            }
             
-            [_containerView1 setHidden:NO];
-            [_containerView2 setHidden:YES];
-            [_containerView3 setHidden:YES];
+            [self.containerView1 setHidden:NO];
+            [self.containerView2 setHidden:YES];
+            [self.containerView3 setHidden:YES];
             
             Photo *photo = (Photo*)[photos firstObject];
             NSURL *art1thumbUrl = [NSURL URLWithString:photo.thumbImageUrl];
@@ -132,25 +129,21 @@
             }];
             
         } else if (photos.count > 1) {
-            if (_slide && slide.photoSlides.count > 1){
-                PhotoSlide *photoSlide1 = slide.photoSlides[0];
-                if (photoSlide1.hasValidFrame){
-                    NSLog(@"photo slide 1: %@",photoSlide1);
-                    [_artImageView2 setFrame:CGRectMake(photoSlide1.positionX.floatValue, photoSlide1.positionY.floatValue, photoSlide1.width.floatValue, photoSlide1.height.floatValue)];
-                    //CGAffineTransform transform = CGAffineTransformScale(_artImageView2.transform, photoSlide1.scale.floatValue, photoSlide1.scale.floatValue);
-                    //_artImageView2.transform = transform;
-                }
-                PhotoSlide *photoSlide2 = slide.photoSlides[1];
-                if (photoSlide2.hasValidFrame){
-                    NSLog(@"photo slide 2: %@",photoSlide2);
-                    [_artImageView3 setFrame:CGRectMake(photoSlide2.positionX.floatValue, photoSlide2.positionY.floatValue, photoSlide2.width.floatValue, photoSlide2.height.floatValue)];
-                    //CGAffineTransform transform = CGAffineTransformScale(_artImageView3.transform, photoSlide2.scale.floatValue, photoSlide2.scale.floatValue);
-                    //_artImageView3.transform = transform;
-                }
-            }
-            [_containerView1 setHidden:YES];
-            [_containerView2 setHidden:NO];
-            [_containerView3 setHidden:NO];
+//            if (_slide && slide.photoSlides.count > 1){
+//                PhotoSlide *photoSlide1 = slide.photoSlides[0];
+//                if (photoSlide1.hasValidFrame){
+//                    NSLog(@"photo slide 1: %@",photoSlide1);
+//                    [_artImageView2 setFrame:CGRectMake(photoSlide1.positionX.floatValue, photoSlide1.positionY.floatValue, photoSlide1.width.floatValue, photoSlide1.height.floatValue)];
+//                }
+//                PhotoSlide *photoSlide2 = slide.photoSlides[1];
+//                if (photoSlide2.hasValidFrame){
+//                    NSLog(@"photo slide 2: %@",photoSlide2);
+//                    [_artImageView3 setFrame:CGRectMake(photoSlide2.positionX.floatValue, photoSlide2.positionY.floatValue, photoSlide2.width.floatValue, photoSlide2.height.floatValue)];
+//                }
+//            }
+            [self.containerView1 setHidden:YES];
+            [self.containerView2 setHidden:NO];
+            [self.containerView3 setHidden:NO];
             
             Photo *photo2 = (Photo*)photos[0];
             NSURL *art2thumbUrl = [NSURL URLWithString:photo2.thumbImageUrl];

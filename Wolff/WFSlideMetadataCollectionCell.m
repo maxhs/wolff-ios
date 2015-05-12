@@ -35,6 +35,7 @@
     [self.titleLabel setTextColor:[UIColor whiteColor]];
     [self.titleLabel setHidden:NO];
     [self.titleLabel setAlpha:1.0];
+    [self.titleLabel setNumberOfLines:0];
 }
 
 @end

@@ -493,7 +493,8 @@
     CGPoint slideLoc = CGPointMake(loc.x, loc.y + self.tableView.contentOffset.y);
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
-        NSLog(@"loc x: %f, loc y: %f", loc.x,loc.y);
+        //NSLog(@"loc x: %f, loc y: %f", loc.x,loc.y);
+        
         BOOL iPadBool = (loc.x > kSidebarWidth && slideshowPhotos.count);
         
         if ((IDIOM == IPAD && iPadBool) || (IDIOM != IPAD && slideshowPhotos.count)) {

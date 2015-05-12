@@ -1511,7 +1511,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }
     
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
-        NSLog(@"loc x: %f and y %f, showlighttable? %u",loc.x, loc.y, showLightTable);
+        //NSLog(@"loc x: %f and y %f, showlighttable? %u",loc.x, loc.y, showLightTable);
         // comparison mode
         if (loc.x < 0 && loc.y > (_comparisonContainerView.frame.origin.y - 128)){ // 128 is half the width of an art slide, since the point we're grabbing is a center point, not the origin
             if (!comparison1) {
