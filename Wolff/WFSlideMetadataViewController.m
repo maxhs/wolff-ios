@@ -34,7 +34,7 @@
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     
-    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"right"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.03]];
     self.navigationItem.title = self.slideshow.title;

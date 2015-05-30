@@ -20,5 +20,6 @@
 - (NSString*)artistsToSentence;
 - (NSString*)locationsToSentence;
 - (NSString*)tagsToSentence;
+- (NSString*)creditsToSentence;
 - (NSString*)readableDate;
 @end

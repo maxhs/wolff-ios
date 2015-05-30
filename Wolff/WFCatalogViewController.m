@@ -969,7 +969,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             [self newSlideshow:NO];
         } else {
             Slideshow *slideshow = _slideshows[indexPath.row];
-            NSLog(@"did select slideshow: %lu",(unsigned long)slideshow.photos.count);
             if (slideshow.user && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
                 [self slideshowSelected:slideshow];
                 return;

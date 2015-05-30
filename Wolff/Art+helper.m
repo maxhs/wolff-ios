@@ -213,6 +213,14 @@
     return [tags toSentence];
 }
 
+- (NSString *)creditsToSentence {
+    NSMutableArray *credits = [NSMutableArray array];
+    [self.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
+        [credits addObject:photo.credit];
+    }];
+    return [credits toSentence];
+}
+
 - (NSString *)locationsToSentence {
     NSMutableArray *names = [NSMutableArray arrayWithCapacity:self.locations.count];
     [self.locations enumerateObjectsUsingBlock:^(Location *location, NSUInteger idx, BOOL *stop) {

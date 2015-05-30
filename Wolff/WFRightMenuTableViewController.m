@@ -20,12 +20,12 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.tableView.rowHeight = 77.f;
+    self.tableView.rowHeight = (screenHeight()-self.navigationController.navigationBar.frame.size.height-20)/4;
     [self.view setBackgroundColor:[UIColor clearColor]];
     [self.tableView setBackgroundColor:[UIColor clearColor]];
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:0]];
-    UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"rightWhite"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
-    self.navigationItem.leftBarButtonItem = dismissButton;
+    UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    self.navigationItem.rightBarButtonItem = dismissButton;
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     [self.navigationController.navigationBar setBackgroundImage:[UIImage new]
@@ -53,10 +53,7 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"RightMenuCell" forIndexPath:indexPath];
     [cell setBackgroundColor:[UIColor clearColor]];
     [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
-    
-    UIView *selectedView = [[UIView alloc] initWithFrame:cell.frame];
-    [selectedView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
-    cell.selectedBackgroundView = selectedView;
+    [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
     [cell.textLabel setTextColor:[UIColor whiteColor]];
     switch (indexPath.row) {
         case 0:

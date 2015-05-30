@@ -42,6 +42,7 @@
     UITapGestureRecognizer *_doubleTapGesture;
     UIScreenEdgePanGestureRecognizer *rightScreenEdgePanGesture;
     UIScreenEdgePanGestureRecognizer *leftScreenEdgePanGesture;
+    UIScreenEdgePanGestureRecognizer *bottomEdgePanGesture;
     CGFloat lastScale;
     CGPoint lastPoint;
     NSTimer *titleTimer;
@@ -89,6 +90,11 @@
     
     [self.collectionView setDelaysContentTouches:NO];
     [self.collectionView setCanCancelContentTouches:YES];
+    if ([self.slideshow.showMetadata isEqualToNumber:@NO]){
+        CGRect metadataCollectionFrame = self.metadataCollectionView.frame;
+        metadataCollectionFrame.origin.y = height;
+        [self.metadataCollectionView setFrame:metadataCollectionFrame];
+    }
     
     _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     _panGesture.delegate = self;
@@ -104,6 +110,9 @@
     leftScreenEdgePanGesture = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(screenEdgePan:)];
     leftScreenEdgePanGesture.edges = UIRectEdgeLeft;
     [self.view addGestureRecognizer:leftScreenEdgePanGesture];
+    bottomEdgePanGesture = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(screenEdgePan:)];
+    bottomEdgePanGesture.edges = UIRectEdgeBottom;
+    [self.view addGestureRecognizer:bottomEdgePanGesture];
     
     _doubleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTap:)];
     _doubleTapGesture.numberOfTapsRequired = 2;
@@ -238,6 +247,10 @@
     if (scrollView == self.collectionView){
         [self.metadataCollectionView setContentOffset:CGPointMake(scrollView.contentOffset.x, self.metadataCollectionView.contentOffset.y) animated:NO];
     }
+    /*if (scrollView == self.metadataCollectionView){
+        [self.collectionView setContentOffset:CGPointMake(scrollView.contentOffset.x, self.collectionView.contentOffset.y) animated:NO];
+    }*/
+    
     if ([self.slideshow.showTitleSlide isEqualToNumber:@NO]){
         page ++;
     }
@@ -312,7 +325,11 @@
     if (collectionView == self.collectionView){
         return 2;
     } else {
-        return self.slideshow.slides.count;
+        if ([self.slideshow.showMetadata isEqualToNumber:@YES]){
+            return self.slideshow.slides.count + 1;
+        } else {
+            return self.slideshow.slides.count;
+        }
     }
 }
 
@@ -326,8 +343,12 @@
             }
         } else return self.slideshow.slides.count;
     } else {
-        Slide *slide = self.slideshow.slides[section];
-        return slide.photoSlides.count;
+        if ([self.slideshow.showMetadata isEqualToNumber:@YES] && section == 0){
+            return 1;
+        } else {
+            Slide *slide = self.slideshow.slides[[self.slideshow.showMetadata isEqualToNumber:@YES] ? section - 1 : section];
+            return slide.photoSlides.count;
+        }
     }
 }
 
@@ -352,21 +373,30 @@
         }
     } else {
         WFSlideMetadataCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
-        currentSlide = self.slideshow.slides[indexPath.section];
         
-        PhotoSlide *photoSlide = currentSlide.photoSlides[indexPath.item];
-        [cell configureForPhotoSlide:photoSlide];
-        
-        CGRect titleLabelFrame = cell.titleLabel.frame;
-        if (currentSlide.photoSlides.count == 1 || currentSlide.slideTexts.count == 1){
-            titleLabelFrame.size.width = width-70;
+        if ([self.slideshow.showMetadata isEqualToNumber:@YES] && indexPath.section == 0){
+            // title slide, so don't do anything
+            [cell.titleLabel setAttributedText:[[NSAttributedString alloc] initWithString:@"" attributes:nil]];
         } else {
-            titleLabelFrame.size.width = (width-70)/2;
+            if ([self.slideshow.showMetadata isEqualToNumber:@YES]){
+                currentSlide = self.slideshow.slides[indexPath.section-1];
+            } else {
+                currentSlide = self.slideshow.slides[indexPath.section];
+            }
+            
+            PhotoSlide *photoSlide = currentSlide.photoSlides[indexPath.item];
+            [cell configureForPhotoSlide:photoSlide];
+            
+            CGRect titleLabelFrame = cell.titleLabel.frame;
+            if (currentSlide.photoSlides.count == 1 || currentSlide.slideTexts.count == 1){
+                titleLabelFrame.size.width = width-70;
+            } else {
+                titleLabelFrame.size.width = (width-70)/2;
+            }
+            CGSize titleSize = [cell.titleLabel sizeThatFits:CGSizeMake(titleLabelFrame.size.width, CGFLOAT_MAX)];
+            titleLabelFrame.size.height = titleSize.height;
+            [cell.titleLabel setFrame:titleLabelFrame];
         }
-        CGSize titleSize = [cell.titleLabel sizeThatFits:CGSizeMake(titleLabelFrame.size.width, CGFLOAT_MAX)];
-        titleLabelFrame.size.height = titleSize.height;
-        [cell.titleLabel setFrame:titleLabelFrame];
-        [cell.titleLabel setNumberOfLines:0];
         return cell;
     }
 }
@@ -376,11 +406,15 @@
     if (collectionView == self.collectionView){
         return CGSizeMake(collectionView.frame.size.width,collectionView.frame.size.height);
     } else {
-        Slide *slide = self.slideshow.slides[indexPath.section];
-        if (slide.photoSlides.count == 1 || slide.slideTexts.count == 1){
+        if ([self.slideshow.showMetadata isEqualToNumber:@YES] && indexPath.section == 0){
             return CGSizeMake(collectionView.frame.size.width,collectionView.frame.size.height);
         } else {
-            return CGSizeMake(collectionView.frame.size.width/2,collectionView.frame.size.height);
+            Slide *slide = self.slideshow.slides[[self.slideshow.showMetadata isEqualToNumber:@YES] ? indexPath.section - 1 : indexPath.section];
+            if (slide.photoSlides.count == 1 || slide.slideTexts.count == 1){
+                return CGSizeMake(collectionView.frame.size.width,collectionView.frame.size.height);
+            } else {
+                return CGSizeMake(collectionView.frame.size.width/2,collectionView.frame.size.height);
+            }
         }
     }
 }
@@ -477,6 +511,11 @@
 }
 
 - (void)screenEdgePan:(UIScreenEdgePanGestureRecognizer*)gestureRecognizer {
+    
+    if (gestureRecognizer == bottomEdgePanGesture){
+        NSLog(@"Bottom edge pan");
+    }
+    
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
         if (gestureRecognizer == rightScreenEdgePanGesture){
             //NSLog(@"done panning from right");
