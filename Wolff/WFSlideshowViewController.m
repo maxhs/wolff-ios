@@ -30,13 +30,6 @@
     BOOL metadataExpanded;
     Slide *currentSlide;
     
-    //slideshow ivars
-    WFInteractiveImageView *artImageView1;
-    WFInteractiveImageView *artImageView2;
-    WFInteractiveImageView *artImageView3;
-    UIView *containerView1;
-    UIView *containerView2;
-    UIView *containerView3;
     UIPanGestureRecognizer *_panGesture;
     UIPinchGestureRecognizer *_pinchGesture;
     UITapGestureRecognizer *_doubleTapGesture;
@@ -45,7 +38,6 @@
     UIScreenEdgePanGestureRecognizer *bottomEdgePanGesture;
     CGFloat lastScale;
     CGPoint lastPoint;
-    NSTimer *titleTimer;
     
     NSInteger currentPage;
     UIImageView *navBarShadowView;
@@ -54,8 +46,17 @@
     UIBarButtonItem *nextButton;
     UIBarButtonItem *previousButton;
     UIBarButtonItem *slideNumberButtonItem;
-    UIButton *metadataButton;
+    UITapGestureRecognizer *metadataTap;
+    CGFloat metadataTitleHeight;
+    CGFloat metadataComponentsHeight;
     
+    //slideshow ivars
+    WFInteractiveImageView *artImageView1;
+    WFInteractiveImageView *artImageView2;
+    WFInteractiveImageView *artImageView3;
+    UIView *containerView1;
+    UIView *containerView2;
+    UIView *containerView3;
     CGRect kOriginalArtImageFrame1;
     CGRect kOriginalArtImageFrame2;
     CGRect kOriginalArtImageFrame3;
@@ -75,6 +76,8 @@
         iOS8 = NO; width = screenHeight(); height = screenWidth();
     }
     
+    if (self.slideshow) self.slideshow = [self.slideshow MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+    
     //calculate the "home position" geometry for slides at runtime
     CGFloat frameheight = (IDIOM == IPAD) ? 660.f : 300.f;
     CGFloat singleWidth = (IDIOM == IPAD) ? 900.f : 460.f;
@@ -83,18 +86,14 @@
     kOriginalArtImageFrame2 = CGRectMake((width/4-splitWidth/2), (height/2-frameheight/2), splitWidth, frameheight);
     kOriginalArtImageFrame3 = CGRectMake((width/4-splitWidth/2), (height/2-frameheight/2), splitWidth, frameheight);
     
+    barsVisible = NO; // by default
+    metadataExpanded = NO; // by default
     [self setUpNavBar];
-
-    barsVisible = YES;
+    
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     
     [self.collectionView setDelaysContentTouches:NO];
     [self.collectionView setCanCancelContentTouches:YES];
-    if ([self.slideshow.showMetadata isEqualToNumber:@NO]){
-        CGRect metadataCollectionFrame = self.metadataCollectionView.frame;
-        metadataCollectionFrame.origin.y = height;
-        [self.metadataCollectionView setFrame:metadataCollectionFrame];
-    }
     
     _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     _panGesture.delegate = self;
@@ -137,24 +136,33 @@
     [navBarShadowView setHidden:YES];
     [toolBarShadowView setHidden:YES];
     [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
+    self.navigationController.navigationBar.transform = CGAffineTransformMakeTranslation(0, -self.navigationController.navigationBar.frame.size.height);
     if (IDIOM != IPAD) {
         NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
         [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
     }
-    if ([self.slideshow.showMetadata isEqualToNumber:@YES]){
-        [self.metadataCollectionView reloadData];
-    }
+    
+    [self determinePageNumbers];
+    [self.metadataCollectionView reloadData];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    titleTimer = [[NSTimer alloc] init];
-    titleTimer = [NSTimer scheduledTimerWithTimeInterval:1.7f target:self selector:@selector(hideBars) userInfo:nil repeats:NO];
+    if (self.photos.count){
+        [self adjustMetadataPosition];
+    } else if ([self.slideshow.showTitleSlide isEqualToNumber:@YES]){
+        if (currentPage != 0){
+            [self adjustMetadataPosition];
+        }
+    } else if ([self.slideshow.showMetadata isEqualToNumber:@YES]){
+        [self adjustMetadataPosition];
+    }
 }
 
 - (void)setupMetadataContainer {
-    CGFloat y = [self.slideshow.showMetadata isEqualToNumber:@YES] ? height-self.navigationController.navigationBar.frame.size.height : height;
-    [self.slideMetadataContainerView setFrame:CGRectMake(0, y, width, height)];
+    metadataTitleHeight = 0.f; // default
+    metadataComponentsHeight = 0.f;
+    [self.slideMetadataContainerView setFrame:CGRectMake(0, height, width, height)];
     
     UIToolbar *toolbarBackground = [[UIToolbar alloc] initWithFrame:self.view.frame];
     [toolbarBackground setBarStyle:UIBarStyleBlackTranslucent];
@@ -163,22 +171,62 @@
     [self.slideMetadataContainerView addSubview:toolbarBackground];
     [self.slideMetadataContainerView sendSubviewToBack:toolbarBackground];
     
-    metadataButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [metadataButton setImage:[UIImage imageNamed:@"info"] forState:UIControlStateNormal];
-    [metadataButton addTarget:self action:@selector(showMetadata) forControlEvents:UIControlEventTouchUpInside];
-    [self.slideMetadataContainerView addSubview:metadataButton];
-    [metadataButton setFrame:CGRectMake(width-44, 0, 44, 44)];
+    if (!metadataTap){
+        metadataTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showMetadata)];
+        metadataTap.numberOfTapsRequired = 1;
+        [self.metadataCollectionView addGestureRecognizer:metadataTap];
+    }
     
     [self.metadataCollectionView setBackgroundColor:[UIColor clearColor]];
-    metadataExpanded = NO;
+}
+
+- (void)adjustMetadataPosition {
+    if (self.slideshow){
+        __block CGFloat slideTitleMetadataHeight = 0;
+        __block CGFloat slideComponentsMetadataHeight = 0;
+        [currentSlide.photoSlides enumerateObjectsUsingBlock:^(PhotoSlide *photoSlide, NSUInteger idx, BOOL *stop) {
+            if (photoSlide.metadataTitleHeight.floatValue > slideTitleMetadataHeight){
+                slideTitleMetadataHeight = photoSlide.metadataTitleHeight.floatValue;
+            }
+            if (photoSlide.metadataComponentsHeight.floatValue > slideComponentsMetadataHeight){
+                slideComponentsMetadataHeight = photoSlide.metadataComponentsHeight.floatValue;
+            }
+        }];
+        metadataTitleHeight = slideTitleMetadataHeight;
+        metadataComponentsHeight = slideComponentsMetadataHeight;
+    }
+    
+    //NSLog(@"metadata title height: %f, metadata components height: %f",metadataTitleHeight,metadataComponentsHeight);
+    CGFloat adjustmentHeight = metadataExpanded ? (metadataTitleHeight + metadataComponentsHeight) : metadataTitleHeight;
+    if (self.photos.count || barsVisible || [self.slideshow.showMetadata isEqualToNumber:@YES]){
+        [UIView animateWithDuration:kDefaultAnimationDuration animations:^{
+            [self.slideMetadataContainerView setFrame:CGRectMake(0, height - adjustmentHeight, width, height)];
+        }];
+    }
 }
 
 - (void)setUpNavBar {
-    previousButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"leftArrow"] style:UIBarButtonItemStylePlain target:self action:@selector(previousSlide:)];
-    nextButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"rightArrow"] style:UIBarButtonItemStylePlain target:self action:@selector(nextSlide:)];
-    slideNumberButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:self action:nil];
-    slideshowTitleButtonItem = [[UIBarButtonItem alloc] initWithTitle:self.slideshow.title style:UIBarButtonItemStylePlain target:self action:nil];
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
+    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    if (self.slideshow){
+        previousButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"leftArrow"] style:UIBarButtonItemStylePlain target:self action:@selector(previousSlide:)];
+        nextButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"rightArrow"] style:UIBarButtonItemStylePlain target:self action:@selector(nextSlide:)];
+        slideNumberButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:self action:nil];
+        slideshowTitleButtonItem = [[UIBarButtonItem alloc] initWithTitle:self.slideshow.title style:UIBarButtonItemStylePlain target:self action:nil];
+        
+        [slideNumberButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
+        [slideshowTitleButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
+        
+        self.navigationItem.leftBarButtonItems = @[dismissButton, slideshowTitleButtonItem];
+        self.navigationItem.rightBarButtonItems = @[nextButton, slideNumberButtonItem, previousButton];
+    } else {
+        self.navigationItem.leftBarButtonItem = dismissButton;
+    }
     
+    [self determinePageNumbers];
+}
+
+- (void)determinePageNumbers {
     if (!_startIndex){
         [previousButton setEnabled:NO];
         if ([self.slideshow.showTitleSlide isEqualToNumber:@YES]){
@@ -197,26 +245,14 @@
         [slideNumberButtonItem setTitle:[NSString stringWithFormat:@"%ld of %lu",(long)currentPage,(unsigned long)self.slideshow.slides.count]];
         currentPage = _startIndex.integerValue;
     }
-    
-    [slideNumberButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansSemibold] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
-    [slideshowTitleButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
-    
-    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
-    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
-    self.navigationItem.leftBarButtonItems = @[dismissButton, slideshowTitleButtonItem];
-    self.navigationItem.rightBarButtonItems = @[nextButton, slideNumberButtonItem, previousButton];
 }
 
 - (void)showMetadata {
     CGRect metadataFrame = self.slideMetadataContainerView.frame;
     if (metadataExpanded){
-        if ([self.slideshow.showMetadata isEqualToNumber:@YES]){
-            metadataFrame.origin.y = height - 44.f;
-        } else {
-            metadataFrame.origin.y = height;
-        }
+        metadataFrame.origin.y = height-metadataTitleHeight;
     } else {
-        metadataFrame.origin.y = height/2;
+        metadataFrame.origin.y = height-(metadataTitleHeight+metadataComponentsHeight);
     }
     
     metadataExpanded = !metadataExpanded;
@@ -266,7 +302,7 @@
             [self assignViewsForCell:cell];
         } else {
             // we're on the title slide
-            //[slideNumberButtonItem setTitle:@""];
+            [slideNumberButtonItem setTitle:@""];
             [previousButton setEnabled:NO];
             currentSlide = nil;
             [self.collectionView setCanCancelContentTouches:YES];
@@ -290,6 +326,7 @@
     } else {
         currentSlide = nil;
     }
+    [self adjustMetadataPosition];
 }
 
 - (void)assignViewsForCell:(WFSlideshowSlideCell*)cell {
@@ -323,9 +360,11 @@
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
     if (collectionView == self.collectionView){
-        return 2;
+        return self.slideshow ? 2 : 1;
     } else {
-        if ([self.slideshow.showMetadata isEqualToNumber:@YES]){
+        if (self.photos.count){
+            return 1; // one-off comparison
+        } else if ([self.slideshow.showTitleSlide isEqualToNumber:@YES]){
             return self.slideshow.slides.count + 1;
         } else {
             return self.slideshow.slides.count;
@@ -334,27 +373,38 @@
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    if (collectionView == self.collectionView){
-        if (section == 0) {
-            if ([self.slideshow.showTitleSlide isEqualToNumber:@YES]){
-                return 1;
-            } else {
-                return 0;
-            }
-        } else return self.slideshow.slides.count;
-    } else {
-        if ([self.slideshow.showMetadata isEqualToNumber:@YES] && section == 0){
-            return 1;
+    if (collectionView == self.collectionView){ // slideshow collectionView
+        if (self.photos.count){
+            return 1; // one-off comparison
+        } else if (section == 0) {
+            return [self.slideshow.showTitleSlide isEqualToNumber:@YES] ? 1 : 0;
         } else {
-            Slide *slide = self.slideshow.slides[[self.slideshow.showMetadata isEqualToNumber:@YES] ? section - 1 : section];
-            return slide.photoSlides.count;
+            return self.slideshow.slides.count;
+        }
+    } else { // metadata collectionView
+        if (self.photos.count){
+            return self.photos.count; // one-off comparison
+        } else if ([self.slideshow.showTitleSlide isEqualToNumber:@YES] && section == 0){
+            return 1; // the title slide
+        } else {
+            Slide *slide = self.slideshow.slides[[self.slideshow.showTitleSlide isEqualToNumber:@YES] ? section - 1 : section];
+            return slide.photoSlides.count <=1 && slide.slideTexts.count <= 1 ? 1 : 2;
         }
     }
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (collectionView == self.collectionView){
-        if (indexPath.section == 0){
+        if (self.photos.count){
+            WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
+            [cell configureForPhotos:self.photos.mutableCopy inSlide:nil];
+            
+            // temporary
+            [cell.artImageView1 setFrame:kOriginalArtImageFrame1];
+            [cell.artImageView2 setFrame:kOriginalArtImageFrame2];
+            [cell.artImageView3 setFrame:kOriginalArtImageFrame3];
+            return cell;
+        } else if (indexPath.section == 0){
             WFSlideshowTitleCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"TitleCell" forIndexPath:indexPath];
             [cell configureForSlideshow:self.slideshow];
             return cell;
@@ -373,29 +423,53 @@
         }
     } else {
         WFSlideMetadataCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
-        
-        if ([self.slideshow.showMetadata isEqualToNumber:@YES] && indexPath.section == 0){
-            // title slide, so don't do anything
-            [cell.titleLabel setAttributedText:[[NSAttributedString alloc] initWithString:@"" attributes:nil]];
+        if (self.slideshow && [self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPath.section == 0){
+            [cell.titleLabel setAttributedText:[[NSAttributedString alloc] initWithString:@"" attributes:nil]]; // title slide, so don't do anything
         } else {
-            if ([self.slideshow.showMetadata isEqualToNumber:@YES]){
-                currentSlide = self.slideshow.slides[indexPath.section-1];
-            } else {
-                currentSlide = self.slideshow.slides[indexPath.section];
-            }
-            
-            PhotoSlide *photoSlide = currentSlide.photoSlides[indexPath.item];
-            [cell configureForPhotoSlide:photoSlide];
             
             CGRect titleLabelFrame = cell.titleLabel.frame;
-            if (currentSlide.photoSlides.count == 1 || currentSlide.slideTexts.count == 1){
-                titleLabelFrame.size.width = width-70;
+            CGRect componentsLabelFrame = cell.metadataComponentsLabel.frame;
+            
+            PhotoSlide *photoSlide;
+            if (self.photos.count){
+                [cell configureForPhoto:self.photos[indexPath.item] withPhotoCount:self.photos.count];
+                if (self.photos.count <= 1){
+                    titleLabelFrame.size.width = width-70;
+                    componentsLabelFrame.size.width = width-70;
+                } else {
+                    titleLabelFrame.size.width = (width-70)/2;
+                    componentsLabelFrame.size.width = (width-70)/2;
+                }
             } else {
-                titleLabelFrame.size.width = (width-70)/2;
+                NSInteger section = [self.slideshow.showTitleSlide isEqualToNumber:@YES] ? indexPath.section-1 : indexPath.section;
+                currentSlide = self.slideshow.slides[section];
+                photoSlide = currentSlide.photoSlides[indexPath.item];
+                [cell configureForPhoto:photoSlide.photo withPhotoCount:currentSlide.photoSlides.count];
+                if (currentSlide.photoSlides.count <= 1 && currentSlide.slideTexts.count <= 1){
+                    titleLabelFrame.size.width = width-70;
+                    componentsLabelFrame.size.width = width-70;
+                } else {
+                    titleLabelFrame.size.width = (width-70)/2;
+                    componentsLabelFrame.size.width = (width-70)/2;
+                }
             }
+            
             CGSize titleSize = [cell.titleLabel sizeThatFits:CGSizeMake(titleLabelFrame.size.width, CGFLOAT_MAX)];
             titleLabelFrame.size.height = titleSize.height;
+            CGSize componentsSize = [cell.metadataComponentsLabel sizeThatFits:CGSizeMake(componentsLabelFrame.size.width, CGFLOAT_MAX)];
+            componentsLabelFrame.size.height = componentsSize.height;
+            componentsLabelFrame.origin.x = titleLabelFrame.origin.x;
+            componentsLabelFrame.origin.y = titleLabelFrame.origin.y + titleLabelFrame.size.height + 23.f;
+            
             [cell.titleLabel setFrame:titleLabelFrame];
+            [cell.metadataComponentsLabel setFrame:componentsLabelFrame];
+            if (self.photos.count){
+                metadataTitleHeight = titleLabelFrame.size.height + titleLabelFrame.origin.y + 7.f;
+                metadataComponentsHeight = componentsSize.height + componentsLabelFrame.origin.y;
+            } else {
+                photoSlide.metadataTitleHeight = @(titleLabelFrame.size.height + titleLabelFrame.origin.y + 7.f);
+                photoSlide.metadataComponentsHeight = @(componentsSize.height + componentsLabelFrame.origin.y);
+            }
         }
         return cell;
     }
@@ -403,17 +477,28 @@
 
 #pragma mark – UICollectionViewDelegateFlowLayout
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    CGFloat fullWidth = collectionView.frame.size.width;
+    CGFloat fullHeight = collectionView.frame.size.height;
     if (collectionView == self.collectionView){
-        return CGSizeMake(collectionView.frame.size.width,collectionView.frame.size.height);
+        return CGSizeMake(fullWidth,fullHeight);
     } else {
-        if ([self.slideshow.showMetadata isEqualToNumber:@YES] && indexPath.section == 0){
-            return CGSizeMake(collectionView.frame.size.width,collectionView.frame.size.height);
-        } else {
-            Slide *slide = self.slideshow.slides[[self.slideshow.showMetadata isEqualToNumber:@YES] ? indexPath.section - 1 : indexPath.section];
-            if (slide.photoSlides.count == 1 || slide.slideTexts.count == 1){
-                return CGSizeMake(collectionView.frame.size.width,collectionView.frame.size.height);
+        if (self.photos.count){
+            if (self.photos.count == 1){
+                return CGSizeMake(fullWidth,fullHeight);
             } else {
-                return CGSizeMake(collectionView.frame.size.width/2,collectionView.frame.size.height);
+                return CGSizeMake(fullWidth/2,fullHeight);
+            }
+        } else if ([self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPath.section == 0){
+            return CGSizeMake(fullWidth,fullHeight);
+        } else {
+            if ([self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPath.section == 0){
+                return CGSizeMake(fullWidth,fullHeight);
+            }
+            Slide *slide = self.slideshow.slides[[self.slideshow.showTitleSlide isEqualToNumber:@YES] ? indexPath.section - 1 : indexPath.section];
+            if (slide.photoSlides.count <= 1 && slide.slideTexts.count <= 1){
+                return CGSizeMake(fullWidth,fullHeight);
+            } else {
+                return CGSizeMake(fullWidth/2,fullHeight);
             }
         }
     }
@@ -438,7 +523,8 @@
     barsVisible = YES;
     [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.925 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         self.navigationController.navigationBar.transform = CGAffineTransformIdentity;
-        self.slideMetadataContainerView.transform = CGAffineTransformIdentity;
+        CGFloat adjustmentHeight = metadataExpanded ? (metadataTitleHeight + metadataComponentsHeight) : metadataTitleHeight;
+        [self.slideMetadataContainerView setFrame:CGRectMake(0, height - adjustmentHeight, width, height)];
     } completion:^(BOOL finished) {
         
     }];
@@ -448,18 +534,18 @@
     barsVisible = NO;
     [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.925 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         self.navigationController.navigationBar.transform = CGAffineTransformMakeTranslation(0, -self.navigationController.navigationBar.frame.size.height);
-        self.slideMetadataContainerView.transform = CGAffineTransformMakeTranslation(0, self.navigationController.navigationBar.frame.size.height);
-    } completion:^(BOOL finished) {
-        if (titleTimer){
-            [titleTimer invalidate];
-            titleTimer = nil;
+        if (![self.slideshow.showMetadata isEqualToNumber:@YES]){
+            [self.slideMetadataContainerView setFrame:CGRectMake(0, height, width, height)];
         }
+    } completion:^(BOOL finished) {
+       
     }];
 }
 
 - (void)handlePan:(UIPanGestureRecognizer*)gestureRecognizer {
-    if (metadataExpanded) return;
     CGPoint fullTranslation = [gestureRecognizer locationInView:self.view];
+    if (metadataExpanded) return;
+    
     CGPoint translation = [gestureRecognizer translationInView:self.collectionView];
     NSIndexPath *indexPathForGesture = [self.collectionView indexPathForItemAtPoint:[gestureRecognizer locationInView:self.collectionView]];
     UIView *view = nil; WFSlideshowSlideCell *cell;
@@ -635,7 +721,7 @@
     }
     
     if (view && currentSlide && currentSlide.photoSlides.count){
-        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.7 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:kSlideResetAnimationDuration delay:0 usingSpringWithDamping:.975 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             if (view == artImageView1){
                 if (artImageView1.moved){
                     view.transform = CGAffineTransformIdentity;

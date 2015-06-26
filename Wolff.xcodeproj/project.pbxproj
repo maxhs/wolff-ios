@@ -1086,6 +1086,191 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		501436B61B2B8B8B003627EE /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				F298A1BC19523065005B13EA /* WFLoginViewController.h */,
+				F298A1BD19523065005B13EA /* WFLoginViewController.m */,
+			);
+			name = Login;
+			sourceTree = "<group>";
+		};
+		501436B71B2B8B94003627EE /* Catalog */ = {
+			isa = PBXGroup;
+			children = (
+				F2CE05B6199127960061DB94 /* WFCatalogViewController.h */,
+				F2CE05B7199127960061DB94 /* WFCatalogViewController.m */,
+				50DB443E1A55DF4C00856174 /* WFCatalogHeaderView.h */,
+				50DB443F1A55DF4C00856174 /* WFCatalogHeaderView.m */,
+			);
+			name = Catalog;
+			sourceTree = "<group>";
+		};
+		503B22121B38584800DFB0D5 /* WebView */ = {
+			isa = PBXGroup;
+			children = (
+				F2CE0553198E73940061DB94 /* WFWebViewController.h */,
+				F2CE0554198E73940061DB94 /* WFWebViewController.m */,
+			);
+			name = WebView;
+			sourceTree = "<group>";
+		};
+		503B22131B38585200DFB0D5 /* Menus */ = {
+			isa = PBXGroup;
+			children = (
+				502B3E801AE45D87001E0563 /* WFRightMenuTableViewController.h */,
+				502B3E811AE45D87001E0563 /* WFRightMenuTableViewController.m */,
+				50DB44791A586A3A00856174 /* WFSaveMenuViewController.h */,
+				50DB447A1A586A3A00856174 /* WFSaveMenuViewController.m */,
+				50DB447C1A586B8F00856174 /* WFSaveMenuCell.h */,
+				50DB447D1A586B8F00856174 /* WFSaveMenuCell.m */,
+				50952E791A478EA100485831 /* WFMenuViewController.h */,
+				50952E7A1A478EA100485831 /* WFMenuViewController.m */,
+				50DB43C71A53694C00856174 /* WFMenuCell.h */,
+				50DB43C81A53694C00856174 /* WFMenuCell.m */,
+			);
+			name = Menus;
+			sourceTree = "<group>";
+		};
+		503B22141B38587000DFB0D5 /* Profile/Settings */ = {
+			isa = PBXGroup;
+			children = (
+				50DB444A1A564EB600856174 /* WFProfileHeader.h */,
+				50DB444B1A564EB600856174 /* WFProfileHeader.m */,
+				50DB44471A564A2900856174 /* WFProfileViewController.h */,
+				50DB44481A564A2900856174 /* WFProfileViewController.m */,
+				F2CE0593198EAB280061DB94 /* WFSettingsViewController.h */,
+				F2CE0594198EAB280061DB94 /* WFSettingsViewController.m */,
+				F2CE0596198EAB7A0061DB94 /* WFSettingsCell.h */,
+				F2CE0597198EAB7A0061DB94 /* WFSettingsCell.m */,
+			);
+			name = Profile/Settings;
+			sourceTree = "<group>";
+		};
+		503B22151B38588E00DFB0D5 /* Institution */ = {
+			isa = PBXGroup;
+			children = (
+				F28C670C1A34139600B82FD8 /* WFInstitutionSearchViewController.h */,
+				F28C670D1A34139600B82FD8 /* WFInstitutionSearchViewController.m */,
+				F28C670F1A34150500B82FD8 /* WFInstitutionSearchCell.h */,
+				F28C67101A34150500B82FD8 /* WFInstitutionSearchCell.m */,
+			);
+			name = Institution;
+			sourceTree = "<group>";
+		};
+		503B22161B38591A00DFB0D5 /* ImagePicker */ = {
+			isa = PBXGroup;
+			children = (
+				50DB43FF1A545DA700856174 /* WFAssetGroupPickerController.h */,
+				50DB44001A545DA700856174 /* WFAssetGroupPickerController.m */,
+				50D7A9ED1A625853007FE14C /* WFAssetGroupPickerCell.h */,
+				50D7A9EE1A625853007FE14C /* WFAssetGroupPickerCell.m */,
+				50DB43FA1A53D35400856174 /* WFImagePickerController.h */,
+				50DB43FB1A53D35400856174 /* WFImagePickerController.m */,
+				50DB44021A5462B000856174 /* WFImagePickerCell.h */,
+				50DB44031A5462B000856174 /* WFImagePickerCell.m */,
+			);
+			name = ImagePicker;
+			sourceTree = "<group>";
+		};
+		503B22171B38593D00DFB0D5 /* Materials */ = {
+			isa = PBXGroup;
+			children = (
+				50C589521A8558070094DBBF /* WFMaterialsViewController.h */,
+				50C589531A8558070094DBBF /* WFMaterialsViewController.m */,
+				50C589551A8558450094DBBF /* WFMaterialCollectionCell.h */,
+				50C589561A8558450094DBBF /* WFMaterialCollectionCell.m */,
+				50C589581A8558500094DBBF /* WFNewMaterialCell.h */,
+				50C589591A8558500094DBBF /* WFNewMaterialCell.m */,
+			);
+			name = Materials;
+			sourceTree = "<group>";
+		};
+		503B22181B38595100DFB0D5 /* Icons */ = {
+			isa = PBXGroup;
+			children = (
+				50A077AE1A8EF3E900147A0F /* WFIconsViewController.h */,
+				50A077AF1A8EF3E900147A0F /* WFIconsViewController.m */,
+				50A077B41A8EF67300147A0F /* WFIconCollectionCell.h */,
+				50A077B51A8EF67300147A0F /* WFIconCollectionCell.m */,
+				50A077B11A8EF5BD00147A0F /* WFNewIconCell.h */,
+				50A077B21A8EF5BD00147A0F /* WFNewIconCell.m */,
+			);
+			name = Icons;
+			sourceTree = "<group>";
+		};
+		503B22191B38596800DFB0D5 /* Locations */ = {
+			isa = PBXGroup;
+			children = (
+				50D6EC181A82E53B00DAE52E /* WFLocationsViewController.h */,
+				50D6EC191A82E53B00DAE52E /* WFLocationsViewController.m */,
+				50D6EC151A82E52800DAE52E /* WFLocationCollectionCell.h */,
+				50D6EC161A82E52800DAE52E /* WFLocationCollectionCell.m */,
+				50A9D4181A83E6CB000B8DD6 /* WFNewLocationCell.h */,
+				50A9D4191A83E6CB000B8DD6 /* WFNewLocationCell.m */,
+			);
+			name = Locations;
+			sourceTree = "<group>";
+		};
+		503B221A1B38597200DFB0D5 /* Tags */ = {
+			isa = PBXGroup;
+			children = (
+				504192B11AD2315E0017405D /* WFTagsViewController.h */,
+				504192B21AD2315E0017405D /* WFTagsViewController.m */,
+				504192B41AD232960017405D /* WFNewTagCell.h */,
+				504192B51AD232960017405D /* WFNewTagCell.m */,
+				504192B71AD232A70017405D /* WFTagCollectionCell.h */,
+				504192B81AD232A70017405D /* WFTagCollectionCell.m */,
+			);
+			name = Tags;
+			sourceTree = "<group>";
+		};
+		503B221B1B38598400DFB0D5 /* Flags */ = {
+			isa = PBXGroup;
+			children = (
+				503CD5901A715D5900F4FF85 /* WFFlagViewController.h */,
+				503CD5911A715D5900F4FF85 /* WFFlagViewController.m */,
+				503CD5931A715D7300F4FF85 /* WFFlagCell.h */,
+				503CD5941A715D7300F4FF85 /* WFFlagCell.m */,
+			);
+			name = Flags;
+			sourceTree = "<group>";
+		};
+		503B221C1B38599600DFB0D5 /* Users */ = {
+			isa = PBXGroup;
+			children = (
+				50AB427A1AB6769900C4EF5A /* WFUsersViewController.h */,
+				50AB427B1AB6769900C4EF5A /* WFUsersViewController.m */,
+				50AB427D1AB6772100C4EF5A /* WFUserCollectionCell.h */,
+				50AB427E1AB6772100C4EF5A /* WFUserCollectionCell.m */,
+				50AB42801AB677B200C4EF5A /* WFNewUserCell.h */,
+				50AB42811AB677B200C4EF5A /* WFNewUserCell.m */,
+			);
+			name = Users;
+			sourceTree = "<group>";
+		};
+		503B221D1B3859C500DFB0D5 /* Artists */ = {
+			isa = PBXGroup;
+			children = (
+				50D6EC0F1A8284F200DAE52E /* WFArtistsViewController.h */,
+				50D6EC101A8284F200DAE52E /* WFArtistsViewController.m */,
+				50D6EC121A8285E500DAE52E /* WFArtistCollectionCell.h */,
+				50D6EC131A8285E500DAE52E /* WFArtistCollectionCell.m */,
+				50D6EC211A832D8D00DAE52E /* WFNewArtistCell.h */,
+				50D6EC221A832D8D00DAE52E /* WFNewArtistCell.m */,
+			);
+			name = Artists;
+			sourceTree = "<group>";
+		};
+		503B221E1B385EE200DFB0D5 /* Comparison(s) */ = {
+			isa = PBXGroup;
+			children = (
+				50DB449A1A58C82700856174 /* WFComparisonViewController.h */,
+				50DB449B1A58C82700856174 /* WFComparisonViewController.m */,
+			);
+			name = "Comparison(s)";
+			sourceTree = "<group>";
+		};
 		50AC91F71A998172004148D2 /* Custom Objects */ = {
 			isa = PBXGroup;
 			children = (
@@ -1103,30 +1288,56 @@
 			name = "Custom Objects";
 			sourceTree = "<group>";
 		};
-		50DB445C1A57476E00856174 /* User */ = {
+		50DAA7FE1B28C72700DBB001 /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
-				50DB444A1A564EB600856174 /* WFProfileHeader.h */,
-				50DB444B1A564EB600856174 /* WFProfileHeader.m */,
-				50DB44471A564A2900856174 /* WFProfileViewController.h */,
-				50DB44481A564A2900856174 /* WFProfileViewController.m */,
-				F2CE0593198EAB280061DB94 /* WFSettingsViewController.h */,
-				F2CE0594198EAB280061DB94 /* WFSettingsViewController.m */,
-				504237EB1A93991F0064408C /* WFBillingViewController.h */,
-				504237EC1A93991F0064408C /* WFBillingViewController.m */,
-				50300ADA1A97A6F900DBAC86 /* WFCardViewController.h */,
-				50300ADB1A97A6F900DBAC86 /* WFCardViewController.m */,
 				50DB43A31A53611300856174 /* WFNotificationsViewController.h */,
 				50DB43A41A53611300856174 /* WFNotificationsViewController.m */,
+				50DB43A61A53619400856174 /* WFNotificationCell.h */,
+				50DB43A71A53619400856174 /* WFNotificationCell.m */,
+			);
+			name = Notifications;
+			sourceTree = "<group>";
+		};
+		50DAA7FF1B28C73100DBB001 /* Billing/Payment */ = {
+			isa = PBXGroup;
+			children = (
+				504237EB1A93991F0064408C /* WFBillingViewController.h */,
+				504237EC1A93991F0064408C /* WFBillingViewController.m */,
+				504237EE1A9399320064408C /* WFBillingCell.h */,
+				504237EF1A9399320064408C /* WFBillingCell.m */,
+				50300ADA1A97A6F900DBAC86 /* WFCardViewController.h */,
+				50300ADB1A97A6F900DBAC86 /* WFCardViewController.m */,
+			);
+			name = Billing/Payment;
+			sourceTree = "<group>";
+		};
+		50DB445C1A57476E00856174 /* Walkthrough */ = {
+			isa = PBXGroup;
+			children = (
 				50D7A9CF1A622E5C007FE14C /* WFWalkthroughViewController.h */,
 				50D7A9D01A622E5C007FE14C /* WFWalkthroughViewController.m */,
 			);
-			name = User;
+			name = Walkthrough;
 			sourceTree = "<group>";
 		};
 		50DB445D1A57479400856174 /* Light Tables */ = {
 			isa = PBXGroup;
 			children = (
+				F2CE05B919913ECC0061DB94 /* WFLightTableCell.h */,
+				F2CE05BA19913ECC0061DB94 /* WFLightTableCell.m */,
+				50AC92191A9E4E7E004148D2 /* WFLightTableDefaultCell.h */,
+				50AC921A1A9E4E7E004148D2 /* WFLightTableDefaultCell.m */,
+				50DB447F1A58772800856174 /* WFTableShareCell.h */,
+				50DB44801A58772800856174 /* WFTableShareCell.m */,
+				50DB02271A5A72D8005A4E2F /* WFLightTableDetailsCell.h */,
+				50DB02281A5A72D8005A4E2F /* WFLightTableDetailsCell.m */,
+				50B525541AD58EAA00C84856 /* WFLightTableTableCell.h */,
+				50B525551AD58EAA00C84856 /* WFLightTableTableCell.m */,
+				50D6EC0C1A7C79CA00DAE52E /* WFLightTableContentsCell.h */,
+				50D6EC0D1A7C79CA00DAE52E /* WFLightTableContentsCell.m */,
+				505D3B791A64D56B00CD70DE /* WFLightTableKeyCell.h */,
+				505D3B7A1A64D56B00CD70DE /* WFLightTableKeyCell.m */,
 				50DB02241A5A7285005A4E2F /* WFLightTableDetailsViewController.h */,
 				50DB02251A5A7285005A4E2F /* WFLightTableDetailsViewController.m */,
 				5026DF5B1A3CC0C0000CD26F /* WFLightTablesViewController.h */,
@@ -1165,18 +1376,20 @@
 				F2CE058C198EAA730061DB94 /* WFSlideTableCell.m */,
 				50B6FA6D1AC47A6C006703AA /* WFNewSlideTableCell.h */,
 				50B6FA6E1AC47A6C006703AA /* WFNewSlideTableCell.m */,
-				50DE2EE41AEEAAC4000658A8 /* WFSlideMetadataCollectionCell.h */,
-				50DE2EE51AEEAAC4000658A8 /* WFSlideMetadataCollectionCell.m */,
 				F28C66FA1A33DA0000B82FD8 /* WFSlideshowsViewController.h */,
 				F28C66FB1A33DA0000B82FD8 /* WFSlideshowsViewController.m */,
 				F2CE05A71991167F0061DB94 /* WFSlideshowSplitViewController.h */,
 				F2CE05A81991167F0061DB94 /* WFSlideshowSplitViewController.m */,
-				F28C67061A33F4D900B82FD8 /* WFSlideshowSlideCell.h */,
-				F28C67071A33F4D900B82FD8 /* WFSlideshowSlideCell.m */,
 				F28C67031A33F4BE00B82FD8 /* WFSlideshowViewController.h */,
 				F28C67041A33F4BE00B82FD8 /* WFSlideshowViewController.m */,
+				F28C67061A33F4D900B82FD8 /* WFSlideshowSlideCell.h */,
+				F28C67071A33F4D900B82FD8 /* WFSlideshowSlideCell.m */,
+				50DE2EE41AEEAAC4000658A8 /* WFSlideMetadataCollectionCell.h */,
+				50DE2EE51AEEAAC4000658A8 /* WFSlideMetadataCollectionCell.m */,
 				50DB44561A57456C00856174 /* WFSlideshowSettingsViewController.h */,
 				50DB44571A57456C00856174 /* WFSlideshowSettingsViewController.m */,
+				50DB44591A5745B300856174 /* WFSlideshowSettingsCell.h */,
+				50DB445A1A5745B300856174 /* WFSlideshowSettingsCell.m */,
 				50DB44821A58773E00856174 /* WFSlideshowShareTableViewController.h */,
 				50DB44831A58773E00856174 /* WFSlideshowShareTableViewController.m */,
 				F28C67001A33F2D400B82FD8 /* WFSlideDetailViewController.h */,
@@ -1198,20 +1411,16 @@
 				F20FB2BE1A22A0A80007C905 /* WFNewArtViewController.m */,
 				F2CE057D198E929A0061DB94 /* WFArtMetadataViewController.h */,
 				F2CE057E198E929A0061DB94 /* WFArtMetadataViewController.m */,
-				503CD5901A715D5900F4FF85 /* WFFlagViewController.h */,
-				503CD5911A715D5900F4FF85 /* WFFlagViewController.m */,
-				50D6EC0F1A8284F200DAE52E /* WFArtistsViewController.h */,
-				50D6EC101A8284F200DAE52E /* WFArtistsViewController.m */,
-				50AB427A1AB6769900C4EF5A /* WFUsersViewController.h */,
-				50AB427B1AB6769900C4EF5A /* WFUsersViewController.m */,
-				50D6EC181A82E53B00DAE52E /* WFLocationsViewController.h */,
-				50D6EC191A82E53B00DAE52E /* WFLocationsViewController.m */,
-				504192B11AD2315E0017405D /* WFTagsViewController.h */,
-				504192B21AD2315E0017405D /* WFTagsViewController.m */,
-				50C589521A8558070094DBBF /* WFMaterialsViewController.h */,
-				50C589531A8558070094DBBF /* WFMaterialsViewController.m */,
-				50A077AE1A8EF3E900147A0F /* WFIconsViewController.h */,
-				50A077AF1A8EF3E900147A0F /* WFIconsViewController.m */,
+				50C5894F1A8528970094DBBF /* WFDateMetadataCell.h */,
+				50C589501A8528970094DBBF /* WFDateMetadataCell.m */,
+				F2CE0571198E85850061DB94 /* WFPhotoCell.h */,
+				F2CE0572198E85850061DB94 /* WFPhotoCell.m */,
+				503CD59C1A76F83600F4FF85 /* WFPhotoTileCell.h */,
+				503CD59D1A76F83600F4FF85 /* WFPhotoTileCell.m */,
+				F20FB2C91A22B1A60007C905 /* WFNewArtCell.h */,
+				F20FB2CA1A22B1A60007C905 /* WFNewArtCell.m */,
+				F2CE0580198E937B0061DB94 /* WFArtMetadataCell.h */,
+				F2CE0581198E937B0061DB94 /* WFArtMetadataCell.m */,
 			);
 			name = Art;
 			sourceTree = "<group>";
@@ -1281,31 +1490,28 @@
 				F28C77FD18E1E4950088B4C9 /* Wolff.xcdatamodeld */,
 				F2CE054F198E72B10061DB94 /* Models */,
 				F2CE0583198E937F0061DB94 /* Cells */,
-				50DB445C1A57476E00856174 /* User */,
+				503B221A1B38597200DFB0D5 /* Tags */,
+				503B22191B38596800DFB0D5 /* Locations */,
+				503B22141B38587000DFB0D5 /* Profile/Settings */,
+				50DAA7FF1B28C73100DBB001 /* Billing/Payment */,
+				50DAA7FE1B28C72700DBB001 /* Notifications */,
 				50DB445D1A57479400856174 /* Light Tables */,
+				503B221D1B3859C500DFB0D5 /* Artists */,
+				503B22171B38593D00DFB0D5 /* Materials */,
+				503B22181B38595100DFB0D5 /* Icons */,
+				503B221B1B38598400DFB0D5 /* Flags */,
+				503B221C1B38599600DFB0D5 /* Users */,
 				50E760891AF6B862003F72AE /* Art */,
-				F2CE05B6199127960061DB94 /* WFCatalogViewController.h */,
-				F2CE05B7199127960061DB94 /* WFCatalogViewController.m */,
-				F2CE0553198E73940061DB94 /* WFWebViewController.h */,
-				F2CE0554198E73940061DB94 /* WFWebViewController.m */,
-				50DB44791A586A3A00856174 /* WFSaveMenuViewController.h */,
-				50DB447A1A586A3A00856174 /* WFSaveMenuViewController.m */,
-				F28C670C1A34139600B82FD8 /* WFInstitutionSearchViewController.h */,
-				F28C670D1A34139600B82FD8 /* WFInstitutionSearchViewController.m */,
-				50DB449A1A58C82700856174 /* WFComparisonViewController.h */,
-				50DB449B1A58C82700856174 /* WFComparisonViewController.m */,
-				F298A1BC19523065005B13EA /* WFLoginViewController.h */,
-				F298A1BD19523065005B13EA /* WFLoginViewController.m */,
-				50952E791A478EA100485831 /* WFMenuViewController.h */,
-				50952E7A1A478EA100485831 /* WFMenuViewController.m */,
-				50DB43FF1A545DA700856174 /* WFAssetGroupPickerController.h */,
-				50DB44001A545DA700856174 /* WFAssetGroupPickerController.m */,
-				50DB43FA1A53D35400856174 /* WFImagePickerController.h */,
-				50DB43FB1A53D35400856174 /* WFImagePickerController.m */,
+				501436B61B2B8B8B003627EE /* Login */,
+				50DB445C1A57476E00856174 /* Walkthrough */,
+				501436B71B2B8B94003627EE /* Catalog */,
+				503B22121B38584800DFB0D5 /* WebView */,
+				503B22131B38585200DFB0D5 /* Menus */,
+				503B22151B38588E00DFB0D5 /* Institution */,
+				503B221E1B385EE200DFB0D5 /* Comparison(s) */,
 				50E760881AF6B831003F72AE /* Slideshows */,
+				503B22161B38591A00DFB0D5 /* ImagePicker */,
 				50E760871AF6B7F3003F72AE /* Search/Selected */,
-				502B3E801AE45D87001E0563 /* WFRightMenuTableViewController.h */,
-				502B3E811AE45D87001E0563 /* WFRightMenuTableViewController.m */,
 				50AC91F71A998172004148D2 /* Custom Objects */,
 				F2A9581119E2293800A3B471 /* Transitions / Animators */,
 				F2CE055E198E76450061DB94 /* Images */,
@@ -1769,76 +1975,6 @@
 		F2CE0583198E937F0061DB94 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
-				F2CE0571198E85850061DB94 /* WFPhotoCell.h */,
-				F2CE0572198E85850061DB94 /* WFPhotoCell.m */,
-				503CD59C1A76F83600F4FF85 /* WFPhotoTileCell.h */,
-				503CD59D1A76F83600F4FF85 /* WFPhotoTileCell.m */,
-				F2CE05B919913ECC0061DB94 /* WFLightTableCell.h */,
-				F2CE05BA19913ECC0061DB94 /* WFLightTableCell.m */,
-				50AC92191A9E4E7E004148D2 /* WFLightTableDefaultCell.h */,
-				50AC921A1A9E4E7E004148D2 /* WFLightTableDefaultCell.m */,
-				F2CE0580198E937B0061DB94 /* WFArtMetadataCell.h */,
-				F2CE0581198E937B0061DB94 /* WFArtMetadataCell.m */,
-				F2CE0596198EAB7A0061DB94 /* WFSettingsCell.h */,
-				F2CE0597198EAB7A0061DB94 /* WFSettingsCell.m */,
-				F20FB2C91A22B1A60007C905 /* WFNewArtCell.h */,
-				F20FB2CA1A22B1A60007C905 /* WFNewArtCell.m */,
-				50C5894F1A8528970094DBBF /* WFDateMetadataCell.h */,
-				50C589501A8528970094DBBF /* WFDateMetadataCell.m */,
-				F28C670F1A34150500B82FD8 /* WFInstitutionSearchCell.h */,
-				F28C67101A34150500B82FD8 /* WFInstitutionSearchCell.m */,
-				50DB43A61A53619400856174 /* WFNotificationCell.h */,
-				50DB43A71A53619400856174 /* WFNotificationCell.m */,
-				50DB43C71A53694C00856174 /* WFMenuCell.h */,
-				50DB43C81A53694C00856174 /* WFMenuCell.m */,
-				50DB44021A5462B000856174 /* WFImagePickerCell.h */,
-				50DB44031A5462B000856174 /* WFImagePickerCell.m */,
-				50D7A9ED1A625853007FE14C /* WFAssetGroupPickerCell.h */,
-				50D7A9EE1A625853007FE14C /* WFAssetGroupPickerCell.m */,
-				50DB44591A5745B300856174 /* WFSlideshowSettingsCell.h */,
-				50DB445A1A5745B300856174 /* WFSlideshowSettingsCell.m */,
-				50DB443E1A55DF4C00856174 /* WFCatalogHeaderView.h */,
-				50DB443F1A55DF4C00856174 /* WFCatalogHeaderView.m */,
-				50DB447F1A58772800856174 /* WFTableShareCell.h */,
-				50DB44801A58772800856174 /* WFTableShareCell.m */,
-				50DB447C1A586B8F00856174 /* WFSaveMenuCell.h */,
-				50DB447D1A586B8F00856174 /* WFSaveMenuCell.m */,
-				50DB02271A5A72D8005A4E2F /* WFLightTableDetailsCell.h */,
-				50DB02281A5A72D8005A4E2F /* WFLightTableDetailsCell.m */,
-				50B525541AD58EAA00C84856 /* WFLightTableTableCell.h */,
-				50B525551AD58EAA00C84856 /* WFLightTableTableCell.m */,
-				50D6EC0C1A7C79CA00DAE52E /* WFLightTableContentsCell.h */,
-				50D6EC0D1A7C79CA00DAE52E /* WFLightTableContentsCell.m */,
-				505D3B791A64D56B00CD70DE /* WFLightTableKeyCell.h */,
-				505D3B7A1A64D56B00CD70DE /* WFLightTableKeyCell.m */,
-				503CD5931A715D7300F4FF85 /* WFFlagCell.h */,
-				503CD5941A715D7300F4FF85 /* WFFlagCell.m */,
-				50D6EC151A82E52800DAE52E /* WFLocationCollectionCell.h */,
-				50D6EC161A82E52800DAE52E /* WFLocationCollectionCell.m */,
-				50A9D4181A83E6CB000B8DD6 /* WFNewLocationCell.h */,
-				50A9D4191A83E6CB000B8DD6 /* WFNewLocationCell.m */,
-				504192B41AD232960017405D /* WFNewTagCell.h */,
-				504192B51AD232960017405D /* WFNewTagCell.m */,
-				504192B71AD232A70017405D /* WFTagCollectionCell.h */,
-				504192B81AD232A70017405D /* WFTagCollectionCell.m */,
-				50D6EC121A8285E500DAE52E /* WFArtistCollectionCell.h */,
-				50D6EC131A8285E500DAE52E /* WFArtistCollectionCell.m */,
-				50D6EC211A832D8D00DAE52E /* WFNewArtistCell.h */,
-				50D6EC221A832D8D00DAE52E /* WFNewArtistCell.m */,
-				50AB427D1AB6772100C4EF5A /* WFUserCollectionCell.h */,
-				50AB427E1AB6772100C4EF5A /* WFUserCollectionCell.m */,
-				50AB42801AB677B200C4EF5A /* WFNewUserCell.h */,
-				50AB42811AB677B200C4EF5A /* WFNewUserCell.m */,
-				50C589551A8558450094DBBF /* WFMaterialCollectionCell.h */,
-				50C589561A8558450094DBBF /* WFMaterialCollectionCell.m */,
-				50C589581A8558500094DBBF /* WFNewMaterialCell.h */,
-				50C589591A8558500094DBBF /* WFNewMaterialCell.m */,
-				50A077B41A8EF67300147A0F /* WFIconCollectionCell.h */,
-				50A077B51A8EF67300147A0F /* WFIconCollectionCell.m */,
-				50A077B11A8EF5BD00147A0F /* WFNewIconCell.h */,
-				50A077B21A8EF5BD00147A0F /* WFNewIconCell.m */,
-				504237EE1A9399320064408C /* WFBillingCell.h */,
-				504237EF1A9399320064408C /* WFBillingCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";

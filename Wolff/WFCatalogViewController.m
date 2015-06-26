@@ -69,8 +69,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     NSMutableOrderedSet *_privatePhotos;
     NSMutableOrderedSet *_favoritePhotos;
     NSMutableOrderedSet *_filteredPhotos;
-    NSMutableArray *_tables;
+    NSMutableOrderedSet *_lightTables;
     NSMutableOrderedSet *_slideshows;
+    NSMutableOrderedSet *_uncategorizesSlideshows;
     NSMutableArray *_filteredTables;
     UIBarButtonItem *addButton;
     UIBarButtonItem *settingsButton;
@@ -155,6 +156,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     _privatePhotos = [NSMutableOrderedSet orderedSet];
     _favoritePhotos = [NSMutableOrderedSet orderedSet];
     _selectedPhotos = [NSMutableOrderedSet orderedSet];
+    
+    _slideshows = [NSMutableOrderedSet orderedSetWithArray:[Slideshow MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
     
     //set up the light table sidebar
     expanded = NO;
@@ -389,6 +392,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                     [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
                 }
             }
+            _slideshows = tempSet;
         }
         
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -431,17 +435,12 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     [self setUpNavBar];
     [self loadUserDashboard];
-    if (tableIsVisible){
-        [self.tableView reloadData];
-    }
-    
+    if (tableIsVisible) [self.tableView reloadData];
     [ProgressHUD dismiss];
 }
 
 - (void)logout {
-    if (tableIsVisible){
-        [self showSidebar];
-    }
+    if (tableIsVisible) [self showSidebar];
     [delegate logout];
     [self loggedOut];
     
@@ -645,24 +644,23 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     //[WFAlert show:[NSString stringWithFormat:@"Something went wrong while trying to add \"%@\" to the catalog. Please try again soon.",art.title] withTime:3.7f];
 }
 
-- (void)resetSlideshows {
-    _slideshows = [NSMutableOrderedSet orderedSetWithArray:[Slideshow MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
-    NSSortDescriptor *alphabeticalSlideshowSort = [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES];
-    [_slideshows sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalSlideshowSort]];
-}
+//- (void)resetSlideshows {
+//    _slideshows = [NSMutableOrderedSet orderedSetWithArray:[Slideshow MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
+//    NSSortDescriptor *alphabeticalSlideshowSort = [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES];
+//    [_slideshows sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalSlideshowSort]];
+//}
 
 - (void)resetLightTables {
-    _tables = [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
+    _lightTables = [NSMutableOrderedSet orderedSetWithOrderedSet:self.currentUser.lightTables];
     NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
-    [_tables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
+    [_lightTables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
 }
 
 #pragma mark - Table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    [self resetSlideshows];
     [self resetLightTables];
     if (slideshowSidebarMode){
-        return 2;
+        return 2 + _lightTables.count;
     } else {
         return 3;
     }
@@ -672,8 +670,15 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     if (slideshowSidebarMode){
         if (section == 0){
             return 1;
+        } else if (section == _lightTables.count+1){
+            if (!_uncategorizesSlideshows) _uncategorizesSlideshows = [NSMutableOrderedSet orderedSet];
+            [_slideshows enumerateObjectsUsingBlock:^(Slideshow *slideshow, NSUInteger idx, BOOL *stop) {
+                if (slideshow.lightTables.count == 0) [_uncategorizesSlideshows addObject:slideshow];
+            }];
+            return _uncategorizesSlideshows.count;
         } else {
-            return _slideshows.count;
+            LightTable *lightTable = _lightTables[section-1];
+            return lightTable.slideshows.count;
         }
     } else {
         switch (section) {
@@ -684,15 +689,14 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                 return 1;
                 break;
             case 2:
-                if (_tables.count){
-                    return _tables.count;
+                if (_lightTables.count){
+                    return _lightTables.count;
                 } else if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
                     return 1;
                 } else {
                     return 0;
                 }
                 break;
-            
             default:
                 return 0;
                 break;
@@ -716,13 +720,17 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             [cell.contentView addGestureRecognizer:cell.scrollView.panGestureRecognizer];
             [cell.iconImageView setImage:nil];
             [cell.label setText:@""];
-            if (!loading && _slideshows.count == 0){
-                [cell.slideshowLabel setText:@"No Slideshows"];
-                [cell.slideshowLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
-            } else {
-                Slideshow *slideshow = _slideshows[indexPath.row];
+            
+            if (indexPath.section == _lightTables.count+1){
+                Slideshow *slideshow = _uncategorizesSlideshows[indexPath.row];
                 [cell configureForSlideshow:slideshow];
-                [cell.actionButton setTag:indexPath.row];
+                [cell.actionButton setTag:slideshow.identifier.integerValue];
+                [cell.actionButton addTarget:self action:@selector(slideshowAction:) forControlEvents:UIControlEventTouchUpInside];
+            } else {
+                LightTable *lightTable = _lightTables[indexPath.section-1];
+                Slideshow *slideshow = lightTable.slideshows[indexPath.row];
+                [cell configureForSlideshow:slideshow];
+                [cell.actionButton setTag:slideshow.identifier.integerValue];
                 [cell.actionButton addTarget:self action:@selector(slideshowAction:) forControlEvents:UIControlEventTouchUpInside];
             }
         }
@@ -771,8 +779,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         } else {
             WFLightTableCell *cell = (WFLightTableCell *)[tableView dequeueReusableCellWithIdentifier:@"LightTableCell"];
             [cell setBackgroundColor:[UIColor clearColor]];
-            if (_tables.count){
-                LightTable *lightTable = _tables[indexPath.row];
+            if (_lightTables.count){
+                LightTable *lightTable = _lightTables[indexPath.row];
                 [cell configureForTable:lightTable];
                 [cell.label setText:@""];
                 cell.selectionStyle = UITableViewCellSelectionStyleDefault;
@@ -807,13 +815,56 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }
 }
 
-- (void)slideshowAction:(UIButton*)button{
-    Slideshow *slideshow = _slideshows[button.tag];
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:button.tag inSection:1];
-    if ([slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
-        [self deleteSlideshow:slideshow atIndexPath:indexPath];
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    if (slideshowSidebarMode && section != 0){
+        if (section == _lightTables.count+1){
+            return 34.f;
+        } else {
+            LightTable *lightTable = _lightTables[section-1];
+            return lightTable.slideshows.count ? 34.f : 0.f;
+        }
     } else {
-        [self removeSlideshow:slideshow atIndexPath:indexPath];
+        return 0.f;
+    }
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    CGFloat headerHeight = (slideshowSidebarMode && section != 0) ? 34.f : 0.f;
+    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, headerHeight)];
+    [headerView setBackgroundColor:[UIColor colorWithWhite:.07 alpha:1]];
+    
+    if (section == _lightTables.count+1){
+        UILabel *lightTableLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 0, kSidebarWidth, headerHeight)];
+        [lightTableLabel setText:@"Uncategorized"];
+        [lightTableLabel setBackgroundColor:[UIColor clearColor]];
+        [lightTableLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSans] size:0]];
+        [lightTableLabel setTextAlignment:NSTextAlignmentLeft];
+        [lightTableLabel setTextColor:[UIColor lightGrayColor]];
+        [headerView addSubview:lightTableLabel];
+    } else if (section != 0){
+        LightTable *lightTable = _lightTables[section-1];
+        if (lightTable.slideshows.count){
+            UILabel *lightTableLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 0, kSidebarWidth, headerHeight)];
+            [lightTableLabel setText:lightTable.name];
+            [lightTableLabel setBackgroundColor:[UIColor clearColor]];
+            [lightTableLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSans] size:0]];
+            [lightTableLabel setTextAlignment:NSTextAlignmentLeft];
+            [lightTableLabel setTextColor:[UIColor lightGrayColor]];
+            [headerView addSubview:lightTableLabel];
+        }
+    }
+
+    return headerView;
+}
+
+- (void)slideshowAction:(NSNumber*)slideshowId{
+    Slideshow *slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:slideshowId inContext:[NSManagedObjectContext MR_defaultContext]];
+    if (!slideshow) return;
+    //NSIndexPath *indexPath = [NSIndexPath indexPathForRow:button.tag inSection:1];
+    if ([slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+        [self deleteSlideshow:slideshow atIndexPath:nil];
+    } else {
+        [self removeSlideshow:slideshow atIndexPath:nil];
     }
 }
 
@@ -828,14 +879,14 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         }];
     }
     [self.tableView beginUpdates];
-    [_slideshows removeObject:slideshow];
+    //[_slideshows removeObject:slideshow];
     [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         [UIView animateWithDuration:kFastAnimationDuration animations:^{
-            if (_slideshows.count){
+            if (indexPath){
                 [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
             } else {
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
+                [self.tableView reloadData];
             }
             [self.tableView endUpdates];
         } completion:^(BOOL finished) {
@@ -846,25 +897,24 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)removeSlideshow:(Slideshow *)slideshow atIndexPath:(NSIndexPath*)indexPath {
     [self.tableView beginUpdates];
-    [_slideshows removeObject:slideshow];
+    //[_slideshows removeObject:slideshow];
     [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         [UIView animateWithDuration:kFastAnimationDuration animations:^{
-            if (_slideshows.count){
+            if (indexPath){
                 [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
             } else {
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
+                [self.tableView reloadData];
             }
             [self.tableView endUpdates];
         } completion:^(BOOL finished) {
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
         }];
     }];
-    
 }
 
 - (void)editLightTable:(UIButton *)button {
-    LightTable *lightTable = _tables[button.tag];
+    LightTable *lightTable = _lightTables[button.tag];
     WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
     [vc setLightTable:lightTable];
     vc.lightTableDelegate = self;
@@ -886,7 +936,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)lightTableAction:(UIButton*)button{
-    LightTable *lightTable = _tables[button.tag];
+    LightTable *lightTable = _lightTables[button.tag];
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:button.tag inSection:2];
     if (lightTable && [lightTable includesOwnerId:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
         [self deleteLightTable:lightTable atIndexPath:indexPath];
@@ -903,7 +953,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     }
     if (![lightTable.identifier isEqualToNumber:@0]){
-        [manager DELETE:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [manager DELETE:[NSString stringWithFormat:@"light_lightTables/%@",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success deleting this light table: %@",responseObject);
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to delete this light table: %@",error.description);
@@ -913,11 +963,11 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [self.tableView beginUpdates];
     [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        _tables = _tables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
+        _lightTables = _lightTables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
         
         [UIView animateWithDuration:kFastAnimationDuration animations:^{
             [cell.scrollView setContentOffset:CGPointZero];
-            if (_tables.count){
+            if (_lightTables.count){
                 [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
             } else {
                 [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:2] withRowAnimation:UITableViewRowAnimationNone];
@@ -934,7 +984,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     if (![lightTable.identifier isEqualToNumber:@0]){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-        [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/leave",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [manager DELETE:[NSString stringWithFormat:@"light_lightTables/%@/leave",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success leaving table: %@",responseObject);
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Error leaving light table: %@",error.description);
@@ -944,11 +994,11 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [self.tableView beginUpdates];
     [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        _tables = _tables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
+        _lightTables = _lightTables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
         
         [UIView animateWithDuration:kFastAnimationDuration animations:^{
             [cell.scrollView setContentOffset:CGPointZero];
-            if (_tables.count){
+            if (_lightTables.count){
                 [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
             } else {
                 [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:2] withRowAnimation:UITableViewRowAnimationNone];
@@ -964,38 +1014,38 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     searching = NO;
     [_noSearchResultsLabel setHidden:YES];
+    
     if (slideshowSidebarMode){
+        Slideshow *slideshow;
         if (indexPath.section == 0){
             [self newSlideshow:NO];
+            return;
+        } else if (indexPath.section == _lightTables.count + 1){
+            slideshow = _uncategorizesSlideshows[indexPath.row];
         } else {
-            Slideshow *slideshow = _slideshows[indexPath.row];
-            if (slideshow.user && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
-                [self slideshowSelected:slideshow];
-                return;
+            LightTable *lightTable = _lightTables[indexPath.section-1];
+            slideshow = lightTable.slideshows[indexPath.row];
+        }
+        if (slideshow.user && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+            [self slideshowSelected:slideshow];
+            return;
+        } else {
+            WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
+            WFNoRotateNavController *nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
+            [vc setSlideshow:slideshow];
+            
+            if (IDIOM == IPAD){
+                [self resetTransitionBooleans];
+                nav.transitioningDelegate = self;
+                nav.modalPresentationStyle = UIModalPresentationCustom;
+                [self presentViewController:nav animated:YES completion:NULL];
             } else {
-                if (slideshow.slides.count){
-                    WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
-                    WFNoRotateNavController *nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
-                    [vc setSlideshow:slideshow];
-                    if (IDIOM == IPAD){
-                        nav.transitioningDelegate = self;
-                        nav.modalPresentationStyle = UIModalPresentationCustom;
-                        [self presentViewController:nav animated:YES completion:^{
-                            
-                        }];
-                    } else {
-                        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
-                        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
-                        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
-                        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                            [self presentViewController:nav animated:YES completion:^{
-                                
-                            }];
-                        });
-                    }
-                } else {
-                    [WFAlert show:@"This slideshow doesn't have any slides!" withTime:3.3f];
-                }
+                NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
+                [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
+                dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                    [self presentViewController:nav animated:YES completion:NULL];
+                });
             }
         }
     } else {
@@ -1011,8 +1061,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         } else if (indexPath.section == 2){
             if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
                 if (self.currentUser.customerPlan.length){
-                    if (_tables.count){
-                        LightTable *lightTable = _tables[indexPath.row];
+                    if (_lightTables.count){
+                        LightTable *lightTable = _lightTables[indexPath.row];
                         if (_lightTable == lightTable){
                             self.lightTable = nil;
                             showLightTable = NO;
@@ -1092,7 +1142,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         NSString *title = lightTable.name.length ? [NSString stringWithFormat:@"\"%@\"",lightTable.name] : @"\"table without a name\"";
         [ProgressHUD show:[NSString stringWithFormat:@"Loading %@",title]];
         loading = YES;
-        [manager GET:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [manager GET:[NSString stringWithFormat:@"light_lightTables/%@",lightTable.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success loading light table: %@",responseObject);
             [lightTable populateFromDictionary:[responseObject objectForKey:@"table"]];
             [self.collectionView reloadData];
@@ -1401,7 +1451,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         }];
     }];
     
-    [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove",self.lightTable.identifier] parameters:@{@"photo_id":photo.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [manager DELETE:[NSString stringWithFormat:@"light_lightTables/%@/remove",self.lightTable.identifier] parameters:@{@"photo_id":photo.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"success removing photo from light table: %@",responseObject);
         if (tableIsVisible){
             [self.tableView reloadData];
@@ -1419,7 +1469,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         
     }];
-    [manager POST:[NSString stringWithFormat:@"light_tables/%@/add",self.lightTable.identifier] parameters:@{@"photo_id":photo.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [manager POST:[NSString stringWithFormat:@"light_lightTables/%@/add",self.lightTable.identifier] parameters:@{@"photo_id":photo.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"success adding art from light table: %@",responseObject);
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"failed to add art from light table: %@",error.description);
@@ -1608,9 +1658,11 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     if (comparison1 && comparison1.photo && comparison2 && comparison2.photo){
         [self resetTransitionBooleans];
         comparison = YES;
-        WFComparisonViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Comparison"];
-        vc.photos = [NSMutableOrderedSet orderedSetWithArray:@[comparison1.photo, comparison2.photo]];
+        //WFComparisonViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Comparison"];
+        //vc.photos = [NSMutableOrderedSet orderedSetWithArray:@[comparison1.photo, comparison2.photo]];
     
+        WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
+        [vc setPhotos:@[comparison1.photo,comparison2.photo]];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
@@ -1760,7 +1812,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             *stop = YES;
         }
     }];
-    for (LightTable *lightTable in _tables){
+    for (LightTable *lightTable in _lightTables){
         if ([lightTable.photos containsObject:photo]){
             [lightTable removePhoto:photo];
         }
@@ -2095,22 +2147,16 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         
         if (IDIOM == IPAD){
             [self resetTransitionBooleans];
-            [self presentViewController:nav animated:YES completion:^{
-                
-            }];
+            [self presentViewController:nav animated:YES completion:NULL];
         } else {
             if (self.presentedViewController){// dismiss the presented VC, if applicable
                 [self dismissViewControllerAnimated:YES completion:^{
                     [self resetTransitionBooleans];
-                    [self presentViewController:nav animated:YES completion:^{
-                        
-                    }];
+                    [self presentViewController:nav animated:YES completion:NULL];
                 }];
             } else {
                 [self resetTransitionBooleans];
-                [self presentViewController:nav animated:YES completion:^{
-                    
-                }];
+                [self presentViewController:nav animated:YES completion:NULL];
             }
         }
     } else {
@@ -2128,7 +2174,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)shouldReloadSlideshows {
-    NSLog(@"should reload slideshows called");
     if (tableIsVisible && slideshowSidebarMode){
         [self.tableView reloadData];
         NSLog(@"should be reloading data");
@@ -2210,7 +2255,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             tablesButton.selected = YES;
         }
         
-        CGRect collectionFrame = self.collectionView.frame; //show the light table sidebar
+        CGRect collectionFrame = self.collectionView.frame;
+        collectionFrame.size.width = width - kSidebarWidth;
         collectionFrame.origin.x = offsetWidth;
         
         [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
@@ -2451,7 +2497,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                 [self.tableView reloadData];
             }
             if (photoIds.count){
-                [manager PATCH:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:@{@"light_table":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                [manager PATCH:[NSString stringWithFormat:@"light_lightTables/%@",lightTable.identifier] parameters:@{@"light_table":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
                     NSLog(@"Success bulk adding photos to a light table: %@",responseObject);
                     NSString *photoCount = _selectedPhotos.count == 1 ? @"1 photo" : [NSString stringWithFormat:@"%lu photos",(unsigned long)_selectedPhotos.count];
                     [WFAlert show:[NSString stringWithFormat:@"%@ added to \"%@\"",photoCount, lightTable.name] withTime:3.3f];

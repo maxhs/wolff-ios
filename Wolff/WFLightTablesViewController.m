@@ -156,7 +156,7 @@
         LightTable *table = (LightTable*)_lightTables[indexPath.row];
         [cell configureForTable:table];
         if (_slideshow){
-            if ([_slideshow.tables containsObject:table]){
+            if ([_slideshow.lightTables containsObject:table]){
                 cell.accessoryType = UITableViewCellAccessoryCheckmark;
             } else {
                 cell.accessoryType = UITableViewCellAccessoryNone;
@@ -206,7 +206,7 @@
         }
     } else {
         LightTable *lightTable = (LightTable*)_lightTables[indexPath.row];
-        if (_slideshow && [_slideshow.tables containsObject:lightTable]){
+        if (_slideshow && [_slideshow.lightTables containsObject:lightTable]){
             if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableDeselected:)]){
                 [self.lightTableDelegate lightTableDeselected:lightTable];
                 [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];

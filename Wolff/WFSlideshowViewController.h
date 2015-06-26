@@ -16,6 +16,7 @@
 @property (weak, nonatomic) IBOutlet UIView *slideMetadataContainerView;
 @property (weak, nonatomic) IBOutlet UICollectionView *metadataCollectionView;
 @property (strong, nonatomic) Slideshow *slideshow;
+@property (strong, nonatomic) NSArray *photos; // comparison mode
 @property (strong, nonatomic) NSNumber *startIndex;
 
 - (void)dismiss;

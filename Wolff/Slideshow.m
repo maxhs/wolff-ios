@@ -19,7 +19,7 @@
 @dynamic slides;
 @dynamic discussions;
 @dynamic photos;
-@dynamic tables;
+@dynamic lightTables;
 @dynamic user;
 
 @end

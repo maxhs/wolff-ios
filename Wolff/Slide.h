@@ -19,6 +19,7 @@
 @property (nonatomic, retain) Slideshow *slideshow;
 @property (nonatomic, retain) NSOrderedSet *photoSlides;
 @property (nonatomic, retain) NSOrderedSet *slideTexts;
+@property (nonatomic, retain) NSOrderedSet *notes;
 @end
 @interface Slide (CoreDataGeneratedAccessors)
 

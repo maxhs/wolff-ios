@@ -13,6 +13,7 @@
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 
 @implementation Slide (helper)
+
 - (void)populateFromDictionary:(NSDictionary *)dictionary {
     //NSLog(@"slide helper: %@",dictionary);
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
@@ -35,6 +36,11 @@
             photoSlide.slide = self;
             [set addObject:photoSlide];
         }
+        for (PhotoSlide *photoSlide in self.photoSlides){
+            if (![set containsObject:photoSlide]){
+                [photoSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+        }
         self.photoSlides = set;
     }
     if ([dictionary objectForKey:@"slide_texts"] && [dictionary objectForKey:@"slide_texts"] != [NSNull null]){
@@ -46,6 +52,11 @@
             }
             [slideText populateFromDictionary:textDict];
             [set addObject:slideText];
+        }
+        for (SlideText *slideText in self.slideTexts){
+            if (![set containsObject:slideText]){
+                [slideText MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
         }
         self.slideTexts = set;
     }

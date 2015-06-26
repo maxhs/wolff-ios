@@ -20,6 +20,8 @@
 @property (nonatomic, retain) NSNumber * width;
 @property (nonatomic, retain) NSNumber * height;
 @property (nonatomic, retain) NSNumber * index;
+@property (nonatomic, retain) NSNumber * metadataTitleHeight;
+@property (nonatomic, retain) NSNumber * metadataComponentsHeight;
 @property (nonatomic, retain) Slide *slide;
 @property (nonatomic, retain) Photo *photo;
 

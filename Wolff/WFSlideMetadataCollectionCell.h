@@ -11,5 +11,6 @@
 
 @interface WFSlideMetadataCollectionCell : UICollectionViewCell
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
-- (void)configureForPhotoSlide:(PhotoSlide*)photoSlide;
+@property (weak, nonatomic) IBOutlet UILabel *metadataComponentsLabel;
+- (void)configureForPhoto:(Photo*)photos withPhotoCount:(NSUInteger)photoCount;
 @end

@@ -16,6 +16,7 @@
 #import "WFArtMetadataViewController.h"
 #import "WFUtilities.h"
 #import "WFInteractiveImageView.h"
+#import "WFSlideMetadataCollectionCell.h"
 
 @interface WFComparisonViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UIGestureRecognizerDelegate, UIViewControllerTransitioningDelegate> {
     UIBarButtonItem *dismissButton;
@@ -261,7 +262,7 @@
     }
     
     if (view && cell){
-        [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        [UIView animateWithDuration:kSlideResetAnimationDuration delay:0 usingSpringWithDamping:.975 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             if (view == artImageView1){
                 if (artImageView1.moved){
                     view.transform = CGAffineTransformIdentity;
@@ -327,21 +328,61 @@
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return 1;
+    if (collectionView == self.collectionView){
+        return 1;
+    } else { // metadata collectionView
+        return  _photos.count;
+    }
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"ComparisonCell" forIndexPath:indexPath];
-    [cell configureForPhotos:_photos inSlide:nil];
-    
-    artImageView1 = cell.artImageView1;
-    containerView1 = cell.containerView1;
-    artImageView2 = cell.artImageView2;
-    containerView2 = cell.containerView2;
-    artImageView3 = cell.artImageView3;
-    containerView3 = cell.containerView3;
-    
-    return cell;
+    if (self.collectionView == collectionView){
+        WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"ComparisonCell" forIndexPath:indexPath];
+        [cell configureForPhotos:_photos inSlide:nil];
+        
+        artImageView1 = cell.artImageView1;
+        containerView1 = cell.containerView1;
+        artImageView2 = cell.artImageView2;
+        containerView2 = cell.containerView2;
+        artImageView3 = cell.artImageView3;
+        containerView3 = cell.containerView3;
+        
+        return cell;
+    } else {
+        WFSlideMetadataCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
+//        if ([self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPath.section == 0){
+//            [cell.titleLabel setAttributedText:[[NSAttributedString alloc] initWithString:@"" attributes:nil]]; // title slide, so don't do anything
+//        } else {
+//            NSInteger section = [self.slideshow.showTitleSlide isEqualToNumber:@YES] ? indexPath.section-1 : indexPath.section;
+//            currentSlide = self.slideshow.slides[section];
+//            PhotoSlide *photoSlide = currentSlide.photoSlides[indexPath.item];
+//            [cell configureForPhotoSlide:photoSlide];
+//            
+//            CGRect titleLabelFrame = cell.titleLabel.frame;
+//            CGRect componentsLabelFrame = cell.metadataComponentsLabel.frame;
+//            
+//            if (currentSlide.photoSlides.count <= 1 && currentSlide.slideTexts.count <= 1){
+//                titleLabelFrame.size.width = width-70;
+//                componentsLabelFrame.size.width = width-70;
+//            } else {
+//                titleLabelFrame.size.width = (width-70)/2;
+//                componentsLabelFrame.size.width = (width-70)/2;
+//            }
+//            
+//            CGSize titleSize = [cell.titleLabel sizeThatFits:CGSizeMake(titleLabelFrame.size.width, CGFLOAT_MAX)];
+//            titleLabelFrame.size.height = titleSize.height;
+//            CGSize componentsSize = [cell.metadataComponentsLabel sizeThatFits:CGSizeMake(componentsLabelFrame.size.width, CGFLOAT_MAX)];
+//            componentsLabelFrame.size.height = componentsSize.height;
+//            componentsLabelFrame.origin.x = titleLabelFrame.origin.x;
+//            componentsLabelFrame.origin.y = titleLabelFrame.origin.y + titleLabelFrame.size.height + 23.f;
+//            
+//            [cell.titleLabel setFrame:titleLabelFrame];
+//            [cell.metadataComponentsLabel setFrame:componentsLabelFrame];
+//            
+//            photoSlide.metadataTitleHeight = @(titleLabelFrame.size.height + titleLabelFrame.origin.y + 7.f);
+//            photoSlide.metadataComponentsHeight = @(componentsSize.height + componentsLabelFrame.origin.y);
+        return cell;
+    }
 }
 
 #pragma mark <UICollectionViewDelegate>

@@ -560,17 +560,17 @@
                 } else {
                     // adding to existing slide
                     Slide *slide = [self.slideshow.slides objectAtIndex:indexPathForSlideCell.row];
+                    
                     PhotoSlide *photoSlide = [PhotoSlide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
                     [photoSlide setPhoto:self.selectedPhoto];
-                    if (loc.x > -(kSidebarWidth/2) || slide.photos.count == 1){
-                        if (slide.photos.count > 1){
-                            [slide replacePhotoSlideAtIndex:1 withPhotoSlide:photoSlide];
-                        } else {
-                            [slide addPhotoSlide:photoSlide];
-                        }
-                    } else {
+                    if (!slide.photos.count){
+                        [slide addPhotoSlide:photoSlide];
+                    } else if (loc.x < (kSidebarWidth/2)){
                         [slide replacePhotoSlideAtIndex:0 withPhotoSlide:photoSlide];
+                    } else {
+                        [slide replacePhotoSlideAtIndex:1 withPhotoSlide:photoSlide];
                     }
+                
                     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                         [self.tableView reloadRowsAtIndexPaths:@[indexPathForSlideCell] withRowAnimation:UITableViewRowAnimationAutomatic];
                     }];

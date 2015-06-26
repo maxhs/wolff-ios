@@ -28,6 +28,7 @@
     [_artImageView1 setMoved:NO];
     [_artImageView2 setMoved:NO];
     [_artImageView3 setMoved:NO];
+    [self.mainTextLabel setNumberOfLines:0];
 }
 
 - (void)prepareForReuse {

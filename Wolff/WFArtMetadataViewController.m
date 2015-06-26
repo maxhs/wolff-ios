@@ -18,7 +18,7 @@
 #import "WFLightTableDetailsViewController.h"
 #import "WFLightTablesViewController.h"
 #import "WFAlert.h"
-#import "WFComparisonViewController.h"
+#import "WFSlideshowViewController.h"
 #import "WFSlideshowFocusAnimator.h"
 #import "WFLoginAnimator.h"
 #import "WFLoginViewController.h"
@@ -1198,8 +1198,9 @@
 }
 
 - (void)showFullScreen {
-    WFComparisonViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Comparison"];
-    [vc setPhotos:[NSMutableOrderedSet orderedSetWithObject:self.photo]];
+    WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
+    [vc setPhotos:@[self.photo]];
+    
     if (IDIOM == IPAD){
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
         nav.transitioningDelegate = self;

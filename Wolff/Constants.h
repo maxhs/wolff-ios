@@ -22,6 +22,7 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kSidebarWidth 280.f
 #define kFastAnimationDuration .23f
 #define kDefaultAnimationDuration .77f
+#define kSlideResetAnimationDuration 1.1f
 #define kMediumAnimationDuration 1.4f
 #define kSlowAnimationDuration 2.3f
 

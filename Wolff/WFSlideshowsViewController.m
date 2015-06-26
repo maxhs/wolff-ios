@@ -16,6 +16,7 @@
     UIRefreshControl *refreshControl;
     BOOL loading;
     NSIndexPath *indexPathForDeletion;
+    NSMutableOrderedSet *lightTables;
 }
 @property (strong, nonatomic) User *currentUser;
 @end
@@ -27,6 +28,7 @@
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     self.currentUser = [delegate.currentUser MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+    lightTables = [NSMutableOrderedSet orderedSet];
     [self loadSlideshows];
     
     refreshControl = [[UIRefreshControl alloc] init];
@@ -61,7 +63,7 @@
 - (void)loadSlideshows {
     loading = YES;
     [manager GET:[NSString stringWithFormat:@"users/%@/slideshows",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success getting slideshows: %@",responseObject);
+        NSLog(@"Success getting slideshows: %@",responseObject);
         [self.currentUser populateFromDictionary:responseObject];
         [self endLoading];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -71,6 +73,7 @@
 }
 
 - (void)endLoading {
+    [self organizeSlideshowsByTable];
     loading = NO;
     [self.tableView reloadData];
     [ProgressHUD dismiss];
@@ -79,10 +82,14 @@
     }
 }
 
+- (void)organizeSlideshowsByTable {
+    
+}
+
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 2;
+    return lightTables.count + 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -94,7 +101,8 @@
             [tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
         } else {
             [tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
-            return self.currentUser.slideshows.count;
+            LightTable *lightTable = lightTables[section+1];
+            return lightTable.slideshows.count;
         }
     }
 }
@@ -116,7 +124,9 @@
         [cell.textLabel setTextAlignment:NSTextAlignmentLeft];
     } else {
         [cell.imageView setImage:nil];
-        if (!loading && self.currentUser.slideshows.count == 0){
+        LightTable *lightTable = lightTables[indexPath.section+1];
+        
+        if (!loading && lightTable.slideshows.count == 0){
             [cell.textLabel setText:@"No Slideshows"];
             [cell.textLabel setTextAlignment:NSTextAlignmentCenter];
             [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];

@@ -40,5 +40,6 @@
 @dynamic alternates;
 @dynamic customerPlan;
 @dynamic cards;
+@dynamic notes;
 
 @end

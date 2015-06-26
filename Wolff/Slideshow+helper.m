@@ -74,7 +74,7 @@
             [lightTable populateFromDictionary:dict];
             [set addObject:lightTable];
         }
-        self.tables = set;
+        self.lightTables = set;
     }
     
     if ([dictionary objectForKey:@"user"] && [dictionary objectForKey:@"user"] != [NSNull null]){
