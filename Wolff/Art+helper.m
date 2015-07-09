@@ -45,6 +45,15 @@
     if ([dictionary objectForKey:@"flagged"] && [dictionary objectForKey:@"flagged"] != [NSNull null]){
         self.flagged = [dictionary objectForKey:@"flagged"];
     }
+    if ([dictionary objectForKey:@"height"] && [dictionary objectForKey:@"height"] != [NSNull null]){
+        self.height = [dictionary objectForKey:@"height"];
+    }
+    if ([dictionary objectForKey:@"width"] && [dictionary objectForKey:@"width"] != [NSNull null]){
+        self.width = [dictionary objectForKey:@"width"];
+    }
+    if ([dictionary objectForKey:@"depth"] && [dictionary objectForKey:@"depth"] != [NSNull null]){
+        self.depth = [dictionary objectForKey:@"depth"];
+    }
     if ([dictionary objectForKey:@"uploaded_epoch_time"] && [dictionary objectForKey:@"uploaded_epoch_time"] != [NSNull null]) {
         NSTimeInterval _interval = [[dictionary objectForKey:@"uploaded_epoch_time"] doubleValue];
         self.uploadedDate = [NSDate dateWithTimeIntervalSince1970:_interval];
@@ -259,6 +268,14 @@
         return [NSString stringWithFormat:@"%@ %@",self.interval.year, suffix];
     } else {
         return @"No date listed";
+    }
+}
+
+- (NSString*)readableDimensions {
+    if (![self.width isEqualToNumber:@0] && ![self.height isEqualToNumber:@0] && ![self.depth isEqualToNumber:@0]){
+        return [NSString stringWithFormat:@"%@ x %@ x %@",self.width, self.height, self.depth];
+    } else {
+        return nil;
     }
 }
 

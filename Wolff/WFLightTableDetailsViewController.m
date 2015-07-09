@@ -187,8 +187,7 @@
             detailsCell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LightTableDetailsCell" forIndexPath:indexPath];
             [detailsCell setBackgroundColor:[UIColor clearColor]];
             detailsCell.lightTableDelegate = self;
-            [detailsCell setLightTable:self.lightTable];
-            [detailsCell configure];
+            [detailsCell configureWithLightTable:self.lightTable];
             return detailsCell;
         }
     } else {
@@ -254,7 +253,6 @@
 }
 
 - (void)showOwners {
-    [detailsCell setLightTable:self.lightTable];
     [detailsCell save];
     WFUsersViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Users"];
     [vc setSelectedUsers:self.lightTable.owners.mutableCopy];
@@ -269,7 +267,6 @@
 }
 
 - (void)showMembers {
-    [detailsCell setLightTable:self.lightTable];
     [detailsCell save];
     WFUsersViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Users"];
     [vc setSelectedUsers:self.lightTable.users.mutableCopy];

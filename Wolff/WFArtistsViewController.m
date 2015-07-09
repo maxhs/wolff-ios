@@ -199,9 +199,9 @@ static NSString * const reuseIdentifier = @"ArtistCell";
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (IDIOM == IPAD){
-        return CGSizeMake(width/4,height/4);
+        return CGSizeMake(width/4,width/4);
     } else {
-        return CGSizeMake(width/2,height/4);
+        return CGSizeMake(width/2,width/2);
     }
 }
 

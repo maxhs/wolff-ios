@@ -141,11 +141,7 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    if (IDIOM == IPAD) {
-        return 34;
-    } else {
-        return 0;
-    }
+    return (IDIOM == IPAD) ? 34 : 0;
 }
 
 - (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {

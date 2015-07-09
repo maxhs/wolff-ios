@@ -22,4 +22,5 @@
 - (NSString*)tagsToSentence;
 - (NSString*)creditsToSentence;
 - (NSString*)readableDate;
+- (NSString*)readableDimensions;
 @end

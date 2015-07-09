@@ -72,6 +72,7 @@
 @property (nonatomic) NSIndexPath *photoMoveToIndexPath;
 @property (nonatomic) NSIndexPath *slideStartIndex;
 @property (nonatomic) NSIndexPath *slideMoveToIndexPath;
+@property (strong, nonatomic) AFHTTPRequestOperation *mainRequest;
 
 @end
 
@@ -810,12 +811,10 @@
 }
 
 - (void)post {
-    if (self.popover){
-        [self.popover dismissPopoverAnimated:YES];
-    }
-    if (titleTextField.isEditing){
-        [titleTextField resignFirstResponder];
-    }
+    if (self.mainRequest) return;
+    
+    if (self.popover) [self.popover dismissPopoverAnimated:YES];
+    if (titleTextField.isEditing) [titleTextField resignFirstResponder];
     
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
@@ -877,7 +876,7 @@
             [ProgressHUD show:@"Creating your slideshow..."];
         }
         
-        [manager POST:[NSString stringWithFormat:@"slideshows"] parameters:@{@"slideshow":parameters,@"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        self.mainRequest = [manager POST:[NSString stringWithFormat:@"slideshows"] parameters:@{@"slideshow":parameters,@"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success creating a slideshow: %@",responseObject);
             [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -889,28 +888,32 @@
                 if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(slideshowCreated:)]){
                     [self.slideshowDelegate slideshowCreated:self.slideshow];
                 }
+                self.mainRequest = nil;
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to create a slideshow: %@",error.description);
             [WFAlert show:@"Sorry, but something went wrong while saving your slideshow to the cloud.\n\nWe've saved it locally in the meantime." withTime:3.7f];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
             [ProgressHUD dismiss];
+            self.mainRequest = nil;
         }];
     } else {
         [ProgressHUD show:@"Saving..."];
-        [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",self.slideshow.identifier] parameters:@{@"slideshow":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        self.mainRequest = [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",self.slideshow.identifier] parameters:@{@"slideshow":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success saving a slideshow: %@",responseObject);
             [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 [ProgressHUD dismiss];
                 [self.collectionView reloadData];
                 [self.tableView reloadData];
+                self.mainRequest = nil;
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to save a slideshow: %@",error.description);
             [WFAlert show:@"Sorry, but something went wrong while saving your slideshow to the cloud.\n\nWe've saved it locally in the meantime." withTime:3.7f];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
             [ProgressHUD dismiss];
+            self.mainRequest = nil;
         }];
     }
 }

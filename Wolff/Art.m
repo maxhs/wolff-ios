@@ -37,5 +37,8 @@
 @dynamic notifications;
 @dynamic slideshows;
 @dynamic tags;
+@dynamic height;
+@dynamic width;
+@dynamic depth;
 
 @end

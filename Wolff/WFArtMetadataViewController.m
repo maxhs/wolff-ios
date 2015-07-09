@@ -1067,7 +1067,7 @@
     [self resetTransitionBooleans];
     metadataModal = YES;
     WFTagsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tags"];
-    [vc setSelectedTags:self.photo.art.locations.mutableCopy];
+    [vc setSelectedTags:self.photo.art.tags.mutableCopy];
     vc.tagDelegate = self;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.transitioningDelegate = self;

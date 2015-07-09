@@ -18,7 +18,7 @@
 
 - (void)configureForPhoto:(Photo *)photo withPhotoCount:(NSUInteger)photoCount {
     Art *art = photo.art;
-    NSAttributedString *locationString, *artistString, *dateString, *materialString, *creditString, *iconographyString, *tagsString, *notesString;
+    NSAttributedString *locationString, *artistString, *dateString, *materialString, *creditString, *iconographyString, *tagsString, *notesString, *dimensionsString;
     NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle defaultParagraphStyle].mutableCopy;
     paragraphStyle.lineHeightMultiple = 1.15f;
     
@@ -37,12 +37,11 @@
         dateString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
     }
     
-    
     // if it's a single slide, put materials on the first line... if not, start a new line
     NSMutableAttributedString *componentsString = [[NSMutableAttributedString alloc] initWithString:@"" attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
     if ((int)photoCount == 1){
         if (art.materialsToSentence.length){
-            materialString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"    %@",art.materialsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
+            materialString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@",art.materialsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
         } else {
             materialString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
         }
@@ -64,16 +63,22 @@
         }
     }
     
+    if (art.readableDimensions.length){
+        dimensionsString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",art.readableDimensions] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
+    } else {
+        dimensionsString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+    }
+    
     if (photo.iconsToSentence.length){
         iconographyString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",photo.iconsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
     } else {
         iconographyString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
     }
-    
-    if (photo.credit.length){
-        creditString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",photo.credit] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
+
+    if (art.tagsToSentence.length){
+        tagsString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",art.tagsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
     } else {
-        creditString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+        tagsString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
     }
     
     if (photo.notes.length){
@@ -82,10 +87,10 @@
         notesString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
     }
     
-    if (art.tagsToSentence.length){
-        tagsString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",art.tagsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
+    if (photo.credit.length){
+        creditString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",photo.credit] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
     } else {
-        tagsString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+        creditString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
     }
     
     [titleString appendAttributedString:artistString];
@@ -93,10 +98,11 @@
     [titleString appendAttributedString:locationString];
     
     [componentsString appendAttributedString:materialString];
+    [componentsString appendAttributedString:dimensionsString];
     [componentsString appendAttributedString:iconographyString];
+    [componentsString appendAttributedString:tagsString];
     [componentsString appendAttributedString:creditString];
     [componentsString appendAttributedString:notesString];
-    [componentsString appendAttributedString:tagsString];
     
     [self.titleLabel setAttributedText:titleString];
     [self.titleLabel setNumberOfLines:0];

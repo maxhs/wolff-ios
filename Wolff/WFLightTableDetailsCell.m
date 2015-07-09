@@ -25,6 +25,7 @@
     CGFloat keyboardHeight;
 }
 
+@property (strong, nonatomic) LightTable *lightTable;
 @end
 
 @implementation WFLightTableDetailsCell
@@ -46,7 +47,9 @@
     [self registerForKeyboardNotifications];
 }
 
-- (void)configure{
+- (void)configureWithLightTable:(LightTable*)lightTable{
+    self.lightTable = [lightTable MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+    
     self.tableView.tableHeaderView = _topContainerView;
     [self.tableView reloadData];
     if (IDIOM == IPAD){
@@ -191,10 +194,6 @@
     if (titleTextField.text.length){
         [self.lightTable setName:titleTextField.text];
         [parameters setObject:titleTextField.text forKey:@"name"];
-    }
-    if (descriptionTextView.text.length && ![descriptionTextView.text isEqualToString:kLightTableDescriptionPlaceholder]){
-        [self.lightTable setTableDescription:descriptionTextView.text];
-        [parameters setObject:descriptionTextView.text forKey:@"description"];
     }
     if (descriptionTextView.text.length && ![descriptionTextView.text isEqualToString:kLightTableDescriptionPlaceholder]){
         [self.lightTable setTableDescription:descriptionTextView.text];

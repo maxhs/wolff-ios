@@ -23,6 +23,9 @@
 @property (nonatomic, retain) NSNumber * privateArt;
 @property (nonatomic, retain) NSNumber * visible;
 @property (nonatomic, retain) NSNumber * flagged;
+@property (nonatomic, retain) NSNumber * width;
+@property (nonatomic, retain) NSNumber * height;
+@property (nonatomic, retain) NSNumber * depth;
 @property (nonatomic, retain) NSOrderedSet *artists;
 @property (nonatomic, retain) NSOrderedSet *tables;
 @property (nonatomic, retain) NSOrderedSet *photos;
