@@ -36,6 +36,7 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kDarkBackgroundConstant 5298
 #define kBlurredBackgroundConstant 5299
 #define kMetadataWidth 600
+#define ART_THROTTLE 20
 
 #define kUserDefaultsId @"user_id"
 #define kUserDefaultsPassword @"password"

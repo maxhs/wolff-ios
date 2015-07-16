@@ -96,6 +96,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     BOOL groupBool;
     BOOL tableIsVisible;
     BOOL canLoadMorePhotos;
+    BOOL canSearchMore;
     BOOL showSlideshow;
     BOOL showMyArt;
     BOOL showFavorites;
@@ -182,6 +183,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [collectionViewRefresh addTarget:self action:@selector(refreshCollectionView:) forControlEvents:UIControlEventValueChanged];
     [self.collectionView addSubview:collectionViewRefresh];
     canLoadMorePhotos = YES;
+    canSearchMore = YES;
     
     if (IDIOM != IPAD){
         CGRect tableFrame = self.tableView.frame;
@@ -456,9 +458,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     } else {
-        [self dismissViewControllerAnimated:YES completion:^{
-            
-        }];
+        [self dismissViewControllerAnimated:YES completion:NULL];
     }
     self.currentUser = nil;
     [self setUpNavBar];
@@ -469,7 +469,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     if (self.mainRequest) return;
     
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    [parameters setObject:@40 forKey:@"count"];
+    [parameters setObject:@(ART_THROTTLE) forKey:@"count"];
     if (searching && searchText && searchText.length){
         [parameters setObject:searchText forKey:@"search"];
     } else if (_photos.count && scrolling) {
@@ -480,50 +480,49 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             [ProgressHUD show:@"Loading art..."];
         });
     }
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    }
     
     self.mainRequest = [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        if ([[responseObject objectForKey:@"photos"] count]){
-            if (!scrolling){
-                [_photos removeAllObjects]; // this means it's a refresh
-            }
+        NSDictionary *photosDict = [responseObject objectForKey:@"photos"];
+        if (photosDict.count){
+            NSLog(@"How many photos did we pull? %lu",(unsigned long)[[responseObject objectForKey:@"photos"] count]);
+            //if (!scrolling)
+            //    [_photos removeAllObjects]; // this means it's a refresh
+            
             canLoadMorePhotos = YES;
             [_noSearchResultsLabel setText:@"Searching the full Wölff catalog..."];
-            for (id dict in [responseObject objectForKey:@"photos"]) {
-                if ([dict isKindOfClass:[NSDictionary class]]){
-                    Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
-                    if (!photo){
-                        photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-                    }
-                    [photo populateFromDictionary:dict];
-                    
-                    if (![photo.privatePhoto isEqualToNumber:@YES] && ![photo.art.privateArt isEqualToNumber:@YES]){
-                        [_photos addObject:photo];
-                        if (searching){
-                            [_filteredPhotos addObject:photo];
-                        }
-                    }
+            for (id dict in photosDict) {
+                Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+                if (!photo){
+                    photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                }
+                [photo populateFromDictionary:dict];
+                [_photos addObject:photo];
+                if (searching){
+                    [_filteredPhotos addObject:photo];
                 }
             }
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [self endRefresh];
+                NSLog(@"should be reloading data for photos: %lu",(unsigned long)_photos.count);
                 [self.collectionView reloadData];
-                self.mainRequest = nil;
+                [self endRefresh];
             }];
         } else {
             canLoadMorePhotos = NO;
             [self endRefresh];
             [_noSearchResultsLabel setText:kNoSearchResults];
             [_noSearchResultsLabel setHidden:NO];
-            self.mainRequest = nil;
         }
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         [self endRefresh];
-        self.mainRequest = nil;
     }];
 }
 
 - (void)endRefresh {
+    self.mainRequest = nil;
     [ProgressHUD dismiss];
     if (tableViewRefresh.isRefreshing){
         [tableViewRefresh endRefreshing];
@@ -1769,7 +1768,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         return;
     }
     Photo *photo;
-    if (showMyArt && indexPath.item < _myPhotos.count){
+    if (searching && indexPath.item < _filteredPhotos.count){
+        photo = _filteredPhotos[indexPath.item];
+    } else if (showMyArt && indexPath.item < _myPhotos.count){
         photo = _myPhotos[indexPath.item];
     } else if (showLightTable && indexPath.item < self.lightTable.photos.count){
         photo = self.lightTable.photos[indexPath.item];
@@ -2470,6 +2471,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             photosToIterateThrough = _favoritePhotos;
         } else {
             photosToIterateThrough = _photos;
+            
         }
         for (Photo *photo in photosToIterateThrough){
             // evaluate the art metadata, but actually add the photo to _filteredPhotos
@@ -2493,6 +2495,12 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         }
         
         if (!_filteredPhotos.count) [self loadPhotos:NO];
+    } else if (showLightTable) {
+        _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_lightTable.photos];
+    } else if (showMyArt) {
+        _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_myPhotos];
+    } else if (showFavorites) {
+        _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_favoritePhotos];
     } else {
         _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
     }

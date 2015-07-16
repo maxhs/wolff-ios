@@ -43,6 +43,11 @@
     _slideContainerView.clipsToBounds = NO;
     _slideContainerView.layer.rasterizationScale = [UIScreen mainScreen].scale;
     _slideContainerView.layer.shouldRasterize = YES;
+    
+    [_privateLabel setHidden:YES];
+    [_privateLabel setText:@"Private"];
+    [_privateLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];
+    [_privateLabel setTextColor:[UIColor lightGrayColor]];
 }
 
 - (void)prepareForReuse {
@@ -93,6 +98,12 @@
                 self.portraitArtImageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
             }];
         }];
+    }
+    
+    if ([photo.privatePhoto isEqualToNumber:@YES]){
+        [_privateLabel setHidden:NO];
+    } else {
+        [_privateLabel setHidden:YES];
     }
 }
 
