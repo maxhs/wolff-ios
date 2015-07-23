@@ -35,9 +35,8 @@
     [_label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansSemibold] size:0]];
     [_label setTextColor:[UIColor whiteColor]];
     [_label setText:@""];
-    
+    [_pieceCountLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSans] size:0]];
     [_tableLabel setTextColor:[UIColor whiteColor]];
-    [_pieceCountLabel setTextColor:[UIColor colorWithWhite:1 alpha:.33]];
 
     [_deleteButton setImage:[UIImage imageNamed:@"whiteTrash"] forState:UIControlStateNormal];
     [_deleteButton setBackgroundColor:[UIColor redColor]];
@@ -99,7 +98,6 @@
     }
     NSString *pieceCount = table.photos.count == 1 ? @"1 slide" : [NSString stringWithFormat:@"%lu slides",(unsigned long)table.photos.count];
     [_pieceCountLabel setText:pieceCount];
-    [_pieceCountLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansItalic] size:0]];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {

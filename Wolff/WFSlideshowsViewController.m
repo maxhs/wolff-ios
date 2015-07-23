@@ -14,10 +14,9 @@
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     UIRefreshControl *refreshControl;
-    BOOL loading;
     NSIndexPath *indexPathForDeletion;
-    NSMutableOrderedSet *lightTables;
 }
+@property (strong, nonatomic) AFHTTPRequestOperation *mainRequest;
 @property (strong, nonatomic) User *currentUser;
 @end
 
@@ -28,7 +27,7 @@
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     self.currentUser = [delegate.currentUser MR_inContext:[NSManagedObjectContext MR_defaultContext]];
-    lightTables = [NSMutableOrderedSet orderedSet];
+
     [self loadSlideshows];
     
     refreshControl = [[UIRefreshControl alloc] init];
@@ -61,10 +60,12 @@
 }
 
 - (void)loadSlideshows {
-    loading = YES;
-    [manager GET:[NSString stringWithFormat:@"users/%@/slideshows",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success getting slideshows: %@",responseObject);
+    if (self.mainRequest) return;
+    [ProgressHUD show:@"Fetching your slideshows..."];
+    self.mainRequest = [manager GET:[NSString stringWithFormat:@"users/%@/slideshow_titles",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //NSLog(@"Success getting slideshows: %@",responseObject);
         [self.currentUser populateFromDictionary:responseObject];
+        NSLog(@"current user slideshows: %lu",(unsigned long)self.currentUser.slideshows.count);
         [self endLoading];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to get slideshows");
@@ -73,36 +74,30 @@
 }
 
 - (void)endLoading {
-    [self organizeSlideshowsByTable];
-    loading = NO;
     [self.tableView reloadData];
+    self.mainRequest = nil;
     [ProgressHUD dismiss];
     if (refreshControl.isRefreshing){
         [refreshControl endRefreshing];
     }
 }
 
-- (void)organizeSlideshowsByTable {
-    
-}
-
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return lightTables.count + 1;
+    return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0){
         return 1;
     } else {
-        if (!loading && self.currentUser.slideshows.count == 0){
+        if (!self.mainRequest && self.currentUser.slideshows.count == 0){
             return 1;
             [tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
         } else {
             [tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
-            LightTable *lightTable = lightTables[section+1];
-            return lightTable.slideshows.count;
+            return self.currentUser.slideshows.count;
         }
     }
 }
@@ -124,22 +119,15 @@
         [cell.textLabel setTextAlignment:NSTextAlignmentLeft];
     } else {
         [cell.imageView setImage:nil];
-        LightTable *lightTable = lightTables[indexPath.section+1];
-        
-        if (!loading && lightTable.slideshows.count == 0){
-            [cell.textLabel setText:@"No Slideshows"];
-            [cell.textLabel setTextAlignment:NSTextAlignmentCenter];
-            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
+    
+        Slideshow *slideshow = self.currentUser.slideshows[indexPath.row];
+        [cell.textLabel setTextAlignment:NSTextAlignmentLeft];
+        if (slideshow.title.length){
+            [cell.textLabel setText:slideshow.title];
+            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
         } else {
-            Slideshow *slideshow = self.currentUser.slideshows[indexPath.row];
-            [cell.textLabel setTextAlignment:NSTextAlignmentLeft];
-            if (slideshow.title.length){
-                [cell.textLabel setText:slideshow.title];
-                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
-            } else {
-                [cell.textLabel setText:@"No name..."];
-                [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];
-            }
+            [cell.textLabel setText:@"No name..."];
+            [cell.textLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];
         }
     }
     

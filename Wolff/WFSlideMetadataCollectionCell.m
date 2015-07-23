@@ -27,14 +27,12 @@
     
     if (art.artistsToSentence.length){
         artistString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"    %@",art.artistsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
-    } else {
-        artistString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+        [titleString appendAttributedString:artistString];
     }
     
     if (art.readableDate.length){
         dateString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"    %@",art.readableDate] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
-    } else {
-        dateString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+        [titleString appendAttributedString:dateString];
     }
     
     // if it's a single slide, put materials on the first line... if not, start a new line
@@ -42,70 +40,54 @@
     if ((int)photoCount == 1){
         if (art.materialsToSentence.length){
             materialString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@",art.materialsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
-        } else {
-            materialString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+            [componentsString appendAttributedString:materialString];
         }
         if (art.locationsToSentence.length){
             locationString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"    %@",art.locationsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
-        } else {
-            locationString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+            [titleString appendAttributedString:locationString];
         }
     } else {
         if (art.locationsToSentence.length){
             locationString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"    %@",art.locationsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
-        } else {
-            locationString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+            [titleString appendAttributedString:locationString];
         }
         if (art.materialsToSentence.length){
             materialString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",art.materialsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
-        } else {
-            materialString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+            [componentsString appendAttributedString:materialString];
         }
     }
     
     if (art.readableDimensions.length){
         dimensionsString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",art.readableDimensions] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
-    } else {
-        dimensionsString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+        [componentsString appendAttributedString:dimensionsString];
     }
     
     if (photo.iconsToSentence.length){
         iconographyString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",photo.iconsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
-    } else {
-        iconographyString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+        [componentsString appendAttributedString:iconographyString];
     }
 
     if (art.tagsToSentence.length){
         tagsString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",art.tagsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
-    } else {
-        tagsString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
-    }
-    
-    if (photo.notes.length){
-        notesString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",photo.notes] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
-    } else {
-        notesString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+        [componentsString appendAttributedString:tagsString];
     }
     
     if (photo.credit.length){
         creditString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",photo.credit] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
-    } else {
-        creditString = [[NSAttributedString alloc] initWithString:@"" attributes:nil];
+        [componentsString appendAttributedString:creditString];
     }
     
-    [titleString appendAttributedString:artistString];
-    [titleString appendAttributedString:dateString];
-    [titleString appendAttributedString:locationString];
+    if (photo.notes.length){
+        notesString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",photo.notes] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
+        [componentsString appendAttributedString:notesString];
+    }
     
-    [componentsString appendAttributedString:materialString];
-    [componentsString appendAttributedString:dimensionsString];
-    [componentsString appendAttributedString:iconographyString];
-    [componentsString appendAttributedString:tagsString];
-    [componentsString appendAttributedString:creditString];
-    [componentsString appendAttributedString:notesString];
+    
+    
     
     [self.titleLabel setAttributedText:titleString];
     [self.titleLabel setNumberOfLines:0];
+    
     
     [self.metadataComponentsLabel setAttributedText:componentsString];
     [self.metadataComponentsLabel setNumberOfLines:0];

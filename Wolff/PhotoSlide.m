@@ -20,7 +20,9 @@
 @dynamic slide;
 @dynamic photo;
 @dynamic index;
+@dynamic metadataTitleY;
 @dynamic metadataTitleHeight;
+@dynamic metadataComponentsY;
 @dynamic metadataComponentsHeight;
 
 @end

@@ -23,7 +23,7 @@
     [super viewDidLoad];
     [self.view setBackgroundColor:[UIColor clearColor]];
     [self.tableView setBackgroundColor:[UIColor clearColor]];
-    self.tableView.rowHeight = 54.f;
+    self.tableView.rowHeight = 64.f;
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.07]];
     
     if (IDIOM == IPAD){
@@ -63,8 +63,12 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSaveMenuCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SaveMenuCell" forIndexPath:indexPath];
-    [cell.textLabel setTextColor:(IDIOM == IPAD) ? [UIColor blackColor] : [UIColor whiteColor]];
-     
+    if (IDIOM == IPAD){
+        [cell.textLabel setTextColor:[UIColor blackColor]];
+    } else {
+        [cell.textLabel setTextColor:[UIColor whiteColor]];
+    }
+    
     if (indexPath.row == 0){
         [cell.imageView setImage:IDIOM == IPAD ? [UIImage imageNamed:@"cloudUpload"] : [UIImage imageNamed:@"whiteCloudUpload"]];
         [cell.textLabel setText:@"Save"];

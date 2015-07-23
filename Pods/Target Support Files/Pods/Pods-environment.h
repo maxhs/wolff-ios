@@ -48,11 +48,35 @@
 #define COCOAPODS_VERSION_MINOR_AFNetworking_UIKit 5
 #define COCOAPODS_VERSION_PATCH_AFNetworking_UIKit 0
 
+// Crashlytics
+#define COCOAPODS_POD_AVAILABLE_Crashlytics
+#define COCOAPODS_VERSION_MAJOR_Crashlytics 3
+#define COCOAPODS_VERSION_MINOR_Crashlytics 1
+#define COCOAPODS_VERSION_PATCH_Crashlytics 0
+
 // DateTools
 #define COCOAPODS_POD_AVAILABLE_DateTools
 #define COCOAPODS_VERSION_MAJOR_DateTools 1
 #define COCOAPODS_VERSION_MINOR_DateTools 4
 #define COCOAPODS_VERSION_PATCH_DateTools 3
+
+// Fabric
+#define COCOAPODS_POD_AVAILABLE_Fabric
+#define COCOAPODS_VERSION_MAJOR_Fabric 1
+#define COCOAPODS_VERSION_MINOR_Fabric 2
+#define COCOAPODS_VERSION_PATCH_Fabric 8
+
+// Fabric/Base
+#define COCOAPODS_POD_AVAILABLE_Fabric_Base
+#define COCOAPODS_VERSION_MAJOR_Fabric_Base 1
+#define COCOAPODS_VERSION_MINOR_Fabric_Base 2
+#define COCOAPODS_VERSION_PATCH_Fabric_Base 8
+
+// GoogleAnalytics
+#define COCOAPODS_POD_AVAILABLE_GoogleAnalytics
+#define COCOAPODS_VERSION_MAJOR_GoogleAnalytics 3
+#define COCOAPODS_VERSION_MINOR_GoogleAnalytics 12
+#define COCOAPODS_VERSION_PATCH_GoogleAnalytics 0
 
 // MagicalRecord
 #define COCOAPODS_POD_AVAILABLE_MagicalRecord

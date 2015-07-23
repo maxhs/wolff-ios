@@ -447,6 +447,9 @@
         } else {
             return;
         }
+        if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+            [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+        }
         [_noResultsPrompt setText:@"Searching the full Wölff catalog..."];
         [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success searching from search reuslts view controller: %@",responseObject);

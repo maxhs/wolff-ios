@@ -26,7 +26,7 @@
     
     [_nameLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [_nameLabel setTextColor:[UIColor colorWithWhite:1 alpha:.77]];
-    [_nameLabel setText:@"*CURRENT* LOCATION NAME"];
+    [_nameLabel setText:@"NEW TAG"];
     [_nameLabel setHidden:YES];
 }
 

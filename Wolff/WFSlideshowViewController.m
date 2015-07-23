@@ -47,7 +47,9 @@
     UIBarButtonItem *previousButton;
     UIBarButtonItem *slideNumberButtonItem;
     UITapGestureRecognizer *metadataTap;
+    CGFloat metadataTitleY;
     CGFloat metadataTitleHeight;
+    CGFloat metadataComponentsY;
     CGFloat metadataComponentsHeight;
     
     //slideshow ivars
@@ -183,21 +185,27 @@
 - (void)adjustMetadataPosition {
     if (self.slideshow){
         __block CGFloat slideTitleMetadataHeight = 0;
+        __block CGFloat slideTitleMetadataY = 0;
         __block CGFloat slideComponentsMetadataHeight = 0;
+        __block CGFloat slideComponentsMetadataY = 0;
         [currentSlide.photoSlides enumerateObjectsUsingBlock:^(PhotoSlide *photoSlide, NSUInteger idx, BOOL *stop) {
             if (photoSlide.metadataTitleHeight.floatValue > slideTitleMetadataHeight){
                 slideTitleMetadataHeight = photoSlide.metadataTitleHeight.floatValue;
+                slideTitleMetadataY = photoSlide.metadataTitleY.floatValue;
             }
             if (photoSlide.metadataComponentsHeight.floatValue > slideComponentsMetadataHeight){
                 slideComponentsMetadataHeight = photoSlide.metadataComponentsHeight.floatValue;
+                slideComponentsMetadataY = photoSlide.metadataComponentsY.floatValue;
             }
         }];
         metadataTitleHeight = slideTitleMetadataHeight;
+        metadataTitleY = slideTitleMetadataY;
         metadataComponentsHeight = slideComponentsMetadataHeight;
+        metadataComponentsY = slideComponentsMetadataY;
     }
     
     //NSLog(@"metadata title height: %f, metadata components height: %f",metadataTitleHeight,metadataComponentsHeight);
-    CGFloat adjustmentHeight = metadataExpanded ? (metadataTitleHeight + metadataComponentsHeight) : metadataTitleHeight;
+    CGFloat adjustmentHeight = metadataExpanded ? (metadataTitleHeight + metadataTitleY + metadataComponentsHeight + 7.f) : (metadataTitleHeight + metadataTitleY);
     if (self.photos.count || barsVisible || [self.slideshow.showMetadata isEqualToNumber:@YES]){
         [UIView animateWithDuration:kDefaultAnimationDuration animations:^{
             [self.slideMetadataContainerView setFrame:CGRectMake(0, height - adjustmentHeight, width, height)];
@@ -248,16 +256,10 @@
 }
 
 - (void)showMetadata {
-    CGRect metadataFrame = self.slideMetadataContainerView.frame;
-    if (metadataExpanded){
-        metadataFrame.origin.y = height-metadataTitleHeight;
-    } else {
-        metadataFrame.origin.y = height-(metadataTitleHeight+metadataComponentsHeight);
-    }
-    
     metadataExpanded = !metadataExpanded;
+    CGFloat adjustmentHeight = metadataExpanded ? (metadataTitleHeight + metadataTitleY + metadataComponentsHeight + 7.f) : (metadataTitleHeight + metadataTitleY);
     [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        [self.slideMetadataContainerView setFrame:metadataFrame];
+        [self.slideMetadataContainerView setFrame:CGRectMake(0, height - adjustmentHeight, width, height)];
     } completion:^(BOOL finished) {
         
     }];
@@ -423,10 +425,16 @@
         }
     } else {
         WFSlideMetadataCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
+        NSInteger section = [self.slideshow.showTitleSlide isEqualToNumber:@YES] ? indexPath.section-1 : indexPath.section;
+        currentSlide = self.slideshow.slides[section];
+        
         if (self.slideshow && [self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPath.section == 0){
-            [cell.titleLabel setAttributedText:[[NSAttributedString alloc] initWithString:@"" attributes:nil]]; // title slide, so don't do anything
+            [cell.titleLabel setAttributedText:nil]; // title slide, so don't do anything
+            [cell.metadataComponentsLabel setAttributedText:nil];
+        } else if (currentSlide.slideTexts.count) {
+            [cell.titleLabel setAttributedText:nil]; // slide text slide, so don't do anything
+            [cell.metadataComponentsLabel setAttributedText:nil];
         } else {
-            
             CGRect titleLabelFrame = cell.titleLabel.frame;
             CGRect componentsLabelFrame = cell.metadataComponentsLabel.frame;
             
@@ -441,8 +449,9 @@
                     componentsLabelFrame.size.width = (width-70)/2;
                 }
             } else {
-                NSInteger section = [self.slideshow.showTitleSlide isEqualToNumber:@YES] ? indexPath.section-1 : indexPath.section;
-                currentSlide = self.slideshow.slides[section];
+                
+                
+                
                 photoSlide = currentSlide.photoSlides[indexPath.item];
                 [cell configureForPhoto:photoSlide.photo withPhotoCount:currentSlide.photoSlides.count];
                 if (currentSlide.photoSlides.count <= 1 && currentSlide.slideTexts.count <= 1){
@@ -459,16 +468,20 @@
             CGSize componentsSize = [cell.metadataComponentsLabel sizeThatFits:CGSizeMake(componentsLabelFrame.size.width, CGFLOAT_MAX)];
             componentsLabelFrame.size.height = componentsSize.height;
             componentsLabelFrame.origin.x = titleLabelFrame.origin.x;
-            componentsLabelFrame.origin.y = titleLabelFrame.origin.y + titleLabelFrame.size.height + 23.f;
+            componentsLabelFrame.origin.y = titleLabelFrame.origin.y + titleLabelFrame.size.height + 7.f;
             
             [cell.titleLabel setFrame:titleLabelFrame];
             [cell.metadataComponentsLabel setFrame:componentsLabelFrame];
             if (self.photos.count){
-                metadataTitleHeight = titleLabelFrame.size.height + titleLabelFrame.origin.y + 7.f;
-                metadataComponentsHeight = componentsSize.height + componentsLabelFrame.origin.y;
+                metadataTitleHeight = titleLabelFrame.size.height;
+                metadataTitleY = titleLabelFrame.origin.y + 7.f;
+                metadataComponentsHeight = componentsSize.height;
+                metadataComponentsY = componentsLabelFrame.origin.y;
             } else {
-                photoSlide.metadataTitleHeight = @(titleLabelFrame.size.height + titleLabelFrame.origin.y + 7.f);
-                photoSlide.metadataComponentsHeight = @(componentsSize.height + componentsLabelFrame.origin.y);
+                photoSlide.metadataTitleHeight = @(titleLabelFrame.size.height);
+                photoSlide.metadataTitleY = @(titleLabelFrame.origin.y + 7.f);
+                photoSlide.metadataComponentsHeight = @(componentsSize.height);
+                photoSlide.metadataComponentsY = @(componentsLabelFrame.origin.y + 7.f);
             }
         }
         return cell;
@@ -523,7 +536,7 @@
     barsVisible = YES;
     [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.925 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         self.navigationController.navigationBar.transform = CGAffineTransformIdentity;
-        CGFloat adjustmentHeight = metadataExpanded ? (metadataTitleHeight + metadataComponentsHeight) : metadataTitleHeight;
+        CGFloat adjustmentHeight = metadataExpanded ? (metadataTitleHeight + metadataTitleY + metadataComponentsHeight + 7.f) : (metadataTitleY + metadataTitleHeight);
         [self.slideMetadataContainerView setFrame:CGRectMake(0, height - adjustmentHeight, width, height)];
     } completion:^(BOOL finished) {
         

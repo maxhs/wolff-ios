@@ -235,7 +235,9 @@
         <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
         <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="metadataComponentsHeight" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="metadataComponentsY" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
         <attribute name="metadataTitleHeight" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="metadataTitleY" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
         <attribute name="positionX" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
         <attribute name="positionY" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
         <attribute name="scale" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
@@ -335,7 +337,7 @@
         <element name="Note" positionX="288" positionY="342" width="128" height="135"/>
         <element name="Notification" positionX="288" positionY="342" width="128" height="253"/>
         <element name="Photo" positionX="279" positionY="324" width="128" height="418"/>
-        <element name="PhotoSlide" positionX="297" positionY="351" width="128" height="210"/>
+        <element name="PhotoSlide" positionX="297" positionY="351" width="128" height="240"/>
         <element name="Slide" positionX="297" positionY="315" width="128" height="150"/>
         <element name="Slideshow" positionX="288" positionY="306" width="128" height="225"/>
         <element name="SlideText" positionX="288" positionY="342" width="128" height="148"/>

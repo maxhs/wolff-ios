@@ -76,8 +76,12 @@
 
 - (void)replacePhotoSlideAtIndex:(NSInteger)index withPhotoSlide:(PhotoSlide *)photoSlide {
     NSMutableOrderedSet *photoSlides = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photoSlides];
-    [photoSlides removeObjectAtIndex:index];
-    [photoSlides insertObject:photoSlide atIndex:index];
+    if ([photoSlides containsObject:photoSlide]){
+        [photoSlides replaceObjectAtIndex:index withObject:photoSlide];
+    } else {
+        [photoSlides insertObject:photoSlide atIndex:index];
+    }
+    
     self.photoSlides = photoSlides;
 }
 

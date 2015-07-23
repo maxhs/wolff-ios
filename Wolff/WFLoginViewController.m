@@ -424,7 +424,7 @@
     [_termsButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     [_termsButton.titleLabel setTextColor:[UIColor lightGrayColor]];
     NSMutableAttributedString *termsString = [[NSMutableAttributedString alloc] initWithString:@"By continuing, you agree to our " attributes:nil];
-    NSMutableAttributedString *linkString = [[NSMutableAttributedString alloc] initWithString:@"Terms" attributes:@{NSUnderlineStyleAttributeName:[NSNumber numberWithInt:NSUnderlineStyleSingle]}];
+    NSMutableAttributedString *linkString = [[NSMutableAttributedString alloc] initWithString:@"terms of service" attributes:@{NSUnderlineStyleAttributeName:[NSNumber numberWithInt:NSUnderlineStyleSingle]}];
     [termsString appendAttributedString:linkString];
     _termsButton.titleLabel.numberOfLines = 0;
     _termsButton.titleLabel.textAlignment = NSTextAlignmentCenter;

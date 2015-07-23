@@ -60,6 +60,7 @@
     UIImageView *navBarShadowView;
     
     NSMutableArray *slideshowPhotos;
+    NSTimer *saveTimer;
 }
 
 @property (strong, nonatomic) User *currentUser;
@@ -152,6 +153,16 @@
     }
     [self.tableView reloadData];
     [self.collectionView reloadData];
+    if (!saveTimer){
+        saveTimer = [NSTimer scheduledTimerWithTimeInterval:30.f target:self selector:@selector(autosaveLocally) userInfo:nil repeats:YES];
+        NSLog(@"creating autosave timer");
+    }
+}
+
+- (void)autosaveLocally {
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        NSLog(@"Locally autosaved: %u",success);
+    }];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -355,9 +366,7 @@
     [vc setSlide:activeSlide];
     [vc setSlideshow:self.slideshow];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 - (void)editText:(UIMenuController*)menuController {
@@ -367,9 +376,7 @@
     [vc setSlideshow:self.slideshow];
     [vc setSlideText:activeSlide.slideTexts.firstObject];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 - (void)createdSlideText:(SlideText *)slideText {
@@ -566,10 +573,10 @@
                     [photoSlide setPhoto:self.selectedPhoto];
                     if (!slide.photos.count){
                         [slide addPhotoSlide:photoSlide];
-                    } else if (loc.x < (kSidebarWidth/2)){
-                        [slide replacePhotoSlideAtIndex:0 withPhotoSlide:photoSlide];
-                    } else {
+                    } else if (loc.x > (kSidebarWidth/2) && slide.photos.count){
                         [slide replacePhotoSlideAtIndex:1 withPhotoSlide:photoSlide];
+                    } else {
+                        [slide replacePhotoSlideAtIndex:0 withPhotoSlide:photoSlide];
                     }
                 
                     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -847,10 +854,12 @@
                 if (photoSlide.positionY)[photoSlideObject setObject:photoSlide.positionY forKey:@"position_y"];
                 if (photoSlide.width)[photoSlideObject setObject:photoSlide.width forKey:@"width"];
                 if (photoSlide.height)[photoSlideObject setObject:photoSlide.height forKey:@"height"];
+                [photoSlideObject setObject:@(idx) forKey:@"index"]; // how the photo slides are ordered
                 [photoSlides addObject:photoSlideObject];
             }];
             [slideObject setObject:photoSlides forKey:@"photo_slides"];
         } else if (slide.slideTexts.count){
+            NSMutableArray *slideTexts = [NSMutableArray arrayWithCapacity:slide.slideTexts.count];
             [slide.slideTexts enumerateObjectsUsingBlock:^(SlideText *slideText, NSUInteger idx, BOOL *stop) {
                 NSMutableDictionary *slideTextDict = [NSMutableDictionary dictionary];
                 if (![slideText.identifier isEqualToNumber:@0]){
@@ -860,8 +869,9 @@
                     [slideTextDict setObject:slideText.body forKey:@"body"];
                 }
 
-                [slideObject setObject:slideTextDict forKey:@"slide_text"];
+                [slideTexts addObject:slideTextDict];
             }];
+            [slideObject setObject:slideTexts forKey:@"slide_texts"];
         } else {
             [slideObject setObject:@"" forKey:@"text"];
         }
@@ -906,6 +916,7 @@
                 [ProgressHUD dismiss];
                 [self.collectionView reloadData];
                 [self.tableView reloadData];
+                [WFAlert show:@"Saved" withTime:3.7f];
                 self.mainRequest = nil;
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -1298,7 +1309,7 @@
 - (void)saveSlideshowWithUI:(BOOL)showHUD {
     if (showHUD) [ProgressHUD show:@"Saving..."];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        NSLog(@"Success saving slideshow? %u",success);
+        //NSLog(@"Success saving slideshow? %u",success);
         [ProgressHUD dismiss];
     }];
 }
@@ -1353,6 +1364,9 @@
 
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
+    [saveTimer invalidate];
+    saveTimer = nil;
+    NSLog(@"Getting ride of autosave timer: %@",saveTimer);
     if (!self.slideshow.slides.count && !slideshowPhotos.count && !self.slideshow.title.length){
         [self.slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
         [self saveSlideshowWithUI:NO];

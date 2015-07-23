@@ -18,7 +18,6 @@
 #import "WFSettingsViewController.h"
 #import "WFLoginAnimator.h"
 #import "WFLoginViewController.h"
-#import "WFSlideshowsViewController.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "WFSettingsAnimator.h"
 #import "WFTablesAnimator.h"
@@ -48,11 +47,12 @@
 #import "WFNoRotateNavController.h"
 #import "WFRightMenuTableViewController.h"
 #import "WFTransparentBGModalAnimator.h"
+#import "WFLoadingCell.h"
 
 static NSString *const createALightTablePlaceholder            = @"Create a light table";
 static NSString *const joinLightTablePlaceholder            = @"Join one that exists";
 
-@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, WFLightTableDelegate, WFSlideshowsDelegate, WFNotificationsDelegate, WFSettingsDelegate, WFRightMenuDelegate, UIGestureRecognizerDelegate, UIActionSheetDelegate> {
+@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, WFLightTableDelegate, WFNotificationsDelegate, WFSettingsDelegate, WFRightMenuDelegate, UIGestureRecognizerDelegate, UIActionSheetDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     UIButton *homeButton;
@@ -94,7 +94,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     BOOL newLightTableTransition;
     BOOL transparentBG;
     BOOL groupBool;
-    BOOL tableIsVisible;
+    BOOL sidebarIsVisible;
     BOOL canLoadMorePhotos;
     BOOL canSearchMore;
     BOOL showSlideshow;
@@ -130,7 +130,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 @property (weak, nonatomic) IBOutlet UIView *comparisonContainerView;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
-@property (weak, nonatomic) IBOutlet UILabel *noSearchResultsLabel;
 @property (weak, nonatomic) IBOutlet UILabel *dragForComparisonLabel;
 @property (nonatomic) WFInteractiveImageView *draggingView;
 @property (nonatomic) NSIndexPath *startIndex;
@@ -169,8 +168,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [self setUpGestureRecognizers];
     
     [_comparisonContainerView setBackgroundColor:[UIColor colorWithWhite:0 alpha:.9f]];
-    _dragForComparisonLabel.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansThin] size:0];
-    [_dragForComparisonLabel setTextColor:[UIColor colorWithWhite:.7f alpha:.6f]];
+    _dragForComparisonLabel.font = [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThin] size:0];
+    [_dragForComparisonLabel setTextColor:[UIColor colorWithWhite:.5f alpha:1.f]];
     
     /*self.groupsInteractor = [[WFGroupsInteractor alloc] initWithParentViewController:self];
     UIScreenEdgePanGestureRecognizer *gestureRecognizer = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self.groupsInteractor action:@selector(userDidPan:)];
@@ -182,6 +181,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     collectionViewRefresh = [[UIRefreshControl alloc] init];
     [collectionViewRefresh addTarget:self action:@selector(refreshCollectionView:) forControlEvents:UIControlEventValueChanged];
     [self.collectionView addSubview:collectionViewRefresh];
+    self.collectionView.alwaysBounceVertical = YES;
     canLoadMorePhotos = YES;
     canSearchMore = YES;
     
@@ -194,7 +194,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }
     
     [self setUpSearch];
-    [self loadPhotos:NO];
+    [self loadPhotosBefore:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loginSuccessful) name:@"LoginSuccessful" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loggedOut) name:@"LoggedOut" object:nil];
@@ -306,7 +306,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     
     self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     if (self.currentUser){
-        [self loadUserDashboard];
         if (!tableViewRefresh){
             tableViewRefresh = [[UIRefreshControl alloc] init];
             [tableViewRefresh addTarget:self action:@selector(refreshTableView:) forControlEvents:UIControlEventValueChanged];
@@ -323,7 +322,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [super viewWillAppear:animated];
     navBarShadowView.hidden = YES;
     self.currentUser = [self.currentUser MR_inContext:[NSManagedObjectContext MR_defaultContext]];
-    if (tableIsVisible && _photos.count){
+    if (sidebarIsVisible && _photos.count){
         [self.tableView reloadData];
     }
 }
@@ -368,7 +367,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         if (slideshowSidebarMode){
             [self loadSlideshows];
         } else {
-            [self loadUserDashboard];
+            [self loadUserArt];
         }
     } else {
         [refreshControl endRefreshing];
@@ -378,7 +377,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)loadSlideshows {
     [ProgressHUD show:@"Refreshing slideshows..."];
-    [manager GET:[NSString stringWithFormat:@"users/%@/slideshows",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    [manager GET:[NSString stringWithFormat:@"users/%@/slideshow_titles",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success loading slideshows: %@",responseObject);
         if ([responseObject objectForKey:@"slideshows"]){
             NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithCapacity:[[responseObject objectForKey:@"slideshows"] count]];
@@ -410,10 +409,60 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }];
 }
 
+- (void)loadSlideshow:(Slideshow*)slideshow {
+    [ProgressHUD show:[NSString stringWithFormat:@"Fetching \"%@\"...",slideshow.title]];
+    [manager GET:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //NSLog(@"Success loading slideshow: %@",responseObject);
+        if ([responseObject objectForKey:@"slideshow"]){
+            [slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
+        } else {
+            
+        }
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [ProgressHUD dismiss];
+            [self transitionToSlideshow:slideshow];
+        }];
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed to load slideshow: %@",error.description);
+        [ProgressHUD dismiss];
+        [[[UIAlertView alloc] initWithTitle:@"Uh oh" message:@"We weren't able to pull the latest info for this slideshow, so we're showing you what's currently on your device." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
+        [self transitionToSlideshow:slideshow];
+        
+    }];
+}
+
+- (void)transitionToSlideshow:(Slideshow*)slideshow {
+    if (slideshow.user && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+        [self slideshowSelected:slideshow];
+        return;
+    } else {
+        WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
+        WFNoRotateNavController *nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
+        [vc setSlideshow:slideshow];
+        
+        if (IDIOM == IPAD){
+            [self resetTransitionBooleans];
+            nav.transitioningDelegate = self;
+            nav.modalPresentationStyle = UIModalPresentationCustom;
+            [self presentViewController:nav animated:YES completion:NULL];
+        } else {
+            NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
+            [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self presentViewController:nav animated:YES completion:NULL];
+            });
+        }
+    }
+}
+
 - (void)refreshCollectionView:(id)sender {
     [ProgressHUD show:@"Refreshing Art..."];
     canLoadMorePhotos = YES;
-    [self loadPhotos:NO];
+    [_filteredPhotos removeAllObjects];
+    [_photos removeAllObjects];
+    [self loadPhotosBefore:nil];
 }
 
 - (void)setUpTableView {
@@ -438,13 +487,12 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 - (void)loginSuccessful {
     self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     [self setUpNavBar];
-    [self loadUserDashboard];
-    if (tableIsVisible) [self.tableView reloadData];
+    if (sidebarIsVisible) [self.tableView reloadData];
     [ProgressHUD dismiss];
 }
 
 - (void)logout {
-    if (tableIsVisible) [self showSidebar];
+    if (sidebarIsVisible) [self showSidebar];
     [delegate logout];
     [self loggedOut];
     
@@ -465,34 +513,40 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [self.tableView reloadData];
 }
 
-- (void)loadPhotos:(BOOL)scrolling {
+- (void)loadPhotosBefore:(Photo*)lastPhoto {
     if (self.mainRequest) return;
     
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:@(ART_THROTTLE) forKey:@"count"];
-    if (searching && searchText && searchText.length){
+    if (searching && searchText.length){
         [parameters setObject:searchText forKey:@"search"];
-    } else if (_photos.count && scrolling) {
-        Photo *lastPhoto = _photos.lastObject;
-        [parameters setObject:[NSNumber numberWithDouble:[lastPhoto.createdDate timeIntervalSince1970]] forKey:@"before_date"];
-    } else {
+    }
+    
+    if (showLightTable && _lightTable){
+        [parameters setObject:_lightTable.identifier forKey:@"light_table_id"];
+    }
+    
+    if (!_photos.count){
         dispatch_async(dispatch_get_main_queue(), ^(void){
             [ProgressHUD show:@"Loading art..."];
         });
     }
+    
+    if (lastPhoto){
+        [parameters setObject:[NSNumber numberWithDouble:[lastPhoto.createdDate timeIntervalSince1970]] forKey:@"before_date"];
+    }
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     }
-    
     self.mainRequest = [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSDictionary *photosDict = [responseObject objectForKey:@"photos"];
         if (photosDict.count){
-            NSLog(@"How many photos did we pull? %lu",(unsigned long)[[responseObject objectForKey:@"photos"] count]);
-            //if (!scrolling)
-            //    [_photos removeAllObjects]; // this means it's a refresh
-            
-            canLoadMorePhotos = YES;
-            [_noSearchResultsLabel setText:@"Searching the full Wölff catalog..."];
+            NSLog(@"How many photos did we pull? %lu",(unsigned long)photosDict.count);
+            if (photosDict.count < ART_THROTTLE){
+                canLoadMorePhotos = NO;
+            } else {
+                canLoadMorePhotos = YES;
+            }
             for (id dict in photosDict) {
                 Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                 if (!photo){
@@ -500,20 +554,27 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                 }
                 [photo populateFromDictionary:dict];
                 [_photos addObject:photo];
-                if (searching){
-                    [_filteredPhotos addObject:photo];
-                }
             }
+            
+            NSSortDescriptor *chronologicalSort = [NSSortDescriptor sortDescriptorWithKey:@"createdDate" ascending:NO];
+            [_photos sortUsingDescriptors:@[chronologicalSort]];
+            
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                NSLog(@"should be reloading data for photos: %lu",(unsigned long)_photos.count);
-                [self.collectionView reloadData];
+                if (searching){
+                    [self filterContentForSearchText:searchText scope:nil];
+                    if (photosDict.count < ART_THROTTLE){
+                        canSearchMore = NO;
+                    } else {
+                        canSearchMore = YES;
+                    }
+                } else {
+                    [self.collectionView reloadData];
+                }
                 [self endRefresh];
             }];
         } else {
             canLoadMorePhotos = NO;
             [self endRefresh];
-            [_noSearchResultsLabel setText:kNoSearchResults];
-            [_noSearchResultsLabel setHidden:NO];
         }
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -532,18 +593,16 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }
 }
 
-- (void)loadUserDashboard {
+- (void)loadUserArt {
     if (self.dashboardRequest) return;
     
     if (self.currentUser){
-        [ProgressHUD show:@"Refreshing your tables..."];
-        
+        [ProgressHUD show:@"Refreshing your light tables..."];
         self.dashboardRequest = [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success getting user dashboard: %@", responseObject);
             [self.currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                //set up private photos and favorites
-                //NSPredicate *privatePredicate = [NSPredicate predicateWithFormat:@"(privatePhoto == %@ || art.privateArt == %@) && user.identifier == %@", @YES, @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+
                 NSPredicate *myPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@", @YES, @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
                 _myPhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:myPredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
                 [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
@@ -754,12 +813,12 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             if (indexPath.row == 0){
                 [cell.label setText:@"My Art"];
                 if (showMyArt){
-                    [cell.iconImageView setImage:[UIImage imageNamed:@"homeIconBlue"]];
+                    [cell.iconImageView setImage:[UIImage imageNamed:@"paintbrushBlue"]];
                     [cell.label setTextColor:kElectricBlue];
                     cell.label.highlightedTextColor = kElectricBlue;
                     [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
                 } else {
-                    [cell.iconImageView setImage:[UIImage imageNamed:@"homeIcon"]];
+                    [cell.iconImageView setImage:[UIImage imageNamed:@"whitePaintbrush"]];
                     [cell.label setTextColor:[UIColor whiteColor]];
                     [cell setBackgroundColor:[UIColor clearColor]];
                 }
@@ -799,7 +858,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                     [cell setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
                 } else {
                     [cell.tableLabel setTextColor:[UIColor whiteColor]];
-                    [cell.pieceCountLabel setTextColor:[UIColor colorWithWhite:1 alpha:.33]];
+                    [cell.pieceCountLabel setTextColor:[UIColor lightGrayColor]];
                     [cell setBackgroundColor:[UIColor clearColor]];
                 }
             } else {
@@ -887,36 +946,33 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             NSLog(@"Failed to delete this slideshow: %@",error.description);
         }];
     }
-    [self.tableView beginUpdates];
-    //[_slideshows removeObject:slideshow];
+    
+    [_slideshows removeObject:slideshow];
+    if ([_uncategorizesSlideshows containsObject:slideshow]){
+        [_uncategorizesSlideshows removeObject:slideshow];
+    }
     [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         [UIView animateWithDuration:kFastAnimationDuration animations:^{
-            if (indexPath){
-                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
-            } else {
-                [self.tableView reloadData];
-            }
-            [self.tableView endUpdates];
+            [self.tableView reloadData];
         } completion:^(BOOL finished) {
+            //redraw the rest of the tableview
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
         }];
     }];
 }
 
 - (void)removeSlideshow:(Slideshow *)slideshow atIndexPath:(NSIndexPath*)indexPath {
-    [self.tableView beginUpdates];
-    //[_slideshows removeObject:slideshow];
+    [_slideshows removeObject:slideshow];
+    if ([_uncategorizesSlideshows containsObject:slideshow]){
+        [_uncategorizesSlideshows removeObject:slideshow];
+    }
     [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         [UIView animateWithDuration:kFastAnimationDuration animations:^{
-            if (indexPath){
-                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
-            } else {
-                [self.tableView reloadData];
-            }
-            [self.tableView endUpdates];
+            [self.tableView reloadData];
         } completion:^(BOOL finished) {
+            //redraw the rest of the tableview
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationNone];
         }];
     }];
@@ -1026,7 +1082,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     searching = NO;
-    [_noSearchResultsLabel setHidden:YES];
     
     if (slideshowSidebarMode){
         Slideshow *slideshow;
@@ -1039,28 +1094,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             LightTable *lightTable = _lightTables[indexPath.section-1];
             slideshow = lightTable.slideshows[indexPath.row];
         }
-        if (slideshow.user && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
-            [self slideshowSelected:slideshow];
-            return;
-        } else {
-            WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
-            WFNoRotateNavController *nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
-            [vc setSlideshow:slideshow];
-            
-            if (IDIOM == IPAD){
-                [self resetTransitionBooleans];
-                nav.transitioningDelegate = self;
-                nav.modalPresentationStyle = UIModalPresentationCustom;
-                [self presentViewController:nav animated:YES completion:NULL];
-            } else {
-                NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
-                [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
-                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
-                dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                    [self presentViewController:nav animated:YES completion:NULL];
-                });
-            }
-        }
+        [self loadSlideshow:slideshow];
+        
     } else {
         if (indexPath.section == 0){
             if (indexPath.row == 0){
@@ -1102,7 +1137,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     if (IDIOM != IPAD){
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .23f * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            if (tableIsVisible){
+            if (sidebarIsVisible){
                 [self showSidebar];
             }
         });
@@ -1118,10 +1153,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)showMyArt {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        if (showMyArt){
-            [self resetArtBooleans];
-        } else {
-            [self resetArtBooleans];
+        [self resetArtBooleans];
+        if (!showMyArt){
             showMyArt = YES;
         }
         [self.collectionView reloadData];
@@ -1223,19 +1256,19 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)didJoinLightTable:(LightTable *)table {
-    if (!slideshowSidebarMode && tableIsVisible){
+    if (!slideshowSidebarMode && sidebarIsVisible){
         [self.tableView reloadData];
     }
 }
 
 - (void)didCreateLightTable:(LightTable *)table {
-    if (!slideshowSidebarMode && tableIsVisible){
+    if (!slideshowSidebarMode && sidebarIsVisible){
         [self.tableView reloadData];
     }
 }
 
 - (void)didUpdateLightTable:(LightTable *)table {
-    if (!slideshowSidebarMode && tableIsVisible){
+    if (!slideshowSidebarMode && sidebarIsVisible){
         [self.tableView reloadData];
         [self.collectionView reloadData];
     }
@@ -1245,7 +1278,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (IDIOM == IPAD){
-        if (tableIsVisible){
+        if (sidebarIsVisible){
             return CGSizeMake((width-kSidebarWidth)/3,(width-kSidebarWidth)/3);
         } else {
             return CGSizeMake(width/4, width/4);
@@ -1284,11 +1317,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 #pragma mark - UICollectionView Datasource
 
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
-    if (searching && _filteredPhotos.count == 0){
-        [_noSearchResultsLabel setHidden:NO];
-    } else {
-        [_noSearchResultsLabel setHidden:YES];
-    }
     
     if (searching){
         return _filteredPhotos.count;
@@ -1375,20 +1403,19 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)resetCatalog {
     if (!_photos.count){
-        [self loadPhotos:NO];
+        [self loadPhotosBefore:nil];
     }
     
-    if (tableIsVisible || searching || showFavorites || showLightTable || showMyArt){
+    if (sidebarIsVisible || searching || showFavorites || showLightTable || showMyArt){
         dispatch_async(dispatch_get_main_queue(), ^(void){
             [self resetArtBooleans];
             self.lightTable = nil;
             
-            if (tableIsVisible){
+            if (sidebarIsVisible){
                 [self showSidebar];
             }
             searchText = @"";
             searching = NO;
-            [_noSearchResultsLabel setHidden:YES];
             [self.searchBar setText:@""];
             [self.searchBar resignFirstResponder];
             [self.view endEditing:YES];
@@ -1403,8 +1430,10 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         float bottomEdge = scrollView.contentOffset.y + scrollView.frame.size.height;
         if (bottomEdge >= scrollView.contentSize.height) {
             // at the bottom of the scrollView
-            if (canLoadMorePhotos){
-                [self loadPhotos:YES];
+            if (searching && canSearchMore){
+                [self loadPhotosBefore:_filteredPhotos.lastObject];
+            } else if (canLoadMorePhotos && _photos.count){
+                [self loadPhotosBefore:_photos.lastObject];
             }
         }
     }
@@ -1473,7 +1502,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     
     [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove",self.lightTable.identifier] parameters:@{@"photo_id":photo.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"success removing photo from light table: %@",responseObject);
-        if (tableIsVisible){
+        if (sidebarIsVisible){
             [self.tableView reloadData];
         }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -1534,7 +1563,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     
     CGFloat heightInScreen = fmodf((loc.y-self.collectionView.contentOffset.y), CGRectGetHeight(self.collectionView.frame));
     CGFloat hoverOffset;
-    tableIsVisible ? (hoverOffset = kSidebarWidth) : (hoverOffset = 0);
+    sidebarIsVisible ? (hoverOffset = kSidebarWidth) : (hoverOffset = 0);
     CGPoint locInScreen = CGPointMake( loc.x - self.collectionView.contentOffset.x + hoverOffset, heightInScreen );
     
     //[self adjustAnchorPointForGestureRecognizer:gestureRecognizer];
@@ -1580,6 +1609,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }
     
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
+        NSLog(@"does collection view contain point? %u",CGRectContainsPoint(self.collectionView.frame, loc));
         //NSLog(@"loc x: %f and y %f, showlighttable? %u",loc.x, loc.y, showLightTable);
         // comparison mode
         if (loc.x < 0 && loc.y > (_comparisonContainerView.frame.origin.y - 128)){ // 128 is half the width of an art slide, since the point we're grabbing is a center point, not the origin
@@ -1659,7 +1689,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                 } completion:^(BOOL finished) {
                     
                 }];
-            } else if (showLightTable && (loc.x < 0 || loc.x > width || loc.y < 0 || loc.y > height)) {
+            } else if (showLightTable && !CGRectContainsPoint(self.collectionView.frame, loc)) {
                 NSLog(@"get rid of it");
                 indexPathForLightTableArtToRemove = self.startIndex;
                 [self removeLightTablePhoto:nil];
@@ -1763,7 +1793,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 #pragma mark - UICollectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (IDIOM != IPAD && tableIsVisible){
+    if (IDIOM != IPAD && sidebarIsVisible){
         [self showSidebar]; // temporary
         return;
     }
@@ -1801,9 +1831,10 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
     }
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self presentViewController:nav animated:YES completion:NULL];
+    });
+    
 }
 
 #pragma mark - Metadata Delegate
@@ -1846,7 +1877,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)droppedPhoto:(Photo*)photo toLightTable:(LightTable*)lightTable {
-    if (!slideshowSidebarMode && tableIsVisible){
+    if (!slideshowSidebarMode && sidebarIsVisible){
         [self.tableView reloadData];
     }
 }
@@ -1856,7 +1887,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [lightTable removePhoto:photo];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     
-    if (!slideshowSidebarMode && tableIsVisible){
+    if (!slideshowSidebarMode && sidebarIsVisible){
         [self.tableView reloadData];
     }
     
@@ -2028,7 +2059,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)showSearch {
     CGFloat navHeight = self.navigationController.navigationBar.frame.size.height;
-    if (tableIsVisible) {
+    if (sidebarIsVisible) {
         [self showSidebar];
     }
     if (searchVisible) {
@@ -2196,7 +2227,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)shouldReloadSlideshows {
-    if (tableIsVisible && slideshowSidebarMode){
+    if (sidebarIsVisible && slideshowSidebarMode){
         [self.tableView reloadData];
         NSLog(@"should be reloading data");
     }
@@ -2211,7 +2242,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                 [self showSidebar];
             } else {
                 slideshowSidebarMode = YES;
-                if (tableIsVisible){
+                if (sidebarIsVisible){
                     [self.tableView reloadData];
                     slideshowsButton.selected = YES;
                 } else {
@@ -2230,7 +2261,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 - (void)showLightTables {
     slideshowsButton.selected = NO;
     if (slideshowSidebarMode){
-        if (tableIsVisible){
+        if (sidebarIsVisible){
             slideshowSidebarMode = NO;
             [self.tableView reloadData];
             tablesButton.selected = YES;
@@ -2248,8 +2279,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)showSidebar {
     CGFloat offsetWidth = IDIOM == IPAD ? kSidebarWidth : kSidebarWidth;
-    if (tableIsVisible){
-        tableIsVisible = NO;
+    if (sidebarIsVisible){
+        sidebarIsVisible = NO;
         //hide the light table sidebar
         CGRect collectionFrame = self.collectionView.frame;
         collectionFrame.origin.x = 0;
@@ -2261,7 +2292,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             _tableView.transform = CGAffineTransformIdentity;
             _searchBarContainer.transform = CGAffineTransformIdentity;
             _comparisonContainerView.transform = CGAffineTransformIdentity;
-            _noSearchResultsLabel.transform = CGAffineTransformIdentity;
             [self.collectionView reloadData];
             [self.collectionView setFrame:collectionFrame];
         } completion:^(BOOL finished) {
@@ -2270,7 +2300,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             }
         }];
     } else {
-        tableIsVisible = YES;
+        sidebarIsVisible = YES;
         if (slideshowSidebarMode) {
             slideshowsButton.selected = YES;
         } else {
@@ -2285,7 +2315,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             _tableView.transform = CGAffineTransformMakeTranslation(offsetWidth, 0);
             _searchBarContainer.transform = CGAffineTransformMakeTranslation(offsetWidth, 0);
             _comparisonContainerView.transform = CGAffineTransformMakeTranslation(offsetWidth, 0);
-            _noSearchResultsLabel.transform = CGAffineTransformMakeTranslation(offsetWidth, 0);
             [self.collectionView reloadData];
             [self.collectionView setFrame:collectionFrame];
         } completion:^(BOOL finished) {
@@ -2394,7 +2423,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [ProgressHUD show:@"Searching..."];
     [searchBar endEditing:YES];
     searchText = searchBar.text;
-    [self loadPhotos:NO];
+    [self loadPhotosBefore:nil];
 }
 
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
@@ -2418,10 +2447,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 #pragma mark - Search Methods
 - (void)setUpSearch {
-    [_noSearchResultsLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLightItalic] size:0]];
-    [_noSearchResultsLabel setTextColor:[UIColor colorWithWhite:0 alpha:.23]];
-    [_noSearchResultsLabel setText:@"No search results..."];
-    [_noSearchResultsLabel setHidden:YES];
     [self.searchBar setPlaceholder:@"Search catalog"];
     
     //reset the search bar font
@@ -2433,6 +2458,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             } else {
                 [searchTextField setTextColor:[UIColor blackColor]];
             }
+            [searchTextField setAutocapitalizationType:UITextAutocapitalizationTypeNone];
             [searchTextField setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
             searchTextField.keyboardAppearance = UIKeyboardAppearanceDark;
             break;
@@ -2494,7 +2520,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             }
         }
         
-        if (!_filteredPhotos.count) [self loadPhotos:NO];
+        if (!_filteredPhotos.count) [self loadPhotosBefore:nil];
     } else if (showLightTable) {
         _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_lightTable.photos];
     } else if (showMyArt) {
@@ -2522,7 +2548,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             [lightTable.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
                 [photoIds addObject:photo.identifier];
             }];
-            if (tableIsVisible && !slideshowSidebarMode){
+            if (sidebarIsVisible && !slideshowSidebarMode){
                 [self.tableView reloadData];
             }
             if (photoIds.count){

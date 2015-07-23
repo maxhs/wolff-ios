@@ -110,12 +110,8 @@
             }];
             
             //only ask for push notifications when a user has successfully logged in
-            //if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-                [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
-                [[UIApplication sharedApplication] registerForRemoteNotifications];
-//            } else {
-//                [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
-//            }
+            [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge) categories:nil]];
+            [[UIApplication sharedApplication] registerForRemoteNotifications];
         }
     
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {

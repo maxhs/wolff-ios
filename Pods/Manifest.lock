@@ -20,7 +20,12 @@ PODS:
   - AFNetworking/UIKit (2.5.0):
     - AFNetworking/NSURLConnection
     - AFNetworking/NSURLSession
+  - Crashlytics (3.1.0)
   - DateTools (1.4.3)
+  - Fabric (1.2.8):
+    - Fabric/Base (= 1.2.8)
+  - Fabric/Base (1.2.8)
+  - GoogleAnalytics (3.12.0)
   - MagicalRecord (2.2):
     - MagicalRecord/Core (= 2.2)
   - MagicalRecord/Core (2.2)
@@ -37,7 +42,10 @@ PODS:
 
 DEPENDENCIES:
   - AFNetworking
+  - Crashlytics
   - DateTools
+  - Fabric
+  - GoogleAnalytics
   - MagicalRecord
   - Mixpanel
   - PaymentKit
@@ -46,11 +54,14 @@ DEPENDENCIES:
 
 SPEC CHECKSUMS:
   AFNetworking: 96ac9bf3eda33582701cb1fcc5b896aa1e20311e
+  Crashlytics: ef9a58a4e806b316a1748c06432f6f847ba09ac6
   DateTools: c3d055af2c4d039c1791b5bffb1444ad1db32219
+  Fabric: a9eabe53915e9f1db55a84dd2838737928675878
+  GoogleAnalytics: ef2e0b800ef3c1e62688cdfc959e0d3132bc246c
   MagicalRecord: f8a56bb87ab6552f20c4bb8681a1958a197ea3cd
   Mixpanel: e453f9abb7858742b1ab2b0434eac04f9f27c155
   PaymentKit: 323c25233af5060880daa0c31366d4b688c34487
   SDWebImage: ed3095af2ff88b436426037444979b917f6c5575
   Stripe: 839ddca5ad2153a073057852ce173d30f7df71d3
 
-COCOAPODS: 0.36.0
+COCOAPODS: 0.37.2

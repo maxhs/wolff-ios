@@ -149,6 +149,7 @@
             [_favoriteButton setHidden:NO];
             [_dropToTableButton setHidden:NO];
             [_flagButton setHidden:NO];
+            [_tagButton setHidden:NO];
             [_editButton setHidden:NO];
             [_deleteButton setHidden:NO];
             [_postedByButton setHidden:NO];
@@ -162,6 +163,7 @@
             [_favoriteButton setHidden:YES];
             [_dropToTableButton setHidden:YES];
             [_flagButton setHidden:YES];
+            [_tagButton setHidden:YES];
             [_editButton setHidden:YES];
             [_deleteButton setHidden:YES];
             [_postedByButton setHidden:YES];
@@ -346,6 +348,11 @@
     [_flagButton setImage:[UIImage imageNamed:@"flag"] forState:UIControlStateNormal];
     [_flagButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.023]];
     [_flagButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    
+    [_tagButton addTarget:self action:@selector(communityTag) forControlEvents:UIControlEventTouchUpInside];
+    [_tagButton setImage:[UIImage imageNamed:@"tag"] forState:UIControlStateNormal];
+    [_tagButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.023]];
+    [_tagButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     
     [_dropToTableButton addTarget:self action:@selector(dropToLightTable) forControlEvents:UIControlEventTouchUpInside];
     [_dropToTableButton setImage:[UIImage imageNamed:@"dropToLightTable"] forState:UIControlStateNormal];
@@ -1063,6 +1070,22 @@
     }];
 }
 
+- (void)communityTag {
+    [self resetTransitionBooleans];
+    metadataModal = YES;
+    WFTagsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tags"];
+    [vc setShouldSave:YES];
+    [vc setSelectedTags:[NSMutableOrderedSet orderedSet]];
+    [vc setArt:self.photo.art];
+    vc.tagDelegate = self;
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.transitioningDelegate = self;
+    nav.modalPresentationStyle = UIModalPresentationCustom;
+    [self presentViewController:nav animated:YES completion:^{
+        
+    }];
+}
+
 - (void)showTags {
     [self resetTransitionBooleans];
     metadataModal = YES;
@@ -1264,6 +1287,7 @@
                 [_favoriteButton setHidden:NO];
                 [_dropToTableButton setHidden:NO];
                 [_flagButton setHidden:NO];
+                [_tagButton setHidden:NO];
                 [_editButton setHidden:NO];
                 [_deleteButton setHidden:NO];
                 [_postedByButton setHidden:NO];
@@ -1276,6 +1300,7 @@
                 [_favoriteButton setHidden:YES];
                 [_dropToTableButton setHidden:YES];
                 [_flagButton setHidden:YES];
+                [_tagButton setHidden:YES];
                 [_editButton setHidden:YES];
                 [_deleteButton setHidden:YES];
                 [_postedByButton setHidden:YES];

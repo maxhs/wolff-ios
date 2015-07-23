@@ -21,7 +21,6 @@
     CGFloat height;
     NSString *searchText;
     BOOL searching;
-    BOOL loading;
     BOOL editing;
     BOOL noResults;
     NSMutableOrderedSet *_filteredTags;
@@ -36,6 +35,9 @@
     CGFloat topInset;
     UIImageView *navBarShadowView;
 }
+@property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
+@property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
+@property (strong, nonatomic) AFHTTPRequestOperation *mainRequest;
 @end
 
 @implementation WFTagsViewController
@@ -55,7 +57,7 @@ static NSString * const reuseIdentifier = @"TagCell";
     
     _filteredTags = [NSMutableOrderedSet orderedSet];
     _tags = [NSMutableOrderedSet orderedSetWithArray:[Tag MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
-    
+
     dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     saveButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(save)];
@@ -105,8 +107,9 @@ static NSString * const reuseIdentifier = @"TagCell";
 }
 
 - (void)loadTagsWithSearch:(NSString *)searchString {
-    if (!loading && searchString.length && !noResults){
-        loading = YES;
+    if (self.mainRequest) return;
+    if (searchString.length && !noResults){
+        
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
             [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
@@ -130,15 +133,17 @@ static NSString * const reuseIdentifier = @"TagCell";
                         _tags = [NSMutableOrderedSet orderedSetWithArray:[Tag MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
                         [self filterContentForSearchText:searchText scope:nil];
                         [ProgressHUD dismiss];
-                        loading = NO;
+                        self.mainRequest = nil;
                     }];
                 } else {
+                    self.mainRequest = nil;
                     noResults = YES;
                 }
             } else {
                 [self.searchBar resignFirstResponder];
                 noResults = YES;
                 [ProgressHUD dismiss];
+                self.mainRequest = nil;
             }
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [WFAlert show:@"Sorry, something went wrong while trying to fetch tag info.\n\nPlease try again soon." withTime:3.3f];
@@ -230,7 +235,11 @@ static NSString * const reuseIdentifier = @"TagCell";
         [collectionView reloadItemsAtIndexPaths:@[indexPath]];
     } else {
         Tag *tag = searching ? _filteredTags[indexPath.item] : _tags[indexPath.item];
-        [self.selectedTags addObject:tag];
+        if ([self.selectedTags containsObject:tag]){
+            [self.selectedTags removeObject:tag];
+        } else {
+            [self.selectedTags addObject:tag];
+        }
         [collectionView reloadItemsAtIndexPaths:@[indexPath]];
     }
     [self adjustTagButtonColor];
@@ -242,10 +251,6 @@ static NSString * const reuseIdentifier = @"TagCell";
 
 #pragma mark - Search Methods
 - (void)setUpSearch {
-    [_noSearchResultsLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLightItalic] size:0]];
-    [_noSearchResultsLabel setTextColor:[UIColor colorWithWhite:0 alpha:.23]];
-    [_noSearchResultsLabel setText:@"No search results..."];
-    [_noSearchResultsLabel setHidden:YES];
     
     [self.searchBar setPlaceholder:@"Search for relevant tags"];
     //reset the search bar font
@@ -338,6 +343,9 @@ static NSString * const reuseIdentifier = @"TagCell";
     if (tag.name.length){
         [parameters setObject:tag.name forKey:@"name"];
     }
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    }
     
     [ProgressHUD show:[NSString stringWithFormat:@"Adding \"%@\"",tag.name]];
     [manager POST:@"tags" parameters:@{@"tag":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -363,12 +371,32 @@ static NSString * const reuseIdentifier = @"TagCell";
 }
 
 - (void)save {
-    if (self.selectedTags.count){
+    if (self.shouldSave) {
+        NSString *tagString = self.selectedTags.count == 1 ? @"tag" : @"tags";
+        [WFAlert show:[NSString stringWithFormat:@"Thanks!\n\nYour %@ will need to be approved before becoming public.\n\n%@ has been notified.",tagString, self.art.user.fullName] withTime:3.3f];
+        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+        [parameters setObject:self.art.identifier forKey:@"art_id"];
+        NSMutableArray *tagIdArray = [NSMutableArray array];
+        [self.selectedTags enumerateObjectsUsingBlock:^(Tag *tag, NSUInteger idx, BOOL *stop) {
+            [tagIdArray addObject:tag.identifier];
+        }];
+        if (tagIdArray.count){
+            [parameters setObject:tagIdArray forKey:@"tag_ids"];
+        }
+        [manager POST:@"art_tags" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            NSLog(@"Success creating some art tags: %@", responseObject);
+            [self dismiss];
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Error creating art tags: %@",error.description);
+            [self dismiss];
+        }];
+        
+    } else if (self.selectedTags.count){
         if (self.tagDelegate && [self.tagDelegate respondsToSelector:@selector(tagsSelected:)]){
             [self.tagDelegate tagsSelected:self.selectedTags];
         }
         [self dismiss];
-        
     } else {
         if (self.tagDelegate && [self.tagDelegate respondsToSelector:@selector(tagsSelected:)]){
             [self.tagDelegate tagsSelected:nil];
@@ -410,6 +438,12 @@ static NSString * const reuseIdentifier = @"TagCell";
                          _collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, 0, 0);
                      }
                      completion:NULL];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [ProgressHUD dismiss];
+    self.mainRequest = nil;
 }
 
 - (void)dismiss {

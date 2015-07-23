@@ -31,7 +31,13 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kTestFlightToken @"a37d3f4a-b21b-4f38-ac66-83c68b65a8a1"
 #define kStripePublishableKey @"pk_live_4sgQpIqXTKke1WwlPUSHAd6g"
 #define kStripePublishableKeyTest @"pk_test_ZXELq5hTeexZnsrdWXpEbHeL"
+
+#ifdef DBEUG
 #define MIXPANEL_TOKEN @"b091c81f24a93b828683bb5c3c260278"
+#else
+#define MIXPANEL_TOKEN @"b091c81f24a93b828683bb5c3c260278"
+#endif
+
 
 #define kDarkBackgroundConstant 5298
 #define kBlurredBackgroundConstant 5299

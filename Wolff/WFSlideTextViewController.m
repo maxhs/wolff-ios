@@ -140,56 +140,34 @@
         if (self.slideText){
             [self.slideText setSlide:self.slide];
             [self.slideText setBody:self.textView.text];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                if (self.slideTextDelegate && [self.slideTextDelegate respondsToSelector:@selector(updatedSlideText:)]){
+                    [self.slideTextDelegate updatedSlideText:self.slideText];
+                }
+                [self dismiss];
+            }];
         } else {
             self.slideText = [SlideText MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             [self.slideText setSlide:self.slide];
             [self.slideText setBody:self.textView.text];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                if (self.slideTextDelegate && [self.slideTextDelegate respondsToSelector:@selector(createdSlideText:)]){
+                    [self.slideTextDelegate createdSlideText:self.slideText];
+                }
+                [self dismiss];
+            }];
         }
-        NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-        NSMutableDictionary *slideTextDict = [NSMutableDictionary dictionary];
-        [parameters setObject:self.slideText.slide.identifier forKey:@"slide_id"];
-        [slideTextDict setObject:self.slideText.body forKey:@"body"];
-        [parameters setObject:slideTextDict forKey:@"slide_text"];
 
-        if ([self.slideText.identifier isEqualToNumber:@0]){
-            [manager POST:@"slide_texts" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                NSLog(@"Success creating slide text: %@",responseObject);
-            } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                NSLog(@"Failed to create slide text: %@",error.description);
-            }];
-        } else {
-            [manager PATCH:[NSString stringWithFormat:@"slide_texts/%@",self.slideText.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                NSLog(@"Success updating slide text: %@",responseObject);
-            } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                NSLog(@"Failed to update slide text: %@",error.description);
-            }];
-        }
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            [self dismiss];
-        }];
+        
     } else {
         [self dismiss];
     }
 }
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-    if (self.slideText) {
-        if (self.slideTextDelegate && [self.slideTextDelegate respondsToSelector:@selector(updatedSlideText:)]){
-            [self.slideTextDelegate updatedSlideText:self.slideText];
-        }
-    } else {
-        if (self.slideTextDelegate && [self.slideTextDelegate respondsToSelector:@selector(updatedSlideText:)]){
-            [self.slideTextDelegate updatedSlideText:self.slideText];
-        }
-    }
-    
-}
 
 @end

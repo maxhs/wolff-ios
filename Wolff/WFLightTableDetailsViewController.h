@@ -20,9 +20,20 @@
 
 @property (strong, nonatomic) NSMutableOrderedSet *photos;
 @property (strong, nonatomic) LightTable *lightTable;
+@property (strong, nonatomic) NSMutableOrderedSet *owners;
+@property (strong, nonatomic) NSMutableOrderedSet *users;
+@property (strong, nonatomic) NSString *lightTableName;
+@property (strong, nonatomic) NSString *lightTableDescription;
+@property (strong, nonatomic) NSString *lightTableKey;
+@property (strong, nonatomic) NSString *lightTableConfirmKey;
+@property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UIButton *dismissButton;
 @property (weak, nonatomic) IBOutlet UIButton *scrollBackButton;
+@property (weak, nonatomic) IBOutlet UIButton *actionButton;
+@property (weak, nonatomic) IBOutlet UIButton *switchModesButton;
+@property (weak, nonatomic) IBOutlet UIView *topContainerView;
+@property (weak, nonatomic) UILabel *headerLabel;
 @property (weak, nonatomic) id<WFLightTableDelegate>lightTableDelegate;
 @property BOOL showKey;
 @property BOOL joinMode;
