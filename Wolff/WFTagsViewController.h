@@ -15,7 +15,7 @@
 
 @interface WFTagsViewController : UIViewController <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate>
 @property (strong, nonatomic) Art *art;
-@property BOOL shouldSave;
+@property BOOL communityTagMode;
 @property (strong, nonatomic) NSMutableOrderedSet *selectedTags;
 @property (weak, nonatomic) id<WFSelectTagsDelegate>tagDelegate;
 @end

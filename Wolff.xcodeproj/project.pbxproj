@@ -49,6 +49,7 @@
 		50305BD01A5A0D0C00D2CAD1 /* info.png in Resources */ = {isa = PBXBuildFile; fileRef = 50305BCD1A5A0D0C00D2CAD1 /* info.png */; };
 		50305BD11A5A0D0C00D2CAD1 /* info@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50305BCE1A5A0D0C00D2CAD1 /* info@2x.png */; };
 		50305BD21A5A0D0C00D2CAD1 /* info@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50305BCF1A5A0D0C00D2CAD1 /* info@3x.png */; };
+		5033BD581B62ABF100900556 /* WFTracking.m in Sources */ = {isa = PBXBuildFile; fileRef = 5033BD571B62ABF100900556 /* WFTracking.m */; };
 		503CD5771A6F44C700F4FF85 /* Alternate.m in Sources */ = {isa = PBXBuildFile; fileRef = 503CD5761A6F44C700F4FF85 /* Alternate.m */; };
 		503CD57A1A6F44DA00F4FF85 /* Alternate+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 503CD5791A6F44DA00F4FF85 /* Alternate+helper.m */; };
 		503CD5921A715D5900F4FF85 /* WFFlagViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 503CD5911A715D5900F4FF85 /* WFFlagViewController.m */; };
@@ -525,6 +526,8 @@
 		50305BCD1A5A0D0C00D2CAD1 /* info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = info.png; sourceTree = "<group>"; };
 		50305BCE1A5A0D0C00D2CAD1 /* info@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info@2x.png"; sourceTree = "<group>"; };
 		50305BCF1A5A0D0C00D2CAD1 /* info@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "info@3x.png"; sourceTree = "<group>"; };
+		5033BD561B62ABF100900556 /* WFTracking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFTracking.h; sourceTree = "<group>"; };
+		5033BD571B62ABF100900556 /* WFTracking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFTracking.m; sourceTree = "<group>"; };
 		503CD5751A6F44C700F4FF85 /* Alternate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alternate.h; sourceTree = "<group>"; };
 		503CD5761A6F44C700F4FF85 /* Alternate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alternate.m; sourceTree = "<group>"; };
 		503CD5781A6F44DA00F4FF85 /* Alternate+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Alternate+helper.h"; sourceTree = "<group>"; };
@@ -1316,6 +1319,8 @@
 				50AC91F51A998135004148D2 /* WFCreditTextField.m */,
 				502B3E7D1AE2E718001E0563 /* WFNoRotateNavController.h */,
 				502B3E7E1AE2E718001E0563 /* WFNoRotateNavController.m */,
+				5033BD561B62ABF100900556 /* WFTracking.h */,
+				5033BD571B62ABF100900556 /* WFTracking.m */,
 			);
 			name = "Custom Objects";
 			sourceTree = "<group>";
@@ -2613,6 +2618,7 @@
 				508DC9A31A5B9ABD00B1C008 /* WFSearchOptionsCell.m in Sources */,
 				50C589541A8558070094DBBF /* WFMaterialsViewController.m in Sources */,
 				50DB43B11A5363C300856174 /* Comment.m in Sources */,
+				5033BD581B62ABF100900556 /* WFTracking.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -29,7 +29,9 @@
 
 - (void)prepareForReuse {
     [super prepareForReuse];
+    [self.imageView setImage:nil];
     [self.textLabel setText:@""];
+    [self.tableLabel setText:@""];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

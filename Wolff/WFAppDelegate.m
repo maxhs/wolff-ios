@@ -18,6 +18,7 @@
 #import "WFWalkthroughViewController.h"
 #import "WFNewArtViewController.h"
 #import <AFNetworking/AFNetworkActivityIndicatorManager.h>
+#import "WFTracking.h"
 
 @implementation WFAppDelegate
 
@@ -77,9 +78,6 @@
 }
 
 - (void)connectWithParameters:(NSMutableDictionary *)parameters forSignup:(BOOL)signup {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken]){
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsDeviceToken] forKey:@"device_token"];
-    }
     if (IDIOM == IPAD && [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPadToken]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPadToken] forKey:@"mobile_token"];
     } else if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPhoneToken]) {
@@ -106,7 +104,7 @@
                 if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(loginSuccessful)]) {
                     [self.loginDelegate loginSuccessful];
                 }
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"LoginSuccessful" object:nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:LOGGED_IN object:nil];
             }];
             
             //only ask for push notifications when a user has successfully logged in
@@ -250,7 +248,7 @@
     if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(logout)]){
         [self.loginDelegate logout];
     }
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"LoggedOut" object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:LOGGED_OUT object:nil];
     [ProgressHUD dismiss];
 }
 

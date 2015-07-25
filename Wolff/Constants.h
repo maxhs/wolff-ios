@@ -44,6 +44,9 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kMetadataWidth 600
 #define ART_THROTTLE 20
 
+#define LOGGED_OUT @"LoggedOut"
+#define LOGGED_IN @"LoggedIn"
+
 #define kUserDefaultsId @"user_id"
 #define kUserDefaultsPassword @"password"
 #define kUserDefaultsEmail @"email"

@@ -343,29 +343,15 @@ static NSString * const reuseIdentifier = @"UserCell";
 
 - (void)dismiss {
     if (self.ownerMode){
-        if (self.selectedUsers.count){
-            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(lightTableOwnersSelected:)]){
-                [self.userDelegate lightTableOwnersSelected:self.selectedUsers];
-            }
-        } else {
-            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(lightTableOwnersSelected:)]){
-                [self.userDelegate lightTableOwnersSelected:[NSOrderedSet orderedSet]];
-            }
+        if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(lightTableOwnersSelected:)]){
+            [self.userDelegate lightTableOwnersSelected:self.selectedUsers];
         }
     } else {
-        if (self.selectedUsers.count){
-            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(usersSelected:)]){
-                [self.userDelegate usersSelected:self.selectedUsers];
-            }
-        } else {
-            if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(usersSelected:)]){
-                [self.userDelegate usersSelected:[NSOrderedSet orderedSet]];
-            }
+        if (self.userDelegate && [self.userDelegate respondsToSelector:@selector(usersSelected:)]){
+            [self.userDelegate usersSelected:self.selectedUsers];
         }
     }
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
 - (void)didReceiveMemoryWarning {

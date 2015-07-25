@@ -153,6 +153,7 @@
             [cell.textLabel setText:@"My Favorites"];
         }
     } else {
+        
         LightTable *table = (LightTable*)_lightTables[indexPath.row];
         [cell configureForTable:table];
         if (_slideshow){

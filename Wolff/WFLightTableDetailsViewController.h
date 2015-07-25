@@ -20,12 +20,7 @@
 
 @property (strong, nonatomic) NSMutableOrderedSet *photos;
 @property (strong, nonatomic) LightTable *lightTable;
-@property (strong, nonatomic) NSMutableOrderedSet *owners;
-@property (strong, nonatomic) NSMutableOrderedSet *users;
-@property (strong, nonatomic) NSString *lightTableName;
-@property (strong, nonatomic) NSString *lightTableDescription;
-@property (strong, nonatomic) NSString *lightTableKey;
-@property (strong, nonatomic) NSString *lightTableConfirmKey;
+
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UIButton *dismissButton;

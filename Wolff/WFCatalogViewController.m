@@ -85,6 +85,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     BOOL expanded;
     BOOL metadata;
     BOOL searching;
+    BOOL loggedIn;
 
     BOOL comparison;
     BOOL settings;
@@ -179,7 +180,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     self.collectionView.delaysContentTouches = NO;
     [self.collectionView setBackgroundColor:[UIColor whiteColor]];
     collectionViewRefresh = [[UIRefreshControl alloc] init];
-    [collectionViewRefresh addTarget:self action:@selector(refreshCollectionView:) forControlEvents:UIControlEventValueChanged];
+    [collectionViewRefresh addTarget:self action:@selector(refreshCollectionView) forControlEvents:UIControlEventValueChanged];
     [self.collectionView addSubview:collectionViewRefresh];
     self.collectionView.alwaysBounceVertical = YES;
     canLoadMorePhotos = YES;
@@ -194,10 +195,13 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }
     
     [self setUpSearch];
-    [self loadPhotosBefore:nil];
+    [self loadBeforePhoto:nil];
+    dispatch_async(dispatch_get_main_queue(), ^(void){
+        [ProgressHUD show:@"Loading art..."];
+    });
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loginSuccessful) name:@"LoginSuccessful" object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loggedOut) name:@"LoggedOut" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loginSuccessful) name:LOGGED_IN object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loggedOut) name:LOGGED_OUT object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didHideEditMenu:) name:UIMenuControllerDidHideMenuNotification object:nil];
     
@@ -264,6 +268,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     searchButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"search15"] style:UIBarButtonItemStylePlain target:self action:@selector(showSearch)];
     
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        loggedIn = YES;
+        self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
+        
         if (IDIOM == IPAD){
             settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"settings"] style:UIBarButtonItemStylePlain target:self action:@selector(settingsPopover:)];
             notificationsButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -285,8 +292,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             [tableViewRefresh addTarget:self action:@selector(refreshTableView:) forControlEvents:UIControlEventValueChanged];
             [self.tableView addSubview:tableViewRefresh];
         }
-
+        
     } else {
+        loggedIn = NO;
         loginButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"login"] style:UIBarButtonItemStylePlain target:self action:@selector(showLogin)];
         if (IDIOM == IPAD){
             self.navigationItem.rightBarButtonItems = @[loginButton, addButton];
@@ -302,15 +310,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     
     if (IDIOM == IPAD){
         self.navigationItem.titleView = self.searchBar;
-    }
-    
-    self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
-    if (self.currentUser){
-        if (!tableViewRefresh){
-            tableViewRefresh = [[UIRefreshControl alloc] init];
-            [tableViewRefresh addTarget:self action:@selector(refreshTableView:) forControlEvents:UIControlEventValueChanged];
-            [self.tableView addSubview:tableViewRefresh];
-        }
     }
 }
 
@@ -363,11 +362,11 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)refreshTableView:(UIRefreshControl*)refreshControl {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+    if (loggedIn){
         if (slideshowSidebarMode){
             [self loadSlideshows];
         } else {
-            [self loadUserArt];
+            [self loadLightTables];
         }
     } else {
         [refreshControl endRefreshing];
@@ -457,12 +456,20 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }
 }
 
-- (void)refreshCollectionView:(id)sender {
+- (void)refreshCollectionView {
     [ProgressHUD show:@"Refreshing Art..."];
-    canLoadMorePhotos = YES;
-    [_filteredPhotos removeAllObjects];
-    [_photos removeAllObjects];
-    [self loadPhotosBefore:nil];
+    if (showMyArt){
+        [_myPhotos removeAllObjects];
+        [self loadMyArt];
+    } else if (showFavorites){
+        [_favoritePhotos removeAllObjects];
+        [self loadFavorites];
+    } else {
+        canLoadMorePhotos = YES;
+        [_filteredPhotos removeAllObjects];
+        [_photos removeAllObjects];
+        [self loadBeforePhoto:nil];
+    }
 }
 
 - (void)setUpTableView {
@@ -486,6 +493,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 #pragma mark - Login/Logout Delegate
 - (void)loginSuccessful {
     self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
+    loggedIn = YES;
     [self setUpNavBar];
     if (sidebarIsVisible) [self.tableView reloadData];
     [ProgressHUD dismiss];
@@ -493,13 +501,26 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)logout {
     if (sidebarIsVisible) [self showSidebar];
+    loggedIn = NO;
+    
     [delegate logout];
     [self loggedOut];
+    
+    // refresh the catalog
+    showMyArt = NO;
+    showFavorites = NO;
+    self.lightTable = nil;
+    showLightTable = NO;
+    canLoadMorePhotos = YES;
+    [_photos removeAllObjects];
+    [_filteredPhotos removeAllObjects];
     
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .37f * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
         [WFAlert show:kLogoutMessage withTime:3.3f];
+        [self loadBeforePhoto:nil];
     });
+    
 }
 
 - (void)loggedOut {
@@ -513,7 +534,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [self.tableView reloadData];
 }
 
-- (void)loadPhotosBefore:(Photo*)lastPhoto {
+- (void)loadBeforePhoto:(Photo*)lastPhoto {
     if (self.mainRequest) return;
     
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
@@ -525,17 +546,11 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     if (showLightTable && _lightTable){
         [parameters setObject:_lightTable.identifier forKey:@"light_table_id"];
     }
-    
-    if (!_photos.count){
-        dispatch_async(dispatch_get_main_queue(), ^(void){
-            [ProgressHUD show:@"Loading art..."];
-        });
-    }
-    
+
     if (lastPhoto){
         [parameters setObject:[NSNumber numberWithDouble:[lastPhoto.createdDate timeIntervalSince1970]] forKey:@"before_date"];
     }
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+    if (loggedIn){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     }
     self.mainRequest = [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -593,9 +608,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }
 }
 
-- (void)loadUserArt {
+- (void)loadLightTables {
     if (self.dashboardRequest) return;
-    
     if (self.currentUser){
         [ProgressHUD show:@"Refreshing your light tables..."];
         self.dashboardRequest = [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -603,13 +617,15 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             [self.currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
 
-                NSPredicate *myPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@", @YES, @YES, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+                NSPredicate *myPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
                 _myPhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:myPredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
+                NSLog(@"_myPhotos count: %lu",(unsigned long)_myPhotos.count);
                 [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
                     if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
                         [_favoritePhotos addObject:favorite.photo];
                     }
                 }];
+                NSLog(@"_favorites count: %lu",(unsigned long)_favoritePhotos.count);
                 [self.collectionView reloadData];
                 [self.tableView reloadData];
                 [self endRefresh];
@@ -626,8 +642,78 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }
 }
 
+- (void)loadMyArt {
+    if (self.dashboardRequest) return;
+    if (self.currentUser){
+        [ProgressHUD show:@"Refreshing your art..."];
+        self.dashboardRequest = [manager GET:[NSString stringWithFormat:@"users/%@/art",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            //NSLog(@"Success getting user art: %@", responseObject);
+            [self parsePhotos:[responseObject objectForKey:@"photos"]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                NSPredicate *myPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+                _myPhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:myPredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
+                NSLog(@"_myPhotos count: %lu",(unsigned long)_myPhotos.count);
+                [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
+                    if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
+                        [_favoritePhotos addObject:favorite.photo];
+                    }
+                }];
+                NSLog(@"_favorites count: %lu",(unsigned long)_favoritePhotos.count);
+                [self.collectionView reloadData];
+                [self endRefresh];
+                self.dashboardRequest = nil;
+            }];
+            
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            //NSLog(@"Failed to get user art: %@",error.description);
+            [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to load your art. Please try again soon." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
+            
+            [self endRefresh];
+            self.dashboardRequest = nil;
+        }];
+    }
+}
+
+- (void)parsePhotos:(NSArray*)photos {
+    for (id dict in photos){
+        Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!photo){
+            photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        [photo populateFromDictionary:dict];
+    }
+}
+
+- (void)loadFavorites {
+    if (self.dashboardRequest) return;
+    if (self.currentUser){
+        [ProgressHUD show:@"Refreshing your favorites..."];
+        self.dashboardRequest = [manager GET:[NSString stringWithFormat:@"users/%@/favorites",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            //NSLog(@"Success getting user favorites: %@", responseObject);
+            [self parsePhotos:[responseObject objectForKey:@"photos"]];
+            
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
+                    if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
+                        [_favoritePhotos addObject:favorite.photo];
+                    }
+                }];
+                [self.collectionView reloadData];
+                [self endRefresh];
+                self.dashboardRequest = nil;
+            }];
+            
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to get user favorites: %@",error.description);
+            [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to load your favorites. Please try again soon." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
+            [self endRefresh];
+            self.dashboardRequest = nil;
+        }];
+    }
+}
+
 - (void)add {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+    if (loggedIn){
         if (self.currentUser.customerPlan.length){
             if (self.popover)
                 [self.popover dismissPopoverAnimated:YES];
@@ -758,7 +844,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             case 2:
                 if (_lightTables.count){
                     return _lightTables.count;
-                } else if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
+                } else if (loggedIn) {
                     return 1;
                 } else {
                     return 0;
@@ -863,7 +949,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                 }
             } else {
                 cell.selectionStyle = UITableViewCellSelectionStyleNone;
-                if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+                if (loggedIn){
                     [cell.label setText:@"No Light Tables"];
                     [cell.label setTextAlignment:NSTextAlignmentLeft];
                     [cell.label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThinItalic] size:0]];
@@ -986,6 +1072,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     
     [self resetTransitionBooleans];
     newLightTableTransition = YES;
+    
     if (IDIOM == IPAD){
         vc.modalPresentationStyle = UIModalPresentationCustom;
         vc.transitioningDelegate = self;
@@ -1014,7 +1101,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     WFLightTableCell *cell = (WFLightTableCell*)[_tableView cellForRowAtIndexPath:indexPath];
     
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+    if (loggedIn){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     }
     if (![lightTable.identifier isEqualToNumber:@0]){
@@ -1103,16 +1190,17 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             } else {
                 [self showFavorites];
             }
-            
-            [tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 3)] withRowAnimation:UITableViewRowAnimationAutomatic];
-            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .23f * NSEC_PER_SEC);
-            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                [self showSidebar];
-            });
+            if (loggedIn){
+                [tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 3)] withRowAnimation:UITableViewRowAnimationAutomatic];
+                dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .23f * NSEC_PER_SEC);
+                dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                    [self showSidebar];
+                });
+            }
         } else if (indexPath.section == 1){
             [self newLightTable];
         } else if (indexPath.section == 2){
-            if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+            if (loggedIn){
                 if (self.currentUser.customerPlan.length){
                     if (_lightTables.count){
                         LightTable *lightTable = _lightTables[indexPath.row];
@@ -1152,7 +1240,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)showMyArt {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+    if (loggedIn){
         [self resetArtBooleans];
         if (!showMyArt){
             showMyArt = YES;
@@ -1164,7 +1252,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)showFavorites {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+    if (loggedIn){
         if (showFavorites){
             [self resetArtBooleans];
         } else {
@@ -1210,7 +1298,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 #pragma mark - Light Table Delegate Section
 - (void)newLightTable {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+    if (loggedIn){
         if (IDIOM == IPAD){
             [self newLightTableWithJoinBool:YES];
         } else {
@@ -1233,7 +1321,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 - (void)newLightTableWithJoinBool:(BOOL)join {
     if (self.currentUser.customerPlan.length){
         WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
-        [vc setJoinMode:join];
         (_selectedPhotos.count) ? [vc setPhotos:_selectedPhotos] : [vc setShowKey:YES];
         vc.lightTableDelegate = self;
         [self resetTransitionBooleans];
@@ -1403,7 +1490,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)resetCatalog {
     if (!_photos.count){
-        [self loadPhotosBefore:nil];
+        [self loadBeforePhoto:nil];
     }
     
     if (sidebarIsVisible || searching || showFavorites || showLightTable || showMyArt){
@@ -1431,9 +1518,11 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         if (bottomEdge >= scrollView.contentSize.height) {
             // at the bottom of the scrollView
             if (searching && canSearchMore){
-                [self loadPhotosBefore:_filteredPhotos.lastObject];
+                [self loadBeforePhoto:_filteredPhotos.lastObject];
+            } else if (showMyArt) {
+                
             } else if (canLoadMorePhotos && _photos.count){
-                [self loadPhotosBefore:_photos.lastObject];
+                [self loadBeforePhoto:_photos.lastObject];
             }
         }
     }
@@ -2084,7 +2173,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)showSettings {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+    if (loggedIn){
         WFSettingsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Settings"];
         vc.settingsDelegate = self;
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
@@ -2130,7 +2219,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)showProfile {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+    if (loggedIn){
         WFProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Profile"];
         [vc setUser:self.currentUser];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
@@ -2234,7 +2323,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)showSlideshows {
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+    if (loggedIn){
         if (self.currentUser.customerPlan.length){
             tablesButton.selected = NO;
             if (slideshowSidebarMode){
@@ -2300,6 +2389,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             }
         }];
     } else {
+        if (self.popover) {
+            [self.popover dismissPopoverAnimated:YES];
+        }
         sidebarIsVisible = YES;
         if (slideshowSidebarMode) {
             slideshowsButton.selected = YES;
@@ -2423,7 +2515,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [ProgressHUD show:@"Searching..."];
     [searchBar endEditing:YES];
     searchText = searchBar.text;
-    [self loadPhotosBefore:nil];
+    [self loadBeforePhoto:nil];
 }
 
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
@@ -2520,7 +2612,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             }
         }
         
-        if (!_filteredPhotos.count) [self loadPhotosBefore:nil];
+        if (!_filteredPhotos.count) [self loadBeforePhoto:nil];
     } else if (showLightTable) {
         _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_lightTable.photos];
     } else if (showMyArt) {
@@ -2625,12 +2717,11 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)batchFavorite {
-    NSLog(@"Batch favoriting for current user: %@",self.currentUser.fullName);
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
     
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && self.currentUser){
+    if (loggedIn && self.currentUser){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         NSMutableArray *photoIds = [NSMutableArray arrayWithCapacity:_selectedPhotos.count];

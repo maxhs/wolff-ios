@@ -46,6 +46,7 @@
     BOOL iOS8;
     NSDateFormatter *dateFormatter;
     BOOL editMode;
+    BOOL keyboardUp;
     BOOL login;
     BOOL profile;
     BOOL newLightTableTransition;
@@ -1071,25 +1072,29 @@
 }
 
 - (void)communityTag {
-    [self resetTransitionBooleans];
-    metadataModal = YES;
-    WFTagsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tags"];
-    [vc setShouldSave:YES];
-    [vc setSelectedTags:[NSMutableOrderedSet orderedSet]];
-    [vc setArt:self.photo.art];
-    vc.tagDelegate = self;
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        [self resetTransitionBooleans];
+        metadataModal = YES;
+        WFTagsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tags"];
+        [vc setCommunityTagMode:YES];
+        [vc setArt:self.photo.art];
+        [vc setSelectedTags:[NSMutableOrderedSet orderedSet]];
+        vc.tagDelegate = self;
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        [self presentViewController:nav animated:YES completion:NULL];
+    } else {
+        [self showLogin];
+    }
 }
 
 - (void)showTags {
     [self resetTransitionBooleans];
     metadataModal = YES;
     WFTagsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tags"];
+    [vc setCommunityTagMode:NO];
+    [vc setArt:self.photo.art];
     [vc setSelectedTags:self.photo.art.tags.mutableCopy];
     vc.tagDelegate = self;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
@@ -1384,6 +1389,7 @@
 }
 
 - (void)keyboardWillShow:(NSNotification *)note {
+    keyboardUp = YES;
     NSDictionary* info = [note userInfo];
     NSTimeInterval duration = [info[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationOptions curve = [info[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
@@ -1402,6 +1408,7 @@
 }
 
 - (void)keyboardWillHide:(NSNotification *)note {
+    keyboardUp = NO;
     NSDictionary* info = [note userInfo];
     NSTimeInterval duration = [info[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationOptions curve = [info[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
@@ -1556,6 +1563,10 @@
     }
 }
 
+- (void)confirmDismissWithoutSave {
+    [[[UIAlertView alloc] initWithTitle:nil message:@"Do you want to save your change?" delegate:self cancelButtonTitle:@"No" otherButtonTitles:@"Save", nil] show];
+}
+
 - (void)dismiss {
     if ([self.navigationController.viewControllers.lastObject isKindOfClass:[WFFlagViewController class]]){
         WFFlagViewController *flagVC = self.navigationController.viewControllers.lastObject;
@@ -1563,13 +1574,15 @@
             [flagVC.view endEditing:YES];
         }
     } else if (editMode){
-        [self.view endEditing:YES];
-        [self edit];
+        if (keyboardUp){
+            [self.view endEditing:YES];
+        } else {
+            [self.view endEditing:YES];
+            [self edit];
+        }
     } else {
         dispatch_async(dispatch_get_main_queue(), ^{ // ensure the dismiss happens RIGHT NOW
-            [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                
-            }];
+            [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
         });
     }
 }

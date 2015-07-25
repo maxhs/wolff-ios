@@ -426,7 +426,7 @@
     } else {
         WFSlideMetadataCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
         NSInteger section = [self.slideshow.showTitleSlide isEqualToNumber:@YES] ? indexPath.section-1 : indexPath.section;
-        currentSlide = self.slideshow.slides[section];
+        if (section >= 0) currentSlide = self.slideshow.slides[section];
         
         if (self.slideshow && [self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPath.section == 0){
             [cell.titleLabel setAttributedText:nil]; // title slide, so don't do anything

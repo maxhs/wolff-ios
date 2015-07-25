@@ -259,15 +259,17 @@
     LightTable *lightTable;
     if (l){
         lightTable = [l MR_inContext:[NSManagedObjectContext MR_defaultContext]];
-    }
-    if (!lightTable || [lightTable.identifier isEqualToNumber:@0]){
-        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(newLightTableForSelected)]) {
-            [self.searchDelegate newLightTableForSelected];
-        }
-    } else {
         if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(batchSelectForLightTable:)]) {
             [self.searchDelegate batchSelectForLightTable:lightTable];
         }
+    }
+
+}
+
+- (void)newLightTable {
+    NSLog(@"new light table from delegate");
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(newLightTableForSelected)]) {
+        [self.searchDelegate newLightTableForSelected];
     }
 }
 

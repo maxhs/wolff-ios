@@ -251,9 +251,7 @@ static NSString * const reuseIdentifier = @"TagCell";
 
 #pragma mark - Search Methods
 - (void)setUpSearch {
-    
     [self.searchBar setPlaceholder:@"Search for relevant tags"];
-    //reset the search bar font
     for (id subview in [self.searchBar.subviews.firstObject subviews]){
         if ([subview isKindOfClass:[UITextField class]]){
             UITextField *searchTextField = (UITextField*)subview;
@@ -324,17 +322,9 @@ static NSString * const reuseIdentifier = @"TagCell";
     return YES;
 }
 
-- (void)doneEditing {
-    [self.view endEditing:YES];
-    if (self.searchBar.isFirstResponder){
-        [self.searchBar resignFirstResponder];
-    }
-    self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noTagBarButton];
-}
-
 - (void)createTag {
     dispatch_async(dispatch_get_main_queue(), ^(void){
-        [self.view endEditing:YES];
+        [self doneEditing];
     });
     
     Tag *tag = [Tag MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
@@ -349,20 +339,13 @@ static NSString * const reuseIdentifier = @"TagCell";
     
     [ProgressHUD show:[NSString stringWithFormat:@"Adding \"%@\"",tag.name]];
     [manager POST:@"tags" parameters:@{@"tag":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success creating a new tag: %@",responseObject);
-        if ([responseObject objectForKey:@"tag"]){
-            [tag populateFromDictionary:[responseObject objectForKey:@"tag"]];
-        }
+        //NSLog(@"Success creating a new tag: %@",responseObject);
+        [tag populateFromDictionary:[responseObject objectForKey:@"tag"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         
-        //add the new tag to the selection
-        [self.selectedTags addObject:tag];
-        [ProgressHUD dismiss];
-        
-        if (self.tagDelegate && [self.tagDelegate respondsToSelector:@selector(tagsSelected:)]){
-            [self.tagDelegate tagsSelected:self.selectedTags];
-        }
-        [self dismiss];
+        [self.selectedTags addObject:tag]; //add the new tag to the selection
+        [self save];
+    
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         [WFAlert show:@"Sorry, but something went wrong while. Please try again soon." withTime:2.7f];
         [ProgressHUD dismiss];
@@ -371,7 +354,11 @@ static NSString * const reuseIdentifier = @"TagCell";
 }
 
 - (void)save {
-    if (self.shouldSave) {
+    dispatch_async(dispatch_get_main_queue(), ^(void){
+        [self doneEditing];
+    });
+    [ProgressHUD dismiss];
+    if (self.communityTagMode) {
         NSString *tagString = self.selectedTags.count == 1 ? @"tag" : @"tags";
         [WFAlert show:[NSString stringWithFormat:@"Thanks!\n\nYour %@ will need to be approved before becoming public.\n\n%@ has been notified.",tagString, self.art.user.fullName] withTime:3.3f];
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
@@ -388,7 +375,7 @@ static NSString * const reuseIdentifier = @"TagCell";
             NSLog(@"Success creating some art tags: %@", responseObject);
             [self dismiss];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Error creating art tags: %@",error.description);
+            //NSLog(@"Error creating art tags: %@",error.description);
             [self dismiss];
         }];
         
@@ -446,10 +433,16 @@ static NSString * const reuseIdentifier = @"TagCell";
     self.mainRequest = nil;
 }
 
+- (void)doneEditing {
+    [self.view endEditing:YES];
+    if (self.searchBar.isFirstResponder){
+        [self.searchBar resignFirstResponder];
+    }
+    self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noTagBarButton];
+}
+
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
 - (void)didReceiveMemoryWarning {

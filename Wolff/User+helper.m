@@ -110,35 +110,6 @@ typedef enum {
         self.avatarLarge = [dictionary objectForKey:@"avatar_large"];
     }
     
-    if ([dictionary objectForKey:@"arts"] && [dictionary objectForKey:@"arts"] != [NSNull null]){
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dict in [dictionary objectForKey:@"arts"]){
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!art){
-                art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-            }
-            [art populateFromDictionary:dict];
-            [set addObject:art];
-        }
-        self.arts = set;
-    }
-    
-    if ([dictionary objectForKey:@"private_photos"] && [dictionary objectForKey:@"private_photos"] != [NSNull null]){
-        //NSLog(@"private photos: %@",[dictionary objectForKey:@"private_photos"]);
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dict in [dictionary objectForKey:@"private_photos"]){
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!photo){
-                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-            }
-            [photo populateFromDictionary:dict];
-            photo.privatePhoto = @YES;
-            [set addObject:photo];
-        }
-    }
-    
     if ([dictionary objectForKey:@"slideshows"] && [dictionary objectForKey:@"slideshows"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"slideshows"]){
@@ -157,6 +128,7 @@ typedef enum {
         }
         self.slideshows = set;
     }
+    
     if ([dictionary objectForKey:@"public_slideshows"] && [dictionary objectForKey:@"public_slideshows"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"public_slideshows"]){
@@ -275,6 +247,8 @@ typedef enum {
         }
         self.photos = set;
     }
+    
+    // This is used when fetching ANOTHER user's profile
     if ([dictionary objectForKey:@"public_photos"] && [dictionary objectForKey:@"public_photos"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"public_photos"]){
