@@ -60,7 +60,8 @@
     
     if (self.lightTable){
         self.lightTable = [self.lightTable MR_inContext:[NSManagedObjectContext MR_defaultContext]];
-
+        self.owners = self.lightTable.owners.mutableCopy;
+        self.users = self.lightTable.users.mutableCopy;
         [self loadLightTable];
         [self.collectionView setHidden:NO];
     } else if (self.currentUser) {
@@ -72,13 +73,16 @@
         [self.collectionView setHidden:YES];
     }
     
-    if (_joinMode){
+    if (_lightTable){
+        [_actionButton setTitle:@"SAVE" forState:UIControlStateNormal];
+    } else if (_joinMode){
         [_actionButton setTitle:@"JOIN" forState:UIControlStateNormal];
         [self.switchModesButton setTitle:@"Create a light table instead" forState:UIControlStateNormal];
     } else {
         [_actionButton setTitle:@"CREATE" forState:UIControlStateNormal];
         [self.switchModesButton setTitle:@"Join a light table instead" forState:UIControlStateNormal];
     }
+    [_actionButton addTarget:self action:@selector(post) forControlEvents:UIControlEventTouchUpInside];
     
     [self.switchModesButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [self.switchModesButton addTarget:self action:@selector(switchModes) forControlEvents:UIControlEventTouchUpInside];
@@ -106,9 +110,9 @@
         self.navigationController.navigationBar.translucent = YES;
         self.navigationController.view.backgroundColor = [UIColor clearColor];
         if ([self.lightTable.identifier isEqualToNumber:@0]){
-            rightBarButton = [[UIBarButtonItem alloc] initWithTitle:@"Create" style:UIBarButtonItemStylePlain target:self action:@selector(rightBarButtonAction)];
+            rightBarButton = [[UIBarButtonItem alloc] initWithTitle:@"Create" style:UIBarButtonItemStylePlain target:self action:@selector(post)];
         } else {
-            rightBarButton = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStylePlain target:self action:@selector(rightBarButtonAction)];
+            rightBarButton = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStylePlain target:self action:@selector(post)];
         }
         
         self.navigationItem.rightBarButtonItem = rightBarButton;
@@ -251,6 +255,7 @@
     [cell.textView setHidden:YES];
     [cell.textField setHidden:NO];
     cell.textField.delegate = self;
+    
     [cell.textField setUserInteractionEnabled:YES];
     
     switch (indexPath.row) {
@@ -278,15 +283,16 @@
             break;
         case 1:
             descriptionTextView = cell.textView;
+            descriptionTextView.delegate = self;
             [cell.cellLabel setText:@"DESCRIPTION"];
             [cell.textField setHidden:YES];
             
             if (self.lightTable && self.lightTable.tableDescription.length){
                 [descriptionTextView setText:self.lightTable.tableDescription];
-                [descriptionTextView setTextColor:[UIColor blackColor]];
+                [descriptionTextView setTextColor:[UIColor whiteColor]];
             } else {
                 [descriptionTextView setText:kLightTableDescriptionPlaceholder];
-                [descriptionTextView setTextColor:[UIColor colorWithWhite:0 alpha:.23]];
+                [descriptionTextView setTextColor:kLightTablePlaceholderTextColor];
             }
             
             [descriptionTextView setReturnKeyType:UIReturnKeyDefault];
@@ -368,14 +374,6 @@
     }
 }
 
-- (void)rightBarButtonAction {
-    if (currentPage == 1 || _joinMode){
-        [self joinLightTable];
-    } else {
-        
-    }
-}
-
 - (void)didCreateLightTable:(LightTable *)table {
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
         [WFAlert show:[NSString stringWithFormat:@"\"%@\" successfully created",_lightTable.name] withTime:2.7f];
@@ -394,7 +392,14 @@
 }
 
 - (void)post {
-    NSLog(@"should be doing something");
+    [self doneEditing];
+    if (_lightTable){
+        [self saveLightTable];
+    } else if (_joinMode){
+        [self joinLightTable];
+    } else {
+        [self createLightTable];
+    }
 }
 
 - (NSMutableDictionary*)generateParameters {
@@ -411,7 +416,7 @@
         [userIds addObject:user.identifier];
     }];
     [parameters setObject:ownerIds forKey:@"user_ids"];
-    
+    [parameters setObject:descriptionTextView.text forKey:@"description"];
     [parameters setObject:nameTextField.text forKey:@"name"];
     [parameters setObject:tableKeyTextField.text forKey:@"code"];
     [parameters setObject:confirmTableKeyTextField.text forKey:@"code"];
@@ -443,14 +448,16 @@
     [self doneEditing];
     [ProgressHUD show:[NSString stringWithFormat:@"Creating \"%@\"",nameTextField.text]];
     [manager POST:@"light_tables" parameters:@{@"light_table":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success creating a light table: %@", responseObject);
+        NSLog(@"Success creating a light table: %@", responseObject);
         self.lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
         [self.lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
+
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(didCreateLightTable:)]){
                 [self.lightTableDelegate didCreateLightTable:self.lightTable];
             }
             [ProgressHUD dismiss];
+            [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
         }];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -485,11 +492,14 @@
     
     [ProgressHUD show:@"Saving light table..."];
     [manager PATCH:[NSString stringWithFormat:@"light_tables/%@",self.lightTable.identifier] parameters:@{@"light_table":parameters,@"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success saving a light table: %@", responseObject);
+        //NSLog(@"Success saving a light table: %@", responseObject);
+        [self.lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(didUpdateLightTable:)]){
                 [self.lightTableDelegate didUpdateLightTable:self.lightTable];
             }
+            [ProgressHUD dismiss];
+            [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
         }];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -505,14 +515,14 @@
 - (void)textViewDidBeginEditing:(UITextView *)textView {
     if ([textView.text isEqualToString:kLightTableDescriptionPlaceholder]){
         [textView setText:@""];
-        [textView setTextColor:[UIColor blackColor]];
+        [textView setTextColor:[UIColor whiteColor]];
     }
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView {
     if (!textView.text.length){
         [textView setText:kLightTableDescriptionPlaceholder];
-        [textView setTextColor:[UIColor colorWithWhite:0 alpha:.23]];
+        [textView setTextColor:kLightTablePlaceholderTextColor];
     }
 }
 

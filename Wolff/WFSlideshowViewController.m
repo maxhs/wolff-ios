@@ -91,11 +91,7 @@
     barsVisible = NO; // by default
     metadataExpanded = NO; // by default
     [self setUpNavBar];
-    
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
-    
-    [self.collectionView setDelaysContentTouches:NO];
-    [self.collectionView setCanCancelContentTouches:YES];
     
     _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     _panGesture.delegate = self;
@@ -124,11 +120,19 @@
     singleTap.numberOfTapsRequired = 1;
     [self.collectionView addGestureRecognizer:singleTap];
     
-    // require to fail methods
-    [singleTap requireGestureRecognizerToFail:_doubleTapGesture];
-    [_panGesture requireGestureRecognizerToFail:rightScreenEdgePanGesture];
-    [_panGesture requireGestureRecognizerToFail:leftScreenEdgePanGesture];
-    
+    if (self.photos.count){
+        [self.collectionView setScrollEnabled:NO];
+        [self.collectionView setCanCancelContentTouches:NO];
+        // require to fail methods
+        [singleTap requireGestureRecognizerToFail:_doubleTapGesture];
+    } else {
+        [self.collectionView setDelaysContentTouches:NO];
+        [self.collectionView setCanCancelContentTouches:YES];
+        // require to fail methods
+        [singleTap requireGestureRecognizerToFail:_doubleTapGesture];
+        [_panGesture requireGestureRecognizerToFail:rightScreenEdgePanGesture];
+        [_panGesture requireGestureRecognizerToFail:leftScreenEdgePanGesture];
+    }
     [self setupMetadataContainer];
 }
 
@@ -145,20 +149,9 @@
     }
     
     [self determinePageNumbers];
+    NSLog(@"current page after determining page numbers: %ld",(long)currentPage);
     [self.metadataCollectionView reloadData];
-}
-
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    if (self.photos.count){
-        [self adjustMetadataPosition];
-    } else if ([self.slideshow.showTitleSlide isEqualToNumber:@YES]){
-        if (currentPage != 0){
-            [self adjustMetadataPosition];
-        }
-    } else if ([self.slideshow.showMetadata isEqualToNumber:@YES]){
-        [self adjustMetadataPosition];
-    }
+    [self adjustMetadataPosition];
 }
 
 - (void)setupMetadataContainer {
@@ -203,8 +196,7 @@
         metadataComponentsHeight = slideComponentsMetadataHeight;
         metadataComponentsY = slideComponentsMetadataY;
     }
-    
-    //NSLog(@"metadata title height: %f, metadata components height: %f",metadataTitleHeight,metadataComponentsHeight);
+
     CGFloat adjustmentHeight = metadataExpanded ? (metadataTitleHeight + metadataTitleY + metadataComponentsHeight + 7.f) : (metadataTitleHeight + metadataTitleY);
     if (self.photos.count || barsVisible || [self.slideshow.showMetadata isEqualToNumber:@YES]){
         [UIView animateWithDuration:kDefaultAnimationDuration animations:^{
@@ -245,14 +237,17 @@
             [slideNumberButtonItem setTitle:[NSString stringWithFormat:@"%ld of %lu",(long)currentPage,(unsigned long)self.slideshow.slides.count]];
         }
     } else if (_startIndex == 0){
-        [self.collectionView setContentOffset:CGPointMake(width, 0) animated:NO]; // offset by 1 because of the title slide
+        CGFloat titleOffset = [self.slideshow.showTitleSlide isEqualToNumber:@YES] ? width : 0;
+        [self.collectionView setContentOffset:CGPointMake(titleOffset, 0) animated:NO]; // offset by 1 because of the title slide
         [slideNumberButtonItem setTitle:[NSString stringWithFormat:@"%ld of %lu",(long)currentPage,(unsigned long)self.slideshow.slides.count]];
-        currentPage = _startIndex.integerValue;
+        currentPage = _startIndex.integerValue + 1;
     } else {
-        [self.collectionView setContentOffset:CGPointMake(width * (_startIndex.integerValue+1), 0) animated:NO]; // offset by 1 because of the title slide
+        NSInteger titleOffset = [self.slideshow.showTitleSlide isEqualToNumber:@YES] ? 1 : 0;
+        [self.collectionView setContentOffset:CGPointMake(width * (_startIndex.integerValue + titleOffset), 0) animated:NO]; // offset by 1 because of the title slide
         [slideNumberButtonItem setTitle:[NSString stringWithFormat:@"%ld of %lu",(long)currentPage,(unsigned long)self.slideshow.slides.count]];
-        currentPage = _startIndex.integerValue;
+        currentPage = _startIndex.integerValue + 1;
     }
+    //NSLog(@"start index: %@",_startIndex);
 }
 
 - (void)showMetadata {
@@ -285,13 +280,11 @@
     if (scrollView == self.collectionView){
         [self.metadataCollectionView setContentOffset:CGPointMake(scrollView.contentOffset.x, self.metadataCollectionView.contentOffset.y) animated:NO];
     }
-    /*if (scrollView == self.metadataCollectionView){
-        [self.collectionView setContentOffset:CGPointMake(scrollView.contentOffset.x, self.collectionView.contentOffset.y) animated:NO];
-    }*/
     
     if ([self.slideshow.showTitleSlide isEqualToNumber:@NO]){
         page ++;
     }
+    
     if (currentPage != page) {
         currentPage = page;
         if (currentPage > 0){
@@ -366,10 +359,8 @@
     } else {
         if (self.photos.count){
             return 1; // one-off comparison
-        } else if ([self.slideshow.showTitleSlide isEqualToNumber:@YES]){
-            return self.slideshow.slides.count + 1;
         } else {
-            return self.slideshow.slides.count;
+            return self.slideshow.slides.count + 1; // add a title slide
         }
     }
 }
@@ -386,11 +377,11 @@
     } else { // metadata collectionView
         if (self.photos.count){
             return self.photos.count; // one-off comparison
-        } else if ([self.slideshow.showTitleSlide isEqualToNumber:@YES] && section == 0){
-            return 1; // the title slide
+        } else if (section == 0){
+            return [self.slideshow.showTitleSlide isEqualToNumber:@YES] ? 1 : 0; // the title slide
         } else {
-            Slide *slide = self.slideshow.slides[[self.slideshow.showTitleSlide isEqualToNumber:@YES] ? section - 1 : section];
-            return slide.photoSlides.count <=1 && slide.slideTexts.count <= 1 ? 1 : 2;
+            Slide *slide = self.slideshow.slides[section-1];
+            return slide.photoSlides.count < 2 && slide.slideTexts.count < 2 ? 1 : 2;
         }
     }
 }
@@ -405,6 +396,9 @@
             [cell.artImageView1 setFrame:kOriginalArtImageFrame1];
             [cell.artImageView2 setFrame:kOriginalArtImageFrame2];
             [cell.artImageView3 setFrame:kOriginalArtImageFrame3];
+            
+            [self assignViewsForCell:cell];
+            
             return cell;
         } else if (indexPath.section == 0){
             WFSlideshowTitleCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"TitleCell" forIndexPath:indexPath];
@@ -421,12 +415,12 @@
             [cell.artImageView3 setFrame:kOriginalArtImageFrame3];
             
             [self assignViewsForCell:cell];
+            
             return cell;
         }
     } else {
         WFSlideMetadataCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
-        NSInteger section = [self.slideshow.showTitleSlide isEqualToNumber:@YES] ? indexPath.section-1 : indexPath.section;
-        if (section >= 0) currentSlide = self.slideshow.slides[section];
+        if (indexPath.section > 0) currentSlide = self.slideshow.slides[indexPath.section - 1];
         
         if (self.slideshow && [self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPath.section == 0){
             [cell.titleLabel setAttributedText:nil]; // title slide, so don't do anything
@@ -434,10 +428,10 @@
         } else if (currentSlide.slideTexts.count) {
             [cell.titleLabel setAttributedText:nil]; // slide text slide, so don't do anything
             [cell.metadataComponentsLabel setAttributedText:nil];
-        } else {
+        } else if (currentSlide) {
             CGRect titleLabelFrame = cell.titleLabel.frame;
             CGRect componentsLabelFrame = cell.metadataComponentsLabel.frame;
-            
+            NSLog(@"first title: %@",[[(PhotoSlide*)currentSlide.photoSlides.firstObject photo] art].title);
             PhotoSlide *photoSlide;
             if (self.photos.count){
                 [cell configureForPhoto:self.photos[indexPath.item] withPhotoCount:self.photos.count];
@@ -449,12 +443,9 @@
                     componentsLabelFrame.size.width = (width-70)/2;
                 }
             } else {
-                
-                
-                
                 photoSlide = currentSlide.photoSlides[indexPath.item];
                 [cell configureForPhoto:photoSlide.photo withPhotoCount:currentSlide.photoSlides.count];
-                if (currentSlide.photoSlides.count <= 1 && currentSlide.slideTexts.count <= 1){
+                if (currentSlide.photoSlides.count < 2 && currentSlide.slideTexts.count < 2){
                     titleLabelFrame.size.width = width-70;
                     componentsLabelFrame.size.width = width-70;
                 } else {
@@ -501,13 +492,13 @@
             } else {
                 return CGSizeMake(fullWidth/2,fullHeight);
             }
-        } else if ([self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPath.section == 0){
+        } else if (indexPath.section == 0){
+            
             return CGSizeMake(fullWidth,fullHeight);
+        
         } else {
-            if ([self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPath.section == 0){
-                return CGSizeMake(fullWidth,fullHeight);
-            }
-            Slide *slide = self.slideshow.slides[[self.slideshow.showTitleSlide isEqualToNumber:@YES] ? indexPath.section - 1 : indexPath.section];
+            
+            Slide *slide = self.slideshow.slides[indexPath.section - 1];
             if (slide.photoSlides.count <= 1 && slide.slideTexts.count <= 1){
                 return CGSizeMake(fullWidth,fullHeight);
             } else {
@@ -558,15 +549,15 @@
 - (void)handlePan:(UIPanGestureRecognizer*)gestureRecognizer {
     CGPoint fullTranslation = [gestureRecognizer locationInView:self.view];
     if (metadataExpanded) return;
-    
     CGPoint translation = [gestureRecognizer translationInView:self.collectionView];
     NSIndexPath *indexPathForGesture = [self.collectionView indexPathForItemAtPoint:[gestureRecognizer locationInView:self.collectionView]];
+    if (self.slideshow && [self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPathForGesture.section == 0) return;
     UIView *view = nil; WFSlideshowSlideCell *cell;
-    if (indexPathForGesture && indexPathForGesture.section > 0){
+    if (indexPathForGesture){
         cell = (WFSlideshowSlideCell*)[self.collectionView cellForItemAtIndexPath:indexPathForGesture];
-        if (cell.slide.photos.count == 1){
+        if (cell.slide.photos.count == 1 || self.photos.count == 1){
             view = cell.artImageView1;
-        } else if (cell.slide.photos.count > 1){
+        } else if (cell.slide.photos.count > 1 || self.photos.count > 1){
             if (fullTranslation.x < width/2){
                 view = cell.artImageView2;
             } else {
@@ -574,7 +565,6 @@
             }
         }
     }
-    
     CGPoint newPoint = CGPointMake(view.center.x + translation.x, view.center.y + translation.y);
     view.center = newPoint;
     [gestureRecognizer setTranslation:CGPointMake(0, 0) inView:self.collectionView];
@@ -587,25 +577,29 @@
         }
     }
     
-    if (cell && gestureRecognizer.state == UIGestureRecognizerStateEnded && currentSlide && currentSlide.photoSlides.count){
-        [(WFInteractiveImageView*)view setMoved:YES]; //offset and/or save pre-position
-        PhotoSlide *photoSlide;
-        if (view == cell.artImageView1){
-            photoSlide = currentSlide.photoSlides[0];
-        } else if (view == cell.artImageView2){
-            photoSlide = currentSlide.photoSlides[0];
-        } else if (view == cell.artImageView3){
-            photoSlide = currentSlide.photoSlides[1];
+    if (cell && gestureRecognizer.state == UIGestureRecognizerStateEnded){
+        if (currentSlide && currentSlide.photoSlides.count){
+            [(WFInteractiveImageView*)view setMoved:YES]; //offset and/or save pre-position
+            PhotoSlide *photoSlide;
+            if (view == cell.artImageView1){
+                photoSlide = currentSlide.photoSlides[0];
+            } else if (view == cell.artImageView2){
+                photoSlide = currentSlide.photoSlides[0];
+            } else if (view == cell.artImageView3){
+                photoSlide = currentSlide.photoSlides[1];
+            }
+            [photoSlide setPositionX:@(view.frame.origin.x)];
+            [photoSlide setPositionY:@(view.frame.origin.y)];
+            [photoSlide setWidth:@(view.frame.size.width)];
+            [photoSlide setHeight:@(view.frame.size.height)];
+            [photoSlide setScale:@([[view.layer valueForKeyPath:@"transform.scale"] floatValue])];
+            
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                NSLog(@"slide photo after save: %@, %@, %@, %@ and scale: %@",photoSlide.positionX, photoSlide.positionY, photoSlide.width, photoSlide.height, photoSlide.scale);
+            }];
+        } else if (self.photos.count) {
+            [(WFInteractiveImageView*)view setMoved:YES];
         }
-        [photoSlide setPositionX:@(view.frame.origin.x)];
-        [photoSlide setPositionY:@(view.frame.origin.y)];
-        [photoSlide setWidth:@(view.frame.size.width)];
-        [photoSlide setHeight:@(view.frame.size.height)];
-        [photoSlide setScale:@([[view.layer valueForKeyPath:@"transform.scale"] floatValue])];
-        
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            NSLog(@"slide photo after save: %@, %@, %@, %@ and scale: %@",photoSlide.positionX, photoSlide.positionY, photoSlide.width, photoSlide.height, photoSlide.scale);
-        }];
     }
 }
 
@@ -653,12 +647,14 @@
     CGPoint gesturePoint = [gestureRecognizer locationInView:self.collectionView];
     NSIndexPath *indexPathForGesture = [self.collectionView indexPathForItemAtPoint:gesturePoint];
     
+    if (self.slideshow && [self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPathForGesture.section == 0) return;
+    
     UIView *view = nil; WFSlideshowSlideCell *cell;
-    if (indexPathForGesture && indexPathForGesture.section > 0){
+    if (indexPathForGesture){
         cell = (WFSlideshowSlideCell*)[self.collectionView cellForItemAtIndexPath:indexPathForGesture];
-        if (cell.slide.photos.count == 1){
+        if (cell.slide.photos.count == 1 || self.photos.count == 1){
             view = cell.artImageView1;
-        } else if (cell.slide.photos.count > 1){
+        } else if (cell.slide.photos.count > 1 || self.photos.count > 1){
             view = pointInView.x < width/2 ? cell.artImageView2 : cell.artImageView3;
         }
         
@@ -719,28 +715,34 @@
 
 - (void)doubleTap:(UITapGestureRecognizer*)gestureRecognizer {
     CGPoint absolutePoint = [gestureRecognizer locationInView:self.view];
-    //NSLog(@"absolute point double tapped: %f, %f",absolutePoint.x, absolutePoint.y);
     NSIndexPath *indexPathForGesture = [self.collectionView indexPathForItemAtPoint:[gestureRecognizer locationInView:self.collectionView]];
     UIView *view = nil;
+    if (self.slideshow && [self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPathForGesture.section == 0) return;
     
-    if (indexPathForGesture && indexPathForGesture.section > 0){
+    if (indexPathForGesture){
         WFSlideshowSlideCell *cell = (WFSlideshowSlideCell*)[self.collectionView cellForItemAtIndexPath:indexPathForGesture];
         CGPoint tappedPoint = [gestureRecognizer locationInView:self.view];
-        if (cell.slide.photos.count == 1){
+        if (cell.slide.photos.count == 1 || self.photos.count == 1){
             view = cell.artImageView1;
-        } else {
+        } else if (cell.slide.photos.count > 1 || self.photos.count > 1) {
             view = tappedPoint.x < width/2 ? cell.artImageView2 : cell.artImageView3;
         }
     }
     
-    if (view && currentSlide && currentSlide.photoSlides.count){
+    if (view){
         [UIView animateWithDuration:kSlideResetAnimationDuration delay:0 usingSpringWithDamping:.975 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             if (view == artImageView1){
+                NSLog(@"art image 1");
                 if (artImageView1.moved){
+                    NSLog(@"art image 1 moved");
                     view.transform = CGAffineTransformIdentity;
                     [artImageView1 setFrame:kOriginalArtImageFrame1];
-                    PhotoSlide *photoSlide = currentSlide.photoSlides[0];
-                    [photoSlide resetFrame];
+                    if (currentSlide){
+                        PhotoSlide *photoSlide = currentSlide.photoSlides[0];
+                        [photoSlide resetFrame];
+                    } else {
+                        [view setFrame:kOriginalArtImageFrame1];
+                    }
                     [artImageView1 setMoved:NO];
                 } else {
                     view.transform = CGAffineTransformMakeScale(3.f, 3.f);
@@ -751,11 +753,16 @@
                     [artImageView1 setMoved:YES];
                 }
             } else if (view == artImageView2){
+                NSLog(@"art image 2");
                 if (artImageView2.moved){
                     view.transform = CGAffineTransformIdentity;
                     [artImageView2 setFrame:kOriginalArtImageFrame2];
-                    PhotoSlide *photoSlide = currentSlide.photoSlides[0];
-                    [photoSlide resetFrame];
+                    if (currentSlide){
+                        PhotoSlide *photoSlide = currentSlide.photoSlides[0];
+                        [photoSlide resetFrame];
+                    } else {
+                        [view setFrame:kOriginalArtImageFrame2];
+                    }
                     [artImageView2 setMoved:NO];
                 } else {
                     CGPoint absolutePoint2 = [gestureRecognizer locationInView:containerView2];
@@ -766,11 +773,17 @@
                     [artImageView2 setMoved:YES];
                 }
             } else if (view == artImageView3){
+                NSLog(@"art image 3");
                 if (artImageView3.moved){
+                    NSLog(@"art image 3 moved");
                     view.transform = CGAffineTransformIdentity;
                     [artImageView3 setFrame:kOriginalArtImageFrame3];
-                    PhotoSlide *photoSlide = currentSlide.photoSlides[1];
-                    [photoSlide resetFrame];
+                    if (currentSlide){
+                        PhotoSlide *photoSlide = currentSlide.photoSlides[1];
+                        [photoSlide resetFrame];
+                    } else {
+                        [view setFrame:kOriginalArtImageFrame3];
+                    }
                     [artImageView3 setMoved:NO];
                 } else {
                     view.transform = CGAffineTransformMakeScale(3.f, 3.f);
@@ -782,23 +795,25 @@
                 }
             }
         } completion:^(BOOL finished) {
-            PhotoSlide *photoSlide;
-            if (view == artImageView1){
-                photoSlide = currentSlide.photoSlides[0];
-            } else if (view == artImageView2){
-                photoSlide = currentSlide.photoSlides[0];
-            } else if (view == artImageView3){
-                photoSlide = currentSlide.photoSlides[1];
+            if (currentSlide){
+                PhotoSlide *photoSlide;
+                if (view == artImageView1){
+                    photoSlide = currentSlide.photoSlides[0];
+                } else if (view == artImageView2){
+                    photoSlide = currentSlide.photoSlides[0];
+                } else if (view == artImageView3){
+                    photoSlide = currentSlide.photoSlides[1];
+                }
+                [photoSlide setPositionX:@(view.frame.origin.x)];
+                [photoSlide setPositionY:@(view.frame.origin.y)];
+                [photoSlide setWidth:@(view.frame.size.width)];
+                [photoSlide setHeight:@(view.frame.size.height)];
+                [photoSlide setScale:@([[view.layer valueForKeyPath:@"transform.scale"] floatValue])];
+                
+                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                    NSLog(@"slide photo after save: %@, %@, %@, %@ and scale: %@",photoSlide.positionX, photoSlide.positionY, photoSlide.width, photoSlide.height, photoSlide.scale);
+                }];
             }
-            [photoSlide setPositionX:@(view.frame.origin.x)];
-            [photoSlide setPositionY:@(view.frame.origin.y)];
-            [photoSlide setWidth:@(view.frame.size.width)];
-            [photoSlide setHeight:@(view.frame.size.height)];
-            [photoSlide setScale:@([[view.layer valueForKeyPath:@"transform.scale"] floatValue])];
-            
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                NSLog(@"slide photo after save: %@, %@, %@, %@ and scale: %@",photoSlide.positionX, photoSlide.positionY, photoSlide.width, photoSlide.height, photoSlide.scale);
-            }];
         }];
     }
 }

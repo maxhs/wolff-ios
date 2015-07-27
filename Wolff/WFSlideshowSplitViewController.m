@@ -155,7 +155,6 @@
     [self.collectionView reloadData];
     if (!saveTimer){
         saveTimer = [NSTimer scheduledTimerWithTimeInterval:30.f target:self selector:@selector(autosaveLocally) userInfo:nil repeats:YES];
-        NSLog(@"creating autosave timer");
     }
 }
 
@@ -397,11 +396,7 @@
 - (void)slideDoubleTap:(UITapGestureRecognizer*)gestureRecognizer {
     CGPoint loc = [gestureRecognizer locationInView:self.tableView];
     NSIndexPath *selectedIndexPath = [self.tableView indexPathForRowAtPoint:loc];
-    if ([self.slideshow.showTitleSlide isEqualToNumber:@YES]) {
-        [self playSlideshow:@(selectedIndexPath.row)];
-    } else {
-        [self playSlideshow:@(selectedIndexPath.row-1)];
-    }
+    [self playSlideshow:@(selectedIndexPath.row)];
 }
 
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
@@ -1366,7 +1361,6 @@
     [super viewDidDisappear:animated];
     [saveTimer invalidate];
     saveTimer = nil;
-    NSLog(@"Getting ride of autosave timer: %@",saveTimer);
     if (!self.slideshow.slides.count && !slideshowPhotos.count && !self.slideshow.title.length){
         [self.slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
         [self saveSlideshowWithUI:NO];
