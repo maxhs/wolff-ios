@@ -59,7 +59,7 @@
     UIAlertView *removePhotoAlertView;
     UIImageView *navBarShadowView;
     
-    NSMutableArray *slideshowPhotos;
+    NSMutableOrderedSet *slideshowPhotos;
     NSTimer *saveTimer;
 }
 
@@ -100,9 +100,7 @@
     } else {
         self.slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
         self.slideshow.user = self.currentUser;
-        [self.collectionView setUserInteractionEnabled:NO];
-        NSMutableOrderedSet *thePhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:self.selectedPhotos];
-        slideshowPhotos = thePhotos.array.mutableCopy;
+        self.slideshow.photos = self.selectedPhotos;
         
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [self setUpTitleView];
@@ -112,7 +110,7 @@
             [self.collectionView setUserInteractionEnabled:YES];
         }];
     }
-    slideshowPhotos = [NSMutableArray arrayWithArray:self.slideshow.photos.array];
+    slideshowPhotos = self.slideshow.photos.mutableCopy;
     
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     [self.navigationController.navigationBar setTranslucent:YES];
@@ -120,7 +118,7 @@
     [self.tableView setBackgroundColor:[UIColor colorWithWhite:.1 alpha:23]];
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:.1]];
     self.tableView.rowHeight = 180.f;
-    
+    self.collectionView.alwaysBounceVertical = YES; // always stay bouncy!
     [self registerKeyboardNotifications];
     
     UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(slideSingleTap:)];
@@ -439,7 +437,6 @@
 #pragma mark - UICollectionView Datasource
 
 - (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
-    slideshowPhotos = [NSMutableArray arrayWithArray:self.slideshow.photos.array];
     [self redrawSlideshow];
     return 1;
 }
@@ -777,7 +774,7 @@
         if (self.popover){
             [self.popover dismissPopoverAnimated:YES];
         }
-        vc.preferredContentSize = CGSizeMake(230, 108);
+        vc.preferredContentSize = CGSizeMake(230, 128);
         self.popover = [[UIPopoverController alloc] initWithContentViewController:vc];
         self.popover.delegate = self;
         [self.popover presentPopoverFromBarButtonItem:saveButton permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
@@ -1075,16 +1072,21 @@
         add = YES;
     }
     
+    NSLog(@"slideshow photo count: %lu",self.slideshow.photos.count);
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        [self.collectionView performBatchUpdates:^{
-            if (add){
-                [self.collectionView insertItemsAtIndexPaths:@[indexPathToReload]];
-            } else {
-                [self.collectionView deleteItemsAtIndexPaths:@[indexPathToReload]];
-            }
-        } completion:^(BOOL finished) {
-            if (add) [self.collectionView scrollToItemAtIndexPath:indexPathToReload atScrollPosition:UICollectionViewScrollPositionTop animated:YES];
-        }];
+        if (IDIOM == IPAD){
+            [self.collectionView performBatchUpdates:^{
+                if (add){
+                    [self.collectionView insertItemsAtIndexPaths:@[indexPathToReload]];
+                } else {
+                    [self.collectionView deleteItemsAtIndexPaths:@[indexPathToReload]];
+                }
+            } completion:^(BOOL finished) {
+                if (add) [self.collectionView scrollToItemAtIndexPath:indexPathToReload atScrollPosition:UICollectionViewScrollPositionTop animated:YES];
+            }];
+        } else {
+            [self.collectionView reloadData];
+        }
     }];
 }
 

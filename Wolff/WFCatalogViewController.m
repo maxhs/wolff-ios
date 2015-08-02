@@ -96,13 +96,13 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     BOOL transparentBG;
     BOOL groupBool;
     BOOL sidebarIsVisible;
-    BOOL canLoadMorePhotos;
+    BOOL canLoadMore;
     BOOL canSearchMore;
     BOOL showSlideshow;
     BOOL showMyArt;
     BOOL showFavorites;
     BOOL showLightTable;
-    BOOL iOS8;
+
     BOOL slideshowSidebarMode;
     BOOL searchVisible;
     
@@ -147,11 +147,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self setAutomaticallyAdjustsScrollViewInsets:NO];
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-    }
+    width = screenWidth(); height = screenHeight();
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
@@ -183,7 +179,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [collectionViewRefresh addTarget:self action:@selector(refreshCollectionView) forControlEvents:UIControlEventValueChanged];
     [self.collectionView addSubview:collectionViewRefresh];
     self.collectionView.alwaysBounceVertical = YES;
-    canLoadMorePhotos = YES;
+    canLoadMore = YES;
     canSearchMore = YES;
     
     if (IDIOM != IPAD){
@@ -465,7 +461,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         [_favoritePhotos removeAllObjects];
         [self loadFavorites];
     } else {
-        canLoadMorePhotos = YES;
+        canLoadMore = YES;
         [_filteredPhotos removeAllObjects];
         [_photos removeAllObjects];
         [self loadBeforePhoto:nil];
@@ -511,7 +507,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     showFavorites = NO;
     self.lightTable = nil;
     showLightTable = NO;
-    canLoadMorePhotos = YES;
+    canLoadMore = YES;
     [_photos removeAllObjects];
     [_filteredPhotos removeAllObjects];
     
@@ -548,7 +544,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }
 
     if (lastPhoto){
-        [parameters setObject:[NSNumber numberWithDouble:[lastPhoto.createdDate timeIntervalSince1970]] forKey:@"before_date"];
+        [parameters setObject:[NSNumber numberWithInt:round([lastPhoto.createdDate timeIntervalSince1970])] forKey:@"before_date"]; // last item in feed
+    } else {
+        [parameters setObject:[NSNumber numberWithInt:round([[NSDate date] timeIntervalSince1970])] forKey:@"after_date"]; // today
     }
     if (loggedIn){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
@@ -556,12 +554,12 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     self.mainRequest = [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSDictionary *photosDict = [responseObject objectForKey:@"photos"];
         if (photosDict.count){
-            NSLog(@"How many photos did we pull? %lu",(unsigned long)photosDict.count);
             if (photosDict.count < ART_THROTTLE){
-                canLoadMorePhotos = NO;
+                canLoadMore = NO;
             } else {
-                canLoadMorePhotos = YES;
+                canLoadMore = YES;
             }
+            NSLog(@"How many photos did we pull? %lu. Can we load more? %u",(unsigned long)photosDict.count, canLoadMore);
             for (id dict in photosDict) {
                 Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                 if (!photo){
@@ -588,8 +586,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                 [self endRefresh];
             }];
         } else {
-            canLoadMorePhotos = NO;
+            canLoadMore = NO;
             [self endRefresh];
+            NSLog(@"How many photos did we pull? %lu. Can we load more? %u",(unsigned long)photosDict.count, canLoadMore);
         }
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -1169,7 +1168,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     searching = NO;
-    
     if (slideshowSidebarMode){
         Slideshow *slideshow;
         if (indexPath.section == 0){
@@ -1520,8 +1518,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             if (searching && canSearchMore){
                 [self loadBeforePhoto:_filteredPhotos.lastObject];
             } else if (showMyArt) {
-                
-            } else if (canLoadMorePhotos && _photos.count){
+                NSLog(@"shoudl be loading more of my art");
+            } else if (canLoadMore && _photos.count){
                 [self loadBeforePhoto:_photos.lastObject];
             }
         }

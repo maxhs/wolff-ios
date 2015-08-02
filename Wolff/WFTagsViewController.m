@@ -173,32 +173,32 @@ static NSString * const reuseIdentifier = @"TagCell";
         if (editing){
             [cell.tagPrompt setHidden:YES];
             [cell.nameLabel setHidden:NO];
-            
-            [cell.nameTextField becomeFirstResponder];
-            [cell.nameTextField setPlaceholder:kAddTagPlaceholder];
+            [cell.createButton setHidden:NO];
             [cell.nameTextField setHidden:NO];
+            
+            tagNameTextField = cell.nameTextField;
+            [cell.nameTextField setPlaceholder:kAddTagPlaceholder];
             [cell.nameTextField setReturnKeyType:UIReturnKeyNext];
             [cell.nameTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
             [cell.nameTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
             [cell.nameTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
             cell.nameTextField.delegate = self;
-            
-            [cell.createButton setHidden:NO];
             [cell.createButton addTarget:self action:@selector(createTag) forControlEvents:UIControlEventTouchUpInside];
             
             (searchText.length) ? [cell.nameTextField setText:searchText] : [cell.nameTextField setText:@""];
-        
-            tagNameTextField = cell.nameTextField;
+            
         } else {
             [cell.tagPrompt setHidden:NO];
             [cell.nameTextField setHidden:YES];
             [cell.nameLabel setHidden:YES];
+            [cell.createButton setHidden:YES];
+            
             if (searchText.length){
                 [cell.tagPrompt setText:[NSString stringWithFormat:@"+ add \"%@\"",searchText]];
             } else {
                 [cell.tagPrompt setText:@"+  add a new tag"];
             }
-            [cell.createButton setHidden:YES];
+            
         }
         return cell;
     } else {

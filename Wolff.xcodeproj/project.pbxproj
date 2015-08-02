@@ -1319,8 +1319,12 @@
 				50AC91F51A998135004148D2 /* WFCreditTextField.m */,
 				502B3E7D1AE2E718001E0563 /* WFNoRotateNavController.h */,
 				502B3E7E1AE2E718001E0563 /* WFNoRotateNavController.m */,
+				50DB44911A588AA500856174 /* WFAlert.h */,
+				50DB44921A588AA500856174 /* WFAlert.m */,
 				5033BD561B62ABF100900556 /* WFTracking.h */,
 				5033BD571B62ABF100900556 /* WFTracking.m */,
+				50DB022A1A5A7BE3005A4E2F /* WFDismissableNavigationController.h */,
+				50DB022B1A5A7BE3005A4E2F /* WFDismissibaleNavigationController.m */,
 			);
 			name = "Custom Objects";
 			sourceTree = "<group>";
@@ -1637,10 +1641,6 @@
 				5026DF591A3CBE80000CD26F /* WFGroupsInteractor.m */,
 				5026DF611A3CCB80000CD26F /* WFTablesAnimator.h */,
 				5026DF621A3CCB80000CD26F /* WFTablesAnimator.m */,
-				50DB44911A588AA500856174 /* WFAlert.h */,
-				50DB44921A588AA500856174 /* WFAlert.m */,
-				50DB022A1A5A7BE3005A4E2F /* WFDismissableNavigationController.h */,
-				50DB022B1A5A7BE3005A4E2F /* WFDismissibaleNavigationController.m */,
 				50D7A9D21A62306D007FE14C /* WFWalkthroughAnimator.h */,
 				50D7A9D31A62306D007FE14C /* WFWalkthroughAnimator.m */,
 				F2CE05C0199141C40061DB94 /* WFLoginAnimator.h */,

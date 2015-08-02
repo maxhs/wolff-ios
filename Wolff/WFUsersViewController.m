@@ -79,7 +79,7 @@ static NSString * const reuseIdentifier = @"UserCell";
             [parameters setObject:searchString forKey:@"search"];
         }
         [manager POST:@"users/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success loading users: %@",responseObject);
+            //NSLog(@"Success loading users: %@",responseObject);
             for (id dict in [responseObject objectForKey:@"users"]){
                 User *user = [User MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                 if (!user){

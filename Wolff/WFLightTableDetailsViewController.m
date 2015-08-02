@@ -18,7 +18,6 @@
 #import "NSArray+ToSentence.h"
 
 @interface WFLightTableDetailsViewController () < UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UITextFieldDelegate, UITextViewDelegate, WFSelectUsersDelegate, UITableViewDataSource, UITableViewDelegate> {
-    BOOL iOS8;
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     CGFloat width;
@@ -52,11 +51,7 @@
     manager = delegate.manager;
     self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-    }
+    width = screenWidth(); height = screenHeight();
     
     if (self.lightTable){
         self.lightTable = [self.lightTable MR_inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -86,7 +81,6 @@
     
     [self.switchModesButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [self.switchModesButton addTarget:self action:@selector(switchModes) forControlEvents:UIControlEventTouchUpInside];
-    
     
     [self.view setBackgroundColor:[UIColor clearColor]];
     [self.collectionView setBackgroundColor:[UIColor clearColor]];
@@ -161,6 +155,7 @@
         [_switchModesButton setTitle:@"Join a light table instead" forState:UIControlStateNormal];
         [_actionButton setTitle:@"CREATE" forState:UIControlStateNormal];
     }
+    [self checkFormStatus];
 }
 
 - (void)setupTableViewHeader {
@@ -262,6 +257,7 @@
         case 0:
             if (_joinMode){
                 tableKeyTextField = cell.textField;
+                [tableKeyTextField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
                 [tableKeyTextField setText:self.lightTable.code];
                 [tableKeyTextField setPlaceholder:@"Your light table key"];
                 [tableKeyTextField setReturnKeyType:UIReturnKeyNext];
@@ -272,6 +268,7 @@
                 }
             } else {
                 nameTextField = cell.textField;
+                [nameTextField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
                 [nameTextField setPlaceholder:@"e.g. Mesopotamian Pots"];
                 if (self.lightTable){
                     [cell.textField setText:self.lightTable.name];
@@ -287,12 +284,14 @@
             [cell.cellLabel setText:@"DESCRIPTION"];
             [cell.textField setHidden:YES];
             
-            if (self.lightTable && self.lightTable.tableDescription.length){
+            if (self.lightTable.tableDescription.length){
                 [descriptionTextView setText:self.lightTable.tableDescription];
                 [descriptionTextView setTextColor:[UIColor whiteColor]];
-            } else {
+            } else if (!descriptionTextView.text.length || [descriptionTextView.text isEqualToString:kLightTableDescriptionPlaceholder]) {
                 [descriptionTextView setText:kLightTableDescriptionPlaceholder];
                 [descriptionTextView setTextColor:kLightTablePlaceholderTextColor];
+            } else {
+                [descriptionTextView setTextColor:[UIColor whiteColor]];
             }
             
             [descriptionTextView setReturnKeyType:UIReturnKeyDefault];
@@ -300,6 +299,7 @@
             break;
         case 2:
             tableKeyTextField = cell.textField;
+            [tableKeyTextField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
             if (self.lightTable){
                 [tableKeyTextField setText:self.lightTable.code];
             }
@@ -313,6 +313,7 @@
             break;
         case 3:
             confirmTableKeyTextField = cell.textField;
+            [confirmTableKeyTextField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
             if (self.lightTable){
                 [confirmTableKeyTextField setText:self.lightTable.code];
             }
@@ -416,6 +417,13 @@
         [userIds addObject:user.identifier];
     }];
     [parameters setObject:ownerIds forKey:@"user_ids"];
+    
+    NSMutableArray *photoIds = [NSMutableArray arrayWithCapacity:self.photos.count];
+    [self.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
+        [photoIds addObject:photo.identifier];
+    }];
+    [parameters setObject:photoIds forKey:@"photo_ids"];
+    
     [parameters setObject:descriptionTextView.text forKey:@"description"];
     [parameters setObject:nameTextField.text forKey:@"name"];
     [parameters setObject:tableKeyTextField.text forKey:@"code"];
@@ -427,6 +435,10 @@
 - (void)createLightTable {
     NSMutableDictionary *parameters = [self generateParameters];
     if (parameters == nil){
+        return;
+    }
+    if (!nameTextField.text.length){
+        [WFAlert show:@"Please make sure you've included a name for your light table before continuing." withTime:3.3f];
         return;
     }
     if (tableKeyTextField.text.length){
@@ -441,10 +453,7 @@
         [WFAlert show:@"Please ensure you've added a light table key before continuing." withTime:3.3f];
         return;
     }
-    if (!nameTextField.text.length){
-        [WFAlert show:@"Please make sure you've included a name for your light table before continuing." withTime:3.3f];
-        return;
-    }
+    
     [self doneEditing];
     [ProgressHUD show:[NSString stringWithFormat:@"Creating \"%@\"",nameTextField.text]];
     [manager POST:@"light_tables" parameters:@{@"light_table":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -537,34 +546,7 @@
         }
         return NO;
     } else {
-        if (textField == confirmTableKeyTextField){
-            NSString *newText = [confirmTableKeyTextField.text stringByReplacingCharactersInRange:range withString:string];
-            if (nameTextField.text.length && [tableKeyTextField.text isEqualToString:newText]){
-                [self.actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.33]];
-                self.actionButton.enabled = YES;
-            } else {
-                [self.actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.077]];
-                self.actionButton.enabled = NO;
-            }
-        } else if (textField == tableKeyTextField){
-            NSString *newText = [tableKeyTextField.text stringByReplacingCharactersInRange:range withString:string];
-            if (nameTextField.text.length && [confirmTableKeyTextField.text isEqualToString:newText]){
-                [self.actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.33]];
-                self.actionButton.enabled = YES;
-            } else {
-                [self.actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.077]];
-                self.actionButton.enabled = NO;
-            }
-        } else if (textField == nameTextField){
-            NSString *newText = [nameTextField.text stringByReplacingCharactersInRange:range withString:string];
-            if (newText.length && ((tableKeyTextField.text.length && [confirmTableKeyTextField.text isEqualToString:tableKeyTextField.text]) || self.lightTable)){
-                [self.actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.33]];
-                self.actionButton.enabled = YES;
-            } else {
-                [self.actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.077]];
-                self.actionButton.enabled = NO;
-            }
-        }
+        
         return YES;
     }
 }
@@ -718,6 +700,29 @@
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillHide:)
                                                  name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)textFieldDidChange:(UITextField*)textField {
+    [self checkFormStatus];
+}
+
+- (void)checkFormStatus {
+    if (_joinMode){
+        if (tableKeyTextField.text.length){
+            [self.actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.33]];
+            self.actionButton.enabled = YES;
+        } else {
+            [self.actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.077]];
+            self.actionButton.enabled = NO;
+        }
+    } else {
+        self.actionButton.enabled = YES;
+        if (nameTextField.text.length && tableKeyTextField.text.length && [tableKeyTextField.text isEqualToString:confirmTableKeyTextField.text]){
+            [self.actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.33]];
+        } else {
+            [self.actionButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.077]];
+        }
+    }
 }
 
 - (void)keyboardWillShow:(NSNotification *)note {

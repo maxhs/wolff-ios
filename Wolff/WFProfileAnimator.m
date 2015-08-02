@@ -27,45 +27,22 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-        mainScreen = [UIScreen mainScreen].bounds;
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-        mainScreen = CGRectMake(0, 0, height, width);
-    }
+    width = screenWidth(); height = screenHeight();
+    mainScreen = [UIScreen mainScreen].bounds;
     
     // Grab the from and to view controllers from the context
-    UIViewController *fromViewController, *toViewController;
-    UIView *fromView, *toView;
-    fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
-    
-    if (iOS8) {
-        fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-        toView = [transitionContext viewForKey:UITransitionContextToViewKey];
-    } else {
-        fromView = fromViewController.view;
-        toView = toViewController.view;
-    }
+    UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    UIViewController *toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     
     if (self.presenting) {
-        [transitionContext.containerView addSubview:fromView];
-        [transitionContext.containerView addSubview:toView];
+        [transitionContext.containerView addSubview:toViewController.view];
         
-        CGRect startFrame;
-        if (iOS8){
-            startFrame = mainScreen;
-            startFrame.origin.y += height;
-        } else {
-            startFrame = mainScreen;
-            startFrame.origin.x += width;
-        }
-        
+        CGRect startFrame = mainScreen;
+        startFrame.origin.y += height;
         toViewController.view.frame = startFrame;
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseIn animations:^{
-            toView.frame = mainScreen;
+            toViewController.view.frame = mainScreen;
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
@@ -83,31 +60,15 @@
             int rndValue = lowerBound + arc4random() % (upperBound - lowerBound);
             CGFloat xOffset = rndValue == 1 ? width : -width;
             
-            CGRect metadataFrame;
-            if (iOS8) {
-                metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
-                CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
-                toView.frame = metadataStartFrame;
-            } else {
-                metadataFrame = CGRectMake(0, width/2-kMetadataWidth/2, height, kMetadataWidth);
-                CGRect metadataStartFrame = CGRectMake(0, (width/2-kMetadataWidth/2), height, kMetadataWidth);
-                toView.frame = metadataStartFrame;
-            }
+            CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
+            toViewController.view.frame = metadataStartFrame;
         }
         
-        [transitionContext.containerView addSubview:toView];
-        [transitionContext.containerView addSubview:fromView];
+        CGRect endFrame = mainScreen;
+        endFrame.origin.y = height;
         
-        CGRect endFrame;
-        if (iOS8){
-            endFrame = mainScreen;
-            endFrame.origin.y = height;
-        } else {
-            endFrame = mainScreen;
-            endFrame.origin.x = width;
-        }
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            fromView.frame = endFrame;
+            fromViewController.view.frame = endFrame;
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];

@@ -14,7 +14,6 @@
 @interface WFSlideMetadataAnimator () {
     CGFloat width;
     CGFloat height;
-    BOOL iOS8;
     CGRect mainScreen;
     CGFloat differential;
 }
@@ -29,57 +28,24 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        iOS8 = YES;
-        width = screenWidth(); height = screenHeight();
-        mainScreen = [UIScreen mainScreen].bounds;
-    } else {
-        iOS8 = NO;
-        width = screenHeight();
-        height = screenWidth();
-        mainScreen = CGRectMake(0, 0, height, width);
-    }
+    width = screenWidth();
+    height = screenHeight();
+    mainScreen = [UIScreen mainScreen].bounds;
     
     // Grab the from and to view controllers from the context
     UIViewController *fromViewController, *toViewController;
-    UIView *fromView,*toView;
     fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
-    
-    if (iOS8) {
-        fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-        toView = [transitionContext viewForKey:UITransitionContextToViewKey];
-    } else {
-        fromView = fromViewController.view;
-        toView = toViewController.view;
-    }
     
     differential = height/4;
     
     if (self.presenting) {
         fromViewController.view.userInteractionEnabled = NO;
     
-        CGRect toEndFrame;
-        if (iOS8){
-            [toView setFrame:CGRectMake(0, height, width, height)];
-            [toViewController setPreferredContentSize:CGSizeMake(width, differential)];
-            toEndFrame = toView.frame;
-            toEndFrame.origin.y = height - differential;
-        } else {
-            if (_orientation == UIInterfaceOrientationLandscapeLeft){
-                // orientation 4
-                [toView setFrame:CGRectMake(0, -width, width, (differential))];
-                toEndFrame = toView.frame;
-                toEndFrame.origin.x = 0;
-                toEndFrame.origin.y = 0;
-            } else {
-                // orientation 3
-                [toView setFrame:CGRectMake(-height/3, width, width, (differential))];
-                toEndFrame = toView.frame;
-                toEndFrame.origin.x = -height/3;
-                toEndFrame.origin.y = width-differential;
-            }
-        }
+        [toViewController.view setFrame:CGRectMake(0, height, width, height)];
+        [toViewController setPreferredContentSize:CGSizeMake(width, differential)];
+        CGRect toEndFrame = toViewController.view.frame;
+        toEndFrame.origin.y = height - differential;
         
         UIButton *removeButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [removeButton setBackgroundColor:[UIColor colorWithWhite:0 alpha:.5]];
@@ -92,12 +58,11 @@
         [removeButton setTag:kDarkBackgroundConstant];
         [removeButton setAlpha:0.0];
         
-        [transitionContext.containerView addSubview:fromView];
-        [transitionContext.containerView addSubview:toView];
-        [transitionContext.containerView insertSubview:removeButton belowSubview:toView];
+        [transitionContext.containerView addSubview:removeButton]; // order matters here
+        [transitionContext.containerView addSubview:toViewController.view];
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            [toView setFrame:toEndFrame];
+            [toViewController.view setFrame:toEndFrame];
             [removeButton setAlpha:1.0];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
@@ -107,23 +72,11 @@
         toViewController.view.userInteractionEnabled = YES;
         UIButton *removeButton = (UIButton*)[transitionContext.containerView viewWithTag:kDarkBackgroundConstant];
         
-        [transitionContext.containerView addSubview:toView];
-        [transitionContext.containerView addSubview:fromView];
-        
-        CGRect fromEndFrame;
-        if (iOS8){
-            fromEndFrame = fromView.frame;
-            fromEndFrame.origin.y = height;
-        } else {
-            if (_orientation == UIInterfaceOrientationLandscapeLeft){
-                fromEndFrame = CGRectMake(0, -width, width, differential);
-            } else {
-                fromEndFrame = CGRectMake(-height/3, width, width, differential);
-            }
-        }
+        CGRect fromEndFrame = fromViewController.view.frame;
+        fromEndFrame.origin.y = height;
         
         [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            [fromView setFrame:fromEndFrame];
+            [fromViewController.view setFrame:fromEndFrame];
             [removeButton setAlpha:0.0];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];

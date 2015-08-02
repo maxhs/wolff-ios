@@ -14,7 +14,7 @@
 @interface WFSlideshowFocusAnimator () {
     CGFloat width;
     CGFloat height;
-    BOOL iOS8;
+
 }
 
 @end
@@ -25,30 +25,11 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    CGRect mainScreen;
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        iOS8 = YES;
-        width = screenWidth(); height = screenHeight();
-        mainScreen = [UIScreen mainScreen].bounds;
-    } else {
-        iOS8 = NO;
-        width = screenHeight(); height = screenWidth();
-        mainScreen = CGRectMake(0, 0, height, width);
-    }
+    width = screenWidth(); height = screenHeight();
+    CGRect mainScreen = [UIScreen mainScreen].bounds;
 
-    // Grab the from and to view controllers from the context
-    UIViewController *fromViewController, *toViewController;
-    UIView *fromView,*toView;
-    fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
-    
-    if (iOS8) {
-        fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-        toView = [transitionContext viewForKey:UITransitionContextToViewKey];
-    } else {
-        fromView = fromViewController.view;
-        toView = toViewController.view;
-    }
+    UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    UIViewController *toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     
     if (self.presenting) {
         fromViewController.view.userInteractionEnabled = NO;
@@ -63,23 +44,17 @@
         [blurredButton setAlpha:0.0];
         [blurredButton setTag:kBlurredBackgroundConstant];
         
-        [toView setFrame:mainScreen];
-        if (iOS8){
-            toView.transform = CGAffineTransformMakeScale(.95, .95);
-        }
-        [toView setAlpha:0.0];
+        [toViewController.view setFrame:mainScreen];
+        toViewController.view.transform = CGAffineTransformMakeScale(.95, .95);
+        [toViewController.view setAlpha:0.0];
         
-        [transitionContext.containerView addSubview:fromView];
-        [transitionContext.containerView addSubview:toView];
-        
-        [transitionContext.containerView insertSubview:blurredButton belowSubview:toView];
+        [transitionContext.containerView addSubview:blurredButton];
+        [transitionContext.containerView addSubview:toViewController.view];
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.75 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [blurredButton setAlpha:1.0];
-            [toView setAlpha:1.0];
-            if (iOS8){
-                toView.transform = CGAffineTransformIdentity;
-            }
+            [toViewController.view setAlpha:1.0];
+            toViewController.view.transform = CGAffineTransformIdentity;
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
@@ -89,13 +64,10 @@
         UIImageView *blurredButton = (UIImageView*)[transitionContext.containerView viewWithTag:kBlurredBackgroundConstant];
         toViewController.view.userInteractionEnabled = YES;
         
-        [transitionContext.containerView addSubview:toView];
-        [transitionContext.containerView addSubview:fromView];
-        
         [UIView animateWithDuration:[self transitionDuration:transitionContext]*.7 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.01 options:UIViewAnimationOptionCurveEaseOut animations:^{
             [blurredButton setAlpha:0.0];
-            [fromView setAlpha:0.0];
-            fromView.transform = CGAffineTransformMakeScale(.925, .925);
+            [fromViewController.view setAlpha:0.0];
+            fromViewController.view.transform = CGAffineTransformMakeScale(.925, .925);
         } completion:^(BOOL finished) {
             [blurredButton removeFromSuperview];
             [transitionContext completeTransition:YES];

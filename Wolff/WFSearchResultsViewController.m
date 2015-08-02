@@ -267,7 +267,7 @@
 }
 
 - (void)newLightTable {
-    NSLog(@"new light table from delegate");
+    //NSLog(@"new light table from search delegate");
     if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(newLightTableForSelected)]) {
         [self.searchDelegate newLightTableForSelected];
     }

@@ -26,25 +26,13 @@
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     // Grab the from and to view controllers from the context
-    UIViewController *fromViewController, *toViewController;
-    UIView *fromView,*toView;
-    fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    UIViewController *toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     
-    CGRect mainScreen;
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        width = screenWidth();
-        height = screenHeight();
-        mainScreen = [UIScreen mainScreen].bounds;
-        fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-        toView = [transitionContext viewForKey:UITransitionContextToViewKey];
-    } else {
-        width = screenHeight();
-        height = screenWidth();
-        mainScreen = CGRectMake(0, 0, height, width);
-        fromView = fromViewController.view;
-        toView = toViewController.view;
-    }
+    width = screenWidth();
+    height = screenHeight();
+    CGRect mainScreen = [UIScreen mainScreen].bounds;
+
     
     if (self.presenting) {
         fromViewController.view.userInteractionEnabled = NO;
@@ -57,11 +45,10 @@
         [blurredButton setAlpha:0.0];
         [blurredButton setTag:kBlurredBackgroundConstant];
         
-        [transitionContext.containerView addSubview:fromView];
-        [transitionContext.containerView addSubview:toView];
-        [transitionContext.containerView insertSubview:blurredButton belowSubview:toView];
+        [transitionContext.containerView addSubview:blurredButton];
+        [transitionContext.containerView addSubview:toViewController.view];
         
-        [toView setFrame:mainScreen];
+        [toViewController.view setFrame:mainScreen];
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.875 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [blurredButton setAlpha:1.0];
         } completion:^(BOOL finished) {
@@ -72,11 +59,9 @@
         [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
         toViewController.view.userInteractionEnabled = YES;
         UIImageView *blurredButton = (UIImageView*)[transitionContext.containerView viewWithTag:kBlurredBackgroundConstant];
-        [transitionContext.containerView addSubview:toView];
-        [transitionContext.containerView addSubview:fromView];
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            [fromView setAlpha:0.0];
+            [fromViewController.view setAlpha:0.0];
             [blurredButton setAlpha:0.0];
         } completion:^(BOOL finished) {
             [blurredButton removeFromSuperview];

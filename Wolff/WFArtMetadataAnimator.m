@@ -27,28 +27,12 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    CGRect mainScreen;
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-        mainScreen = [UIScreen mainScreen].bounds;
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-        mainScreen = CGRectMake(0, 0, height, width);
-    }
-    
+    CGRect mainScreen = [UIScreen mainScreen].bounds;
+    iOS8 = YES; width = screenWidth(); height = screenHeight();
+
     // Grab the from and to view controllers from the context
-    UIViewController *fromViewController, *toViewController;
-    UIView *fromView,*toView;
-    fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
-    
-    if (iOS8) {
-        fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-        toView = [transitionContext viewForKey:UITransitionContextToViewKey];
-    } else {
-        fromView = fromViewController.view;
-        toView = toViewController.view;
-    }
+    UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    UIViewController *toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     
     if (self.presenting) {
         UIButton *darkBackground = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -65,11 +49,11 @@
         
         [darkBackground addTarget:artvc action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
         [darkBackground setFrame:mainScreen];
-        [transitionContext.containerView addSubview:fromView];
+        
         [transitionContext.containerView addSubview:darkBackground];
-        [transitionContext.containerView addSubview:toView];
+        [transitionContext.containerView addSubview:toViewController.view];
 
-        [toView setAlpha:0.0];
+        [toViewController.view setAlpha:0.0];
         CGFloat widthOffset = IDIOM == IPAD ? 350 : width/2;
         CGFloat offset = height/2-widthOffset;
         UITableView *metadataTableView = artvc.tableView;
@@ -84,31 +68,28 @@
             if (IDIOM == IPAD){
                 metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
                 CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
-                toView.frame = metadataStartFrame;
+                toViewController.view.frame = metadataStartFrame;
             } else {
                 metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
                 CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
-                toView.frame = metadataStartFrame;
+                toViewController.view.frame = metadataStartFrame;
             }
         } else {
             metadataFrame = CGRectMake(0, width/2-kMetadataWidth/2, height, kMetadataWidth);
             CGRect metadataStartFrame = CGRectMake(0, (width/2-kMetadataWidth/2)-xOffset, height, kMetadataWidth);
-            toView.frame = metadataStartFrame;
+            toViewController.view.frame = metadataStartFrame;
         }
     
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            toView.frame = metadataFrame;
-            [toView setAlpha:1.0];
+            toViewController.view.frame = metadataFrame;
+            [toViewController.view setAlpha:1.0];
             [darkBackground setAlpha:1.0];
         } completion:^(BOOL finished) {
             [transitionContext completeTransition:YES];
         }];
     } else {
         UIButton *darkBackground = (UIButton*)[transitionContext.containerView viewWithTag:kDarkBackgroundConstant];
-        
         toViewController.view.userInteractionEnabled = YES;
-        [transitionContext.containerView addSubview:toView];
-        [transitionContext.containerView addSubview:fromView];
         
         NSTimeInterval outDuration = [self transitionDuration:transitionContext]*.77;
         [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseIn animations:^{

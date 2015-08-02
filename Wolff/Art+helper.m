@@ -272,8 +272,12 @@
 }
 
 - (NSString*)readableDimensions {
-    if (![self.width isEqualToNumber:@0] && ![self.height isEqualToNumber:@0] && ![self.depth isEqualToNumber:@0]){
-        return [NSString stringWithFormat:@"%@ x %@ x %@",self.width, self.height, self.depth];
+    if (![self.width isEqualToNumber:@0] && ![self.height isEqualToNumber:@0]){
+        if ([self.depth isEqualToNumber:@0]){
+            return [NSString stringWithFormat:@"%@ x %@ cm",self.height, self.width];
+        } else {
+            return [NSString stringWithFormat:@"%@ x %@ x %@ cm",self.height, self.width, self.depth];
+        }
     } else {
         return nil;
     }
