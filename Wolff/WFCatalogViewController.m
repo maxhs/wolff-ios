@@ -324,9 +324,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    if (![[NSUserDefaults standardUserDefaults] boolForKey:kExistingUser]){
+    //if (![[NSUserDefaults standardUserDefaults] boolForKey:kExistingUser]){
         [self showWalkthrough];
-    }
+    //}
 }
 
 - (void)showWalkthrough {
@@ -1369,7 +1369,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             return CGSizeMake(width/4, width/4);
         }
     } else {
-        if (self.view.frame.size.width > self.view.frame.size.height || self.view.frame.size.width > 320.f){
+        if (self.view.frame.size.width > self.view.frame.size.height || self.view.frame.size.height >= 568.f){
             return CGSizeMake(width/2,width/2);
         } else {
             return CGSizeMake(width,width);

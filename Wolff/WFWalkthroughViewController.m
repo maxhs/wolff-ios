@@ -28,19 +28,21 @@
     mainScreen = [UIScreen mainScreen].bounds;
     [_scrollView setContentSize:CGSizeMake(width*3, height)];
     
-    [self.view setBackgroundColor:[UIColor clearColor]];
+    [self.view setBackgroundColor:[UIColor whiteColor]];
     [_scrollView setFrame:CGRectMake(0, 0, width, height)];
     [_scrollView setBackgroundColor:[UIColor clearColor]];
     
     [_skipButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
     [_skipButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
-    [_skipButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_skipButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [_skipButton setTitle:@"Skip" forState:UIControlStateNormal];
     _skipButton.layer.cornerRadius = 14.f;
     _skipButton.clipsToBounds = YES;
-    _skipButton.backgroundColor = [UIColor colorWithWhite:1 alpha:.07];
+    _skipButton.backgroundColor = IDIOM == IPAD ? kHeaderBackgroundColor : [UIColor clearColor];
     
     _pageControl.numberOfPages = 3;
+    [_pageControl setPageIndicatorTintColor:[UIColor colorWithWhite:.9 alpha:1]];
+    [_pageControl setCurrentPageIndicatorTintColor:[UIColor darkGrayColor]];
     
     [self setUpMotionEffects];
     
@@ -48,11 +50,11 @@
     [_imageView2 addMotionEffect:motionGroup];
     [_imageView3 addMotionEffect:motionGroup];
     [self labelTreatment:_label1];
-    [_label1 setText:@"Discover, organize, and present works of art in high resolution."];
+    [_label1 setText:@"Search a crowd-sourced library of digitized artworks"];
     [self labelTreatment:_label2];
-    [_label2 setText:@"Interactive slideshows with side-by-side comparisons in high resolution."];
+    [_label2 setText:@"Organize images for anything from courses to exhibitions"];
     [self labelTreatment:_label3];
-    [_label3 setText:@"Contribute to the Wölff catalog: a crowd-sourced library of digitized artworks."];
+    [_label3 setText:@"Interact with presentations in high resolution"];
     
     [self bigLabelTreatment:_bigLabel1];
     [self bigLabelTreatment:_bigLabel2];
@@ -84,30 +86,16 @@
 
 - (void)labelTreatment:(UILabel *)label {
     [label setClipsToBounds:NO];
-    if (IDIOM == IPAD){
-        [label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
-    } else {
-        [label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
-    }
-    [label setTextColor:[UIColor whiteColor]];
-    label.layer.shadowColor = [UIColor colorWithWhite:0 alpha:.5].CGColor;
-    label.layer.shadowOffset = CGSizeMake(.9f, .9f);
-    label.layer.shadowRadius = 1.7f;
-    label.layer.shadowOpacity = .45f;
+    [label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:IDIOM == IPAD ? UIFontTextStyleSubheadline : UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [label setTextColor:[UIColor blackColor]];
+    [label setBackgroundColor:[UIColor clearColor]];
     [label addMotionEffect:motionGroup];
 }
 
 - (void)bigLabelTreatment:(UILabel*)label {
-    if (IDIOM == IPAD){
-        [label setFont:[UIFont fontWithName:kMuseoSansThin size:66]];
-    } else {
-        [label setFont:[UIFont fontWithName:kMuseoSansThin size:36]];
-    }
-    [label setTextColor:[UIColor whiteColor]];
-    label.layer.shadowColor = [UIColor colorWithWhite:0 alpha:.5].CGColor;
-    label.layer.shadowOffset = CGSizeMake(1.2f, 1.2f);
-    label.layer.shadowRadius = 3.7f;
-    label.layer.shadowOpacity = .75f;
+    [label setFont:[UIFont fontWithName:kMuseoSansThin size:IDIOM == IPAD ? 66 : 36]];
+    [label setTextColor:[UIColor blackColor]];
+    [label setBackgroundColor:[UIColor clearColor]];
     [label addMotionEffect:motionGroup];
 }
 

@@ -112,5 +112,6 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kDarkTableViewCellSelectionColor [UIColor colorWithWhite:1 alpha:.23]
 #define kTextFieldBackground [UIColor colorWithWhite:1 alpha:.83]
 #define kLightTablePlaceholderTextColor [UIColor colorWithWhite:0 alpha:.23]
+#define kHeaderBackgroundColor [UIColor colorWithWhite:.97 alpha:1]
 
 #endif

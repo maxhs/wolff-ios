@@ -1072,7 +1072,7 @@
         add = YES;
     }
     
-    NSLog(@"slideshow photo count: %lu",self.slideshow.photos.count);
+    NSLog(@"slideshow photo count: %lu",(unsigned long)self.slideshow.photos.count);
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         if (IDIOM == IPAD){
             [self.collectionView performBatchUpdates:^{
