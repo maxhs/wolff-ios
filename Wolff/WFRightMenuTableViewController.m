@@ -20,7 +20,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.tableView.rowHeight = (screenHeight()-self.navigationController.navigationBar.frame.size.height-20)/4;
+    self.tableView.rowHeight = 64.f;
     [self.view setBackgroundColor:[UIColor clearColor]];
     [self.tableView setBackgroundColor:[UIColor clearColor]];
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:1 alpha:0]];
@@ -178,9 +178,11 @@
 */
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
+    [UIView animateWithDuration:kFastAnimationDuration animations:^{
+        [self.view setAlpha:0.0];
+        self.navigationItem.rightBarButtonItem = nil;
     }];
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
 - (void)didReceiveMemoryWarning {

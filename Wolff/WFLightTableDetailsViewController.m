@@ -416,7 +416,7 @@
     [self.users enumerateObjectsUsingBlock:^(User *user, NSUInteger idx, BOOL *stop) {
         [userIds addObject:user.identifier];
     }];
-    [parameters setObject:ownerIds forKey:@"user_ids"];
+    [parameters setObject:userIds forKey:@"user_ids"];
     
     NSMutableArray *photoIds = [NSMutableArray arrayWithCapacity:self.photos.count];
     [self.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
@@ -574,6 +574,7 @@
 
 - (void)lightTableOwnersSelected:(NSOrderedSet *)selectedOwners {
     self.owners = selectedOwners.mutableCopy;
+    [self.users addObjectsFromArray:selectedOwners.array]; // ensure owners are also members
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         [self.tableView reloadData];
     }];

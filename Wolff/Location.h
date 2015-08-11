@@ -35,5 +35,6 @@
 @property (nonatomic, retain) NSNumber * departureYear;
 @property (nonatomic, retain) NSManagedObject *institution;
 @property (nonatomic, retain) NSOrderedSet *arts;
+@property (nonatomic, retain) NSOrderedSet *partners;
 
 @end

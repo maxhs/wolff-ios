@@ -33,5 +33,6 @@
 @dynamic departureDay;
 @dynamic departureMonth;
 @dynamic departureYear;
+@dynamic partners;
 
 @end

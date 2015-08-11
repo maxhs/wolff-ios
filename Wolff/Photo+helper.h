@@ -12,5 +12,6 @@
 - (void)populateFromDictionary:(NSDictionary*)dict;
 - (BOOL)isLandscape;
 - (NSString*)iconsToSentence;
+- (NSString*)partnersToSentence;
 
 @end

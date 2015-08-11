@@ -73,6 +73,13 @@
 		50316E591B70FE8900B2171B /* iphoneWalkthrough2@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50316E561B70FE8900B2171B /* iphoneWalkthrough2@3x.png */; };
 		50316E5A1B70FE8900B2171B /* iphoneWalkthrough2@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50316E571B70FE8900B2171B /* iphoneWalkthrough2@2x.png */; };
 		50316E5B1B70FE8900B2171B /* iphoneWalkthrough2.png in Resources */ = {isa = PBXBuildFile; fileRef = 50316E581B70FE8900B2171B /* iphoneWalkthrough2.png */; };
+		50316E651B7106BF00B2171B /* iphoneWalkthrough3@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50316E621B7106BF00B2171B /* iphoneWalkthrough3@3x.png */; };
+		50316E661B7106BF00B2171B /* iphoneWalkthrough3@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50316E631B7106BF00B2171B /* iphoneWalkthrough3@2x.png */; };
+		50316E671B7106BF00B2171B /* iphoneWalkthrough3.png in Resources */ = {isa = PBXBuildFile; fileRef = 50316E641B7106BF00B2171B /* iphoneWalkthrough3.png */; };
+		50316E7F1B7676B500B2171B /* Partner.m in Sources */ = {isa = PBXBuildFile; fileRef = 50316E7E1B7676B500B2171B /* Partner.m */; };
+		50316E821B7676C100B2171B /* Partner+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 50316E811B7676C100B2171B /* Partner+helper.m */; };
+		50316E851B768BEB00B2171B /* WFPartnerProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50316E841B768BEB00B2171B /* WFPartnerProfileViewController.m */; };
+		50316E891B76B7EA00B2171B /* WFPartnerProfileHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 50316E881B76B7EA00B2171B /* WFPartnerProfileHeader.m */; };
 		5033BD581B62ABF100900556 /* WFTracking.m in Sources */ = {isa = PBXBuildFile; fileRef = 5033BD571B62ABF100900556 /* WFTracking.m */; };
 		503CD5771A6F44C700F4FF85 /* Alternate.m in Sources */ = {isa = PBXBuildFile; fileRef = 503CD5761A6F44C700F4FF85 /* Alternate.m */; };
 		503CD57A1A6F44DA00F4FF85 /* Alternate+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 503CD5791A6F44DA00F4FF85 /* Alternate+helper.m */; };
@@ -574,6 +581,17 @@
 		50316E561B70FE8900B2171B /* iphoneWalkthrough2@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iphoneWalkthrough2@3x.png"; sourceTree = "<group>"; };
 		50316E571B70FE8900B2171B /* iphoneWalkthrough2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iphoneWalkthrough2@2x.png"; sourceTree = "<group>"; };
 		50316E581B70FE8900B2171B /* iphoneWalkthrough2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = iphoneWalkthrough2.png; sourceTree = "<group>"; };
+		50316E621B7106BF00B2171B /* iphoneWalkthrough3@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iphoneWalkthrough3@3x.png"; sourceTree = "<group>"; };
+		50316E631B7106BF00B2171B /* iphoneWalkthrough3@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iphoneWalkthrough3@2x.png"; sourceTree = "<group>"; };
+		50316E641B7106BF00B2171B /* iphoneWalkthrough3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = iphoneWalkthrough3.png; sourceTree = "<group>"; };
+		50316E7D1B7676B500B2171B /* Partner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Partner.h; sourceTree = "<group>"; };
+		50316E7E1B7676B500B2171B /* Partner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Partner.m; sourceTree = "<group>"; };
+		50316E801B7676C100B2171B /* Partner+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Partner+helper.h"; sourceTree = "<group>"; };
+		50316E811B7676C100B2171B /* Partner+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "Partner+helper.m"; sourceTree = "<group>"; };
+		50316E831B768BEB00B2171B /* WFPartnerProfileViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFPartnerProfileViewController.h; sourceTree = "<group>"; };
+		50316E841B768BEB00B2171B /* WFPartnerProfileViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFPartnerProfileViewController.m; sourceTree = "<group>"; };
+		50316E871B76B7EA00B2171B /* WFPartnerProfileHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFPartnerProfileHeader.h; sourceTree = "<group>"; };
+		50316E881B76B7EA00B2171B /* WFPartnerProfileHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFPartnerProfileHeader.m; sourceTree = "<group>"; };
 		5033BD561B62ABF100900556 /* WFTracking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFTracking.h; sourceTree = "<group>"; };
 		5033BD571B62ABF100900556 /* WFTracking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFTracking.m; sourceTree = "<group>"; };
 		503CD5751A6F44C700F4FF85 /* Alternate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alternate.h; sourceTree = "<group>"; };
@@ -1189,6 +1207,17 @@
 			name = Catalog;
 			sourceTree = "<group>";
 		};
+		50316E861B768BEF00B2171B /* Partners */ = {
+			isa = PBXGroup;
+			children = (
+				50316E831B768BEB00B2171B /* WFPartnerProfileViewController.h */,
+				50316E841B768BEB00B2171B /* WFPartnerProfileViewController.m */,
+				50316E871B76B7EA00B2171B /* WFPartnerProfileHeader.h */,
+				50316E881B76B7EA00B2171B /* WFPartnerProfileHeader.m */,
+			);
+			name = Partners;
+			sourceTree = "<group>";
+		};
 		503B22121B38584800DFB0D5 /* WebView */ = {
 			isa = PBXGroup;
 			children = (
@@ -1580,6 +1609,7 @@
 				F2CE0583198E937F0061DB94 /* Cells */,
 				503B221A1B38597200DFB0D5 /* Tags */,
 				503B22191B38596800DFB0D5 /* Locations */,
+				50316E861B768BEF00B2171B /* Partners */,
 				503B22141B38587000DFB0D5 /* Profile/Settings */,
 				50DAA7FF1B28C73100DBB001 /* Billing/Payment */,
 				50DAA7FE1B28C72700DBB001 /* Notifications */,
@@ -1731,6 +1761,10 @@
 		F2CE054F198E72B10061DB94 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				50316E7D1B7676B500B2171B /* Partner.h */,
+				50316E7E1B7676B500B2171B /* Partner.m */,
+				50316E801B7676C100B2171B /* Partner+helper.h */,
+				50316E811B7676C100B2171B /* Partner+helper.m */,
 				F2CE05AD199117990061DB94 /* Slide.h */,
 				F2CE05AE199117990061DB94 /* Slide.m */,
 				F2CE05B319911AA10061DB94 /* Slide+helper.h */,
@@ -1831,6 +1865,9 @@
 			isa = PBXGroup;
 			children = (
 				F28C780618E1E4950088B4C9 /* Images.xcassets */,
+				50316E621B7106BF00B2171B /* iphoneWalkthrough3@3x.png */,
+				50316E631B7106BF00B2171B /* iphoneWalkthrough3@2x.png */,
+				50316E641B7106BF00B2171B /* iphoneWalkthrough3.png */,
 				50316E561B70FE8900B2171B /* iphoneWalkthrough2@3x.png */,
 				50316E571B70FE8900B2171B /* iphoneWalkthrough2@2x.png */,
 				50316E581B70FE8900B2171B /* iphoneWalkthrough2.png */,
@@ -2373,6 +2410,7 @@
 				50B3255E1AA14B96003B7DB2 /* blueFavorite.png in Resources */,
 				50FB5F7D1A3F2AA8004D6062 /* tables@3x.png in Resources */,
 				50DB43D41A537AC500856174 /* dropToLightTable@2x.png in Resources */,
+				50316E651B7106BF00B2171B /* iphoneWalkthrough3@3x.png in Resources */,
 				50952E891A47F70E00485831 /* MuseoSans-500italic.ttf in Resources */,
 				5080E6AE1AD8B3760097BD9F /* Default@2x.png in Resources */,
 				503CD5A81A77203A00F4FF85 /* miniRemove.png in Resources */,
@@ -2401,6 +2439,7 @@
 				50CEAAE91A6DD3FB0040E8EF /* homeIcon@2x.png in Resources */,
 				505D3B4B1A646FD400CD70DE /* left@3x.png in Resources */,
 				F2A9580F19E2245F00A3B471 /* Default_iPad_landscape.png in Resources */,
+				50316E661B7106BF00B2171B /* iphoneWalkthrough3@2x.png in Resources */,
 				50DB44621A5756D600856174 /* whiteTrash@2x.png in Resources */,
 				508DC9451A5B702200B1C008 /* blackSettings@2x.png in Resources */,
 				508DC9381A5B6FA900B1C008 /* refresh.png in Resources */,
@@ -2445,6 +2484,7 @@
 				502B3EA31AE47B76001E0563 /* more@3x.png in Resources */,
 				50DB44091A546A8B00856174 /* blueCheck.png in Resources */,
 				50DB44381A5503FC00856174 /* cloudUpload.png in Resources */,
+				50316E671B7106BF00B2171B /* iphoneWalkthrough3.png in Resources */,
 				508DC9461A5B702200B1C008 /* blackSettings@3x.png in Resources */,
 				50B7B93A1B580EF500701F9B /* whitePaintbrush@3x.png in Resources */,
 				50FB5FE91A40E6CC004D6062 /* Lato-BlaIta.ttf in Resources */,
@@ -2613,6 +2653,7 @@
 				50A9D41A1A83E6CB000B8DD6 /* WFNewLocationCell.m in Sources */,
 				F2CE054B198E72AC0061DB94 /* User.m in Sources */,
 				F20A3ECA19EB37A4008E0D4C /* Photo.m in Sources */,
+				50316E821B7676C100B2171B /* Partner+helper.m in Sources */,
 				504192B61AD232960017405D /* WFNewTagCell.m in Sources */,
 				50AB427F1AB6772100C4EF5A /* WFUserCollectionCell.m in Sources */,
 				F20FB2C51A22AFDE0007C905 /* Favorite+helper.m in Sources */,
@@ -2642,6 +2683,7 @@
 				F2139D81193A56BE00EE5C96 /* ProgressHUD.m in Sources */,
 				50DB44931A588AA500856174 /* WFAlert.m in Sources */,
 				50D7A9E91A6254E2007FE14C /* WFImagePickerAnimator.m in Sources */,
+				50316E851B768BEB00B2171B /* WFPartnerProfileViewController.m in Sources */,
 				F28C77F218E1E4950088B4C9 /* main.m in Sources */,
 				5026DF571A3B473E000CD26F /* Interval+helper.m in Sources */,
 				F2CE0582198E937B0061DB94 /* WFArtMetadataCell.m in Sources */,
@@ -2650,6 +2692,7 @@
 				F20FB2FB1A24DF580007C905 /* Citation+helper.m in Sources */,
 				503CD59E1A76F83600F4FF85 /* WFPhotoTileCell.m in Sources */,
 				50A077B61A8EF67300147A0F /* WFIconCollectionCell.m in Sources */,
+				50316E7F1B7676B500B2171B /* Partner.m in Sources */,
 				F20FB30D1A24F09B0007C905 /* Movement+helper.m in Sources */,
 				50DB022C1A5A7BE3005A4E2F /* WFDismissibaleNavigationController.m in Sources */,
 				50D7A9D11A622E5C007FE14C /* WFWalkthroughViewController.m in Sources */,
@@ -2658,6 +2701,7 @@
 				50DB44041A5462B000856174 /* WFImagePickerCell.m in Sources */,
 				50FB5F801A3F3734004D6062 /* Citation.m in Sources */,
 				F28C67051A33F4BE00B82FD8 /* WFSlideshowViewController.m in Sources */,
+				50316E891B76B7EA00B2171B /* WFPartnerProfileHeader.m in Sources */,
 				F28C66FC1A33DA0000B82FD8 /* WFSlideshowsViewController.m in Sources */,
 				50AB427C1AB6769900C4EF5A /* WFUsersViewController.m in Sources */,
 				F28C67141A34176D00B82FD8 /* WFSettingsAnimator.m in Sources */,

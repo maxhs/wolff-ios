@@ -8,6 +8,7 @@
 
 #import "WFSlideMetadataCollectionCell.h"
 #import "Constants.h"
+#import "User+helper.h"
 
 @implementation WFSlideMetadataCollectionCell
 
@@ -18,7 +19,7 @@
 
 - (void)configureForPhoto:(Photo *)photo withPhotoCount:(NSUInteger)photoCount {
     Art *art = photo.art;
-    NSAttributedString *locationString, *artistString, *dateString, *materialString, *creditString, *iconographyString, *tagsString, *notesString, *dimensionsString;
+    NSAttributedString *locationString, *artistString, *dateString, *materialString, *creditString, *iconographyString, *tagsString, *notesString, *dimensionsString, *postedByString;
     NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle defaultParagraphStyle].mutableCopy;
     paragraphStyle.lineHeightMultiple = 1.15f;
     
@@ -77,17 +78,22 @@
         [componentsString appendAttributedString:creditString];
     }
     
+    if (photo.partnersToSentence.length){
+        postedByString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",photo.partnersToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : kElectricBlue, NSParagraphStyleAttributeName:paragraphStyle}];
+        [componentsString appendAttributedString:postedByString];
+    } else if (photo.user.fullName.length){
+        postedByString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",photo.user.fullName] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : kElectricBlue, NSParagraphStyleAttributeName:paragraphStyle}];
+        [componentsString appendAttributedString:postedByString];
+    }
+    
     if (photo.notes.length){
         notesString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",photo.notes] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
         [componentsString appendAttributedString:notesString];
     }
     
     
-    
-    
     [self.titleLabel setAttributedText:titleString];
     [self.titleLabel setNumberOfLines:0];
-    
     
     [self.metadataComponentsLabel setAttributedText:componentsString];
     [self.metadataComponentsLabel setNumberOfLines:0];

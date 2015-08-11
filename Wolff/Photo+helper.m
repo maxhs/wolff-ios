@@ -14,6 +14,7 @@
 #import <MagicalRecord/CoreData+MagicalRecord.h>
 #import "NSArray+ToSentence.h"
 #import "Tag+helper.h"
+#import "Partner+helper.h"
 
 @implementation Photo (helper)
 - (void)populateFromDictionary:(NSDictionary*)dictionary {
@@ -139,6 +140,19 @@
         }
         self.tables = set;
     }
+    if ([dictionary objectForKey:@"partners"] && [dictionary objectForKey:@"partners"] != [NSNull null]){
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        for (id dict in [dictionary objectForKey:@"partners"]){
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+            Partner *partner = [Partner MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!partner){
+                partner = [Partner MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            }
+            [partner populateFromDictionary:dict];
+            [set addObject:partner];
+        }
+        self.partners = set;
+    }
 }
 
 - (BOOL)isLandscape {
@@ -154,6 +168,14 @@
     NSMutableArray *names = [NSMutableArray arrayWithCapacity:self.icons.count];
     [self.icons enumerateObjectsUsingBlock:^(Icon *icon, NSUInteger idx, BOOL *stop) {
         [names addObject:icon.name];
+    }];
+    return [names toSentence];
+}
+
+- (NSString *)partnersToSentence {
+    NSMutableArray *names = [NSMutableArray arrayWithCapacity:self.partners.count];
+    [self.partners enumerateObjectsUsingBlock:^(Partner *partner, NSUInteger idx, BOOL *stop) {
+        [names addObject:partner.name];
     }];
     return [names toSentence];
 }

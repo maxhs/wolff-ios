@@ -12,6 +12,6 @@
 @interface WFSlideMetadataCollectionCell : UICollectionViewCell
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 @property (weak, nonatomic) IBOutlet UILabel *metadataComponentsLabel;
-@property (weak, nonatomic) IBOutlet UIButton *postedByButton;
+@property (strong, nonatomic) UIButton *postedByButton;
 - (void)configureForPhoto:(Photo*)photos withPhotoCount:(NSUInteger)photoCount;
 @end

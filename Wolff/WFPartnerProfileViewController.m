@@ -1,12 +1,12 @@
 //
-//  WFProfileViewController.m
+//  WFPartnerProfileViewController.m
 //  Wolff
 //
-//  Created by Max Haines-Stiles on 1/1/15.
+//  Created by Max Haines-Stiles on 8/8/15.
 //  Copyright (c) 2015 Wolff. All rights reserved.
 //
 
-#import "WFProfileViewController.h"
+#import "WFPartnerProfileViewController.h"
 #import "WFProfileHeader.h"
 #import "WFPhotoCell.h"
 #import "WFUtilities.h"
@@ -14,8 +14,9 @@
 #import "WFArtMetadataAnimator.h"
 #import "WFArtMetadataViewController.h"
 #import "WFWebViewController.h"
+#import "WFPartnerProfileHeader.h"
 
-@interface WFProfileViewController () <UIViewControllerTransitioningDelegate, WFMetadataDelegate> {
+@interface WFPartnerProfileViewController () <UIViewControllerTransitioningDelegate, WFMetadataDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     User *_currentUser;
@@ -27,14 +28,13 @@
     BOOL slideshows;
     BOOL lightTables;
     UIImageView *navBarShadowView;
-    NSDateFormatter *userSinceDateFormatter;
+    NSDateFormatter *partnerSinceDateFormatter;
     NSArray *_publicPhotos;
 }
 
 @end
 
-@implementation WFProfileViewController
-@synthesize user = _user;
+@implementation WFPartnerProfileViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -58,34 +58,37 @@
     self.navigationController.navigationBar.backgroundColor = [UIColor clearColor];
     self.navigationItem.titleView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"whiteLogo"]];
     
-    [self loadUser];
-    userSinceDateFormatter = [[NSDateFormatter alloc] init];
-    [userSinceDateFormatter setDateFormat:@"MMM yy"];
+    [self loadPartner];
+    partnerSinceDateFormatter = [[NSDateFormatter alloc] init];
+    [partnerSinceDateFormatter setDateFormat:@"MMM yy"];
     
     photos = YES; //photos mode by default
     [self getPublicPhotos];
 }
 
-- (void)loadUser {
+- (void)loadPartner {
+    [ProgressHUD show:@"Fetching info..."];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     }
-    [manager GET:[NSString stringWithFormat:@"users/%@",_user.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success loading user details: %@",responseObject);
-        [_user populateFromDictionary:[responseObject objectForKey:@"user"]];
+    [manager GET:[NSString stringWithFormat:@"partners/%@",self.partner.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //NSLog(@"Success loading partner details: %@",responseObject);
+        [self.partner populateFromDictionary:[responseObject objectForKey:@"partner"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            self.title = _user.fullName;
+            self.title = self.partner.name;
             [self getPublicPhotos];
+            [ProgressHUD dismiss];
         }];
-       
+        
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"Failed to load user details: %@",error.description);
+        NSLog(@"Failed to load partner details: %@",error.description);
+        [ProgressHUD dismiss];
     }];
 }
 
 - (void)getPublicPhotos {
-    NSPredicate *publicPhotoPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@ && privatePhoto != %@ && art.privateArt != %@",_user.identifier, @YES, @YES];
+    NSPredicate *publicPhotoPredicate = [NSPredicate predicateWithFormat:@"ANY partners.identifier == %@ && privatePhoto != %@ && art.privateArt != %@",self.partner.identifier, @YES, @YES];
     _publicPhotos = [Photo MR_findAllSortedBy:@"createdDate" ascending:NO withPredicate:publicPhotoPredicate inContext:[NSManagedObjectContext MR_defaultContext]];
     [_collectionView reloadData];
 }
@@ -99,10 +102,10 @@
 - (void)goToUrl {
     WFWebViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"WebView"];
     NSString *urlString;
-    if ([_user.url rangeOfString:@"http://"].location == NSNotFound && [_user.url rangeOfString:@"https://"].location == NSNotFound){
-        urlString = [@"http://" stringByAppendingString:_user.url];
+    if ([self.partner.url rangeOfString:@"http://"].location == NSNotFound && [self.partner.url rangeOfString:@"https://"].location == NSNotFound){
+        urlString = [@"http://" stringByAppendingString:self.partner.url];
     } else {
-        urlString = _user.url;
+        urlString = self.partner.url;
     }
     [vc setUrl:[NSURL URLWithString:urlString]];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
@@ -166,20 +169,13 @@
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath{
     if (kind == UICollectionElementKindSectionHeader) {
-        WFProfileHeader *headerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"ProfileHeader" forIndexPath:indexPath];
+        WFPartnerProfileHeader *headerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"PartnerProfileHeader" forIndexPath:indexPath];
         [headerView setBackgroundColor:[UIColor clearColor]];
-        [headerView configureForUser:_user];
+        [headerView configureForPartner:self.partner];
         NSString *photoCount = _publicPhotos.count == 1 ? @"1 image" : [NSString stringWithFormat:@"%lu images",(unsigned long)_publicPhotos.count];
         [headerView.photoCountButton setTitle:photoCount forState:UIControlStateNormal];
-        
-        NSString *slideshowCount = _user.slideshows.count == 1 ? @"1 slideshow" : [NSString stringWithFormat:@"%lu slideshows",(unsigned long)_user.slideshows.count];
-        [headerView.slideshowsButton setTitle:slideshowCount forState:UIControlStateNormal];
-        
-        NSString *lightTableCount = _user.lightTables.count == 1 ? @"1 light table" : [NSString stringWithFormat:@"%lu light tables",(unsigned long)_user.lightTables.count];
-        [headerView.lightTablesButton setTitle:lightTableCount forState:UIControlStateNormal];
-        
-        [headerView.userSinceLabel setText:[NSString stringWithFormat:@"Since %@",[userSinceDateFormatter stringFromDate:_user.createdDate]]];
-        if (_user.url.length){
+        [headerView.partnerSinceLabel setText:[NSString stringWithFormat:@"Partner since %@",[partnerSinceDateFormatter stringFromDate:self.partner.createdDate]]];
+        if (self.partner.url.length){
             [headerView.urlButton addTarget:self action:@selector(goToUrl) forControlEvents:UIControlEventTouchUpInside];
         }
         return headerView;
@@ -238,5 +234,4 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
 }
-
 @end

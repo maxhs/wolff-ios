@@ -90,7 +90,7 @@
 
 - (void)addPhoto:(Photo *)photo {
     NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
-    [tempSet insertObject:photo atIndex:0];
+    [tempSet insertObject:photo atIndex:0]; // this ensures we're adding the photo to the TOP of the slideshow light table
     self.photos = tempSet;
 }
 

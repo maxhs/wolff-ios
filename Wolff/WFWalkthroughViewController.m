@@ -36,9 +36,6 @@
     [_skipButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [_skipButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [_skipButton setTitle:@"Skip" forState:UIControlStateNormal];
-    _skipButton.layer.cornerRadius = 14.f;
-    _skipButton.clipsToBounds = YES;
-    _skipButton.backgroundColor = IDIOM == IPAD ? kHeaderBackgroundColor : [UIColor clearColor];
     
     _pageControl.numberOfPages = 3;
     [_pageControl setPageIndicatorTintColor:[UIColor colorWithWhite:.9 alpha:1]];

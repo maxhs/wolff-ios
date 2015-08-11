@@ -84,7 +84,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     UIButton *expandLightTablesButton;
     BOOL expanded;
     BOOL metadata;
-    BOOL searching;
     BOOL loggedIn;
 
     BOOL comparison;
@@ -98,6 +97,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     BOOL sidebarIsVisible;
     BOOL canLoadMore;
     BOOL canSearchMore;
+    BOOL canLoadMoreOfMyArt;
+    
     BOOL showSlideshow;
     BOOL showMyArt;
     BOOL showFavorites;
@@ -153,10 +154,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     manager = delegate.manager;
     
     _photos = [NSMutableOrderedSet orderedSet];
+    _selectedPhotos = [NSMutableOrderedSet orderedSet];
     _myPhotos = [NSMutableOrderedSet orderedSet];
     _favoritePhotos = [NSMutableOrderedSet orderedSet];
-    _selectedPhotos = [NSMutableOrderedSet orderedSet];
-    
     _slideshows = [NSMutableOrderedSet orderedSetWithArray:[Slideshow MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
     
     //set up the light table sidebar
@@ -181,6 +181,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     self.collectionView.alwaysBounceVertical = YES;
     canLoadMore = YES;
     canSearchMore = YES;
+    canLoadMoreOfMyArt = YES;
     
     if (IDIOM != IPAD){
         CGRect tableFrame = self.tableView.frame;
@@ -324,9 +325,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    //if (![[NSUserDefaults standardUserDefaults] boolForKey:kExistingUser]){
+    if (![[NSUserDefaults standardUserDefaults] boolForKey:kExistingUser]){
         [self showWalkthrough];
-    //}
+    }
 }
 
 - (void)showWalkthrough {
@@ -454,16 +455,20 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)refreshCollectionView {
     [ProgressHUD show:@"Refreshing Art..."];
+    [self doneEditing];
     if (showMyArt){
         [_myPhotos removeAllObjects];
+        [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
         [self loadMyArt];
     } else if (showFavorites){
         [_favoritePhotos removeAllObjects];
+        [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
         [self loadFavorites];
     } else {
         canLoadMore = YES;
         [_filteredPhotos removeAllObjects];
         [_photos removeAllObjects];
+        [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
         [self loadBeforePhoto:nil];
     }
 }
@@ -510,6 +515,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     canLoadMore = YES;
     [_photos removeAllObjects];
     [_filteredPhotos removeAllObjects];
+    [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
     
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .37f * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
@@ -535,10 +541,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:@(ART_THROTTLE) forKey:@"count"];
-    if (searching && searchText.length){
+    if (searchText.length){
         [parameters setObject:searchText forKey:@"search"];
     }
-    
     if (showLightTable && _lightTable){
         [parameters setObject:_lightTable.identifier forKey:@"light_table_id"];
     }
@@ -550,15 +555,13 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }
     if (loggedIn){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+        if (showMyArt){
+            [parameters setObject:@YES forKey:@"my_art"];
+        }
     }
     self.mainRequest = [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSDictionary *photosDict = [responseObject objectForKey:@"photos"];
         if (photosDict.count){
-            if (photosDict.count < ART_THROTTLE){
-                canLoadMore = NO;
-            } else {
-                canLoadMore = YES;
-            }
             NSLog(@"How many photos did we pull? %lu. Can we load more? %u",(unsigned long)photosDict.count, canLoadMore);
             for (id dict in photosDict) {
                 Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -573,14 +576,27 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             [_photos sortUsingDescriptors:@[chronologicalSort]];
             
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                if (searching){
+                if (self.searchBar.text.length){
                     [self filterContentForSearchText:searchText scope:nil];
                     if (photosDict.count < ART_THROTTLE){
+                        NSLog(@"Searching, but can't search more");
                         canSearchMore = NO;
                     } else {
+                        NSLog(@"Searching, CAN search more");
                         canSearchMore = YES;
                     }
+                } else if (showMyArt){
+                    if (photosDict.count < ART_THROTTLE){
+                        canLoadMoreOfMyArt = NO;
+                    } else {
+                        canLoadMoreOfMyArt = YES;
+                    }
                 } else {
+                    if (photosDict.count < ART_THROTTLE){
+                        canLoadMore = NO;
+                    } else {
+                        canLoadMore = YES;
+                    }
                     [self.collectionView reloadData];
                 }
                 [self endRefresh];
@@ -611,6 +627,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     if (self.dashboardRequest) return;
     if (self.currentUser){
         [ProgressHUD show:@"Refreshing your light tables..."];
+        
         self.dashboardRequest = [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success getting user dashboard: %@", responseObject);
             [self.currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
@@ -618,13 +635,19 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
                 NSPredicate *myPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
                 _myPhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:myPredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
-                NSLog(@"_myPhotos count: %lu",(unsigned long)_myPhotos.count);
+                NSSortDescriptor *reverseChronologicalSort = [NSSortDescriptor sortDescriptorWithKey:@"createdDate" ascending:NO];
+                [_myPhotos sortUsingDescriptors:@[reverseChronologicalSort]];
+            
                 [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
                     if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
                         [_favoritePhotos addObject:favorite.photo];
                     }
                 }];
+                [_favoritePhotos sortUsingDescriptors:@[reverseChronologicalSort]];
+                
+                NSLog(@"_myPhotos count: %lu",(unsigned long)_myPhotos.count);
                 NSLog(@"_favorites count: %lu",(unsigned long)_favoritePhotos.count);
+                
                 [self.collectionView reloadData];
                 [self.tableView reloadData];
                 [self endRefresh];
@@ -644,13 +667,17 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 - (void)loadMyArt {
     if (self.dashboardRequest) return;
     if (self.currentUser){
-        [ProgressHUD show:@"Refreshing your art..."];
+        [ProgressHUD show:@"Fetching your art..."];
         self.dashboardRequest = [manager GET:[NSString stringWithFormat:@"users/%@/art",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success getting user art: %@", responseObject);
             [self parsePhotos:[responseObject objectForKey:@"photos"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 NSPredicate *myPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
                 _myPhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:myPredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
+                
+                NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"createdDate" ascending:NO];
+                [_myPhotos sortUsingDescriptors:@[sort]];
+                
                 NSLog(@"_myPhotos count: %lu",(unsigned long)_myPhotos.count);
                 [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
                     if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
@@ -741,7 +768,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)newArtAdded:(Art *)a {
     Art *art = [a MR_inContext:[NSManagedObjectContext MR_defaultContext]];
-    if (showFavorites || showLightTable || searching){
+    if (showFavorites || showLightTable || self.searchBar.text.length){
         //don't animate the changes if the user is looking at a light table, their favorites, or searching.
     } else {
         [self.collectionView performBatchUpdates:^{
@@ -767,7 +794,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)updateNewArt:(Art *)a {
     Art *art = [a MR_inContext:[NSManagedObjectContext MR_defaultContext]];
-    if (showFavorites || showLightTable || searching){
+    if (showFavorites || showLightTable || self.searchBar.text.length){
         
     } else {
         NSMutableArray *indexPathArray = [NSMutableArray array];
@@ -825,7 +852,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         } else if (section == _lightTables.count + 1){
             if (!_uncategorizesSlideshows) _uncategorizesSlideshows = [NSMutableOrderedSet orderedSet];
             [_slideshows enumerateObjectsUsingBlock:^(Slideshow *slideshow, NSUInteger idx, BOOL *stop) {
-                if (slideshow.lightTables.count == 0) [_uncategorizesSlideshows addObject:slideshow];
+                if (!slideshow.lightTables.count) [_uncategorizesSlideshows addObject:slideshow];
             }];
             return _uncategorizesSlideshows.count;
         } else {
@@ -1167,7 +1194,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    searching = NO;
     if (slideshowSidebarMode){
         Slideshow *slideshow;
         if (indexPath.section == 0){
@@ -1242,6 +1268,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         [self resetArtBooleans];
         if (!showMyArt){
             showMyArt = YES;
+            [self loadMyArt];
         }
         [self.collectionView reloadData];
     } else {
@@ -1402,8 +1429,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 #pragma mark - UICollectionView Datasource
 
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
-    
-    if (searching){
+    if (self.searchBar.text.length){
         return _filteredPhotos.count;
     } else if (showMyArt){
         self.searchBar.placeholder = @"Search my art";
@@ -1431,7 +1457,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"PhotoCell" forIndexPath:indexPath];
     Photo *photo;
-    if (searching){
+    if (self.searchBar.text.length){
         photo = _filteredPhotos[indexPath.item];
     } else if (showMyArt){
         photo = _myPhotos[indexPath.item];
@@ -1452,7 +1478,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
-    if ((searching && searchText.length) || showFavorites || (showLightTable && self.lightTable) || showMyArt){
+    if (self.searchBar.text.length || showFavorites || (showLightTable && self.lightTable) || showMyArt){
         return CGSizeMake(collectionView.frame.size.width, 54);
     } else {
         return CGSizeMake(1, 0);
@@ -1470,12 +1496,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             [headerView.headerLabel setText:[NSString stringWithFormat:@"\"%@\" Art",self.lightTable.name]];
         } else if (showFavorites) {
             [headerView.headerLabel setText:@"Favorites"];
-        } else if (searching) {
-            if (searchText.length){
-                [headerView.headerLabel setText:[NSString stringWithFormat:@"Search results for: \"%@\"",searchText]];
-            } else {
-                [headerView.headerLabel setText:@""];
-            }
+        } else if (self.searchBar.text.length) {
+            [headerView.headerLabel setText:[NSString stringWithFormat:@"Search results for: \"%@\"",searchText]];
             [headerView.headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
         }
         
@@ -1491,7 +1513,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         [self loadBeforePhoto:nil];
     }
     
-    if (sidebarIsVisible || searching || showFavorites || showLightTable || showMyArt){
+    if (sidebarIsVisible || self.searchBar.text.length || showFavorites || showLightTable || showMyArt){
         dispatch_async(dispatch_get_main_queue(), ^(void){
             [self resetArtBooleans];
             self.lightTable = nil;
@@ -1500,7 +1522,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                 [self showSidebar];
             }
             searchText = @"";
-            searching = NO;
             [self.searchBar setText:@""];
             [self.searchBar resignFirstResponder];
             [self.view endEditing:YES];
@@ -1511,15 +1532,16 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    if (scrollView == self.collectionView && !searching){
+    if (scrollView == self.collectionView){
         float bottomEdge = scrollView.contentOffset.y + scrollView.frame.size.height;
         if (bottomEdge >= scrollView.contentSize.height) {
             // at the bottom of the scrollView
-            if (searching && canSearchMore){
+            if (canSearchMore && self.searchBar.text.length){
                 [self loadBeforePhoto:_filteredPhotos.lastObject];
             } else if (showMyArt) {
-                NSLog(@"shoudl be loading more of my art");
+                NSLog(@"should be loading more of my art");
             } else if (canLoadMore && _photos.count){
+                NSLog(@"can load more normal");
                 [self loadBeforePhoto:_photos.lastObject];
             }
         }
@@ -1538,7 +1560,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         photo = self.lightTable.photos[selectedIndexPath.item];
     } else if (showFavorites){
         photo = _favoritePhotos[selectedIndexPath.item];
-    } else if (searching){
+    } else if (self.searchBar.text.length){
         if (_filteredPhotos.count){
             photo = _filteredPhotos[selectedIndexPath.item];
         }
@@ -1668,7 +1690,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                 photo = self.lightTable.photos[self.startIndex.item];
             } else if (showFavorites && _favoritePhotos.count){
                 photo = _favoritePhotos[self.startIndex.item];
-            } else if (searching){
+            } else if (self.searchBar.text.length){
                 if (_filteredPhotos.count){
                     photo = _filteredPhotos[self.startIndex.item];
                 }
@@ -1885,7 +1907,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         return;
     }
     Photo *photo;
-    if (searching && indexPath.item < _filteredPhotos.count){
+    if (self.searchBar.text.length && indexPath.item < _filteredPhotos.count){
         photo = _filteredPhotos[indexPath.item];
     } else if (showMyArt && indexPath.item < _myPhotos.count){
         photo = _myPhotos[indexPath.item];
@@ -1893,10 +1915,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         photo = self.lightTable.photos[indexPath.item];
     } else if (showFavorites && indexPath.item < _favoritePhotos.count){
         photo = _favoritePhotos[indexPath.item];
-    } else if (searching){
-        if (_filteredPhotos.count && indexPath.item < _filteredPhotos.count){
-            photo = _filteredPhotos[indexPath.item];
-        }
     } else if (indexPath.item < _photos.count){
         photo = _photos[indexPath.item];
     }
@@ -2305,7 +2323,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 #pragma createSlidesShow Delegate
-- (void)slideshowCreated:(Slideshow *)slideshow {
+- (void)slideshowCreated:(Slideshow *)s {
+    Slideshow *slideshow = [s MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+    [_slideshows addObject:slideshow];
     [self.tableView reloadData];
 }
 
@@ -2316,7 +2336,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 - (void)shouldReloadSlideshows {
     if (sidebarIsVisible && slideshowSidebarMode){
         [self.tableView reloadData];
-        NSLog(@"should be reloading data");
     }
 }
 
@@ -2506,10 +2525,10 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController {
     [self.searchBar endEditing:YES];
-    searching = NO;
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    canSearchMore = YES; // manually set this to on when a user wants to search
     [ProgressHUD show:@"Searching..."];
     [searchBar endEditing:YES];
     searchText = searchBar.text;
@@ -2519,12 +2538,10 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
     [self.searchBar endEditing:YES];
     searchText = @"";
-    searching = NO;
 }
 
 - (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
     if (!searchBar.text.length) {
-        searching = NO;
         [self resetArtBooleans];
     }
 }
@@ -2560,7 +2577,6 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
     if (!_filteredPhotos) _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
-    searching = YES;
     if (self.popover) [self.popover dismissPopoverAnimated:YES];
 }
 
@@ -2569,13 +2585,11 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)text {
-    searchText = text;
-    searching = YES;
-    [self filterContentForSearchText:searchText scope:nil];
+    [self filterContentForSearchText:text scope:nil];
 }
 
 - (void)filterContentForSearchText:(NSString*)text scope:(NSString*)scope {
-    //NSLog(@"search text: %@",text);
+    searchText = text;
     if (text.length) {
         [_filteredPhotos removeAllObjects];
         NSOrderedSet *photosToIterateThrough;
@@ -2601,6 +2615,8 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                 [_filteredPhotos addObject:photo];
             } else if ([predicate evaluateWithObject:art.materialsToSentence]){
                 [_filteredPhotos addObject:photo];
+            } else if ([predicate evaluateWithObject:art.tagsToSentence]){
+                [_filteredPhotos addObject:photo];
             } else if ([predicate evaluateWithObject:photo.iconsToSentence]){
                 [_filteredPhotos addObject:photo];
             } else if ([predicate evaluateWithObject:photo.credit]){
@@ -2621,6 +2637,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
     }
     
+    NSLog(@"filtered photo count: %lu",(unsigned long)_filteredPhotos.count);
     [self.collectionView reloadData];
 }
 
@@ -2749,18 +2766,17 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     }
 }
 
-- (void)endSearch {
-    
-}
-
 - (void)removeAllSelected {
-    searching = NO;
     [_selectedPhotos removeAllObjects];
     [self.collectionView reloadData];
     [self configureSelectedButton];
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
+}
+
+- (void)endSearch {
+    
 }
 
 #pragma mark - UIMenuController Methods
@@ -2777,6 +2793,11 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 // UIMenuController requires that we can become first responder or it won't display
 - (BOOL)canBecomeFirstResponder {
     return YES;
+}
+
+- (void)doneEditing {
+    [self.view endEditing:YES];
+    [self.searchBar endEditing:YES];
 }
 
 - (void)registerKeyboardNotifications {

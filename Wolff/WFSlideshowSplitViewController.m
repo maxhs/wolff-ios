@@ -59,7 +59,6 @@
     UIAlertView *removePhotoAlertView;
     UIImageView *navBarShadowView;
     
-    NSMutableOrderedSet *slideshowPhotos;
     NSTimer *saveTimer;
 }
 
@@ -110,7 +109,6 @@
             [self.collectionView setUserInteractionEnabled:YES];
         }];
     }
-    slideshowPhotos = self.slideshow.photos.mutableCopy;
     
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
     [self.navigationController.navigationBar setTranslucent:YES];
@@ -151,6 +149,7 @@
     }
     [self.tableView reloadData];
     [self.collectionView reloadData];
+    NSLog(@"will appear");
     if (!saveTimer){
         saveTimer = [NSTimer scheduledTimerWithTimeInterval:30.f target:self selector:@selector(autosaveLocally) userInfo:nil repeats:YES];
     }
@@ -235,7 +234,7 @@
 }
 
 - (void)redrawSlideshow {
-    if (slideshowPhotos.count){
+    if (self.slideshow.photos.count){
         [_lightBoxPlaceholderLabel setHidden:YES];
     } else {
         [_lightBoxPlaceholderLabel setText:@"You don't have any slides in this light table"];
@@ -442,13 +441,13 @@
 }
 
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
-    return slideshowPhotos.count;
+    return self.slideshow.photos.count;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SlideshowArtCell" forIndexPath:indexPath];
     [cell.contentView setAlpha:1.0];
-    Photo *photo = slideshowPhotos[indexPath.item];
+    Photo *photo = self.slideshow.photos[indexPath.item];
     [cell configureForPhoto:photo];
     return cell;
 }
@@ -466,7 +465,7 @@
 
 #pragma mark - UICollectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    Photo *photo = [slideshowPhotos objectAtIndex:indexPath.item];
+    Photo *photo = [self.slideshow.photos objectAtIndex:indexPath.item];
     [self showMetadata:photo];
 }
 
@@ -495,14 +494,14 @@
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
         //NSLog(@"loc x: %f, loc y: %f", loc.x,loc.y);
         
-        BOOL iPadBool = (loc.x > kSidebarWidth && slideshowPhotos.count);
+        BOOL iPadBool = (loc.x > kSidebarWidth && self.slideshow.photos.count);
         
-        if ((IDIOM == IPAD && iPadBool) || (IDIOM != IPAD && slideshowPhotos.count)) {
+        if ((IDIOM == IPAD && iPadBool) || (IDIOM != IPAD && self.slideshow.photos.count)) {
             self.photoStartIndex = [self.collectionView indexPathForItemAtPoint:photoLoc];
             if (self.photoStartIndex) {
                 
                 WFPhotoCell *cell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.photoStartIndex];
-                self.selectedPhoto = slideshowPhotos[self.photoStartIndex.item];
+                self.selectedPhoto = self.slideshow.photos[self.photoStartIndex.item];
                 self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:self.selectedPhoto];
                 
                 [cell.contentView setAlpha:0.1f];
@@ -826,8 +825,8 @@
     [parameters setObject:self.slideshow.showTitleSlide forKey:@"show_title_slide"];
     [parameters setObject:self.slideshow.showMetadata forKey:@"show_metadata"];
     
-    NSMutableArray *slideshowPhotoArray = [NSMutableArray arrayWithCapacity:slideshowPhotos.count];
-    [slideshowPhotos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
+    NSMutableArray *slideshowPhotoArray = [NSMutableArray arrayWithCapacity:self.slideshow.photos.count];
+    [self.slideshow.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
         [slideshowPhotoArray addObject:photo.identifier];
     }];
     [parameters setObject:slideshowPhotoArray forKey:@"photo_ids"];
@@ -1034,7 +1033,7 @@
 
 - (void)startSearch {
     WFSearchResultsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SearchResults"];
-    [vc setSlideshowPhotos:slideshowPhotos.mutableCopy];
+    [vc setSlideshowPhotos:self.slideshow.photos.mutableCopy];
     vc.shouldShowSearchBar = YES;
     vc.shouldShowTiles = YES;
     vc.searchDelegate = self;
@@ -1060,15 +1059,13 @@
     self.slideshow = [self.slideshow MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     
     BOOL add; NSIndexPath *indexPathToReload;
-    if ([slideshowPhotos containsObject:photo]){
-        indexPathToReload = [NSIndexPath indexPathForItem:[slideshowPhotos indexOfObject:photo] inSection:0];
-        [slideshowPhotos removeObject:photo];
+    if ([self.slideshow.photos containsObject:photo]){
+        indexPathToReload = [NSIndexPath indexPathForItem:[self.slideshow.photos indexOfObject:photo] inSection:0];
         [self.slideshow removePhoto:photo];
         add = NO;
     } else {
-        indexPathToReload = [NSIndexPath indexPathForItem:0 inSection:0];
-        [slideshowPhotos addObject:photo];
         [self.slideshow addPhoto:photo];
+        indexPathToReload = [NSIndexPath indexPathForItem:0 inSection:0];
         add = YES;
     }
     
@@ -1210,6 +1207,7 @@
                                                                   presentingController:(UIViewController *)presenting
                                                                       sourceController:(UIViewController *)source {
     if (showSlideshow){
+        [self cancelAutosave];
         WFSlideshowFocusAnimator *animator = [WFSlideshowFocusAnimator new];
         animator.presenting = YES;
         return animator;
@@ -1359,11 +1357,16 @@
     [self saveSlideshowWithUI:NO];
 }
 
-- (void)viewDidDisappear:(BOOL)animated {
-    [super viewDidDisappear:animated];
+- (void)cancelAutosave {
+    NSLog(@"cancel autosave");
     [saveTimer invalidate];
     saveTimer = nil;
-    if (!self.slideshow.slides.count && !slideshowPhotos.count && !self.slideshow.title.length){
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    [self cancelAutosave];
+    if (!self.slideshow.slides.count && !self.slideshow.photos.count && !self.slideshow.title.length){
         [self.slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
         [self saveSlideshowWithUI:NO];
     }

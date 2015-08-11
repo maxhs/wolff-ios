@@ -16,6 +16,8 @@
 #import "WFInteractiveImageView.h"
 #import "PhotoSlide+helper.h"
 #import "WFSlideMetadataCollectionCell.h"
+#import "WFProfileViewController.h"
+#import "WFPartnerProfileViewController.h"
 
 @interface WFSlideshowViewController () <UIToolbarDelegate, UIViewControllerTransitioningDelegate, UIGestureRecognizerDelegate> {
     CGFloat width;
@@ -113,6 +115,7 @@
     
     _doubleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTap:)];
     _doubleTapGesture.numberOfTapsRequired = 2;
+    _doubleTapGesture.delegate = self;
     [self.view addGestureRecognizer:_doubleTapGesture];
     
     singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTap:)];
@@ -123,12 +126,10 @@
     if (self.photos.count){
         [self.collectionView setScrollEnabled:NO];
         [self.collectionView setCanCancelContentTouches:NO];
-        // require to fail methods
         [singleTap requireGestureRecognizerToFail:_doubleTapGesture];
     } else {
         [self.collectionView setDelaysContentTouches:NO];
         [self.collectionView setCanCancelContentTouches:YES];
-        // require to fail methods
         [singleTap requireGestureRecognizerToFail:_doubleTapGesture];
         [_panGesture requireGestureRecognizerToFail:rightScreenEdgePanGesture];
         [_panGesture requireGestureRecognizerToFail:leftScreenEdgePanGesture];
@@ -167,8 +168,9 @@
     [self.slideMetadataContainerView sendSubviewToBack:toolbarBackground];
     
     if (!metadataTap){
-        metadataTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showMetadata)];
+        metadataTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(toggleMetadata)];
         metadataTap.numberOfTapsRequired = 1;
+        metadataTap.delegate = self;
         [self.metadataCollectionView addGestureRecognizer:metadataTap];
     }
     
@@ -250,7 +252,7 @@
     //NSLog(@"start index: %@",_startIndex);
 }
 
-- (void)showMetadata {
+- (void)toggleMetadata {
     metadataExpanded = !metadataExpanded;
     CGFloat adjustmentHeight = metadataExpanded ? (metadataTitleHeight + metadataTitleY + metadataComponentsHeight + 7.f) : (metadataTitleHeight + metadataTitleY);
     [UIView animateWithDuration:kDefaultAnimationDuration delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
@@ -376,6 +378,7 @@
         }
     } else { // metadata collectionView
         if (self.photos.count){
+            NSLog(@"one off comparison: %lu",(unsigned long)self.photos.count);
             return self.photos.count; // one-off comparison
         } else if (section == 0){
             return [self.slideshow.showTitleSlide isEqualToNumber:@YES] ? 1 : 0; // the title slide
@@ -421,61 +424,92 @@
     } else {
         WFSlideMetadataCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
         if (indexPath.section > 0) currentSlide = self.slideshow.slides[indexPath.section - 1];
+    
+        PhotoSlide *photoSlide;
+        CGRect titleLabelFrame = cell.titleLabel.frame;
+        CGRect componentsLabelFrame = cell.metadataComponentsLabel.frame;
         
-        if (self.slideshow && [self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPath.section == 0){
+        if (self.photos.count){
+            [cell configureForPhoto:self.photos[indexPath.item] withPhotoCount:self.photos.count];
+            if (self.photos.count <= 1){
+                titleLabelFrame.size.width = width-70;
+                componentsLabelFrame.size.width = width-70;
+            } else {
+                titleLabelFrame.size.width = (width-70)/2;
+                componentsLabelFrame.size.width = (width-70)/2;
+            }
+        } else if (self.slideshow && [self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPath.section == 0){
             [cell.titleLabel setAttributedText:nil]; // title slide, so don't do anything
             [cell.metadataComponentsLabel setAttributedText:nil];
         } else if (currentSlide.slideTexts.count) {
             [cell.titleLabel setAttributedText:nil]; // slide text slide, so don't do anything
             [cell.metadataComponentsLabel setAttributedText:nil];
         } else if (currentSlide) {
-            CGRect titleLabelFrame = cell.titleLabel.frame;
-            CGRect componentsLabelFrame = cell.metadataComponentsLabel.frame;
-            NSLog(@"first title: %@",[[(PhotoSlide*)currentSlide.photoSlides.firstObject photo] art].title);
-            PhotoSlide *photoSlide;
-            if (self.photos.count){
-                [cell configureForPhoto:self.photos[indexPath.item] withPhotoCount:self.photos.count];
-                if (self.photos.count <= 1){
-                    titleLabelFrame.size.width = width-70;
-                    componentsLabelFrame.size.width = width-70;
-                } else {
-                    titleLabelFrame.size.width = (width-70)/2;
-                    componentsLabelFrame.size.width = (width-70)/2;
-                }
+    
+            photoSlide = currentSlide.photoSlides[indexPath.item];
+            [cell configureForPhoto:photoSlide.photo withPhotoCount:currentSlide.photoSlides.count];
+            if (currentSlide.photoSlides.count < 2 && currentSlide.slideTexts.count < 2){
+                titleLabelFrame.size.width = width-70;
+                componentsLabelFrame.size.width = width-70;
             } else {
-                photoSlide = currentSlide.photoSlides[indexPath.item];
-                [cell configureForPhoto:photoSlide.photo withPhotoCount:currentSlide.photoSlides.count];
-                if (currentSlide.photoSlides.count < 2 && currentSlide.slideTexts.count < 2){
-                    titleLabelFrame.size.width = width-70;
-                    componentsLabelFrame.size.width = width-70;
-                } else {
-                    titleLabelFrame.size.width = (width-70)/2;
-                    componentsLabelFrame.size.width = (width-70)/2;
-                }
-            }
-            
-            CGSize titleSize = [cell.titleLabel sizeThatFits:CGSizeMake(titleLabelFrame.size.width, CGFLOAT_MAX)];
-            titleLabelFrame.size.height = titleSize.height;
-            CGSize componentsSize = [cell.metadataComponentsLabel sizeThatFits:CGSizeMake(componentsLabelFrame.size.width, CGFLOAT_MAX)];
-            componentsLabelFrame.size.height = componentsSize.height;
-            componentsLabelFrame.origin.x = titleLabelFrame.origin.x;
-            componentsLabelFrame.origin.y = titleLabelFrame.origin.y + titleLabelFrame.size.height + 7.f;
-            
-            [cell.titleLabel setFrame:titleLabelFrame];
-            [cell.metadataComponentsLabel setFrame:componentsLabelFrame];
-            if (self.photos.count){
-                metadataTitleHeight = titleLabelFrame.size.height;
-                metadataTitleY = titleLabelFrame.origin.y + 7.f;
-                metadataComponentsHeight = componentsSize.height;
-                metadataComponentsY = componentsLabelFrame.origin.y;
-            } else {
-                photoSlide.metadataTitleHeight = @(titleLabelFrame.size.height);
-                photoSlide.metadataTitleY = @(titleLabelFrame.origin.y + 7.f);
-                photoSlide.metadataComponentsHeight = @(componentsSize.height);
-                photoSlide.metadataComponentsY = @(componentsLabelFrame.origin.y + 7.f);
+                titleLabelFrame.size.width = (width-70)/2;
+                componentsLabelFrame.size.width = (width-70)/2;
             }
         }
+        
+        // frame the stuff
+        CGSize titleSize = [cell.titleLabel sizeThatFits:CGSizeMake(titleLabelFrame.size.width, CGFLOAT_MAX)];
+        titleLabelFrame.size.height = titleSize.height;
+        CGSize componentsSize = [cell.metadataComponentsLabel sizeThatFits:CGSizeMake(componentsLabelFrame.size.width, CGFLOAT_MAX)];
+        componentsLabelFrame.size.height = componentsSize.height;
+        componentsLabelFrame.origin.x = titleLabelFrame.origin.x;
+        componentsLabelFrame.origin.y = titleLabelFrame.origin.y + titleLabelFrame.size.height + 7.f;
+        
+        [cell.titleLabel setFrame:titleLabelFrame];
+        [cell.metadataComponentsLabel setFrame:componentsLabelFrame];
+        if (self.photos.count){
+            metadataTitleHeight = titleLabelFrame.size.height;
+            metadataTitleY = titleLabelFrame.origin.y + 7.f;
+            metadataComponentsHeight = componentsSize.height;
+            metadataComponentsY = componentsLabelFrame.origin.y;
+        } else if (photoSlide) {
+            photoSlide.metadataTitleHeight = @(titleLabelFrame.size.height);
+            photoSlide.metadataTitleY = @(titleLabelFrame.origin.y + 7.f);
+            photoSlide.metadataComponentsHeight = @(componentsSize.height);
+            photoSlide.metadataComponentsY = @(componentsLabelFrame.origin.y + 7.f);
+        }
+        if (!cell.postedByButton){
+            cell.postedByButton = [UIButton buttonWithType:UIButtonTypeCustom];
+            [cell.contentView addSubview:cell.postedByButton];
+        }
+        [cell.postedByButton setFrame:componentsLabelFrame];
+        [cell.postedByButton setTag:indexPath.item];
+        [cell.postedByButton addTarget:self action:@selector(showProfile:) forControlEvents:UIControlEventTouchUpInside];
+        
         return cell;
+    }
+}
+
+- (void)showProfile:(UIButton*)button {
+    
+    Photo *photo;
+    if (self.photos.count){
+        photo = self.photos[button.tag];
+    } else {
+        PhotoSlide *ps = currentSlide.photoSlides[button.tag];
+        photo = ps.photo;
+    }
+    
+    if (photo.partners.count){
+        WFPartnerProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"PartnerProfile"];
+        [vc setPartner:(Partner*)photo.partners.firstObject];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        [self presentViewController:nav animated:YES completion:NULL];
+    } else if (photo.user) {
+        WFProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Profile"];
+        [vc setUser:photo.user];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        [self presentViewController:nav animated:YES completion:NULL];
     }
 }
 
@@ -515,7 +549,7 @@
 #pragma mark - Handle Gestures
 - (void)singleTap:(UIGestureRecognizer*)gestureRecognizer {
     if (metadataExpanded){
-        [self showMetadata];
+        [self toggleMetadata];
     } else if (barsVisible){
         [self hideBars];
     } else {
@@ -824,7 +858,10 @@
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
-    return YES;
+    if ([touch.view isDescendantOfView:self.metadataCollectionView] && metadataExpanded) {
+        return NO; // ignore the touch
+    }
+    return YES; // handle the touch
 }
 
 - (void)dismiss {
