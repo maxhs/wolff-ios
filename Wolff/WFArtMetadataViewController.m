@@ -85,6 +85,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    
     if (SYSTEM_VERSION >= 8.f){
         iOS8 = YES;
         width = screenWidth();
@@ -94,7 +96,7 @@
         width = screenWidth();
         height = screenHeight();
     }
-    self.automaticallyAdjustsScrollViewInsets = NO;
+    
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
@@ -107,6 +109,12 @@
     [self registerForKeyboardNotifications];
     self.photo = [self.photo MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     [self loadPhotoMetadata];
+    
+    // one time setup methods for photo scrollview
+    [self.photoScrollView setBackgroundColor:[UIColor clearColor]];
+    self.photoScrollView.delegate = self;
+    self.photoScrollView.pagingEnabled = YES;
+    [self.photoScrollView setCanCancelContentTouches:YES];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -209,10 +217,9 @@
 }
 
 - (void)setupPhotoScrollView {
-    [self.photoScrollView setBackgroundColor:[UIColor clearColor]];
-    self.photoScrollView.delegate = self;
-    self.photoScrollView.pagingEnabled = YES;
-    [self.photoScrollView setCanCancelContentTouches:YES];
+    // remove all the stuff from before!
+    [self.photoScrollView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    
     NSInteger idx = 0;
     CGFloat landscapeWidth, landscapeHeight, portraitWidth, portraitHeight;
     if (landscape){
@@ -233,14 +240,9 @@
     
     for (Photo *photo in self.photo.art.photos){
         UIButton *imageButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [imageButton setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-        [imageButton setAutoresizingMask:UIViewAutoresizingFlexibleHeight];
         [imageButton setShowsTouchWhenHighlighted:NO];
         [imageButton setAdjustsImageWhenHighlighted:NO];
         imageButton.imageView.contentMode = UIViewContentModeScaleAspectFill;
-        imageButton.imageView.layer.cornerRadius = 3.f;
-        imageButton.imageView.layer.backgroundColor = [UIColor clearColor].CGColor;
-        imageButton.imageView.clipsToBounds = YES;
         [self.photoScrollView addSubview:imageButton];
         if (photo.isLandscape){
             if (IDIOM == IPAD){
@@ -270,7 +272,6 @@
                 [_progressIndicator removeFromSuperview];
                 imageButton.imageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
                 imageButton.imageView.layer.shouldRasterize = YES;
-                //NSLog(@"image button width: %@", imageButton);
             }];
         }];
         [imageButton addTarget:self action:@selector(showFullScreen) forControlEvents:UIControlEventTouchUpInside];
@@ -279,6 +280,8 @@
     
     [self.photoScrollView setContentSize:CGSizeMake(self.photo.art.photos.count * landscapeWidth, landscapeWidth)]; //  use 380 as a max
     [self.photoScrollView setContentOffset:CGPointMake(landscapeWidth * currentPhotoIdx, 0) animated:YES];
+    self.photoScrollView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+    self.photoScrollView.layer.shouldRasterize = YES;
 }
 
 - (void)setPhotoCredit {

@@ -79,80 +79,65 @@
     } else {
         iOS8 = NO; width = screenHeight(); height = screenWidth();
     }
-    
+    [self.view setBackgroundColor:[UIColor blackColor]];
     if (self.slideshow) self.slideshow = [self.slideshow MR_inContext:[NSManagedObjectContext MR_defaultContext]];
-    
-    //calculate the "home position" geometry for slides at runtime
-    CGFloat frameheight = (IDIOM == IPAD) ? 660.f : 300.f;
-    CGFloat singleWidth = (IDIOM == IPAD) ? 900.f : 460.f;
-    CGFloat splitWidth = (IDIOM == IPAD) ? 480.f : 260.f;
-    kOriginalArtImageFrame1 = CGRectMake((width/2-singleWidth/2), (height/2-frameheight/2), singleWidth, frameheight);
-    kOriginalArtImageFrame2 = CGRectMake((width/4-splitWidth/2), (height/2-frameheight/2), splitWidth, frameheight);
-    kOriginalArtImageFrame3 = CGRectMake((width/4-splitWidth/2), (height/2-frameheight/2), splitWidth, frameheight);
     
     barsVisible = NO; // by default
     metadataExpanded = NO; // by default
     [self setUpNavBar];
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     
-    _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    _panGesture.delegate = self;
-    [self.view addGestureRecognizer:_panGesture];
-    
-    _pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-    _pinchGesture.delegate = self;
-    [self.view addGestureRecognizer:_pinchGesture];
-    
-    rightScreenEdgePanGesture = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(screenEdgePan:)];
-    rightScreenEdgePanGesture.edges = UIRectEdgeRight;
-    [self.view addGestureRecognizer:rightScreenEdgePanGesture];
-    leftScreenEdgePanGesture = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(screenEdgePan:)];
-    leftScreenEdgePanGesture.edges = UIRectEdgeLeft;
-    [self.view addGestureRecognizer:leftScreenEdgePanGesture];
-    bottomEdgePanGesture = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(screenEdgePan:)];
-    bottomEdgePanGesture.edges = UIRectEdgeBottom;
-    [self.view addGestureRecognizer:bottomEdgePanGesture];
-    
-    _doubleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTap:)];
-    _doubleTapGesture.numberOfTapsRequired = 2;
-    _doubleTapGesture.delegate = self;
-    [self.view addGestureRecognizer:_doubleTapGesture];
-    
-    singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTap:)];
-    singleTap.delegate = self;
-    singleTap.numberOfTapsRequired = 1;
-    [self.collectionView addGestureRecognizer:singleTap];
-    
-    if (self.photos.count){
-        [self.collectionView setScrollEnabled:NO];
-        [self.collectionView setCanCancelContentTouches:NO];
-        [singleTap requireGestureRecognizerToFail:_doubleTapGesture];
-    } else {
-        [self.collectionView setDelaysContentTouches:NO];
-        [self.collectionView setCanCancelContentTouches:YES];
-        [singleTap requireGestureRecognizerToFail:_doubleTapGesture];
-        [_panGesture requireGestureRecognizerToFail:rightScreenEdgePanGesture];
-        [_panGesture requireGestureRecognizerToFail:leftScreenEdgePanGesture];
-    }
+    [self setupGestureRecognizers];
     [self setupMetadataContainer];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    [self calculateImageFrames];
     topInset = self.collectionView.contentInset.top;
     [navBarShadowView setHidden:YES];
     [toolBarShadowView setHidden:YES];
     [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
     self.navigationController.navigationBar.transform = CGAffineTransformMakeTranslation(0, -self.navigationController.navigationBar.frame.size.height);
-    if (IDIOM != IPAD) {
-        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
-        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+    if (IDIOM != IPAD){
+        if (self.slideshow) {
+            NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
+            [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+        } else {
+            [self.collectionView setAlpha:0.0];
+        }
     }
     
-    [self determinePageNumbers];
-    NSLog(@"current page after determining page numbers: %ld",(long)currentPage);
+    if (self.slideshow){
+        [self determinePageNumbers];
+        NSLog(@"current page after determining page numbers: %ld",(long)currentPage);
+    }
     [self.metadataCollectionView reloadData];
     [self adjustMetadataPosition];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    if (IDIOM != IPAD && !self.slideshow){
+        // only applies for iphones on non slideshow presentations
+        [artImageView1 setFrame:kOriginalArtImageFrame1];
+        [artImageView1 setMoved:NO];
+        artImageView1.transform = CGAffineTransformIdentity;
+        
+        [UIView animateWithDuration:kDefaultAnimationDuration animations:^{
+            [self.collectionView setAlpha:1.0];
+        }];
+    }
+}
+
+- (void)calculateImageFrames {
+    //calculate the "home position" geometry for slides at runtime
+    CGFloat frameHeight = (IDIOM == IPAD) ? 660.f : 300.f;
+    CGFloat singleWidth = (IDIOM == IPAD) ? 900.f : 460.f;
+    CGFloat splitWidth = (IDIOM == IPAD) ? 480.f : 260.f;
+    kOriginalArtImageFrame1 = CGRectMake((width/2-singleWidth/2), (height/2-frameHeight/2), singleWidth, frameHeight);
+    kOriginalArtImageFrame2 = CGRectMake((width/4-splitWidth/2), (height/2-frameHeight/2), splitWidth, frameHeight);
+    kOriginalArtImageFrame3 = CGRectMake((width/4-splitWidth/2), (height/2-frameHeight/2), splitWidth, frameHeight);
 }
 
 - (void)setupMetadataContainer {
@@ -161,6 +146,7 @@
     [self.slideMetadataContainerView setFrame:CGRectMake(0, height, width, height)];
     
     UIToolbar *toolbarBackground = [[UIToolbar alloc] initWithFrame:self.view.frame];
+    [toolbarBackground setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
     [toolbarBackground setBarStyle:UIBarStyleBlackTranslucent];
     [toolbarBackground setTranslucent:YES];
     toolbarBackground.clipsToBounds = YES; // hide the thin border line on the UIToolbar
@@ -378,7 +364,6 @@
         }
     } else { // metadata collectionView
         if (self.photos.count){
-            NSLog(@"one off comparison: %lu",(unsigned long)self.photos.count);
             return self.photos.count; // one-off comparison
         } else if (section == 0){
             return [self.slideshow.showTitleSlide isEqualToNumber:@YES] ? 1 : 0; // the title slide
@@ -491,7 +476,6 @@
 }
 
 - (void)showProfile:(UIButton*)button {
-    
     Photo *photo;
     if (self.photos.count){
         photo = self.photos[button.tag];
@@ -527,11 +511,8 @@
                 return CGSizeMake(fullWidth/2,fullHeight);
             }
         } else if (indexPath.section == 0){
-            
             return CGSizeMake(fullWidth,fullHeight);
-        
         } else {
-            
             Slide *slide = self.slideshow.slides[indexPath.section - 1];
             if (slide.photoSlides.count <= 1 && slide.slideTexts.count <= 1){
                 return CGSizeMake(fullWidth,fullHeight);
@@ -766,16 +747,13 @@
     if (view){
         [UIView animateWithDuration:kSlideResetAnimationDuration delay:0 usingSpringWithDamping:.975 initialSpringVelocity:.00001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             if (view == artImageView1){
-                NSLog(@"art image 1");
                 if (artImageView1.moved){
                     NSLog(@"art image 1 moved");
-                    view.transform = CGAffineTransformIdentity;
+                    artImageView1.transform = CGAffineTransformIdentity;
                     [artImageView1 setFrame:kOriginalArtImageFrame1];
                     if (currentSlide){
                         PhotoSlide *photoSlide = currentSlide.photoSlides[0];
                         [photoSlide resetFrame];
-                    } else {
-                        [view setFrame:kOriginalArtImageFrame1];
                     }
                     [artImageView1 setMoved:NO];
                 } else {
@@ -789,13 +767,11 @@
             } else if (view == artImageView2){
                 NSLog(@"art image 2");
                 if (artImageView2.moved){
-                    view.transform = CGAffineTransformIdentity;
+                    artImageView2.transform = CGAffineTransformIdentity;
                     [artImageView2 setFrame:kOriginalArtImageFrame2];
                     if (currentSlide){
                         PhotoSlide *photoSlide = currentSlide.photoSlides[0];
                         [photoSlide resetFrame];
-                    } else {
-                        [view setFrame:kOriginalArtImageFrame2];
                     }
                     [artImageView2 setMoved:NO];
                 } else {
@@ -810,13 +786,11 @@
                 NSLog(@"art image 3");
                 if (artImageView3.moved){
                     NSLog(@"art image 3 moved");
-                    view.transform = CGAffineTransformIdentity;
+                    artImageView3.transform = CGAffineTransformIdentity;
                     [artImageView3 setFrame:kOriginalArtImageFrame3];
                     if (currentSlide){
                         PhotoSlide *photoSlide = currentSlide.photoSlides[1];
                         [photoSlide resetFrame];
-                    } else {
-                        [view setFrame:kOriginalArtImageFrame3];
                     }
                     [artImageView3 setMoved:NO];
                 } else {
@@ -852,7 +826,70 @@
     }
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    width = size.width; height = size.height;
+    [self calculateImageFrames];
+    
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        
+        [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
+        [self.metadataCollectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
+        [self adjustMetadataPosition];
+        
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        if (self.photos.count == 1){
+            [artImageView1 setFrame:kOriginalArtImageFrame1];
+            [artImageView1 setMoved:NO];
+            artImageView1.transform = CGAffineTransformIdentity;
+        }
+    }];
+}
+
 #pragma mark - Gesture Recognizer Delegate
+
+- (void)setupGestureRecognizers {
+    _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+    _panGesture.delegate = self;
+    [self.view addGestureRecognizer:_panGesture];
+    
+    _pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
+    _pinchGesture.delegate = self;
+    [self.view addGestureRecognizer:_pinchGesture];
+    
+    rightScreenEdgePanGesture = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(screenEdgePan:)];
+    rightScreenEdgePanGesture.edges = UIRectEdgeRight;
+    [self.view addGestureRecognizer:rightScreenEdgePanGesture];
+    leftScreenEdgePanGesture = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(screenEdgePan:)];
+    leftScreenEdgePanGesture.edges = UIRectEdgeLeft;
+    [self.view addGestureRecognizer:leftScreenEdgePanGesture];
+    bottomEdgePanGesture = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(screenEdgePan:)];
+    bottomEdgePanGesture.edges = UIRectEdgeBottom;
+    [self.view addGestureRecognizer:bottomEdgePanGesture];
+    
+    _doubleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTap:)];
+    _doubleTapGesture.numberOfTapsRequired = 2;
+    _doubleTapGesture.delegate = self;
+    [self.view addGestureRecognizer:_doubleTapGesture];
+    
+    singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTap:)];
+    singleTap.delegate = self;
+    singleTap.numberOfTapsRequired = 1;
+    [self.collectionView addGestureRecognizer:singleTap];
+    
+    if (self.photos.count){
+        [self.collectionView setScrollEnabled:NO];
+        [self.collectionView setCanCancelContentTouches:NO];
+        [singleTap requireGestureRecognizerToFail:_doubleTapGesture];
+    } else {
+        [self.collectionView setDelaysContentTouches:NO];
+        [self.collectionView setCanCancelContentTouches:YES];
+        [singleTap requireGestureRecognizerToFail:_doubleTapGesture];
+        [_panGesture requireGestureRecognizerToFail:rightScreenEdgePanGesture];
+        [_panGesture requireGestureRecognizerToFail:leftScreenEdgePanGesture];
+    }
+}
+
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     return YES;
 }

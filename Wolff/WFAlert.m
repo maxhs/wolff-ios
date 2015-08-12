@@ -91,7 +91,7 @@
 - (void)create {
     if (background == nil) {
         background = [[UIImageView alloc] initWithImage:[self blurredSnapshotForWindow]];
-        [background setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+        [background setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
         [background setFrame:mainScreen];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(rotate:) name:UIDeviceOrientationDidChangeNotification object:nil];
         [self addSubview:background];
@@ -123,7 +123,13 @@
     [self orient];
 }
 
-- (void)orient { // only for < iOS 8.0
+- (void)orient {
+    width = screenWidth();
+    height = screenHeight();
+    mainScreen = CGRectMake(0, 0, width,height);
+    [background setFrame:mainScreen];
+    [label setFrame:CGRectMake(10, background.frame.size.height/2-160, background.frame.size.width-20, 320)];
+    
 //    if (SYSTEM_VERSION >= 8.f){
 //        
 //    } else {

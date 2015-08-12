@@ -668,41 +668,46 @@
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    width = size.width; height = size.height;
+    width = size.width;
+    height = size.height;
     landscape = size.width > size.height ? YES : NO;
-    
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
         if (IDIOM != IPAD){
-            [self adjustForSize:size];
+            if (landscape){
+                CGRect tableFrame = self.tableView.frame;
+                tableFrame.origin.x = 0;
+                tableFrame.size.width = width/2;
+                [self.tableView setFrame:tableFrame];
+                
+                CGRect collectionFrame = self.collectionView.frame;
+                collectionFrame.origin.x = width/2;
+                collectionFrame.size.width = width/2;
+                [self.collectionView setFrame:collectionFrame];
+            } else {
+                CGRect tableFrame = self.tableView.frame;
+                tableFrame.origin.x = 0;
+                tableFrame.size.width = 0;
+                [self.tableView setFrame:tableFrame];
+                
+                CGRect collectionFrame = self.collectionView.frame;
+                collectionFrame.origin.x = 0;
+                collectionFrame.size.width = width;
+                [self.collectionView setFrame:collectionFrame];
+            }
+            
             [self.collectionView reloadData];
             [self.tableView reloadData];
         }
     } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        
+        NSLog(@"tableView: %@",self.tableView);
     }];
 }
 
 - (void)adjustForSize:(CGSize)size {
     if (size.width > size.height){
-        CGRect tableFrame = self.tableView.frame;
-        tableFrame.origin.x = 0;
-        tableFrame.size.width = size.width/2;
-        [self.tableView setFrame:tableFrame];
         
-        CGRect collectionFrame = self.collectionView.frame;
-        collectionFrame.origin.x = size.width/2;
-        collectionFrame.size.width = size.width/2;
-        [self.collectionView setFrame:collectionFrame];
     } else {
-        CGRect tableFrame = self.tableView.frame;
-        tableFrame.origin.x = -size.width/2;
-        tableFrame.size.width = size.width/2;
-        [self.tableView setFrame:tableFrame];
         
-        CGRect collectionFrame = self.collectionView.frame;
-        collectionFrame.origin.x = 0;
-        collectionFrame.size.width = size.width;
-        [self.collectionView setFrame:collectionFrame];
     }
 }
 

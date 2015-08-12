@@ -24,7 +24,7 @@
     paragraphStyle.lineHeightMultiple = 1.15f;
     
     NSString *title = art.title.length ? art.title : @"";
-    NSMutableAttributedString *titleString = [[NSMutableAttributedString alloc] initWithString:title attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0], NSForegroundColorAttributeName : [UIColor colorWithWhite:1 alpha:1], NSParagraphStyleAttributeName:paragraphStyle}];
+    NSMutableAttributedString *titleString = [[NSMutableAttributedString alloc] initWithString:title attributes:@{NSFontAttributeName: [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0], NSForegroundColorAttributeName : [UIColor colorWithWhite:1 alpha:1], NSParagraphStyleAttributeName:paragraphStyle}];
     
     if (art.artistsToSentence.length){
         artistString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"    %@",art.artistsToSentence] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
