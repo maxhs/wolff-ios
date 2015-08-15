@@ -27,10 +27,7 @@
     [self setBackgroundColor:[UIColor whiteColor]];
     [_privateSwitch setHidden:YES];
     _textView.layer.cornerRadius = 2.f;
-     _notesTextView.layer.cornerRadius = 2.f;
     [_textView setKeyboardAppearance:UIKeyboardAppearanceDark];
-    [_notesTextView setKeyboardAppearance:UIKeyboardAppearanceDark];
-    [_notesTextView setAlpha:0.0];
     [_textView setAlpha:0.0];
 }
 
@@ -48,25 +45,16 @@
     [_label setTextColor:[UIColor blackColor]];
     [_textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [_textView setTextColor:[UIColor blackColor]];
-    [_notesTextView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-    [_notesTextView setTextColor:[UIColor blackColor]];
    
     if (editMode){
         _textView.layer.borderColor = [UIColor colorWithWhite:0 alpha:.1].CGColor;
         _textView.layer.borderWidth = .5f;
         [_textView setUserInteractionEnabled:YES];
-        _notesTextView.layer.borderColor = [UIColor colorWithWhite:0 alpha:.1].CGColor;
-        _notesTextView.layer.borderWidth = .5f;
-        [_notesTextView setUserInteractionEnabled:YES];
     } else {
         _textView.layer.borderColor = [UIColor colorWithWhite:0 alpha:0].CGColor;
         _textView.layer.borderWidth = 0.f;
         [_textView setUserInteractionEnabled:NO];
-        _notesTextView.layer.borderColor = [UIColor colorWithWhite:0 alpha:0].CGColor;
-        _notesTextView.layer.borderWidth = 0.f;
-        [_notesTextView setUserInteractionEnabled:NO];
     }
-    
 }
 
 @end

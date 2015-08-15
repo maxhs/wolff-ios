@@ -29,7 +29,6 @@
     NSMutableOrderedSet *_filteredIcons;
     UIBarButtonItem *dismissButton;
     UIBarButtonItem *saveButton;
-    UIBarButtonItem *doneButton;
     UITextField *iconTextField;
     UIButton *noIconsButton;
     UIBarButtonItem *unknownBarButton;
@@ -56,10 +55,9 @@ static NSString * const reuseIdentifier = @"IconCell";
     
     _icons = [NSMutableOrderedSet orderedSetWithArray:[Icon MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
     _filteredIcons = [NSMutableOrderedSet orderedSet];
-    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     saveButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(save)];
-    doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneEditing)];
     
     noIconsButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [noIconsButton.titleLabel setFont:[UIFont fontWithName:kMuseoSans size:12]];
@@ -69,7 +67,7 @@ static NSString * const reuseIdentifier = @"IconCell";
     [noIconsButton setTitle:@"NO ICONOGRAPHY" forState:UIControlStateNormal];
     unknownBarButton = [[UIBarButtonItem alloc] initWithCustomView:noIconsButton];
     spacerBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    spacerBarButton.width = 23.f;
+    spacerBarButton.width = -23.f;
     [self adjustUnknownButtonColor];
     
     if (IDIOM == IPAD){
@@ -169,7 +167,11 @@ static NSString * const reuseIdentifier = @"IconCell";
             [cell.prompt setHidden:YES];
             [cell.label setHidden:NO];
             [cell.iconNameTextField setHidden:NO];
-            [cell.iconNameTextField setPlaceholder:[NSString stringWithFormat:@"+  add \"%@\"",searchText]];
+            if (searchText.length){
+                [cell.prompt setText:[NSString stringWithFormat:@"+  add \"%@\"",searchText]];
+            } else {
+                [cell.prompt setText:@"+  add a new iconography"];
+            }
             if (searchText.length){
                 [cell.iconNameTextField setText:searchText];
             } else {
@@ -348,7 +350,7 @@ static NSString * const reuseIdentifier = @"IconCell";
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
-    self.navigationItem.rightBarButtonItems = @[doneButton,spacerBarButton,unknownBarButton];
+    self.navigationItem.rightBarButtonItems = @[spacerBarButton,unknownBarButton];
 }
 
 - (void)doneEditing {

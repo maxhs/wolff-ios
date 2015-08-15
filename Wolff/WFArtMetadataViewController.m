@@ -38,6 +38,7 @@
 #import "WFNewLightTableAnimator.h"
 #import "WFTransparentBGModalAnimator.h"
 
+NSString* const unfavoriteOption = @"Unfavorite";
 NSString* const favoriteOption = @"Favorite";
 NSString* const tagOption = @"Tag";
 NSString* const lightTableOption = @"Drop to light table";
@@ -60,16 +61,20 @@ NSString* const deleteOption = @"Delete";
     BOOL lightTables;
     CGFloat keyboardHeight;
     UITextView *titleTextView;
+    UITextView *artistTextView;
+    UITextView *dateTextView;
+    UITextView *locationTextView;
+    UITextView *materialTextView;
+    UITextView *iconographyTextView;
     UITextView *notesTextView;
     UITextView *creditTextView;
+    UITextView *tagsTextView;
     UISwitch *privateSwitch;
     CGRect originalViewFrame;
     CGRect originalNavFrame;
     UIView *saveContainerView;
     UIButton *saveButton;
     UIImageView *navBarShadowView;
-    CGFloat rowHeight;
-    CGFloat textViewWidth;
     NSInteger currentPhotoIdx;
     UITextField *beginYearTextField;
     UITextField *endYearTextField;
@@ -81,6 +86,7 @@ NSString* const deleteOption = @"Delete";
     UIButton *_ceEndButton;
     UIButton *_bceEndButton;
     UIButton *moreButton;
+    UIActionSheet *flagActionSheet;
 }
 @property (strong, nonatomic) User *currentUser;
 @property (strong, nonatomic) Favorite *favorite;
@@ -100,8 +106,7 @@ NSString* const deleteOption = @"Delete";
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     }
-    rowHeight = 60.f;
-    textViewWidth = width - 160.f; // 160.f is a spacer
+    
     editMode = NO;
     [self setupDateFormatter];
     [self registerForKeyboardNotifications];
@@ -115,21 +120,22 @@ NSString* const deleteOption = @"Delete";
     [self.photoScrollView setCanCancelContentTouches:YES];
     
     if (IDIOM != IPAD){
-        NSLog(@"force orientation portrait");
         NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
         [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
         moreButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [moreButton setImage:[UIImage imageNamed:@"more"] forState:UIControlStateNormal];
         [moreButton addTarget:self action:@selector(showiPhoneOptions) forControlEvents:UIControlEventTouchUpInside];
         [_topImageContainerView addSubview:moreButton];
+        [self.view setBackgroundColor:[UIColor whiteColor]];
     }
+    
+    [self drawHeader];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self.navigationController setNavigationBarHidden:YES animated:YES];
-    textViewWidth = self.view.frame.size.width - 160.f; // 160.f is a spacer
-    [self drawHeader];
+    
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -146,8 +152,28 @@ NSString* const deleteOption = @"Delete";
 - (void)drawHeader {
     CGSize viewSize = self.view.frame.size;
     CGRect topImageContainerFrame = _topImageContainerView.frame;
-    topImageContainerFrame.size.height = width + 100.f;
-    [_topImageContainerView setFrame:topImageContainerFrame];
+    if (IDIOM == IPAD){
+        topImageContainerFrame.size.height = width + 100.f;
+        [_topImageContainerView setFrame:topImageContainerFrame];
+        [self setUpButtons];
+        CGRect dismissFrame = self.dismissButton.frame;
+        dismissFrame.origin.x = viewSize.width-dismissFrame.size.width;
+        [self.dismissButton setFrame:dismissFrame];
+        
+    } else {
+        if (self.photo.art.photos.count > 1){
+            topImageContainerFrame.size.height = width + 88.f;
+        } else {
+            topImageContainerFrame.size.height = width + 44.f;
+        }
+        [_topImageContainerView setFrame:topImageContainerFrame];
+        
+        CGRect dismissFrame = self.dismissButton.frame;
+        dismissFrame.origin.x = 0;
+        [self.dismissButton setFrame:dismissFrame];
+        [moreButton setFrame:CGRectMake(viewSize.width-44.f, 0, 44, 44)];
+    }
+    
     self.tableView.tableHeaderView = _topImageContainerView;
     currentPhotoIdx = [self.photo.art.photos indexOfObject:self.photo];
     [self setPhotoCount:currentPhotoIdx+1]; // setPhotoCredit called at the end of setPhotoCount... no worries
@@ -155,41 +181,71 @@ NSString* const deleteOption = @"Delete";
     [_lastPhotoButton addTarget:self action:@selector(lastPhoto) forControlEvents:UIControlEventTouchUpInside];
     [self.photoCountLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-    
-    if (IDIOM == IPAD){
-        [self setUpButtons];
-        CGRect dismissFrame = self.dismissButton.frame;
-        dismissFrame.origin.x = viewSize.width-dismissFrame.size.width;
-        [self.dismissButton setFrame:dismissFrame];
-    } else {
-        CGRect dismissFrame = self.dismissButton.frame;
-        dismissFrame.origin.x = 0;
-        [self.dismissButton setFrame:dismissFrame];
-        [moreButton setFrame:CGRectMake(viewSize.width-44.f, 0, 44, 44)];
-    }
+
     [self setupPhotoScrollView];
 }
 
 - (void)showiPhoneOptions {
-    UIActionSheet *iPhoneOptionsSheet = [[UIActionSheet alloc] initWithTitle:[NSString stringWithFormat:@"Options for \"%@\"",self.photo.art.title] delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:favoriteOption, lightTableOption, tagOption, flagOption, nil];
+    UIActionSheet *iPhoneOptionsSheet = [[UIActionSheet alloc] initWithTitle:[NSString stringWithFormat:@"Options for \"%@\"",self.photo.art.title] delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:self.currentUser && _favorite ? unfavoriteOption : favoriteOption, lightTableOption, tagOption, flagOption, nil];
     if (self.currentUser && [self.photo.user.identifier isEqualToNumber:self.currentUser.identifier]){
         [iPhoneOptionsSheet addButtonWithTitle:editOption];
         [iPhoneOptionsSheet addButtonWithTitle:deleteOption];
     }
+    iPhoneOptionsSheet.delegate = self;
     [iPhoneOptionsSheet showInView:self.view];
+}
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (actionSheet == flagActionSheet){
+        if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Inappropriate"]){
+            [self flag];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Copyright"]) {
+            [self performSegueWithIdentifier:@"Flag" sender:kCopyright];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Incorrect metadata"]) {
+            [self performSegueWithIdentifier:@"Flag" sender:nil];
+        }
+    } else {
+        if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:unfavoriteOption]){
+            [self unfavorite];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:favoriteOption]){
+            [self createFavorite];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:lightTableOption]){
+            [self dropToLightTable];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:tagOption]){
+            [self communityTag];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:flagOption]){
+            [actionSheet dismissWithClickedButtonIndex:buttonIndex animated:YES];
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self presentFlagActionSheet];
+            });
+            
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:editOption]){
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self edit];
+            });
+            
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:deleteOption]){
+            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self confirmDeletion];
+            });
+        }
+    }
 }
 
 - (void)setPhotoCount:(NSInteger)currentIdx{
     CGFloat landscapeWidth = IDIOM == IPAD ? 380.f : width;
-    
-    if (self.photo.art.photos.count == 1){
-        [self.photoCountLabel setText:@"1 photo"];
+    if (self.photo.art.photos.count <= 1){
+        [_photoCountLabel setHidden:YES];
+        [_nextPhotoButton setHidden:YES];
+        [_lastPhotoButton setHidden:YES];
     } else {
         [self.photoCountLabel setText:[NSString stringWithFormat:@"%ld of %lu photos",(long)currentIdx, (unsigned long)self.photo.art.photos.count]];
     }
     if (self.photo.art.photos.count <= 1){
-        [_nextPhotoButton setHidden:YES];
-        [_lastPhotoButton setHidden:YES];
+        
     }
     
     if (self.photoScrollView.contentOffset.x < landscapeWidth/2){
@@ -248,9 +304,6 @@ NSString* const deleteOption = @"Delete";
             }
         }
         
-        if (!imageButton.imageView.image){
-            [imageButton setAlpha:0.0];
-        }
         
         [[SDWebImageManager sharedManager] downloadImageWithURL:[NSURL URLWithString:photo.slideImageUrl] options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
             [_progressIndicator setProgress:((CGFloat)receivedSize / (CGFloat)expectedSize)];
@@ -280,8 +333,8 @@ NSString* const deleteOption = @"Delete";
         paragraphStyle.alignment = NSTextAlignmentCenter;
         
         [_postedByButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
-        NSMutableAttributedString *postedByString = [[NSMutableAttributedString alloc] initWithString:@"POSTED BY:" attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor blackColor],NSParagraphStyleAttributeName:paragraphStyle}];
-        NSMutableAttributedString *postedByUserString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@",self.photo.user.fullName] attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSans] size:0], NSForegroundColorAttributeName : kElectricBlue,NSParagraphStyleAttributeName:paragraphStyle}];
+        NSMutableAttributedString *postedByString = [[NSMutableAttributedString alloc] initWithString:@"POSTED BY:" attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0], NSForegroundColorAttributeName : [UIColor blackColor],NSParagraphStyleAttributeName:paragraphStyle}];
+        NSMutableAttributedString *postedByUserString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@",self.photo.user.fullName] attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0], NSForegroundColorAttributeName : kElectricBlue,NSParagraphStyleAttributeName:paragraphStyle}];
         [postedByString appendAttributedString:postedByUserString];
         [_postedByButton setAttributedTitle:postedByString forState:UIControlStateNormal];
         [_postedByButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
@@ -510,22 +563,27 @@ NSString* const deleteOption = @"Delete";
 - (void)edit {
     editMode = editMode ? NO : YES;
     self.photo = self.photo.art.photos[currentPhotoIdx];
-    [self.tableView reloadData];
+    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
+    
     if (editMode){
         CGRect newViewFrame = originalViewFrame;
-        newViewFrame.origin.y = 0;
-        newViewFrame.origin.x -= 100;
-        newViewFrame.size.width += 200;
-        CGRect navFrame = self.navigationController.view.frame;
-        navFrame.size.width = newViewFrame.size.width;
-        navFrame.origin.x = (width-navFrame.size.width)/2;
-        [self.navigationController.view setFrame:navFrame];
+        if (IDIOM == IPAD){
+            newViewFrame.origin.y = 0;
+            newViewFrame.origin.x -= 100;
+            newViewFrame.size.width += 200;
+            CGRect navFrame = self.navigationController.view.frame;
+            navFrame.size.width = newViewFrame.size.width;
+            navFrame.origin.x = (width-navFrame.size.width)/2;
+            [self.navigationController.view setFrame:navFrame];
+        }
         self.tableView.tableFooterView = saveContainerView;
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            [self.view setFrame:newViewFrame];
             [_nextPhotoButton setAlpha:0.0];
             [_lastPhotoButton setAlpha:0.0];
-            [saveButton setFrame:CGRectMake(20, 13, newViewFrame.size.width-40, 44)];
+            if (IDIOM == IPAD) {
+                [self.view setFrame:newViewFrame];
+                [saveButton setFrame:CGRectMake(20, 13, newViewFrame.size.width-40, 44)];
+            }
         } completion:^(BOOL finished) {
             [_nextPhotoButton setHidden:YES];
             [_lastPhotoButton setHidden:YES];
@@ -542,8 +600,10 @@ NSString* const deleteOption = @"Delete";
         // temporarily set the tableView background color to white so that the cell backgrounds don't get exposed
         [self.tableView setBackgroundColor:[UIColor whiteColor]];
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            [self.view setFrame:originalViewFrame];
-            [self.navigationController.view setFrame:originalNavFrame];
+            if (IDIOM == IPAD){
+                [self.view setFrame:originalViewFrame];
+                [self.navigationController.view setFrame:originalNavFrame];
+            }
             self.tableView.tableFooterView = nil;
             [_nextPhotoButton setHidden:NO];
             [_lastPhotoButton setHidden:NO];
@@ -708,7 +768,6 @@ NSString* const deleteOption = @"Delete";
 
 #pragma mark - Table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    textViewWidth = self.view.frame.size.width - 160.f; // 160.f is a spacer
     return 1;
 }
 
@@ -724,8 +783,6 @@ NSString* const deleteOption = @"Delete";
     WFArtMetadataCell *cell = (WFArtMetadataCell *)[tableView dequeueReusableCellWithIdentifier:@"ArtMetadataCell"];
     [cell setDefaultStyle:editMode];
     cell.textView.delegate = self;
-    [cell.textView setHidden:NO];
-    [cell.notesTextView setHidden:YES];
     
     switch (indexPath.row) {
         case 0:
@@ -736,6 +793,7 @@ NSString* const deleteOption = @"Delete";
         case 1:
         {
             [cell.label setText:@"ARTIST(S)"];
+            artistTextView = cell.textView;
             if (self.photo.art.artists.count){
                 NSString *artists = [self.photo.art artistsToSentence];
                 [cell.textView setText:artists];
@@ -779,6 +837,7 @@ NSString* const deleteOption = @"Delete";
                 return dateCell;
             } else {
                 [cell.label setText:@"DATE"];
+                dateTextView = cell.textView;
                 NSMutableAttributedString *dateString;
                 if (self.photo.art.interval.single){
                     dateString = [[NSMutableAttributedString alloc] initWithString:[dateFormatter stringFromDate:self.photo.art.interval.single] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]}];
@@ -806,6 +865,7 @@ NSString* const deleteOption = @"Delete";
         case 3:
         {
             [cell.label setText:@"LOCATION"];
+            locationTextView = cell.textView;
             if (self.photo.art.locations.count){
                 NSString *locations = [self.photo.art locationsToSentence];
                 [cell.textView setText:locations];
@@ -820,6 +880,7 @@ NSString* const deleteOption = @"Delete";
         case 4:
         {
             [cell.label setText:@"TAGS"];
+            tagsTextView = cell.textView;
             if (self.photo.art.tags.count){
                 NSString *tags = [self.photo.art tagsToSentence];
                 [cell.textView setText:tags];
@@ -834,6 +895,7 @@ NSString* const deleteOption = @"Delete";
         case 5:
         {
             [cell.label setText:@"MATERIAL(S)"];
+            materialTextView = cell.textView;
             if (self.photo.art.materials.count){
                 NSString *materials = [self.photo.art materialsToSentence];
                 [cell.textView setText:materials];
@@ -848,6 +910,7 @@ NSString* const deleteOption = @"Delete";
         case 6:
         {
             [cell.label setText:@"ICONOGRAPHY"];
+            iconographyTextView = cell.textView;
             if (self.photo.art.icons.count){
                 NSString *icons = [self.photo iconsToSentence];
                 [cell.textView setText:icons];
@@ -866,23 +929,8 @@ NSString* const deleteOption = @"Delete";
             break;
         case 8:
             [cell.label setText:@"NOTES"];
-            [cell.textView setHidden:YES];
-            [cell.notesTextView setHidden:NO];
-            notesTextView = cell.notesTextView;
-            CGRect notesRect = cell.notesTextView.frame;
-            notesRect.size.width = textViewWidth;
-            if (self.photo.art.notes.length){
-                [cell.notesTextView setText:self.photo.art.notes];
-                CGSize size = [cell.notesTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
-                notesRect.size.height = size.height;
-                CGFloat comparisonHeight = notesRect.size.height + 23.f > rowHeight ? notesRect.size.height + 23.f : rowHeight;
-                notesRect.origin.y = comparisonHeight/2-notesRect.size.height/2;
-            } else {
-                notesRect.origin.y = 0;
-                notesRect.size.height = rowHeight;
-            }
-            
-            [cell.notesTextView setFrame:notesRect];
+            notesTextView = cell.textView;
+            [cell.textView setText:self.photo.notes];
             break;
         case 9:
             [cell.label setText:@"PRIVATE"];
@@ -891,6 +939,7 @@ NSString* const deleteOption = @"Delete";
             [privateSwitch setOn:self.photo.privatePhoto.boolValue];
             [privateSwitch addTarget:self action:@selector(privateSwitchSwitched:) forControlEvents:UIControlEventValueChanged];
             [cell.textView setHidden:YES];
+            return cell; // no need to go any further
             break;
             
         default:
@@ -899,88 +948,58 @@ NSString* const deleteOption = @"Delete";
     
     // fancy text fade in
     [UIView animateWithDuration:kFastAnimationDuration animations:^{
-        if (indexPath.row == 7 && cell.notesTextView.text.length){
-            [cell.notesTextView setAlpha:1.0];
-        } else if (cell.textView.text.length) {
+        if (cell.textView.text.length) {
             [cell.textView setAlpha:1.0];
         }
     }];
     
     //size the text view appropriately
-    [cell.textView sizeToFit];
+    CGSize textViewSize = [cell.textView sizeThatFits:CGSizeMake(cell.textView.frame.size.width, CGFLOAT_MAX)];
     CGRect textViewRect = cell.textView.frame;
-    textViewRect.size.width = textViewWidth;
-    CGFloat comparisonHeight = cell.textView.frame.size.height > rowHeight ? cell.textView.frame.size.height : rowHeight;
-    textViewRect.origin.y = comparisonHeight/2-textViewRect.size.height/2;
+    textViewRect.size.height = textViewSize.height;
+    CGFloat estimatedRowHeight = textViewSize.height < 60.f ? 60.f : textViewSize.height; // make sure the text view height is at least 60
+    textViewRect.origin.y = estimatedRowHeight/2 - textViewSize.height/2;
     [cell.textView setFrame:textViewRect];
     return cell;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITextView *sizingTextView = [[UITextView alloc] init];
-    [sizingTextView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    CGFloat rowHeight;
     
     if (indexPath.row == 0){
-        [sizingTextView setText:self.photo.art.title];
-        CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
-        CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
-        sizingTextView = nil;
-        return newRowHeight;
+        CGSize size = [titleTextView sizeThatFits:CGSizeMake(titleTextView.frame.size.width, CGFLOAT_MAX)];
+        rowHeight = size.height;
     } else if (indexPath.row == 1){
-        [sizingTextView setText:self.photo.art.artistsToSentence];
-        CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
-        CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
-        sizingTextView = nil;
-        return newRowHeight;
+        CGSize size = [artistTextView sizeThatFits:CGSizeMake(artistTextView.frame.size.width, CGFLOAT_MAX)];
+        rowHeight = size.height;
     } else if (indexPath.row == 2){
         if (editMode){
             return 110.f;
         } else {
-            return rowHeight;
+            CGSize size = [dateTextView sizeThatFits:CGSizeMake(dateTextView.frame.size.width, CGFLOAT_MAX)];
+            rowHeight = size.height;
         }
     } else if (indexPath.row == 3){
-        [sizingTextView setText:self.photo.art.tagsToSentence];
-        CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
-        CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
-        sizingTextView = nil;
-        return newRowHeight;
+        CGSize size = [tagsTextView sizeThatFits:CGSizeMake(tagsTextView.frame.size.width, CGFLOAT_MAX)];
+        rowHeight = size.height;
     } else if (indexPath.row == 4){
-        [sizingTextView setText:self.photo.art.materialsToSentence];
-        CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
-        CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
-        sizingTextView = nil;
-        return newRowHeight;
+        CGSize size = [materialTextView sizeThatFits:CGSizeMake(materialTextView.frame.size.width, CGFLOAT_MAX)];
+        rowHeight = size.height;
     } else if (indexPath.row == 5){
-        [sizingTextView setText:[self.photo iconsToSentence]];
-        CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
-        CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
-        sizingTextView = nil;
-        return newRowHeight;
+        CGSize size = [iconographyTextView sizeThatFits:CGSizeMake(iconographyTextView.frame.size.width, CGFLOAT_MAX)];
+        rowHeight = size.height;
     } else if (indexPath.row == 6){
-        [sizingTextView setText:self.photo.art.locationsToSentence];
-        CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
-        CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
-        sizingTextView = nil;
-        return newRowHeight;
+        CGSize size = [locationTextView sizeThatFits:CGSizeMake(locationTextView.frame.size.width, CGFLOAT_MAX)];
+        rowHeight = size.height;
     } else if (indexPath.row == 7){
-        [sizingTextView setText:self.photo.credit];
-        CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
-        CGFloat newRowHeight = size.height > rowHeight ? size.height : rowHeight;
-        sizingTextView = nil;
-        return newRowHeight;
+        CGSize size = [creditTextView sizeThatFits:CGSizeMake(creditTextView.frame.size.width, CGFLOAT_MAX)];
+        rowHeight = size.height;
     } else if (indexPath.row == 8) {
-        if (self.photo.art.notes.length){
-            [sizingTextView setText:self.photo.art.notes];
-            CGSize size = [sizingTextView sizeThatFits:CGSizeMake(textViewWidth, CGFLOAT_MAX)];
-            CGFloat newRowHeight = size.height + 23.f > rowHeight ? size.height + 23.f : rowHeight;
-            sizingTextView = nil;
-            return newRowHeight;
-        } else {
-            return rowHeight;
-        }
-    } else {
-        return rowHeight;
+        CGSize size = [notesTextView sizeThatFits:CGSizeMake(notesTextView.frame.size.width, CGFLOAT_MAX)];
+        rowHeight = size.height;
     }
+    
+    return rowHeight < 60.f ? 60.f : rowHeight; // make sure we return at least 60 for the row height
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -1007,11 +1026,11 @@ NSString* const deleteOption = @"Delete";
     [vc setSelectedArtists:self.photo.art.artists.mutableCopy];
     vc.artistDelegate = self;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    nav.transitioningDelegate = self;
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    if (IDIOM == IPAD){
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        nav.transitioningDelegate = self;
+    }
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 - (void)artistsSelected:(NSOrderedSet *)selectedArtists {
@@ -1022,17 +1041,18 @@ NSString* const deleteOption = @"Delete";
 }
 
 - (void)showLocations {
-    [self resetTransitionBooleans];
-    metadataModal = YES;
+    
     WFLocationsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Locations"];
     [vc setSelectedLocations:self.photo.art.locations.mutableCopy];
     vc.locationDelegate = self;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    if (IDIOM == IPAD){
+        [self resetTransitionBooleans];
+        metadataModal = YES;
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+    }
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 - (void)locationsSelected:(NSOrderedSet *)selectedLocations {
@@ -1061,16 +1081,18 @@ NSString* const deleteOption = @"Delete";
 }
 
 - (void)showTags {
-    [self resetTransitionBooleans];
-    metadataModal = YES;
     WFTagsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tags"];
     [vc setCommunityTagMode:NO];
     [vc setArt:self.photo.art];
     [vc setSelectedTags:self.photo.art.tags.mutableCopy];
     vc.tagDelegate = self;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
+    if (IDIOM == IPAD){
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        [self resetTransitionBooleans];
+        metadataModal = YES;
+    }
     [self presentViewController:nav animated:YES completion:^{
         
     }];
@@ -1084,17 +1106,18 @@ NSString* const deleteOption = @"Delete";
 }
 
 - (void)showMaterials {
-    [self resetTransitionBooleans];
-    metadataModal = YES;
     WFMaterialsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Materials"];
     [vc setSelectedMaterials:self.photo.art.materials.mutableCopy];
     vc.materialDelegate = self;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    if (IDIOM == IPAD){
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        [self resetTransitionBooleans];
+        metadataModal = YES;
+    }
+    
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 - (void)materialsSelected:(NSOrderedSet *)selectedMaterials {
@@ -1106,17 +1129,19 @@ NSString* const deleteOption = @"Delete";
 }
 
 - (void)showIcons {
-    [self resetTransitionBooleans];
-    metadataModal = YES;
+
     WFIconsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Icons"];
     [vc setSelectedIcons:self.photo.icons.mutableCopy];
     vc.iconsDelegate = self;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    if (IDIOM == IPAD){
+        [self resetTransitionBooleans];
+        metadataModal = YES;
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+    }
+    
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 - (void)iconsSelected:(NSOrderedSet *)selectedIcons {
@@ -1223,19 +1248,11 @@ NSString* const deleteOption = @"Delete";
 }
 
 - (void)presentFlagActionSheet {
-    UIActionSheet *flagActionSheet = [[UIActionSheet alloc] initWithTitle:[NSString stringWithFormat:@"Why do you want to flag \"%@\"?",self.photo.art.title] delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Inappropriate", @"Copyright", @"Incorrect metadata", nil];
-    flagActionSheet.tintColor = kElectricBlue;
-    [flagActionSheet showInView:self.view];
-}
-
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Inappropriate"]){
-        [self flag];
-    } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Copyright"]) {
-        [self performSegueWithIdentifier:@"Flag" sender:kCopyright];
-    } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Incorrect metadata"]) {
-        [self performSegueWithIdentifier:@"Flag" sender:nil];
+    if (!flagActionSheet){
+        flagActionSheet = [[UIActionSheet alloc] initWithTitle:[NSString stringWithFormat:@"Why do you want to flag \"%@\"?",self.photo.art.title] delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Inappropriate", @"Copyright", @"Incorrect metadata", nil];
+        flagActionSheet.tintColor = kElectricBlue;
     }
+    [flagActionSheet showInView:self.view];
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {

@@ -15,9 +15,9 @@
     [super awakeFromNib];
     [self setBackgroundColor:[UIColor clearColor]];
 
-    [_label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [_label setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:IDIOM == IPAD ? UIFontTextStyleBody : UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     [_label setTextColor:[UIColor whiteColor]];
-    [_rangeLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [_rangeLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:IDIOM == IPAD ? UIFontTextStyleBody : UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     [_rangeLabel setTextColor:[UIColor whiteColor]];
     [_fromLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
     [_fromLabel setTextColor:[UIColor whiteColor]];

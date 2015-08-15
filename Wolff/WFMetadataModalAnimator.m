@@ -48,18 +48,10 @@
     } else {
         toViewController.view.userInteractionEnabled = YES;
         
-        CGRect metadataFrame;
-        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f) {
-            metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
-            metadataFrame.origin.y = 10;
-            metadataFrame.origin.x -= 100;
-            metadataFrame.size.width += 200;
-        } else {
-            metadataFrame = CGRectMake(0, width/2-kMetadataWidth/2, height, kMetadataWidth);
-            metadataFrame.origin.x = 10;
-            metadataFrame.origin.y -= 100;
-            metadataFrame.size.height += 200;
-        }
+        CGRect metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
+        metadataFrame.origin.y = 10;
+        metadataFrame.origin.x -= 100;
+        metadataFrame.size.width += 200;
         CGRect modalEndFrame = fromViewController.view.frame;
         modalEndFrame.origin.y -= height;
         

@@ -45,14 +45,17 @@
 #import "WFUtilities.h"
 #import "WFSlideshowViewController.h"
 #import "WFNoRotateNavController.h"
-#import "WFRightMenuTableViewController.h"
 #import "WFTransparentBGModalAnimator.h"
 #import "WFLoadingCell.h"
 
 static NSString *const createALightTablePlaceholder            = @"Create a light table";
 static NSString *const joinLightTablePlaceholder            = @"Join one that exists";
+static NSString *const addNewArtOption = @"Add New Art";
+static NSString *const notificationsOption = @"View My Notifications";
+static NSString *const settingsOption = @"My Settings";
+static NSString *const logoutOption = @"Log out";
 
-@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, WFLightTableDelegate, WFNotificationsDelegate, WFSettingsDelegate, WFRightMenuDelegate, UIGestureRecognizerDelegate, UIActionSheetDelegate> {
+@interface WFCatalogViewController () <UITableViewDelegate, UITableViewDataSource, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UISearchBarDelegate, UIViewControllerTransitioningDelegate,UIPopoverControllerDelegate, UIAlertViewDelegate, WFLoginDelegate, WFMenuDelegate,  WFSlideshowDelegate, WFImageViewDelegate, WFSearchDelegate, WFMetadataDelegate, WFNewArtDelegate, WFLightTableDelegate, WFNotificationsDelegate, WFSettingsDelegate, UIGestureRecognizerDelegate, UIActionSheetDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     UIButton *homeButton;
@@ -123,6 +126,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     WFInteractiveImageView *comparison1;
     WFInteractiveImageView *comparison2;
     
+    UIActionSheet *iPhoneMenu;
     NSString *searchText;
     UIImageView *navBarShadowView;
 }
@@ -261,7 +265,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     UIBarButtonItem *flexibleSpace2 = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
     UIBarButtonItem *flexibleSpace3 = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
     UIBarButtonItem *flexibleSpace4 = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-    UIBarButtonItem *moreButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"more"] style:UIBarButtonItemStylePlain target:self action:@selector(showRightMenu)];
+    UIBarButtonItem *moreButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"more"] style:UIBarButtonItemStylePlain target:self action:@selector(showiPhoneMenu)];
     searchButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"search15"] style:UIBarButtonItemStylePlain target:self action:@selector(showSearch)];
     
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
@@ -743,7 +747,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         if (self.currentUser.customerPlan.length){
             if (self.popover)
                 [self.popover dismissPopoverAnimated:YES];
-            settings = NO; metadata = NO; _login = NO; groupBool = NO;
+            [self resetArtBooleans];
             newArt = YES;
             WFNewArtViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"NewArt"];
             vc.artDelegate = self;
@@ -1336,10 +1340,25 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void) actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:createALightTablePlaceholder]){
-        [self newLightTableWithJoinBool:NO];
-    } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:joinLightTablePlaceholder]){
-        [self newLightTableWithJoinBool:YES];
+    if (actionSheet == iPhoneMenu){
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (double).5 * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            if ([[iPhoneMenu buttonTitleAtIndex:buttonIndex] isEqualToString:addNewArtOption]){
+                [self add];
+            } else if ([[iPhoneMenu buttonTitleAtIndex:buttonIndex] isEqualToString:notificationsOption]){
+                [self showNotifications];
+            } else if ([[iPhoneMenu buttonTitleAtIndex:buttonIndex] isEqualToString:settingsOption]){
+                [self showSettings];
+            } else if ([[iPhoneMenu buttonTitleAtIndex:buttonIndex] isEqualToString:logoutOption]){
+                [self logout];
+            }
+        });
+    } else {
+        if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:createALightTablePlaceholder]){
+            [self newLightTableWithJoinBool:NO];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:joinLightTablePlaceholder]){
+            [self newLightTableWithJoinBool:YES];
+        }
     }
 }
 
@@ -2090,17 +2109,12 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
         self.popover.delegate = self;
         [self.popover presentPopoverFromBarButtonItem:notificationsBarButton permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     } else {
-        // on the iPhone, we need to dismiss the view controller!
-        [self dismissViewControllerAnimated:YES completion:^{
-            [self resetTransitionBooleans];
-            transparentBG = YES;
-            UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-            nav.transitioningDelegate = self;
-            nav.modalPresentationStyle = UIModalPresentationCustom;
-            [self presentViewController:nav animated:YES completion:^{
-                
-            }];
-        }];
+        [self resetTransitionBooleans];
+        transparentBG = YES;
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        [self presentViewController:nav animated:YES completion:NULL];
     }
 }
 
@@ -2208,41 +2222,19 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
                 [self.popover dismissPopoverAnimated:YES];
             }
             settings = YES;
-            [self presentViewController:nav animated:YES completion:^{
-                
-            }];
         } else {
             transparentBG = YES;
-            [self dismissViewControllerAnimated:YES completion:^{
-                [self presentViewController:nav animated:YES completion:^{ }];
-            }];
         }
+        [self presentViewController:nav animated:YES completion:NULL];
     } else {
         [self showLogin];
     }
 }
 
-- (void)showRightMenu {
-    //iPhone specific
-    WFRightMenuTableViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"RightMenu"];
-    vc.rightMenuDelegate = self;
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self resetTransitionBooleans];
-    settings = YES;
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
-}
-
-- (void)showNewArt {
-    //iPhone specific
-    [self resetTransitionBooleans];
-    settings = YES;
-    [self dismissViewControllerAnimated:YES completion:^{
-        [self add];
-    }];
+- (void)showiPhoneMenu {
+    if (!iPhoneMenu)
+        iPhoneMenu = [[UIActionSheet alloc] initWithTitle:@"Where to go from here?" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:addNewArtOption, notificationsOption, settingsOption, logoutOption, nil];
+    [iPhoneMenu showInView:self.view];
 }
 
 - (void)showProfile {
@@ -2261,9 +2253,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             nav.modalPresentationStyle = UIModalPresentationCustom;
         }
         
-        [self presentViewController:nav animated:YES completion:^{
-            
-        }];
+        [self presentViewController:nav animated:YES completion:NULL];
     } else {
         [self showLogin];
     }
