@@ -37,6 +37,12 @@
     if (IDIOM != IPAD) {
         NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
         [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+        CGRect firstNameFrame = _firstNameTextField.frame;
+        firstNameFrame.origin.x = _emailTextField.frame.origin.x;
+        [_firstNameTextField setFrame:firstNameFrame];
+        CGRect lastNameFrame = _lastNameTextField.frame;
+        lastNameFrame.origin.x = firstNameFrame.origin.x + firstNameFrame.size.width+2.f;
+        [_lastNameTextField setFrame:lastNameFrame];
     }
     
     if (SYSTEM_VERSION >= 8.f){
@@ -84,54 +90,6 @@
     //CGFloat pageWidth = scrollView.frame.size.width;
     //int currentPage = floor((x - pageWidth / 2) / pageWidth) + 1;
     //_pageControl.currentPage = currentPage;
-}
-
-- (void)switchModes {
-    if (signup){
-        [_switchModesButton setTitle:@"Sign up" forState:UIControlStateNormal];
-        [_forgotPasswordButton setHidden:NO];
-        [_emailTextField becomeFirstResponder];
-        signup = NO;
-        [UIView animateWithDuration:.5 delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            [_loginButton setTitle:@"LOGIN" forState:UIControlStateNormal];
-            [_firstNameTextField setAlpha:0.0];
-            [_lastNameTextField setAlpha:0.0];
-            [_forgotPasswordButton setAlpha:1.0];
-            if (keyboardShowing){
-                _emailTextField.transform = CGAffineTransformMakeTranslation(0, -50);
-                _passwordTextField.transform = CGAffineTransformMakeTranslation(0, -50);
-                _loginButton.transform = CGAffineTransformMakeTranslation(0, -50);
-            }
-        } completion:^(BOOL finished) {
-            
-            [_firstNameTextField setHidden:YES];
-            [_lastNameTextField setHidden:YES];
-        }];
-    } else {
-        [_switchModesButton setTitle:@"Log in" forState:UIControlStateNormal];
-        [_firstNameTextField setAlpha:0.0];
-        [_lastNameTextField setAlpha:0.0];
-        [_firstNameTextField setHidden:NO];
-        [_lastNameTextField setHidden:NO];
-        
-        signup = YES;
-        [_firstNameTextField becomeFirstResponder];
-        
-        [UIView animateWithDuration:.5 delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            [_loginButton setTitle:@"SIGNUP" forState:UIControlStateNormal];
-            [_firstNameTextField setAlpha:1.0];
-            [_lastNameTextField setAlpha:1.0];
-            [_forgotPasswordButton setAlpha:0.0];
-            if (keyboardShowing){
-                _emailTextField.transform = CGAffineTransformMakeTranslation(0, 0);
-                _passwordTextField.transform = CGAffineTransformMakeTranslation(0, 0);
-                _loginButton.transform = CGAffineTransformMakeTranslation(0, 0);
-            }
-        } completion:^(BOOL finished) {
-            
-            [_forgotPasswordButton setHidden:YES];
-        }];
-    }
 }
 
 - (void)userAlreadyExists {
@@ -338,15 +296,11 @@
                 _forgotPasswordButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
             }
         } else {
-            if (signup){
+            if (height >= 568.f){
                 _termsButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
                 _forgotPasswordButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
             } else {
-                _emailTextField.transform = CGAffineTransformMakeTranslation(0, -50);
-                _passwordTextField.transform = CGAffineTransformMakeTranslation(0, -50);
-                _loginButton.transform = CGAffineTransformMakeTranslation(0, -50);
-                _termsButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
-                _forgotPasswordButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
+                _loginButton.transform = CGAffineTransformMakeTranslation(0, -11);
             }
         }
         
@@ -366,22 +320,67 @@
     keyboardShowing = NO;
     
     [UIView animateWithDuration:animationDuration.doubleValue delay:0 options:(animationCurve << 16) animations:^{
-        if (signup){
-            
-        } else {
+        if (IDIOM == IPAD){
+            _emailTextField.transform = CGAffineTransformIdentity;
+            _passwordTextField.transform = CGAffineTransformIdentity;
+            _firstNameTextField.transform = CGAffineTransformIdentity;
+            _lastNameTextField.transform = CGAffineTransformIdentity;
+            _loginButton.transform = CGAffineTransformIdentity;
             _logoImageView.transform = CGAffineTransformIdentity;
+            _termsButton.transform = CGAffineTransformIdentity;
+            _forgotPasswordButton.transform = CGAffineTransformIdentity;
+        } else {
+            if (height >= 568.f){
+                _logoImageView.transform = CGAffineTransformIdentity;
+                _termsButton.transform = CGAffineTransformIdentity;
+                _forgotPasswordButton.transform = CGAffineTransformIdentity;
+            } else {
+                _loginButton.transform = CGAffineTransformIdentity;
+            }
         }
-        _emailTextField.transform = CGAffineTransformIdentity;
-        _firstNameTextField.transform = CGAffineTransformIdentity;
-        _lastNameTextField.transform = CGAffineTransformIdentity;
-        _passwordTextField.transform = CGAffineTransformIdentity;
-        _loginButton.transform = CGAffineTransformIdentity;
-        _termsButton.transform = CGAffineTransformIdentity;
-        _forgotPasswordButton.transform = CGAffineTransformIdentity;
-        
     } completion:^(BOOL finished) {
         
     }];
+}
+
+- (void)switchModes {
+    if (signup){
+        [_switchModesButton setTitle:@"Sign up" forState:UIControlStateNormal];
+        [_forgotPasswordButton setHidden:NO];
+        [_emailTextField becomeFirstResponder];
+        signup = NO;
+        [UIView animateWithDuration:.5 delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            [_loginButton setTitle:@"LOGIN" forState:UIControlStateNormal];
+            [_firstNameTextField setAlpha:0.0];
+            [_lastNameTextField setAlpha:0.0];
+            [_forgotPasswordButton setAlpha:1.0];
+            
+        } completion:^(BOOL finished) {
+            
+            [_firstNameTextField setHidden:YES];
+            [_lastNameTextField setHidden:YES];
+        }];
+    } else {
+        [_switchModesButton setTitle:@"Log in" forState:UIControlStateNormal];
+        [_firstNameTextField setAlpha:0.0];
+        [_lastNameTextField setAlpha:0.0];
+        [_firstNameTextField setHidden:NO];
+        [_lastNameTextField setHidden:NO];
+        
+        signup = YES;
+        [_firstNameTextField becomeFirstResponder];
+        
+        [UIView animateWithDuration:.5 delay:0 usingSpringWithDamping:.77 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            [_loginButton setTitle:@"SIGNUP" forState:UIControlStateNormal];
+            [_firstNameTextField setAlpha:1.0];
+            [_lastNameTextField setAlpha:1.0];
+            [_forgotPasswordButton setAlpha:0.0];
+            
+        } completion:^(BOOL finished) {
+            
+            [_forgotPasswordButton setHidden:YES];
+        }];
+    }
 }
 
 #pragma mark - Shake Animation
@@ -435,7 +434,7 @@
 - (void)setUpLoginButton {
     [_loginButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
     _loginButton.layer.borderWidth = 1.f;
-    _loginButton.layer.cornerRadius = 14.f;
+    _loginButton.layer.cornerRadius = 2.f;
     _loginButton.layer.borderColor = [UIColor colorWithWhite:.825 alpha:0].CGColor;
     [_loginButton addTarget:self action:@selector(connect) forControlEvents:UIControlEventTouchUpInside];
     [_loginButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];

@@ -1203,10 +1203,10 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             slideshow = _uncategorizesSlideshows[indexPath.row];
         } else {
             LightTable *lightTable = _lightTables[indexPath.section-1];
-            slideshow = lightTable.slideshows[indexPath.row];
+            if (lightTable.slideshows.count > indexPath.row) slideshow = lightTable.slideshows[indexPath.row];
         }
-        [self loadSlideshow:slideshow];
         
+        if (slideshow) [self loadSlideshow:slideshow];
     } else {
         if (indexPath.section == 0){
             if (indexPath.row == 0){
@@ -1346,8 +1346,10 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 - (void)newLightTableWithJoinBool:(BOOL)join {
     if (self.currentUser.customerPlan.length){
         WFLightTableDetailsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTableDetails"];
-        (_selectedPhotos.count) ? [vc setPhotos:_selectedPhotos] : [vc setShowKey:YES];
         vc.lightTableDelegate = self;
+        [vc setJoinMode:join];
+        (_selectedPhotos.count) ? [vc setPhotos:_selectedPhotos] : [vc setShowKey:YES];
+
         [self resetTransitionBooleans];
         newLightTableTransition = YES;
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -1396,11 +1398,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
             return CGSizeMake(width/4, width/4);
         }
     } else {
-        if (self.view.frame.size.width > self.view.frame.size.height || self.view.frame.size.height >= 568.f){
-            return CGSizeMake(width/2,width/2);
-        } else {
-            return CGSizeMake(width,width);
-        }
+        return CGSizeMake(width/2,width/2);
     }
 }
 
@@ -1601,7 +1599,11 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
     [self.lightTable removePhoto:photo];
     
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        [self.collectionView deleteItemsAtIndexPaths:@[indexPathForLightTableArtToRemove]];
+        if (indexPathForLightTableArtToRemove) {
+            [self.collectionView deleteItemsAtIndexPaths:@[indexPathForLightTableArtToRemove]];
+        } else {
+            [self.collectionView reloadData];
+        }
         [UIView animateWithDuration:kDefaultAnimationDuration animations:^{
             [self.draggingView setAlpha:0.0];
         } completion:^(BOOL finished) {
@@ -1926,16 +1928,21 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 
 - (void)showMetadata:(Photo*)photo{
     WFArtMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"ArtMetadata"];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.view.clipsToBounds = YES;
     vc.metadataDelegate = self;
     [vc setPhoto:photo];
+    
+    UINavigationController *nav;
     if (IDIOM == IPAD){
         [self resetTransitionBooleans];
         metadata = YES;
+        nav = [[UINavigationController alloc] initWithRootViewController:vc];
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
+    } else {
+        nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
     }
+    
+    nav.view.clipsToBounds = YES;
     dispatch_async(dispatch_get_main_queue(), ^{
         [self presentViewController:nav animated:YES completion:NULL];
     });
@@ -2216,6 +2223,7 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)showRightMenu {
+    //iPhone specific
     WFRightMenuTableViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"RightMenu"];
     vc.rightMenuDelegate = self;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
@@ -2229,6 +2237,9 @@ static NSString *const joinLightTablePlaceholder            = @"Join one that ex
 }
 
 - (void)showNewArt {
+    //iPhone specific
+    [self resetTransitionBooleans];
+    settings = YES;
     [self dismissViewControllerAnimated:YES completion:^{
         [self add];
     }];

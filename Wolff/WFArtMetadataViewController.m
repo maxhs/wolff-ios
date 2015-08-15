@@ -38,12 +38,18 @@
 #import "WFNewLightTableAnimator.h"
 #import "WFTransparentBGModalAnimator.h"
 
+NSString* const favoriteOption = @"Favorite";
+NSString* const tagOption = @"Tag";
+NSString* const lightTableOption = @"Drop to light table";
+NSString* const flagOption = @"Flag";
+NSString* const editOption = @"Edit";
+NSString* const deleteOption = @"Delete";
+
 @interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLightTableDelegate, WFLoginDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectIconsDelegate, WFSelectMaterialsDelegate, WFSelectTagsDelegate, UIActionSheetDelegate, UITextFieldDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     CGFloat width;
     CGFloat height;
-    BOOL iOS8;
     NSDateFormatter *dateFormatter;
     BOOL editMode;
     BOOL keyboardUp;
@@ -52,7 +58,6 @@
     BOOL newLightTableTransition;
     BOOL metadataModal;
     BOOL lightTables;
-    BOOL landscape;
     CGFloat keyboardHeight;
     UITextView *titleTextView;
     UITextView *notesTextView;
@@ -75,6 +80,7 @@
     UIButton *_bceBeginButton;
     UIButton *_ceEndButton;
     UIButton *_bceEndButton;
+    UIButton *moreButton;
 }
 @property (strong, nonatomic) User *currentUser;
 @property (strong, nonatomic) Favorite *favorite;
@@ -86,16 +92,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.automaticallyAdjustsScrollViewInsets = NO;
-    
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES;
-        width = screenWidth();
-        height = screenHeight();
-    } else {
-        iOS8 = NO;
-        width = screenWidth();
-        height = screenHeight();
-    }
+    width = screenWidth();
+    height = screenHeight();
     
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
@@ -115,13 +113,23 @@
     self.photoScrollView.delegate = self;
     self.photoScrollView.pagingEnabled = YES;
     [self.photoScrollView setCanCancelContentTouches:YES];
+    
+    if (IDIOM != IPAD){
+        NSLog(@"force orientation portrait");
+        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
+        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+        moreButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [moreButton setImage:[UIImage imageNamed:@"more"] forState:UIControlStateNormal];
+        [moreButton addTarget:self action:@selector(showiPhoneOptions) forControlEvents:UIControlEventTouchUpInside];
+        [_topImageContainerView addSubview:moreButton];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self.navigationController setNavigationBarHidden:YES animated:YES];
     textViewWidth = self.view.frame.size.width - 160.f; // 160.f is a spacer
-    [self setupHeader];
+    [self drawHeader];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -135,55 +143,40 @@
     [dateFormatter setDateStyle:NSDateFormatterLongStyle];
 }
 
-- (void)setupHeader {
+- (void)drawHeader {
     CGSize viewSize = self.view.frame.size;
+    CGRect topImageContainerFrame = _topImageContainerView.frame;
+    topImageContainerFrame.size.height = width + 100.f;
+    [_topImageContainerView setFrame:topImageContainerFrame];
     self.tableView.tableHeaderView = _topImageContainerView;
     currentPhotoIdx = [self.photo.art.photos indexOfObject:self.photo];
     [self setPhotoCount:currentPhotoIdx+1]; // setPhotoCredit called at the end of setPhotoCount... no worries
-    
-    [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-    CGRect dismissFrame = self.dismissButton.frame;
-    dismissFrame.origin.x = viewSize.width-dismissFrame.size.width;
-    [self.dismissButton setFrame:dismissFrame];
-    
-    [self setUpButtons];
     [_nextPhotoButton addTarget:self action:@selector(nextPhoto) forControlEvents:UIControlEventTouchUpInside];
     [_lastPhotoButton addTarget:self action:@selector(lastPhoto) forControlEvents:UIControlEventTouchUpInside];
     [self.photoCountLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
+    [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
     
     if (IDIOM == IPAD){
-        
+        [self setUpButtons];
+        CGRect dismissFrame = self.dismissButton.frame;
+        dismissFrame.origin.x = viewSize.width-dismissFrame.size.width;
+        [self.dismissButton setFrame:dismissFrame];
     } else {
-        if (viewSize.width > viewSize.height){
-            [_favoriteButton setHidden:NO];
-            [_dropToTableButton setHidden:NO];
-            [_flagButton setHidden:NO];
-            [_tagButton setHidden:NO];
-            [_editButton setHidden:NO];
-            [_deleteButton setHidden:NO];
-            [_postedByButton setHidden:NO];
-            if (self.photo.art.photos.count > 1){
-                [_photoCountLabel setHidden:NO];
-                [_nextPhotoButton setHidden:NO];
-                [_lastPhotoButton setHidden:NO];
-            }
-            landscape = YES;
-        } else {
-            [_favoriteButton setHidden:YES];
-            [_dropToTableButton setHidden:YES];
-            [_flagButton setHidden:YES];
-            [_tagButton setHidden:YES];
-            [_editButton setHidden:YES];
-            [_deleteButton setHidden:YES];
-            [_postedByButton setHidden:YES];
-            [_photoCountLabel setHidden:YES];
-            [_nextPhotoButton setHidden:YES];
-            [_lastPhotoButton setHidden:YES];
-            landscape = NO;
-        }
+        CGRect dismissFrame = self.dismissButton.frame;
+        dismissFrame.origin.x = 0;
+        [self.dismissButton setFrame:dismissFrame];
+        [moreButton setFrame:CGRectMake(viewSize.width-44.f, 0, 44, 44)];
     }
-    
     [self setupPhotoScrollView];
+}
+
+- (void)showiPhoneOptions {
+    UIActionSheet *iPhoneOptionsSheet = [[UIActionSheet alloc] initWithTitle:[NSString stringWithFormat:@"Options for \"%@\"",self.photo.art.title] delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:favoriteOption, lightTableOption, tagOption, flagOption, nil];
+    if (self.currentUser && [self.photo.user.identifier isEqualToNumber:self.currentUser.identifier]){
+        [iPhoneOptionsSheet addButtonWithTitle:editOption];
+        [iPhoneOptionsSheet addButtonWithTitle:deleteOption];
+    }
+    [iPhoneOptionsSheet showInView:self.view];
 }
 
 - (void)setPhotoCount:(NSInteger)currentIdx{
@@ -197,9 +190,6 @@
     if (self.photo.art.photos.count <= 1){
         [_nextPhotoButton setHidden:YES];
         [_lastPhotoButton setHidden:YES];
-    } else if (landscape) {
-        [_nextPhotoButton setHidden:NO];
-        [_lastPhotoButton setHidden:NO];
     }
     
     if (self.photoScrollView.contentOffset.x < landscapeWidth/2){
@@ -222,7 +212,7 @@
     
     NSInteger idx = 0;
     CGFloat landscapeWidth, landscapeHeight, portraitWidth, portraitHeight;
-    if (landscape){
+    if (IDIOM == IPAD){
         landscapeWidth = IDIOM == IPAD ? 380.f : height;
         landscapeHeight = IDIOM == IPAD ? 260.f : height;
         portraitWidth = IDIOM == IPAD ? 260.f : height;
@@ -293,19 +283,10 @@
         NSMutableAttributedString *postedByString = [[NSMutableAttributedString alloc] initWithString:@"POSTED BY:" attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor blackColor],NSParagraphStyleAttributeName:paragraphStyle}];
         NSMutableAttributedString *postedByUserString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@",self.photo.user.fullName] attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSans] size:0], NSForegroundColorAttributeName : kElectricBlue,NSParagraphStyleAttributeName:paragraphStyle}];
         [postedByString appendAttributedString:postedByUserString];
-        [_postedByButton setContentHorizontalAlignment:UIControlContentHorizontalAlignmentCenter];
-        [_postedByButton setContentVerticalAlignment:UIControlContentVerticalAlignmentBottom];
         [_postedByButton setAttributedTitle:postedByString forState:UIControlStateNormal];
         [_postedByButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
         [_postedByButton.titleLabel setNumberOfLines:0];
-        
-        if (IDIOM == IPAD){
-            [_postedByButton setHidden:NO];
-        } else if (landscape){
-            [_postedByButton setHidden:NO];
-        } else {
-            [_postedByButton setHidden:YES];
-        }
+        [_postedByButton setHidden:NO];
     } else {
         [_postedByButton setHidden:YES];
     }
@@ -313,15 +294,13 @@
 }
 
 - (void)nextPhoto {
-    CGFloat orientationWidth = landscape ? height : width; // depends on orientation, since the iPhone rotates
-    CGFloat landscapeWidth = IDIOM == IPAD ? 380.f : orientationWidth;
+    CGFloat landscapeWidth = IDIOM == IPAD ? 380.f : width;
     [self.photoScrollView setContentOffset:CGPointMake(self.photoScrollView.contentOffset.x + landscapeWidth, 0) animated:YES];
     currentPhotoIdx ++;
 }
 
 - (void)lastPhoto {
-    CGFloat orientationWidth = landscape ? height : width; // depends on orientation, since the iPhone rotates
-    CGFloat landscapeWidth = IDIOM == IPAD ? 380.f : orientationWidth;
+    CGFloat landscapeWidth = IDIOM == IPAD ? 380.f : width;
     [self.photoScrollView setContentOffset:CGPointMake(self.photoScrollView.contentOffset.x - landscapeWidth, 0) animated:YES];
     currentPhotoIdx --;
 }
@@ -534,15 +513,9 @@
     [self.tableView reloadData];
     if (editMode){
         CGRect newViewFrame = originalViewFrame;
-        if (iOS8){
-            newViewFrame.origin.y = 0;
-            newViewFrame.origin.x -= 100;
-            newViewFrame.size.width += 200;
-        } else {
-            newViewFrame.origin.x = 0;
-            newViewFrame.origin.y -= 100;
-            newViewFrame.size.height += 200;
-        }
+        newViewFrame.origin.y = 0;
+        newViewFrame.origin.x -= 100;
+        newViewFrame.size.width += 200;
         CGRect navFrame = self.navigationController.view.frame;
         navFrame.size.width = newViewFrame.size.width;
         navFrame.origin.x = (width-navFrame.size.width)/2;
@@ -550,14 +523,9 @@
         self.tableView.tableFooterView = saveContainerView;
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [self.view setFrame:newViewFrame];
-            
             [_nextPhotoButton setAlpha:0.0];
             [_lastPhotoButton setAlpha:0.0];
-            if (iOS8){
-                [saveButton setFrame:CGRectMake(20, 13, newViewFrame.size.width-40, 44)];
-            } else {
-                [saveButton setFrame:CGRectMake(20, 13, newViewFrame.size.height-40, 44)];
-            }
+            [saveButton setFrame:CGRectMake(20, 13, newViewFrame.size.width-40, 44)];
         } completion:^(BOOL finished) {
             [_nextPhotoButton setHidden:YES];
             [_lastPhotoButton setHidden:YES];
@@ -639,7 +607,7 @@
             } else {
                 [self.photo populateFromDictionary:[responseObject objectForKey:@"photo"]];
                 [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                    [self setupHeader];
+                    [self drawHeader];
                     [self.tableView reloadData];
                 }];
             }
@@ -740,7 +708,7 @@
 
 #pragma mark - Table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    textViewWidth = iOS8 ? self.view.frame.size.width - 160.f : self.view.frame.size.height - 160.f; // 160.f is a spacer
+    textViewWidth = self.view.frame.size.width - 160.f; // 160.f is a spacer
     return 1;
 }
 
@@ -1284,39 +1252,14 @@
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        landscape = size.width > size.height ? YES : NO;
-        width = size.width; height = size.height;
+        width = size.width;
+        height = size.height;
         
         if (IDIOM != IPAD){
             CGRect dismissFrame = self.dismissButton.frame;
             dismissFrame.origin.x = size.width-dismissFrame.size.width;
             [self.dismissButton setFrame:dismissFrame];
-            if (size.width > size.height){
-                [_favoriteButton setHidden:NO];
-                [_dropToTableButton setHidden:NO];
-                [_flagButton setHidden:NO];
-                [_tagButton setHidden:NO];
-                [_editButton setHidden:NO];
-                [_deleteButton setHidden:NO];
-                [_postedByButton setHidden:NO];
-                if (self.photo.art.photos.count > 1){
-                    [_photoCountLabel setHidden:NO];
-                    [_nextPhotoButton setHidden:NO];
-                    [_lastPhotoButton setHidden:NO];
-                }
-            } else {
-                [_favoriteButton setHidden:YES];
-                [_dropToTableButton setHidden:YES];
-                [_flagButton setHidden:YES];
-                [_tagButton setHidden:YES];
-                [_editButton setHidden:YES];
-                [_deleteButton setHidden:YES];
-                [_postedByButton setHidden:YES];
-                [_photoCountLabel setHidden:YES];
-                [_nextPhotoButton setHidden:YES];
-                [_lastPhotoButton setHidden:YES];
-            }
-            [self setupPhotoScrollView];
+            [self drawHeader];
         }
         
     } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {

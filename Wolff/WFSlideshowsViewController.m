@@ -65,7 +65,6 @@
     self.mainRequest = [manager GET:[NSString stringWithFormat:@"users/%@/slideshow_titles",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success getting slideshows: %@",responseObject);
         [self.currentUser populateFromDictionary:responseObject];
-        NSLog(@"current user slideshows: %lu",(unsigned long)self.currentUser.slideshows.count);
         [self endLoading];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to get slideshows");

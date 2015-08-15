@@ -30,7 +30,13 @@
 #import "WFNoRotateNavController.h"
 #import "WFTransparentBGModalAnimator.h"
 
-@interface WFSlideshowSplitViewController () <UIViewControllerTransitioningDelegate, UIAlertViewDelegate, WFSearchDelegate, WFSlideTextDelegate, WFSlideshowSettingsDelegate, UIPopoverControllerDelegate,  UITextFieldDelegate, WFImageViewDelegate, WFSaveSlideshowDelegate, WFLightTablesDelegate> {
+NSString* const shareOption = @"Share";
+NSString* const searchOption = @"Search for images";
+NSString* const saveOption = @"Save";
+NSString* const settingsOption = @"Slideshow settings";
+NSString* const playOption = @"Play";
+
+@interface WFSlideshowSplitViewController () <UIViewControllerTransitioningDelegate, UIAlertViewDelegate, UIActionSheetDelegate, WFSearchDelegate, WFSlideTextDelegate, WFSlideshowSettingsDelegate, UIPopoverControllerDelegate,  UITextFieldDelegate, WFImageViewDelegate, WFSaveSlideshowDelegate, WFLightTablesDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     CGFloat width;
@@ -149,7 +155,6 @@
     }
     [self.tableView reloadData];
     [self.collectionView reloadData];
-    NSLog(@"will appear");
     if (!saveTimer){
         saveTimer = [NSTimer scheduledTimerWithTimeInterval:30.f target:self selector:@selector(autosaveLocally) userInfo:nil repeats:YES];
     }
@@ -191,23 +196,55 @@
     self.navigationItem.leftBarButtonItems = @[dismissButton];
     self.navigationController.navigationBar.tintColor = [UIColor whiteColor];
     
-    shareButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"shareArrow"] style:UIBarButtonItemStylePlain target:self action:@selector(share)];
-    searchButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"search"] style:UIBarButtonItemStylePlain target:self action:@selector(startSearch)];
-    saveButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"cloud"] style:UIBarButtonItemStylePlain target:self action:@selector(showSaveMenu)];
-    settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"wrench"] style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
-    playButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(playSlideshowFromStart)];
-    
-    //only show the settings buttons, and such, to the slideshow's owner
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        if ([self.slideshow.identifier isEqualToNumber:@0]){
-            self.navigationItem.rightBarButtonItems = @[playButton, settingsButton, searchButton, saveButton, shareButton];
-        } else if ([self.slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
-            self.navigationItem.rightBarButtonItems = @[playButton, settingsButton, searchButton, saveButton, shareButton];
+    if (IDIOM == IPAD){
+        shareButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"shareArrow"] style:UIBarButtonItemStylePlain target:self action:@selector(share)];
+        searchButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"search"] style:UIBarButtonItemStylePlain target:self action:@selector(startSearch)];
+        saveButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"cloud"] style:UIBarButtonItemStylePlain target:self action:@selector(showSaveMenu)];
+        settingsButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"wrench"] style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
+        playButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(playSlideshowFromStart)];
+        //only show the settings buttons, and such, to the slideshow's owner
+        if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+            if ([self.slideshow.identifier isEqualToNumber:@0]){
+                self.navigationItem.rightBarButtonItems = @[playButton, settingsButton, searchButton, saveButton, shareButton];
+            } else if ([self.slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+                self.navigationItem.rightBarButtonItems = @[playButton, settingsButton, searchButton, saveButton, shareButton];
+            } else {
+                self.navigationItem.rightBarButtonItems = @[playButton, searchButton];
+            }
         } else {
             self.navigationItem.rightBarButtonItems = @[playButton, searchButton];
         }
     } else {
-        self.navigationItem.rightBarButtonItems = @[playButton, searchButton];
+        UIBarButtonItem *menuButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"more"] style:UIBarButtonItemStylePlain target:self action:@selector(showSlideshowOptionsActionSheet)];
+        self.navigationItem.rightBarButtonItem = menuButton;
+    }
+}
+
+- (void)showSlideshowOptionsActionSheet {
+    UIActionSheet *slideshowOptions = [[UIActionSheet alloc] initWithTitle:@"Slideshow options"
+                                                                  delegate:self
+                                                         cancelButtonTitle:@"Cancel"
+                                                    destructiveButtonTitle:nil
+                                                         otherButtonTitles:shareOption,saveOption,searchOption, settingsOption, playOption, nil];
+    [slideshowOptions showInView:self.view];
+}
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:shareOption]){
+        [self share];
+    } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:saveOption]){
+        [self showSaveMenu];
+    } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:searchOption]){
+        [self startSearch];
+    } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:settingsOption]){
+        [self showSettings];
+    } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:playOption]){
+        [actionSheet dismissWithClickedButtonIndex:buttonIndex animated:YES];
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self playSlideshowFromStart];
+        });
+        
     }
 }
 
@@ -421,11 +458,7 @@
     if (IDIOM == IPAD){
         return CGSizeMake((width-kSidebarWidth)/3,(width-kSidebarWidth)/3);
     } else {
-        if (self.view.frame.size.width > self.view.frame.size.height || width > 320.f){
-            return CGSizeMake(width/2,width/2);
-        } else {
-            return CGSizeMake(width,width);
-        }
+        return CGSizeMake(width/2,width/2);
     }
 }
 
@@ -699,7 +732,7 @@
             [self.tableView reloadData];
         }
     } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        NSLog(@"tableView: %@",self.tableView);
+        
     }];
 }
 

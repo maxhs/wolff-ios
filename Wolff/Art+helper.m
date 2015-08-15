@@ -36,8 +36,8 @@
     if ([dictionary objectForKey:@"not_extant"] && [dictionary objectForKey:@"not_extant"] != [NSNull null]){
         self.notExtant = [dictionary objectForKey:@"not_extant"];
     }
-    if ([dictionary objectForKey:@"private"] && [dictionary objectForKey:@"private"] != [NSNull null]){
-        self.privateArt = [dictionary objectForKey:@"private"];
+    if ([dictionary objectForKey:@"priv"] && [dictionary objectForKey:@"priv"] != [NSNull null]){
+        self.privateArt = [dictionary objectForKey:@"priv"];
     }
     if ([dictionary objectForKey:@"visible"] && [dictionary objectForKey:@"visible"] != [NSNull null]){
         self.visible = [dictionary objectForKey:@"visible"];

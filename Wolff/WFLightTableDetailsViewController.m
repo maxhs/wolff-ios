@@ -99,8 +99,6 @@
         [self.navigationController.navigationBar setTintColor:[UIColor blackColor]];
     } else {
         [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
-        //[self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
-        //self.navigationController.navigationBar.shadowImage = [UIImage new];
         self.navigationController.navigationBar.translucent = YES;
         self.navigationController.view.backgroundColor = [UIColor clearColor];
         if ([self.lightTable.identifier isEqualToNumber:@0]){
@@ -110,9 +108,8 @@
         }
         
         self.navigationItem.rightBarButtonItem = rightBarButton;
-        self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+        self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
     }
-    
     
     UIToolbar *backgroundView = [[UIToolbar alloc] initWithFrame:self.view.frame];
     [backgroundView setTranslucent:YES];
@@ -231,8 +228,6 @@
     [cell configureForPhoto:photo];
     return cell;
 }
-
-
 
 #pragma mark - Table view data source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -457,7 +452,7 @@
     [self doneEditing];
     [ProgressHUD show:[NSString stringWithFormat:@"Creating \"%@\"",nameTextField.text]];
     [manager POST:@"light_tables" parameters:@{@"light_table":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success creating a light table: %@", responseObject);
+        //NSLog(@"Success creating a light table: %@", responseObject);
         self.lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
         [self.lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
 

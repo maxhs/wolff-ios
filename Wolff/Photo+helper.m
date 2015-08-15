@@ -22,8 +22,8 @@
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }
-    if ([dictionary objectForKey:@"private"] && [dictionary objectForKey:@"private"] != [NSNull null]){
-        self.privatePhoto = [dictionary objectForKey:@"private"];
+    if ([dictionary objectForKey:@"priv"] && [dictionary objectForKey:@"priv"] != [NSNull null]){
+        self.privatePhoto = [dictionary objectForKey:@"priv"];
     }
     if ([dictionary objectForKey:@"width"] && [dictionary objectForKey:@"width"] != [NSNull null]){
         self.width = [dictionary objectForKey:@"width"];

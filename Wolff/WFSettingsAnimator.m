@@ -15,7 +15,6 @@
     CGFloat width;
     CGFloat height;
     CGRect mainScreen;
-    BOOL iOS8;
 }
 @end
 
@@ -66,11 +65,7 @@
         UIImageView *blurredButton = (UIImageView*)[transitionContext.containerView viewWithTag:kBlurredBackgroundConstant];
         
         CGRect fromEndFrame = fromViewController.view.frame;
-        if (iOS8){
-            fromEndFrame.origin.x = width;
-        } else {
-            fromEndFrame.origin.y = width;
-        }
+        fromEndFrame.origin.x = width;
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
             [blurredButton setAlpha:0.0];

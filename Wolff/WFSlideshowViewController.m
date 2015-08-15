@@ -107,7 +107,7 @@
             [self.collectionView setAlpha:0.0];
         }
     }
-    
+    NSLog(@"after calculating image frames: %f %f",kOriginalArtImageFrame1.origin.x, kOriginalArtImageFrame1.size.width);
     if (self.slideshow){
         [self determinePageNumbers];
         NSLog(@"current page after determining page numbers: %ld",(long)currentPage);
@@ -397,12 +397,14 @@
             currentSlide = self.slideshow.slides[indexPath.item];
             [cell configureForPhotos:currentSlide.photos.mutableCopy inSlide:currentSlide];
             
-            // temporary
-            [cell.artImageView1 setFrame:kOriginalArtImageFrame1];
-            [cell.artImageView2 setFrame:kOriginalArtImageFrame2];
-            [cell.artImageView3 setFrame:kOriginalArtImageFrame3];
-            
             [self assignViewsForCell:cell];
+            
+            // temporary
+            //[cell.artImageView1 setFrame:kOriginalArtImageFrame1];
+            //[cell.artImageView2 setFrame:kOriginalArtImageFrame2];
+            //[cell.artImageView3 setFrame:kOriginalArtImageFrame3];
+            
+            NSLog(@"after calculating image frames from reload data: %f %f",kOriginalArtImageFrame1.origin.x, kOriginalArtImageFrame1.size.width);
             
             return cell;
         }
@@ -767,6 +769,7 @@
             } else if (view == artImageView2){
                 NSLog(@"art image 2");
                 if (artImageView2.moved){
+                    NSLog(@"art image 2 moved");
                     artImageView2.transform = CGAffineTransformIdentity;
                     [artImageView2 setFrame:kOriginalArtImageFrame2];
                     if (currentSlide){

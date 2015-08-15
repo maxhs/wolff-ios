@@ -263,7 +263,6 @@
             [self.searchDelegate batchSelectForLightTable:lightTable];
         }
     }
-
 }
 
 - (void)newLightTable {
@@ -281,9 +280,12 @@
 }
 
 - (void)newSlideshow {
-    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(slideshowSelected:)]) {
-        [self.searchDelegate slideshowForSelected:nil];
-    }
+    NSLog(@"New slideshow from slideshows -> search/select");
+    [self dismissViewControllerAnimated:YES completion:^{
+        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(slideshowSelected:)]) {
+            [self.searchDelegate slideshowForSelected:nil];
+        }
+    }];
 }
 
 - (void)slideshowSelected:(Slideshow *)slideshow {
