@@ -291,6 +291,8 @@
                 _logoImageView.transform = CGAffineTransformMakeTranslation(0, -36);
                 _emailTextField.transform = CGAffineTransformMakeTranslation(0, -60);
                 _passwordTextField.transform = CGAffineTransformMakeTranslation(0, -60);
+                _firstNameTextField.transform = CGAffineTransformMakeTranslation(0, -60);
+                _lastNameTextField.transform = CGAffineTransformMakeTranslation(0, -60);
                 _loginButton.transform = CGAffineTransformMakeTranslation(0, -52);
                 _termsButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
                 _forgotPasswordButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);

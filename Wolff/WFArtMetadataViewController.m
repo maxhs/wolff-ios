@@ -85,7 +85,7 @@ NSString* const deleteOption = @"Delete";
     UIButton *_bceBeginButton;
     UIButton *_ceEndButton;
     UIButton *_bceEndButton;
-    UIButton *moreButton;
+    UIBarButtonItem *moreButton;
     UIActionSheet *flagActionSheet;
 }
 @property (strong, nonatomic) User *currentUser;
@@ -122,11 +122,11 @@ NSString* const deleteOption = @"Delete";
     if (IDIOM != IPAD){
         NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
         [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
-        moreButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [moreButton setImage:[UIImage imageNamed:@"more"] forState:UIControlStateNormal];
-        [moreButton addTarget:self action:@selector(showiPhoneOptions) forControlEvents:UIControlEventTouchUpInside];
-        [_topImageContainerView addSubview:moreButton];
+        moreButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"more"] style:UIBarButtonItemStylePlain target:self action:@selector(showiPhoneOptions)];
+        self.navigationItem.rightBarButtonItem = moreButton;
         [self.view setBackgroundColor:[UIColor whiteColor]];
+        UIBarButtonItem *dismissBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
+        self.navigationItem.leftBarButtonItem = dismissBarButton;
     }
     
     [self drawHeader];
@@ -134,8 +134,13 @@ NSString* const deleteOption = @"Delete";
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self.navigationController setNavigationBarHidden:YES animated:YES];
-    
+    if (IDIOM == IPAD){
+        [self.navigationController setNavigationBarHidden:YES animated:YES];
+    } else {
+        [self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault]; // make the nav bar invisible
+        [self.navigationController.navigationBar setBackgroundColor:[UIColor whiteColor]];
+        [self.dismissButton setHidden:YES]; // don't need this on the iphone
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -153,13 +158,10 @@ NSString* const deleteOption = @"Delete";
     CGSize viewSize = self.view.frame.size;
     CGRect topImageContainerFrame = _topImageContainerView.frame;
     if (IDIOM == IPAD){
-        topImageContainerFrame.size.height = width + 100.f;
-        [_topImageContainerView setFrame:topImageContainerFrame];
         [self setUpButtons];
         CGRect dismissFrame = self.dismissButton.frame;
         dismissFrame.origin.x = viewSize.width-dismissFrame.size.width;
         [self.dismissButton setFrame:dismissFrame];
-        
     } else {
         if (self.photo.art.photos.count > 1){
             topImageContainerFrame.size.height = width + 88.f;
@@ -168,10 +170,6 @@ NSString* const deleteOption = @"Delete";
         }
         [_topImageContainerView setFrame:topImageContainerFrame];
         
-        CGRect dismissFrame = self.dismissButton.frame;
-        dismissFrame.origin.x = 0;
-        [self.dismissButton setFrame:dismissFrame];
-        [moreButton setFrame:CGRectMake(viewSize.width-44.f, 0, 44, 44)];
     }
     
     self.tableView.tableHeaderView = _topImageContainerView;
@@ -331,7 +329,6 @@ NSString* const deleteOption = @"Delete";
     if (self.photo.user && self.photo.user.fullName.length){
         NSMutableParagraphStyle *paragraphStyle = NSMutableParagraphStyle.new;
         paragraphStyle.alignment = NSTextAlignmentCenter;
-        
         [_postedByButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
         NSMutableAttributedString *postedByString = [[NSMutableAttributedString alloc] initWithString:@"POSTED BY:" attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0], NSForegroundColorAttributeName : [UIColor blackColor],NSParagraphStyleAttributeName:paragraphStyle}];
         NSMutableAttributedString *postedByUserString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@",self.photo.user.fullName] attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0], NSForegroundColorAttributeName : kElectricBlue,NSParagraphStyleAttributeName:paragraphStyle}];
@@ -340,6 +337,9 @@ NSString* const deleteOption = @"Delete";
         [_postedByButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
         [_postedByButton.titleLabel setNumberOfLines:0];
         [_postedByButton setHidden:NO];
+        if (IDIOM != IPAD){
+            self.navigationItem.titleView = _postedByButton;
+        }
     } else {
         [_postedByButton setHidden:YES];
     }
@@ -1064,16 +1064,18 @@ NSString* const deleteOption = @"Delete";
 
 - (void)communityTag {
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        [self resetTransitionBooleans];
-        metadataModal = YES;
         WFTagsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Tags"];
         [vc setCommunityTagMode:YES];
         [vc setArt:self.photo.art];
         [vc setSelectedTags:[NSMutableOrderedSet orderedSet]];
         vc.tagDelegate = self;
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-        nav.transitioningDelegate = self;
-        nav.modalPresentationStyle = UIModalPresentationCustom;
+        if (IDIOM == IPAD){
+            nav.transitioningDelegate = self;
+            nav.modalPresentationStyle = UIModalPresentationCustom;
+            [self resetTransitionBooleans];
+            metadataModal = YES;
+        }
         [self presentViewController:nav animated:YES completion:NULL];
     } else {
         [self showLogin];
@@ -1093,9 +1095,7 @@ NSString* const deleteOption = @"Delete";
         [self resetTransitionBooleans];
         metadataModal = YES;
     }
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 - (void)tagsSelected:(NSOrderedSet *)selectedTags {

@@ -19,9 +19,9 @@
     [_label setTextColor:[UIColor whiteColor]];
     [_rangeLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:IDIOM == IPAD ? UIFontTextStyleBody : UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     [_rangeLabel setTextColor:[UIColor whiteColor]];
-    [_fromLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [_fromLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:IDIOM == IPAD ? UIFontTextStyleBody : UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     [_fromLabel setTextColor:[UIColor whiteColor]];
-    [_toLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
+    [_toLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:IDIOM == IPAD ? UIFontTextStyleBody : UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
     [_toLabel setTextColor:[UIColor whiteColor]];
  
     [_orLabel setText:@"OR"];
@@ -162,11 +162,9 @@
         _bceEndButton.selected = NO;
         
         [_label setText:@"DATE"];
-        [_label setFont:[UIFont fontWithDescriptor: [UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThin] size:0]];
         [_label setTextColor:[UIColor blackColor]];
         [_rangeLabel setText:@"DATE RANGE"];
         [_rangeLabel setTextColor:[UIColor blackColor]];
-        [_rangeLabel setFont:[UIFont fontWithDescriptor: [UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansThin] size:0]];
         [_circaLabel setTextColor:[UIColor blackColor]];
         [_circaLabel setFont:[UIFont fontWithDescriptor: [UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
         

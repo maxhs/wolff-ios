@@ -314,7 +314,8 @@ static NSString * const reuseIdentifier = @"IconCell";
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
-    if (searchBar.text.length && !noResults){
+    noResults = NO;
+    if (searchBar.text.length){
         [ProgressHUD show:@"Searching..."];
         [self loadIconsWithSearch:searchBar.text];
     } else {
@@ -337,7 +338,7 @@ static NSString * const reuseIdentifier = @"IconCell";
                 [_filteredIcons addObject:icon];
             }
         }
-        if (_filteredIcons.count == 0){
+        if (_filteredIcons.count == 0 && text.length > 1){
             [self loadIconsWithSearch:text];
         } else {
             noResults = NO;

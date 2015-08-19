@@ -470,6 +470,9 @@ static NSString *const logoutOption = @"Log out";
         [self loadFavorites];
     } else {
         canLoadMore = YES;
+        [_photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
+            [photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        }];
         [_filteredPhotos removeAllObjects];
         [_photos removeAllObjects];
         [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
@@ -1957,11 +1960,11 @@ static NSString *const logoutOption = @"Log out";
         nav = [[UINavigationController alloc] initWithRootViewController:vc];
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
+        nav.view.clipsToBounds = YES;
     } else {
         nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
     }
     
-    nav.view.clipsToBounds = YES;
     dispatch_async(dispatch_get_main_queue(), ^{
         [self presentViewController:nav animated:YES completion:NULL];
     });

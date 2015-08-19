@@ -898,7 +898,7 @@
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
-    if ([touch.view isDescendantOfView:self.metadataCollectionView] && metadataExpanded) {
+    if ([touch.view isDescendantOfView:self.metadataCollectionView] && [touch.view isKindOfClass:[UIButton class]]) {
         return NO; // ignore the touch
     }
     return YES; // handle the touch
