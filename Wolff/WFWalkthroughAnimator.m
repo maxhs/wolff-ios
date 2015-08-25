@@ -13,7 +13,6 @@
 @interface WFWalkthroughAnimator () {
     CGFloat width;
     CGFloat height;
-    BOOL iOS8;
     CGRect mainScreen;
 }
 @end
@@ -25,29 +24,14 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f){
-        width = screenWidth(); height = screenHeight();
-        mainScreen = [UIScreen mainScreen].bounds;
-    } else {
-        width = screenHeight(); height = screenWidth();
-        mainScreen = CGRectMake(0, 0, height, width);
-    }
+    width = screenWidth(); height = screenHeight();
+    mainScreen = [UIScreen mainScreen].bounds;
     
     // Grab the from and to view controllers from the context
-    UIViewController *fromViewController, *toViewController;
-    UIView *fromView,*toView;
-    fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
-    
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.f) {
-        // iOS 8 logic
-        fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-        toView = [transitionContext viewForKey:UITransitionContextToViewKey];
-    } else {
-        // iOS 7 and below logic
-        fromView = fromViewController.view;
-        toView = toViewController.view;
-    }
+    UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    UIViewController *toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
+    UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     
     if (self.presenting) {
         fromViewController.view.userInteractionEnabled = NO;

@@ -13,7 +13,6 @@
     CGFloat width;
     CGFloat height;
     CGRect mainScreen;
-    BOOL iOS8;
 }
 @end
 
@@ -23,26 +22,12 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-        mainScreen = [UIScreen mainScreen].bounds;
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-        mainScreen = CGRectMake(0, 0, height, width);
-    }
-    // Grab the from and to view controllers from the context
-    UIViewController *fromViewController, *toViewController;
-    UIView *fromView,*toView;
-    fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    width = screenWidth(); height = screenHeight();
+    mainScreen = [UIScreen mainScreen].bounds;
     
-    if (iOS8) {
-        fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-        toView = [transitionContext viewForKey:UITransitionContextToViewKey];
-    } else {
-        fromView = fromViewController.view;
-        toView = toViewController.view;
-    }
+    // Grab the from and to views from the context
+    UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
+    UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     
     if (self.presenting) {
         [transitionContext.containerView addSubview:fromView];

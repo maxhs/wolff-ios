@@ -13,7 +13,6 @@
 #import "WFArtMetadataViewController.h"
 
 @interface WFProfileAnimator (){
-    BOOL iOS8;
     CGFloat width;
     CGFloat height;
     CGRect mainScreen;

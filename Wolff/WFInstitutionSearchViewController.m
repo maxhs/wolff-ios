@@ -14,7 +14,6 @@
 @interface WFInstitutionSearchViewController () {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-    BOOL iOS8;
     CGFloat width;
     CGFloat height;
     NSMutableArray *_institutions;
@@ -35,18 +34,14 @@
     [self.tableView setBackgroundColor:[UIColor clearColor]];
     delegate = [UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-    } else {
-        iOS8 = NO; height = screenWidth(); width = screenHeight();
-    }
+    width = screenWidth();
+    height = screenHeight();
     _institutions = [NSMutableArray arrayWithArray:[Institution MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
     _filteredInstitutions = [NSMutableArray array];
     [self loadInstitutions];
     [self registerForKeyboardNotifications];
     
-    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"blackRemove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     
     [self.searchBar setPlaceholder:@"Search for your institution"];

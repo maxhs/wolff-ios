@@ -52,7 +52,7 @@
 #define COCOAPODS_POD_AVAILABLE_Crashlytics
 #define COCOAPODS_VERSION_MAJOR_Crashlytics 3
 #define COCOAPODS_VERSION_MINOR_Crashlytics 1
-#define COCOAPODS_VERSION_PATCH_Crashlytics 0
+#define COCOAPODS_VERSION_PATCH_Crashlytics 1
 
 // DateTools
 #define COCOAPODS_POD_AVAILABLE_DateTools

@@ -15,7 +15,6 @@
     CGFloat width;
     CGFloat height;
     CGRect mainScreen;
-    BOOL iOS8;
 }
 @end
 @implementation WFLeftMenuAnimator
@@ -25,26 +24,17 @@
 }
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-        mainScreen = [UIScreen mainScreen].bounds;
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-        mainScreen = CGRectMake(0, 0, height, width);
-    }
+    width = screenWidth(); height = screenHeight();
+    mainScreen = [UIScreen mainScreen].bounds;
+    
     // Grab the from and to view controllers from the context
     UIViewController *fromViewController, *toViewController;
     UIView *fromView,*toView;
     fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     
-    if (iOS8) {
-        fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
-        toView = [transitionContext viewForKey:UITransitionContextToViewKey];
-    } else {
-        fromView = fromViewController.view;
-        toView = toViewController.view;
-    }
+    fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
+    toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     
     if (self.presenting) {
         
@@ -64,15 +54,9 @@
         [transitionContext.containerView insertSubview:blurredButton belowSubview:toView];
         
         CGRect toEndFrame;
-        if (iOS8){
-            [toView setFrame:CGRectMake(-width, 0, width-(width/2), height)];
-            toEndFrame = toView.frame;
-            toEndFrame.origin.x += width/2;
-        } else {
-            [toView setFrame:CGRectMake(0, width, height, width-(width/2))];
-            toEndFrame = toView.frame;
-            toEndFrame.origin.x = 0; toEndFrame.origin.y = width/2;
-        }
+        [toView setFrame:CGRectMake(-width, 0, width-(width/2), height)];
+        toEndFrame = toView.frame;
+        toEndFrame.origin.x += width/2;
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             [blurredButton setAlpha:1.0];
@@ -88,11 +72,7 @@
         [transitionContext.containerView addSubview:fromView];
         
         CGRect fromEndFrame = fromView.frame;
-        if (iOS8){
-            fromEndFrame.origin.x = -width;
-        } else {
-            fromEndFrame.origin.y = width;
-        }
+        fromEndFrame.origin.x = -width;
         
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{
             [blurredButton setAlpha:0.0];

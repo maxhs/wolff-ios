@@ -21,7 +21,6 @@
     UIBarButtonItem *dismissButton;
     NSDateFormatter *dateFormatter;
     UIImageView *navBarShadowView;
-    BOOL iOS8;
 }
 
 @end
@@ -30,7 +29,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    iOS8 = SYSTEM_VERSION >= 8.f ? YES : NO;
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     
@@ -107,7 +105,6 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSlideMetadataCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideMetadataCell" forIndexPath:indexPath];
-    if (!iOS8) [cell awakeFromNib]; // hack to ensure proper slide cell background color
     [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
     
     NSArray *photosArray = _photos.count ? _photos.array : _slide.photos.array;

@@ -17,7 +17,6 @@
 @interface WFLocationsViewController () <UITextFieldDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-    BOOL iOS8;
     CGFloat width;
     CGFloat height;
     NSString *searchText;
@@ -48,11 +47,8 @@ static NSString * const reuseIdentifier = @"LocationCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-    }
+    width = screenWidth();
+    height = screenHeight();
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];

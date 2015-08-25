@@ -387,7 +387,7 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="lax-fS-wFk">
-                                <rect key="frame" x="254.00000130965958" y="0.0" width="140" height="54"/>
+                                <rect key="frame" x="254" y="0.0" width="140" height="54"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Sign up">
                                     <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
@@ -909,12 +909,20 @@
                                                     <rect key="frame" x="215" y="216" width="25" height="25"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                                 </imageView>
+                                                <button opaque="NO" alpha="0.80000001192092896" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="4N8-DQ-DDG" userLabel="Partner Badge">
+                                                    <rect key="frame" x="18" y="208" width="30" height="30"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES"/>
+                                                    <state key="normal" image="partnerBadge.png">
+                                                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                                    </state>
+                                                </button>
                                             </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         </view>
                                         <connections>
                                             <outlet property="checkmark" destination="6ic-63-aat" id="jH7-ha-gxq"/>
                                             <outlet property="landscapeArtImageView" destination="Hd7-KQ-Xtv" id="fp1-1n-2Ez"/>
+                                            <outlet property="partnerBadge" destination="4N8-DQ-DDG" id="lqy-MA-gDR"/>
                                             <outlet property="portraitArtImageView" destination="VJ2-Io-PRD" id="vWx-Td-jb4"/>
                                             <outlet property="slideContainerView" destination="5NZ-BG-Phd" id="LcE-1A-apS"/>
                                         </connections>
@@ -1404,8 +1412,8 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <button opaque="NO" alpha="0.80000000000000004" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="uaE-uO-SPh" userLabel="Partner Badge">
-                                                    <rect key="frame" x="10" y="222" width="24" height="24"/>
-                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                    <rect key="frame" x="15" y="213" width="30" height="30"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES"/>
                                                     <state key="normal" image="partnerBadge.png">
                                                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                                     </state>
@@ -2521,7 +2529,7 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="BillingCell" rowHeight="54" id="7dC-Fd-CjS" customClass="WFBillingCell">
-                                        <rect key="frame" x="0.0" y="86" width="414" height="54"/>
+                                        <rect key="frame" x="0.0" y="22" width="414" height="54"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="7dC-Fd-CjS" id="cfg-mF-oYd">
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="53"/>
@@ -2968,7 +2976,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="nB8-WW-WlR" userLabel="Material Label">
-                                                    <rect key="frame" x="190.00000018423253" y="25" width="220" height="134"/>
+                                                    <rect key="frame" x="190" y="25" width="220" height="134"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -3085,7 +3093,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Vhx-VM-JK1" userLabel="Icon Label">
-                                                    <rect key="frame" x="190.00000018423253" y="25" width="220" height="134"/>
+                                                    <rect key="frame" x="190" y="25" width="220" height="134"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -3352,7 +3360,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="uk4-T0-o8B" userLabel="Tag Label">
-                                                    <rect key="frame" x="143.99999971898706" y="3" width="266" height="134"/>
+                                                    <rect key="frame" x="143.99999957642109" y="3" width="266" height="134"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -3480,12 +3488,20 @@
                                                     <rect key="frame" x="215" y="216" width="25" height="25"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                                 </imageView>
+                                                <button opaque="NO" alpha="0.80000001192092896" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="OF4-5A-lOU" userLabel="Partner Badge">
+                                                    <rect key="frame" x="18" y="208" width="30" height="30"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES"/>
+                                                    <state key="normal" image="partnerBadge.png">
+                                                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                                    </state>
+                                                </button>
                                             </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         </view>
                                         <connections>
                                             <outlet property="checkmark" destination="erB-Ka-c2f" id="cNR-Gs-QTl"/>
                                             <outlet property="landscapeArtImageView" destination="VHt-AI-sAx" id="RwU-n4-AZE"/>
+                                            <outlet property="partnerBadge" destination="OF4-5A-lOU" id="Qcy-mF-i2y"/>
                                             <outlet property="portraitArtImageView" destination="qaF-zS-ZWg" id="7ob-MI-MxY"/>
                                             <outlet property="slideContainerView" destination="AAu-kb-wIR" id="npm-PP-P30"/>
                                         </connections>
@@ -3584,7 +3600,7 @@
         <image name="left.png" width="20" height="20"/>
         <image name="leftWhite.png" width="20" height="20"/>
         <image name="lightTableWalkthroughIcon.png" width="68" height="50"/>
-        <image name="partnerBadge.png" width="24" height="24"/>
+        <image name="partnerBadge.png" width="30" height="30"/>
         <image name="remove.png" width="25" height="25"/>
         <image name="right.png" width="20" height="20"/>
         <image name="rightWhite.png" width="20" height="20"/>

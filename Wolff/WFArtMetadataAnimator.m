@@ -16,7 +16,6 @@
 @interface WFArtMetadataAnimator () {
     CGFloat width;
     CGFloat height;
-    BOOL iOS8;
 }
 
 @end
@@ -28,7 +27,8 @@
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext {
     CGRect mainScreen = [UIScreen mainScreen].bounds;
-    iOS8 = YES; width = screenWidth(); height = screenHeight();
+    width = screenWidth();
+    height = screenHeight();
 
     // Grab the from and to view controllers from the context
     UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
@@ -41,10 +41,13 @@
         [darkBackground setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
         [darkBackground setTag:kDarkBackgroundConstant];
         
-        UINavigationController *nav = (UINavigationController*)toViewController;
+        
         WFArtMetadataViewController *artvc;
-        if ([nav.viewControllers.firstObject isKindOfClass:[WFArtMetadataViewController class]]){
-            artvc = (WFArtMetadataViewController*)nav.viewControllers.firstObject;
+        if ([toViewController isKindOfClass:[UINavigationController class]]){
+            UINavigationController *nav = (UINavigationController*)toViewController;
+            if ([nav.viewControllers.firstObject isKindOfClass:[WFArtMetadataViewController class]]){
+                artvc = (WFArtMetadataViewController*)nav.viewControllers.firstObject;
+            }
         }
         
         [darkBackground addTarget:artvc action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
@@ -64,22 +67,16 @@
         CGFloat xOffset = rndValue == 1 ? width : -width;
         
         CGRect metadataFrame;
-        if (iOS8) {
-            if (IDIOM == IPAD){
-                metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
-                CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
-                toViewController.view.frame = metadataStartFrame;
-            } else {
-                metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
-                CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
-                toViewController.view.frame = metadataStartFrame;
-            }
+        if (IDIOM == IPAD){
+            metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
+            CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
+            toViewController.view.frame = metadataStartFrame;
         } else {
-            metadataFrame = CGRectMake(0, width/2-kMetadataWidth/2, height, kMetadataWidth);
-            CGRect metadataStartFrame = CGRectMake(0, (width/2-kMetadataWidth/2)-xOffset, height, kMetadataWidth);
+            metadataFrame = CGRectMake(width/2-kMetadataWidth/2, 0, kMetadataWidth, height);
+            CGRect metadataStartFrame = CGRectMake((width/2-kMetadataWidth/2)-xOffset, 0, kMetadataWidth, height);
             toViewController.view.frame = metadataStartFrame;
         }
-    
+        
         [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             toViewController.view.frame = metadataFrame;
             [toViewController.view setAlpha:1.0];
@@ -93,9 +90,7 @@
         
         NSTimeInterval outDuration = [self transitionDuration:transitionContext]*.77;
         [UIView animateWithDuration:outDuration delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.001 options:UIViewAnimationOptionCurveEaseIn animations:^{
-            if (iOS8){
-                fromViewController.view.transform = CGAffineTransformMakeScale(.923f, .923f);
-            }
+            fromViewController.view.transform = CGAffineTransformMakeScale(.923f, .923f);
             [fromViewController.view setAlpha:0.0];
             [darkBackground setAlpha:0.0];
         } completion:^(BOOL finished) {

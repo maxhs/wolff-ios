@@ -22,7 +22,6 @@
     UIBarButtonItem *dismissButton;
     CGFloat height;
     CGFloat width;
-    BOOL iOS8;
     BOOL photos;
     BOOL slideshows;
     BOOL lightTables;
@@ -42,11 +41,9 @@
     manager = delegate.manager;
     [self.view setBackgroundColor:[UIColor blackColor]];
     [self.collectionView setBackgroundColor:[UIColor clearColor]];
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-    }
+    width = screenWidth();
+    height = screenHeight();
+    
     dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];

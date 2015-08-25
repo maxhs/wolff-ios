@@ -21,7 +21,6 @@
     CGFloat keyboardHeight;
     UIBarButtonItem *doneButton;
     UIBarButtonItem *backButton;
-    BOOL iOS8;
     UIImageView *navBarShadowView;
 }
 
@@ -33,11 +32,8 @@
     [super viewDidLoad];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-    }
+    width = screenWidth();
+    height = screenHeight();
     [self.view setBackgroundColor:[UIColor blackColor]];
     _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     _panGesture.delegate = self;

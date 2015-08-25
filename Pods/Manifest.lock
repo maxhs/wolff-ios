@@ -20,7 +20,7 @@ PODS:
   - AFNetworking/UIKit (2.5.0):
     - AFNetworking/NSURLConnection
     - AFNetworking/NSURLSession
-  - Crashlytics (3.1.0)
+  - Crashlytics (3.1.1)
   - DateTools (1.4.3)
   - Fabric (1.2.8):
     - Fabric/Base (= 1.2.8)
@@ -54,7 +54,7 @@ DEPENDENCIES:
 
 SPEC CHECKSUMS:
   AFNetworking: 96ac9bf3eda33582701cb1fcc5b896aa1e20311e
-  Crashlytics: ef9a58a4e806b316a1748c06432f6f847ba09ac6
+  Crashlytics: 39ab395565bc03c29cdecd2b9d103ebf30930c10
   DateTools: c3d055af2c4d039c1791b5bffb1444ad1db32219
   Fabric: a9eabe53915e9f1db55a84dd2838737928675878
   GoogleAnalytics: ef2e0b800ef3c1e62688cdfc959e0d3132bc246c
