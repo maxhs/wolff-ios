@@ -69,6 +69,8 @@
             [photo populateFromDictionary:dict];
             [set addObject:photo];
         }
+        NSSortDescriptor *photoSort = [NSSortDescriptor sortDescriptorWithKey:@"orderIndex" ascending:YES];
+        [set sortUsingDescriptors:@[photoSort]];
         self.photos = set;
     }
     if ([dictionary objectForKey:@"interval"] && [dictionary objectForKey:@"interval"] != [NSNull null]){

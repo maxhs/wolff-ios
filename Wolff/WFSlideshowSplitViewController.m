@@ -225,7 +225,7 @@ NSString* const playOption = @"Play";
                                                                   delegate:self
                                                          cancelButtonTitle:@"Cancel"
                                                     destructiveButtonTitle:nil
-                                                         otherButtonTitles:shareOption,saveOption,searchOption, settingsOption, playOption, nil];
+                                                         otherButtonTitles:searchOption, saveOption, shareOption, settingsOption, playOption, nil];
     [slideshowOptions showInView:self.view];
 }
 

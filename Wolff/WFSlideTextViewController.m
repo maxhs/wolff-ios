@@ -109,11 +109,12 @@
     NSValue *keyboardValue = info[UIKeyboardFrameEndUserInfoKey];
     CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
     keyboardHeight = convertedKeyboardFrame.size.height;
+    CGFloat originY = self.navigationController.navigationBar.frame.size.height;
     [UIView animateWithDuration:duration
                           delay:0
                         options:curve | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
-                         self.textView.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight/2);
+                         [self.textView setFrame:CGRectMake(10, originY, width-20, height-originY-keyboardHeight)];
                      } completion:^(BOOL finished) {
                          
                      }];
@@ -126,12 +127,12 @@
     NSValue *keyboardValue = info[UIKeyboardFrameEndUserInfoKey];
     CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
     keyboardHeight = convertedKeyboardFrame.size.height;
-    
+    CGFloat originY = self.navigationController.navigationBar.frame.size.height;
     [UIView animateWithDuration:duration
                           delay:0
                         options:curve | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
-                         //self.textView.transform = CGAffineTransformIdentity;
+                         [self.textView setFrame:CGRectMake(10, originY, width-20, height-originY)];
                      } completion:nil];
 }
 

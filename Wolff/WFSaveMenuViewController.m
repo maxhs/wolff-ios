@@ -29,7 +29,7 @@
     if (IDIOM == IPAD){
         
     } else {
-        UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+        UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
         self.navigationItem.leftBarButtonItem = dismissButton;
         [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
         

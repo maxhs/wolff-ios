@@ -22,7 +22,6 @@
 @interface WFSlideshowViewController () <UIToolbarDelegate, UIViewControllerTransitioningDelegate, UIGestureRecognizerDelegate> {
     CGFloat width;
     CGFloat height;
-    BOOL iOS8;
     UIBarButtonItem *dismissButton;
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
@@ -74,11 +73,7 @@
     [super viewDidLoad];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-    }
+    width = screenWidth(); height = screenHeight();
     [self.view setBackgroundColor:[UIColor blackColor]];
     if (self.slideshow) self.slideshow = [self.slideshow MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     
@@ -107,13 +102,14 @@
             [self.collectionView setAlpha:0.0];
         }
     }
-    NSLog(@"after calculating image frames: %f %f",kOriginalArtImageFrame1.origin.x, kOriginalArtImageFrame1.size.width);
     if (self.slideshow){
         [self determinePageNumbers];
         NSLog(@"current page after determining page numbers: %ld",(long)currentPage);
     }
     [self.metadataCollectionView reloadData];
     [self adjustMetadataPosition];
+    
+    currentPage == self.slideshow.slides.count ? [nextButton setEnabled:NO] : [nextButton setEnabled:YES]; // disable next button if there are no slides in this slideshow
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -195,7 +191,7 @@
 
 - (void)setUpNavBar {
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
-    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
     if (self.slideshow){
         previousButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"leftArrow"] style:UIBarButtonItemStylePlain target:self action:@selector(previousSlide:)];
         nextButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"rightArrow"] style:UIBarButtonItemStylePlain target:self action:@selector(nextSlide:)];
@@ -275,7 +271,7 @@
     
     if (currentPage != page) {
         currentPage = page;
-        if (currentPage > 0){
+        if (currentPage > 0 && self.slideshow.slides.count){
             [slideNumberButtonItem setTitle:[NSString stringWithFormat:@"%ld of %lu",(long)currentPage,(unsigned long)self.slideshow.slides.count]];
             currentSlide = self.slideshow.slides[currentPage-1]; // offset by 1 because the index starts at 0, not 1
             WFSlideshowSlideCell *cell = (WFSlideshowSlideCell*)[self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:currentPage-1 inSection:1]];
@@ -404,7 +400,6 @@
             //[cell.artImageView2 setFrame:kOriginalArtImageFrame2];
             //[cell.artImageView3 setFrame:kOriginalArtImageFrame3];
             
-            NSLog(@"after calculating image frames from reload data: %f %f",kOriginalArtImageFrame1.origin.x, kOriginalArtImageFrame1.size.width);
             
             return cell;
         }
@@ -602,18 +597,20 @@
                 photoSlide = currentSlide.photoSlides[0];
             } else if (view == cell.artImageView2){
                 photoSlide = currentSlide.photoSlides[0];
-            } else if (view == cell.artImageView3){
+            } else if (view == cell.artImageView3 && currentSlide.photoSlides.count > 1){
                 photoSlide = currentSlide.photoSlides[1];
             }
-            [photoSlide setPositionX:@(view.frame.origin.x)];
-            [photoSlide setPositionY:@(view.frame.origin.y)];
-            [photoSlide setWidth:@(view.frame.size.width)];
-            [photoSlide setHeight:@(view.frame.size.height)];
-            [photoSlide setScale:@([[view.layer valueForKeyPath:@"transform.scale"] floatValue])];
-            
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                NSLog(@"slide photo after save: %@, %@, %@, %@ and scale: %@",photoSlide.positionX, photoSlide.positionY, photoSlide.width, photoSlide.height, photoSlide.scale);
-            }];
+            if (photoSlide){
+                [photoSlide setPositionX:@(view.frame.origin.x)];
+                [photoSlide setPositionY:@(view.frame.origin.y)];
+                [photoSlide setWidth:@(view.frame.size.width)];
+                [photoSlide setHeight:@(view.frame.size.height)];
+                [photoSlide setScale:@([[view.layer valueForKeyPath:@"transform.scale"] floatValue])];
+                
+                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                    NSLog(@"slide photo after save: %@, %@, %@, %@ and scale: %@",photoSlide.positionX, photoSlide.positionY, photoSlide.width, photoSlide.height, photoSlide.scale);
+                }];
+            }
         } else if (self.photos.count) {
             [(WFInteractiveImageView*)view setMoved:YES];
         }

@@ -70,7 +70,7 @@
         width = screenWidth(); height = screenHeight();
         [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
         if (self.navigationController.viewControllers.count <= 1){
-            UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+            UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
             self.navigationItem.leftBarButtonItem = dismissButton;
         }
     }

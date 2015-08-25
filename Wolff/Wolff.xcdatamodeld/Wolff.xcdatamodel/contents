@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="7701" systemVersion="14E46" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="7701" systemVersion="14F27" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="Alternate" representedClassName="Alternate" syncable="YES">
         <attribute name="confirmed" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
@@ -226,8 +226,10 @@
         <attribute name="image" optional="YES" attributeType="Transformable" syncable="YES"/>
         <attribute name="largeImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="notes" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="orderIndex" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="orientation" optional="YES" attributeType="Integer 16" defaultValueString="1" syncable="YES"/>
         <attribute name="originalImageUrl" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="primary" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="privatePhoto" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="slideImageUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="thumbImageUrl" optional="YES" attributeType="String" syncable="YES"/>
@@ -351,13 +353,13 @@
         <element name="Movement" positionX="324" positionY="387" width="128" height="88"/>
         <element name="Note" positionX="288" positionY="342" width="128" height="135"/>
         <element name="Notification" positionX="288" positionY="342" width="128" height="253"/>
-        <element name="Photo" positionX="279" positionY="324" width="128" height="435"/>
+        <element name="Partner" positionX="288" positionY="342" width="128" height="195"/>
+        <element name="Photo" positionX="279" positionY="324" width="128" height="465"/>
         <element name="PhotoSlide" positionX="297" positionY="351" width="128" height="240"/>
         <element name="Slide" positionX="297" positionY="315" width="128" height="150"/>
         <element name="Slideshow" positionX="288" positionY="306" width="128" height="225"/>
         <element name="SlideText" positionX="288" positionY="342" width="128" height="148"/>
         <element name="Tag" positionX="288" positionY="342" width="128" height="103"/>
         <element name="User" positionX="261" positionY="189" width="128" height="510"/>
-        <element name="Partner" positionX="288" positionY="342" width="128" height="195"/>
     </elements>
 </model>

@@ -31,35 +31,14 @@
     [_circaLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [_circaLabel setTextColor:[UIColor whiteColor]];
     
-    [_ceButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
-    [_ceButton setTitleColor:[UIColor colorWithWhite:1 alpha:.23] forState:UIControlStateNormal];
-    [_ceButton setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
-    _ceButton.selected = YES;
+    [_eraButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    [_eraButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
     
-    [_bceButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
-    [_bceButton setTitleColor:[UIColor colorWithWhite:1 alpha:.23] forState:UIControlStateNormal];
-    [_bceButton setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
-    _bceButton.selected = NO;
+    [_beginEraButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    [_beginEraButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
     
-    [_ceBeginButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
-    [_ceBeginButton setTitleColor:[UIColor colorWithWhite:1 alpha:.23] forState:UIControlStateNormal];
-    [_ceBeginButton setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
-    _ceBeginButton.selected = YES;
-    
-    [_bceBeginButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
-    [_bceBeginButton setTitleColor:[UIColor colorWithWhite:1 alpha:.23] forState:UIControlStateNormal];
-    [_bceBeginButton setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
-    _bceBeginButton.selected = NO;
-    
-    [_ceEndButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
-    [_ceEndButton setTitleColor:[UIColor colorWithWhite:1 alpha:.23] forState:UIControlStateNormal];
-    [_ceEndButton setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
-    _ceEndButton.selected = YES;
-    
-    [_bceEndButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
-    [_bceEndButton setTitleColor:[UIColor colorWithWhite:1 alpha:.23] forState:UIControlStateNormal];
-    [_bceEndButton setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
-    _bceEndButton.selected = NO;
+    [_endEraButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    [_endEraButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
     
     [self textFieldTreatment:_beginYearTextField];
     [self textFieldTreatment:_singleYearTextField];
@@ -83,37 +62,10 @@
 }
 
 - (void)configureArt:(Art*)art forEditMode:(BOOL)editMode {
-    if ([art.interval.suffix isEqualToString:@"CE"]){
-        [_ceButton setSelected:YES];
-        [_bceButton setSelected:NO];
-    } else if ([art.interval.suffix isEqualToString:@"BCE"]){
-        [_ceButton setSelected:NO];
-        [_bceButton setSelected:YES];
-    }
+    [_eraButton setTitle:art.interval.suffix forState:UIControlStateNormal];
+    [_beginEraButton setTitle:art.interval.beginSuffix forState:UIControlStateNormal];
+    [_endEraButton setTitle:art.interval.beginSuffix forState:UIControlStateNormal];
     
-    if ([art.interval.beginSuffix isEqualToString:@"CE"]){
-        [_ceBeginButton setSelected:YES];
-        [_bceBeginButton setSelected:NO];
-    } else if ([art.interval.beginSuffix isEqualToString:@"BCE"]){
-        [_ceBeginButton setSelected:NO];
-        [_bceBeginButton setSelected:YES];
-    }
-    
-    if ([art.interval.endSuffix isEqualToString:@"CE"]){
-        [_ceEndButton setSelected:YES];
-        [_bceEndButton setSelected:NO];
-    } else if ([art.interval.endSuffix isEqualToString:@"BCE"]){
-        [_ceEndButton setSelected:NO];
-        [_bceEndButton setSelected:YES];
-    }
-    
-    if ([art.interval.suffix isEqualToString:@"CE"]){
-        [_ceButton setSelected:YES];
-        [_bceButton setSelected:NO];
-    } else if ([art.interval.suffix isEqualToString:@"BCE"]){
-        [_ceButton setSelected:NO];
-        [_bceButton setSelected:YES];
-    }
     [_label setText:@"DATE"];
     [_rangeLabel setText:@"RANGE"];
     [_circaLabel setText:@"CIRCA"];
@@ -122,45 +74,24 @@
     [_endYearTextField setPlaceholder:@"End"];
     if (art.interval.year && ![art.interval.year isEqualToNumber:@0]){
         [_singleYearTextField setText:[NSString stringWithFormat:@"%@",art.interval.year]];
+        [_eraButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    } else {
+        [_eraButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
     }
     if (art.interval.beginRange && ![art.interval.beginRange isEqualToNumber:@0]){
         [_beginYearTextField setText:[NSString stringWithFormat:@"%@",art.interval.beginRange]];
+        [_beginEraButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    } else {
+        [_beginEraButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
     }
     if (art.interval.endRange && ![art.interval.endRange isEqualToNumber:@0]){
         [_endYearTextField setText:[NSString stringWithFormat:@"%@",art.interval.endRange]];
+        [_endEraButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    } else {
+        [_endEraButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
     }
     
     if (editMode){
-        [_ceButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-        [_ceButton setTitleColor:[UIColor colorWithWhite:0 alpha:.23] forState:UIControlStateNormal];
-        [_ceButton setTitleColor:kSaffronColor forState:UIControlStateSelected];
-        _ceButton.selected = YES;
-        
-        [_bceButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-        [_bceButton setTitleColor:[UIColor colorWithWhite:0 alpha:.23] forState:UIControlStateNormal];
-        [_bceButton setTitleColor:kSaffronColor forState:UIControlStateSelected];
-        _bceButton.selected = NO;
-        
-        [_ceBeginButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-        [_ceBeginButton setTitleColor:[UIColor colorWithWhite:0 alpha:.23] forState:UIControlStateNormal];
-        [_ceBeginButton setTitleColor:kSaffronColor forState:UIControlStateSelected];
-        _ceBeginButton.selected = YES;
-        
-        [_bceBeginButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-        [_bceBeginButton setTitleColor:[UIColor colorWithWhite:0 alpha:.23] forState:UIControlStateNormal];
-        [_bceBeginButton setTitleColor:kSaffronColor forState:UIControlStateSelected];
-        _bceBeginButton.selected = NO;
-        
-        [_ceEndButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-        [_ceEndButton setTitleColor:[UIColor colorWithWhite:0 alpha:.23] forState:UIControlStateNormal];
-        [_ceEndButton setTitleColor:kSaffronColor forState:UIControlStateSelected];
-        _ceEndButton.selected = YES;
-        
-        [_bceEndButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLight] size:0]];
-        [_bceEndButton setTitleColor:[UIColor colorWithWhite:0 alpha:.23] forState:UIControlStateNormal];
-        [_bceEndButton setTitleColor:kSaffronColor forState:UIControlStateSelected];
-        _bceEndButton.selected = NO;
-        
         [_label setText:@"DATE"];
         [_label setTextColor:[UIColor blackColor]];
         [_rangeLabel setText:@"DATE RANGE"];
@@ -172,19 +103,10 @@
         [self editModeTextFieldTreatement:_endYearTextField];
         [self editModeTextFieldTreatement:_singleYearTextField];
         
-        [_ceBeginButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        [_ceButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        [_ceEndButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        [_bceButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        [_bceBeginButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        [_bceEndButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     } else {
-        [_ceButton setShowsTouchWhenHighlighted:YES];
-        [_ceBeginButton setShowsTouchWhenHighlighted:YES];
-        [_ceEndButton setShowsTouchWhenHighlighted:YES];
-        [_bceButton setShowsTouchWhenHighlighted:YES];
-        [_bceBeginButton setShowsTouchWhenHighlighted:YES];
-        [_bceEndButton setShowsTouchWhenHighlighted:YES];
+        [_eraButton setShowsTouchWhenHighlighted:YES];
+        [_beginEraButton setShowsTouchWhenHighlighted:YES];
+        [_endEraButton setShowsTouchWhenHighlighted:YES];
     }
 }
 

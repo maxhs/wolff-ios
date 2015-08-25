@@ -121,7 +121,7 @@
         [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
         [self.tableView setSeparatorColor:[UIColor colorWithWhite:0 alpha:.14]];
         [self.collectionView setBackgroundColor:[UIColor blackColor]];
-        dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+        dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
         self.navigationItem.leftBarButtonItem = dismissButton;
         cancelButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(doneEditing)];
         if (_shouldShowSearchBar){

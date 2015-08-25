@@ -37,6 +37,7 @@
 #import "WFNoRotateNavController.h"
 #import "WFNewLightTableAnimator.h"
 #import "WFTransparentBGModalAnimator.h"
+#import "WFPartnerProfileViewController.h"
 
 NSString* const unfavoriteOption = @"Unfavorite";
 NSString* const favoriteOption = @"Favorite";
@@ -79,14 +80,15 @@ NSString* const deleteOption = @"Delete";
     UITextField *beginYearTextField;
     UITextField *endYearTextField;
     UITextField *dateTextField;
-    UIButton *_ceButton;
-    UIButton *_bceButton;
-    UIButton *_ceBeginButton;
-    UIButton *_bceBeginButton;
-    UIButton *_ceEndButton;
-    UIButton *_bceEndButton;
+    UIButton *_eraButton;
+    UIButton *_beginEraButton;
+    UIButton *_endEraButton;
     UIBarButtonItem *moreButton;
+    UIBarButtonItem *saveBarButton;
     UIActionSheet *flagActionSheet;
+    UIActionSheet *eraActionSheet;
+    UIActionSheet *beginEraActionSheet;
+    UIActionSheet *endEraActionSheet;
 }
 @property (strong, nonatomic) User *currentUser;
 @property (strong, nonatomic) Favorite *favorite;
@@ -119,17 +121,16 @@ NSString* const deleteOption = @"Delete";
     self.photoScrollView.pagingEnabled = YES;
     [self.photoScrollView setCanCancelContentTouches:YES];
     
-    if (IDIOM != IPAD){
-        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
-        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+    if (IDIOM == IPAD){
+        [self drawHeader];
+    } else {
         moreButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"more"] style:UIBarButtonItemStylePlain target:self action:@selector(showiPhoneOptions)];
         self.navigationItem.rightBarButtonItem = moreButton;
+        saveBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(saveMetadata)];
         [self.view setBackgroundColor:[UIColor whiteColor]];
         UIBarButtonItem *dismissBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
         self.navigationItem.leftBarButtonItem = dismissBarButton;
     }
-    
-    [self drawHeader];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -140,6 +141,10 @@ NSString* const deleteOption = @"Delete";
         [self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault]; // make the nav bar invisible
         [self.navigationController.navigationBar setBackgroundColor:[UIColor whiteColor]];
         [self.dismissButton setHidden:YES]; // don't need this on the iphone
+        
+        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
+        [[UIDevice currentDevice] setValue:value forKey:@"orientation"]; // force portrait orientation
+        [self drawHeader];
     }
 }
 
@@ -169,7 +174,6 @@ NSString* const deleteOption = @"Delete";
             topImageContainerFrame.size.height = width + 44.f;
         }
         [_topImageContainerView setFrame:topImageContainerFrame];
-        
     }
     
     self.tableView.tableHeaderView = _topImageContainerView;
@@ -181,6 +185,7 @@ NSString* const deleteOption = @"Delete";
     [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
 
     [self setupPhotoScrollView];
+    NSLog(@"where is the scroll view? %@",self.photoScrollView);
 }
 
 - (void)showiPhoneOptions {
@@ -202,6 +207,69 @@ NSString* const deleteOption = @"Delete";
         } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Incorrect metadata"]) {
             [self performSegueWithIdentifier:@"Flag" sender:nil];
         }
+    } else if (actionSheet == eraActionSheet){
+        if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"CE"]){
+            [_eraButton setTitle:@"CE" forState:UIControlStateNormal];
+            [_eraButton setSelected:YES];
+            [self.photo.art.interval setSuffix:@"CE"];
+            [_eraButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"BCE"])  {
+            [_eraButton setTitle:@"BCE" forState:UIControlStateNormal];
+            [_eraButton setSelected:YES];
+            [self.photo.art.interval setSuffix:@"BCE"];
+            [_eraButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Clear"])  {
+            [_eraButton setTitle:@"CE" forState:UIControlStateNormal];
+            [_eraButton setSelected:NO];
+            [_eraButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
+            [self.photo.art.interval setSuffix:nil];
+        }
+        
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
+    } else if (actionSheet == beginEraActionSheet){
+        if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"CE"]){
+            [_beginEraButton setTitle:@"CE" forState:UIControlStateNormal];
+            [_beginEraButton setSelected:YES];
+            [_beginEraButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+            [self.photo.art.interval setBeginSuffix:@"CE"];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"BCE"]) {
+            [_beginEraButton setTitle:@"BCE" forState:UIControlStateNormal];
+            [_beginEraButton setSelected:YES];
+            [_beginEraButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+            [self.photo.art.interval setBeginSuffix:@"BCE"];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Clear"]) {
+            [_beginEraButton setTitle:@"CE" forState:UIControlStateNormal];
+            [_beginEraButton setSelected:NO];
+            [_beginEraButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
+            [self.photo.art.interval setBeginSuffix:nil];
+        }
+        
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
+    } else if (actionSheet == endEraActionSheet){
+        if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"CE"]){
+            [_endEraButton setTitle:@"CE" forState:UIControlStateNormal];
+            [_endEraButton setSelected:YES];
+            [_endEraButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+            [self.photo.art.interval setEndSuffix:@"CE"];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"BCE"]) {
+            [_endEraButton setTitle:@"BCE" forState:UIControlStateNormal];
+            [_endEraButton setSelected:YES];
+            [_endEraButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+            [self.photo.art.interval setEndSuffix:@"BCE"];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Clear"])  {
+            [_endEraButton setTitle:@"CE" forState:UIControlStateNormal];
+            [_endEraButton setSelected:NO];
+            [_endEraButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
+            [self.photo.art.interval setEndSuffix:nil];
+        }
+        
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
     } else {
         if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:unfavoriteOption]){
             [self unfavorite];
@@ -326,13 +394,19 @@ NSString* const deleteOption = @"Delete";
 }
 
 - (void)setPhotoCredit {
-    if (self.photo.user && self.photo.user.fullName.length){
+    NSString *stringContent;
+    if (self.photo.partners.count){
+        stringContent = self.photo.partnersToSentence;
+    } else if (self.photo.user && self.photo.user.fullName.length){
+        stringContent = self.photo.user.fullName;
+    }
+    
+    if (stringContent.length){
         NSMutableParagraphStyle *paragraphStyle = NSMutableParagraphStyle.new;
         paragraphStyle.alignment = NSTextAlignmentCenter;
         [_postedByButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
-        NSMutableAttributedString *postedByString = [[NSMutableAttributedString alloc] initWithString:@"POSTED BY:" attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0], NSForegroundColorAttributeName : [UIColor blackColor],NSParagraphStyleAttributeName:paragraphStyle}];
-        NSMutableAttributedString *postedByUserString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@",self.photo.user.fullName] attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0], NSForegroundColorAttributeName : kElectricBlue,NSParagraphStyleAttributeName:paragraphStyle}];
-        [postedByString appendAttributedString:postedByUserString];
+        NSMutableAttributedString *postedByString = [[NSMutableAttributedString alloc] initWithString:@"POSTED BY:" attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor blackColor],NSParagraphStyleAttributeName:paragraphStyle}];
+       [postedByString appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@" %@",stringContent] attributes:@{NSFontAttributeName : [UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : kElectricBlue, NSParagraphStyleAttributeName:paragraphStyle}]];
         [_postedByButton setAttributedTitle:postedByString forState:UIControlStateNormal];
         [_postedByButton addTarget:self action:@selector(showProfile) forControlEvents:UIControlEventTouchUpInside];
         [_postedByButton.titleLabel setNumberOfLines:0];
@@ -575,6 +649,8 @@ NSString* const deleteOption = @"Delete";
             navFrame.size.width = newViewFrame.size.width;
             navFrame.origin.x = (width-navFrame.size.width)/2;
             [self.navigationController.view setFrame:navFrame];
+        } else {
+            self.navigationItem.rightBarButtonItem = saveBarButton;
         }
         self.tableView.tableFooterView = saveContainerView;
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
@@ -599,6 +675,9 @@ NSString* const deleteOption = @"Delete";
     } else {
         // temporarily set the tableView background color to white so that the cell backgrounds don't get exposed
         [self.tableView setBackgroundColor:[UIColor whiteColor]];
+        if (IDIOM != IPAD){
+            self.navigationItem.rightBarButtonItem = moreButton;
+        }
         [UIView animateWithDuration:.77 delay:0 usingSpringWithDamping:.9 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             if (IDIOM == IPAD){
                 [self.view setFrame:originalViewFrame];
@@ -628,19 +707,26 @@ NSString* const deleteOption = @"Delete";
 }
 
 - (void)showProfile {
-    WFProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Profile"];
-    [vc setUser:self.photo.user];
+    UINavigationController *nav;
+    if (self.photo.partners.count){
+        WFPartnerProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"PartnerProfile"];
+        [vc setPartner:self.photo.partners.firstObject];
+        nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    } else {
+        WFProfileViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Profile"];
+        [vc setUser:self.photo.user];
+        nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    }
+    
     [self resetTransitionBooleans];
     profile = YES;
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    
     if (IDIOM == IPAD){
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
     }
     
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 - (void)loadPhotoMetadata {
@@ -687,7 +773,7 @@ NSString* const deleteOption = @"Delete";
     
     //photo parameters
     NSMutableDictionary *photoParameters = [NSMutableDictionary dictionary];
-    [photoParameters setObject:@(privateSwitch.isOn) forKey:@"private"];
+    [photoParameters setObject:@(privateSwitch.isOn) forKey:@"priv"];
     [photoParameters setObject:creditTextView.text forKey:@"credit"];
     NSMutableArray *iconIds = [NSMutableArray arrayWithCapacity:self.photo.icons.count];
     for (Icon *icon in self.photo.icons){
@@ -737,19 +823,25 @@ NSString* const deleteOption = @"Delete";
         if (self.photo.art.interval.circa){
             [artParameters setObject:self.photo.art.interval.circa forKey:@"interval[circa]"];
         }
-        if (self.photo.art.interval.suffix && self.photo.art.interval.suffix.length){
+        if (_eraButton.selected && self.photo.art.interval.suffix.length){
             [artParameters setObject:self.photo.art.interval.suffix forKey:@"interval[suffix]"];
+        } else {
+            [artParameters setObject:@"" forKey:@"interval[suffix]"];
         }
-        if (self.photo.art.interval.beginSuffix && self.photo.art.interval.beginSuffix.length){
+        if (_beginEraButton.selected && self.photo.art.interval.beginSuffix.length){
             [artParameters setObject:self.photo.art.interval.beginSuffix forKey:@"interval[begin_suffix]"];
+        } else {
+            [artParameters setObject:@"" forKey:@"interval[begin_suffix]"];
         }
-        if (self.photo.art.interval.endSuffix && self.photo.art.interval.endSuffix.length){
+        if (_endEraButton.selected && self.photo.art.interval.endSuffix.length){
             [artParameters setObject:self.photo.art.interval.endSuffix forKey:@"interval[end_suffix]"];
+        } else {
+            [artParameters setObject:@"" forKey:@"interval[end_suffix]"];
         }
     }
     
     [manager PATCH:[NSString stringWithFormat:@"photos/%@",self.photo.identifier] parameters:@{@"photo":photoParameters,@"art":artParameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success saving metadata: %@",responseObject);
+        //NSLog(@"Success saving metadata: %@",responseObject);
         [self.photo populateFromDictionary:[responseObject objectForKey:@"photo"]];
         
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -820,20 +912,15 @@ NSString* const deleteOption = @"Delete";
                 endYearTextField.delegate = self;
                 dateTextField.delegate = self;
                 
-                _ceButton = dateCell.ceButton;
-                [dateCell.ceButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
-                _bceButton = dateCell.bceButton;
-                [dateCell.bceButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+                _eraButton = dateCell.eraButton;
+                [dateCell.eraButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
                 
-                _ceBeginButton = dateCell.ceBeginButton;
-                [dateCell.ceBeginButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
-                _ceEndButton = dateCell.ceEndButton;
-                [dateCell.ceEndButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+                _beginEraButton = dateCell.beginEraButton;
+                [dateCell.beginEraButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
                 
-                _bceBeginButton = dateCell.bceBeginButton;
-                [dateCell.bceBeginButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
-                _bceEndButton = dateCell.bceEndButton;
-                [dateCell.bceEndButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+                _endEraButton = dateCell.endEraButton;
+                [dateCell.endEraButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+                
                 return dateCell;
             } else {
                 [cell.label setText:@"DATE"];
@@ -1386,32 +1473,16 @@ NSString* const deleteOption = @"Delete";
 }
 
 - (void)eraTapped:(UIButton*)button {
-    if (button == _ceButton){
-        [_ceButton setSelected:YES];
-        [_bceButton setSelected:NO];
-        [self.photo.art.interval setSuffix:@"CE"];
-    } else if (button == _bceButton){
-        [_bceButton setSelected:YES];
-        [_ceButton setSelected:NO];
-        [self.photo.art.interval setSuffix:@"BCE"];
-    } else if (button == _ceBeginButton){
-        [_bceBeginButton setSelected:NO];
-        [_ceBeginButton setSelected:YES];
-        [self.photo.art.interval setBeginSuffix:@"CE"];
-    } else if (button == _bceBeginButton){
-        [_bceBeginButton setSelected:YES];
-        [_ceBeginButton setSelected:NO];
-        [self.photo.art.interval setBeginSuffix:@"BCE"];
-    } else if (button == _ceEndButton){
-        [_bceEndButton setSelected:NO];
-        [_ceEndButton setSelected:YES];
-        [self.photo.art.interval setEndSuffix:@"CE"];
-    } else if (button == _bceEndButton){
-        [_bceEndButton setSelected:YES];
-        [_ceEndButton setSelected:NO];
-        [self.photo.art.interval setEndSuffix:@"BCE"];
+    if (button == _eraButton){
+        eraActionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"CE",@"BCE",@"Clear",nil];
+        [eraActionSheet showInView:self.view];
+    } else if (button == _beginEraButton){
+        beginEraActionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"CE",@"BCE",@"Clear",nil];
+        [beginEraActionSheet showInView:self.view];
+    } else if (button == _endEraButton){
+        endEraActionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"CE",@"BCE",@"Clear",nil];
+        [endEraActionSheet showInView:self.view];
     }
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
 }
 
 - (void)circaSwitchSwitched:(UISwitch*)circaSwitch {
@@ -1537,7 +1608,7 @@ NSString* const deleteOption = @"Delete";
             [flagVC.view endEditing:YES];
         }
     } else if (editMode){
-        if (keyboardUp){
+        if (keyboardUp && IDIOM == IPAD){
             [self.view endEditing:YES];
         } else {
             [self.view endEditing:YES];

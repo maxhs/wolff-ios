@@ -48,6 +48,8 @@
     [_privateLabel setText:@"Private"];
     [_privateLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];
     [_privateLabel setTextColor:[UIColor lightGrayColor]];
+    
+    [_partnerBadge setHidden:YES];
 }
 
 - (void)prepareForReuse {
@@ -100,11 +102,8 @@
         }];
     }
     
-    if ([photo.privatePhoto isEqualToNumber:@YES]){
-        [_privateLabel setHidden:NO];
-    } else {
-        [_privateLabel setHidden:YES];
-    }
+    [_privateLabel setHidden:[photo.privatePhoto isEqualToNumber:@YES] ? NO : YES];
+    [_partnerBadge setHidden:photo.partners.count ? NO : YES];
 }
 
 /*

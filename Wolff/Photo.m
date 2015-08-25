@@ -20,6 +20,8 @@
 @dynamic originalImageUrl;
 @dynamic flagged;
 @dynamic createdDate;
+@dynamic primary;
+@dynamic orderIndex;
 @dynamic image;
 @dynamic slides;
 @dynamic photoSlides;

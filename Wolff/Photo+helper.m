@@ -40,6 +40,12 @@
     if ([dictionary objectForKey:@"flagged"] && [dictionary objectForKey:@"flagged"] != [NSNull null]){
         self.flagged = [dictionary objectForKey:@"flagged"];
     }
+    if ([dictionary objectForKey:@"primary"] && [dictionary objectForKey:@"primary"] != [NSNull null]){
+        self.primary = [dictionary objectForKey:@"primary"];
+    }
+    if ([dictionary objectForKey:@"order_index"] && [dictionary objectForKey:@"order_index"] != [NSNull null]){
+        self.orderIndex = [dictionary objectForKey:@"order_index"];
+    }
     if ([dictionary objectForKey:@"created_epoch"] && [dictionary objectForKey:@"created_epoch"] != [NSNull null]) {
         NSTimeInterval _interval = [[dictionary objectForKey:@"created_epoch"] doubleValue];
         self.createdDate = [NSDate dateWithTimeIntervalSince1970:_interval];
@@ -50,7 +56,6 @@
     if ([dictionary objectForKey:@"slide_image_url"] && [dictionary objectForKey:@"slide_image_url"] != [NSNull null]){
         self.slideImageUrl = [dictionary objectForKey:@"slide_image_url"];
     }
-
     if ([dictionary objectForKey:@"large_image_url"] && [dictionary objectForKey:@"large_image_url"] != [NSNull null]){
         self.largeImageUrl = [dictionary objectForKey:@"large_image_url"];
     }

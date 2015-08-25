@@ -37,7 +37,7 @@
     _assetGroups = [NSMutableArray array];
     [self loadGroups];
     
-    cancelButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    cancelButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
     self.navigationItem.rightBarButtonItem = cancelButton;
     
     UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.view.frame];

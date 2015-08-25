@@ -585,7 +585,7 @@ static NSString *const logoutOption = @"Log out";
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 if (self.searchBar.text.length){
                     [self filterContentForSearchText:searchText scope:nil];
-                    if (photosDict.count < ART_THROTTLE){
+                    if (!photosDict.count){
                         NSLog(@"Searching, but can't search more");
                         canSearchMore = NO;
                     } else {
@@ -593,13 +593,13 @@ static NSString *const logoutOption = @"Log out";
                         canSearchMore = YES;
                     }
                 } else if (showMyArt){
-                    if (photosDict.count < ART_THROTTLE){
+                    if (!photosDict.count){
                         canLoadMoreOfMyArt = NO;
                     } else {
                         canLoadMoreOfMyArt = YES;
                     }
                 } else {
-                    if (photosDict.count < ART_THROTTLE){
+                    if (!photosDict.count){
                         canLoadMore = NO;
                     } else {
                         canLoadMore = YES;
@@ -1559,9 +1559,8 @@ static NSString *const logoutOption = @"Log out";
             if (canSearchMore && self.searchBar.text.length){
                 [self loadBeforePhoto:_filteredPhotos.lastObject];
             } else if (showMyArt) {
-                NSLog(@"should be loading more of my art");
+                
             } else if (canLoadMore && _photos.count){
-                NSLog(@"can load more normal");
                 [self loadBeforePhoto:_photos.lastObject];
             }
         }

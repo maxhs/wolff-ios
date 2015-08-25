@@ -17,8 +17,6 @@
 @interface WFMaterialsViewController () <WFSelectMaterialsDelegate, UITextFieldDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-    BOOL iOS8;
-    BOOL loading;
     BOOL searching;
     BOOL editing;
     CGFloat width;
@@ -36,7 +34,7 @@
     UIBarButtonItem *spacerBarButton;
     UIImageView *navBarShadowView;
 }
-
+@property (strong, nonatomic) AFHTTPRequestOperation *mainRequest;
 @end
 
 @implementation WFMaterialsViewController
@@ -46,18 +44,14 @@ static NSString * const reuseIdentifier = @"MaterialCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-    }
+    width = screenWidth(); height = screenHeight();
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     
     _materials = [NSMutableOrderedSet orderedSetWithArray:[Material MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
     _filteredMaterials = [NSMutableOrderedSet orderedSet];
-    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     saveButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(save)];
     doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneEditing)];
@@ -82,7 +76,6 @@ static NSString * const reuseIdentifier = @"MaterialCell";
     [self registerKeyboardNotifications];
     topInset = self.navigationController.navigationBar.frame.size.height;
     [self setUpSearch];
-    loading = NO;
     
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
 }
@@ -107,8 +100,8 @@ static NSString * const reuseIdentifier = @"MaterialCell";
 }
 
 - (void)loadMaterialsWithSearch:(NSString*)searchString {
-    if (!loading && searchString.length){
-        loading = YES;
+    if (self.mainRequest) return;
+    if (searchString.length){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
             [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
@@ -131,13 +124,13 @@ static NSString * const reuseIdentifier = @"MaterialCell";
                 [ProgressHUD dismiss];
                 _materials = [NSMutableOrderedSet orderedSetWithArray:[Material MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
                 [_collectionView reloadData];
-                loading = NO;
+                self.mainRequest = nil;
             }];
             
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [WFAlert show:@"Sorry, something went wrong while trying to fetch material info.\n\nPlease try again soon." withTime:3.3f];
             [ProgressHUD dismiss];
-            loading = NO;
+            self.mainRequest = nil;
             NSLog(@"Failed to load materials: %@",error.description);
         }];
     }

@@ -17,10 +17,9 @@
 @interface WFArtistsViewController () <UITextFieldDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
-    BOOL iOS8;
-    BOOL loading;
     BOOL searching;
     BOOL editing;
+    BOOL keyboardVisible;
     CGFloat width;
     CGFloat height;
     CGFloat topInset;
@@ -29,7 +28,6 @@
     NSMutableOrderedSet *_filteredArtists;
     UIBarButtonItem *dismissButton;
     UIBarButtonItem *saveButton;
-    UIBarButtonItem *doneButton;
     UITextField *artistNameField;
     UIButton *artistUnknownButton;
     UIBarButtonItem *unknownBarButton;
@@ -37,6 +35,7 @@
     UIImageView *navBarShadowView;
 }
 
+@property (strong, nonatomic) AFHTTPRequestOperation *mainRequest;
 @end
 
 @implementation WFArtistsViewController
@@ -45,33 +44,32 @@ static NSString * const reuseIdentifier = @"ArtistCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES; width = screenWidth(); height = screenHeight();
-    } else {
-        iOS8 = NO; width = screenHeight(); height = screenWidth();
-    }
+    width = screenWidth(); height = screenHeight();
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     
     _artists = [NSMutableOrderedSet orderedSetWithArray:[Artist MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
     _filteredArtists = [NSMutableOrderedSet orderedSet];
-    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     saveButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(save)];
-    doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneEditing)];
     
-    artistUnknownButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [artistUnknownButton.titleLabel setFont:[UIFont fontWithName:kMuseoSans size:12]];
-    [artistUnknownButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
-    [artistUnknownButton addTarget:self action:@selector(artistUnknownToggled) forControlEvents:UIControlEventTouchUpInside];
-    [artistUnknownButton setFrame:CGRectMake(0, 0, 170.f, 44.f)];
-    [artistUnknownButton setTitle:@"ARTIST UNKNOWN" forState:UIControlStateNormal];
-    unknownBarButton = [[UIBarButtonItem alloc] initWithCustomView:artistUnknownButton];
-    spacerBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    spacerBarButton.width = 23.f;
-    [self adjustUnknownButtonColor];
-    self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, unknownBarButton];
+    if (IDIOM == IPAD){
+        artistUnknownButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [artistUnknownButton.titleLabel setFont:[UIFont fontWithName:kMuseoSans size:12]];
+        [artistUnknownButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.07]];
+        [artistUnknownButton addTarget:self action:@selector(artistUnknownToggled) forControlEvents:UIControlEventTouchUpInside];
+        [artistUnknownButton setFrame:CGRectMake(0, 0, 170.f, 44.f)];
+        [artistUnknownButton setTitle:@"ARTIST UNKNOWN" forState:UIControlStateNormal];
+        unknownBarButton = [[UIBarButtonItem alloc] initWithCustomView:artistUnknownButton];
+        spacerBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
+        spacerBarButton.width = 23.f;
+        [self adjustUnknownButtonColor];
+        self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, unknownBarButton];
+    } else {
+        self.navigationItem.rightBarButtonItem = saveButton;
+    }
     
     [self registerKeyboardNotifications];
     topInset = self.navigationController.navigationBar.frame.size.height; // matches the navigation bar
@@ -100,8 +98,8 @@ static NSString * const reuseIdentifier = @"ArtistCell";
 }
 
 - (void)loadArtistsWithSearch:(NSString*)searchString {
-    if (!loading && searchString.length){
-        loading = YES;
+    if (self.mainRequest) return;
+    if (searchString.length){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
             [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
@@ -109,8 +107,8 @@ static NSString * const reuseIdentifier = @"ArtistCell";
         if (searchString.length){
             [parameters setObject:searchString forKey:@"search"];
         }
-        [manager POST:@"artists/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success loading artists: %@",responseObject);
+        self.mainRequest = [manager POST:@"artists/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            //NSLog(@"Success loading artists: %@",responseObject);
             for (id dict in [responseObject objectForKey:@"artists"]){
                 Artist *artist = [Artist MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext    :[NSManagedObjectContext MR_defaultContext]];
                 if (!artist){
@@ -122,14 +120,14 @@ static NSString * const reuseIdentifier = @"ArtistCell";
                 [ProgressHUD dismiss];
                 _artists = [NSMutableOrderedSet orderedSetWithArray:[Artist MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
                 [self filterContentForSearchText:searchString scope:nil];
-                loading = NO;
+                self.mainRequest = nil;
             }];
             
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [WFAlert show:@"Sorry, something went wrong while trying to fetch artist info.\n\nPlease try again soon." withTime:3.3f];
             [ProgressHUD dismiss];
             NSLog(@"Failed to load artists: %@",error.description);
-            loading = NO;
+            self.mainRequest = nil;
         }];
     }
 }
@@ -199,9 +197,9 @@ static NSString * const reuseIdentifier = @"ArtistCell";
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (IDIOM == IPAD){
-        return CGSizeMake(width/4,width/4);
+        return CGSizeMake(width/4,height/4);
     } else {
-        return CGSizeMake(width/2,width/2);
+        return CGSizeMake(width,height/4);
     }
 }
 
@@ -317,7 +315,7 @@ static NSString * const reuseIdentifier = @"ArtistCell";
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
-    self.navigationItem.rightBarButtonItems = @[doneButton,spacerBarButton,unknownBarButton];
+    
 }
 
 - (void)doneEditing {
@@ -325,7 +323,6 @@ static NSString * const reuseIdentifier = @"ArtistCell";
     if (self.searchBar.isFirstResponder){
         [self.searchBar resignFirstResponder];
     }
-    self.navigationItem.rightBarButtonItems = @[saveButton,spacerBarButton,unknownBarButton];
 }
 
 - (void)createArtist {
@@ -365,12 +362,12 @@ static NSString * const reuseIdentifier = @"ArtistCell";
         if (self.artistDelegate && [self.artistDelegate respondsToSelector:@selector(artistsSelected:)]){
             [self.artistDelegate artistsSelected:self.selectedArtists];
         }
-        [self dismiss];
+        [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
     } else {
         if (self.artistDelegate && [self.artistDelegate respondsToSelector:@selector(artistsSelected:)]){
             [self.artistDelegate artistsSelected:nil];
         }
-        [self dismiss];
+        [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
     }
 }
 
@@ -386,6 +383,7 @@ static NSString * const reuseIdentifier = @"ArtistCell";
     CGFloat keyboardHeight = convertedKeyboardFrame.size.height;
     CGFloat duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationOptions animationCurve = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
+    keyboardVisible = YES;
     [UIView animateWithDuration:duration
                           delay:0
                         options:(animationCurve << 16)
@@ -399,6 +397,7 @@ static NSString * const reuseIdentifier = @"ArtistCell";
 - (void)willHideKeyboard:(NSNotification *)notification {
     CGFloat duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationOptions animationCurve = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
+    keyboardVisible = NO;
     [UIView animateWithDuration:duration
                           delay:0
                         options:(animationCurve << 16)
@@ -410,9 +409,11 @@ static NSString * const reuseIdentifier = @"ArtistCell";
 }
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+    if (keyboardVisible){
+        [self doneEditing];
+    } else {
+        [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

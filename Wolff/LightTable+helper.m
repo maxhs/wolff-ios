@@ -32,8 +32,8 @@
     if ([dictionary objectForKey:@"visible"] && [dictionary objectForKey:@"visible"] != [NSNull null]){
         self.visible = [dictionary objectForKey:@"visible"];
     }
-    if ([dictionary objectForKey:@"private"] && [dictionary objectForKey:@"private"] != [NSNull null]){
-        self.privateTable = [dictionary objectForKey:@"private"];
+    if ([dictionary objectForKey:@"priv"] && [dictionary objectForKey:@"priv"] != [NSNull null]){
+        self.privateTable = [dictionary objectForKey:@"priv"];
     }
     if ([dictionary objectForKey:@"slideshows"] && [dictionary objectForKey:@"slideshows"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];

@@ -16,6 +16,7 @@
 @property (weak, nonatomic) IBOutlet UIImageView *landscapeArtImageView;
 @property (weak, nonatomic) IBOutlet UIImageView *checkmark;
 @property (weak, nonatomic) IBOutlet UILabel *privateLabel;
+@property (weak, nonatomic) IBOutlet UIButton *partnerBadge;
 
 - (UIImage *)getRasterizedImageCopy;
 - (void)configureForPhoto:(Photo*)photo;

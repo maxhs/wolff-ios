@@ -19,7 +19,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
+    backButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(back)];
     self.navigationItem.leftBarButtonItem = backButton;
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     NSURLRequest *requestObj = [NSURLRequest requestWithURL:_url];
@@ -47,13 +47,14 @@
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
     if (error){
         [ProgressHUD dismiss];
-        [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to load. Please try again soon." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
+        //[[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to load this page. Please try again soon." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
         NSLog(@"what was the error: %@",error.description);
     }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
 }
 
 - (void)didReceiveMemoryWarning {

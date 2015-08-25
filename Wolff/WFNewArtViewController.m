@@ -25,7 +25,7 @@
 #import "WFCreditTextField.h"
 #import "WFUtilities.h"
 
-@interface WFNewArtViewController () <UITableViewDataSource, UITableViewDelegate , UIScrollViewDelegate, UITextFieldDelegate, WFImagePickerControllerDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectMaterialsDelegate, WFSelectIconsDelegate, WFSelectTagsDelegate> {
+@interface WFNewArtViewController () <UITableViewDataSource, UITableViewDelegate , UIScrollViewDelegate, UITextFieldDelegate, WFImagePickerControllerDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectMaterialsDelegate, WFSelectIconsDelegate, WFSelectTagsDelegate, UIActionSheetDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     BOOL selectingDate;
@@ -37,12 +37,9 @@
     UITextField *endDateTextField;
     UITextField *materialTextField;
     UITextField *notesTextField;
-    UIButton *_ceButton;
-    UIButton *_bceButton;
-    UIButton *_ceBeginButton;
-    UIButton *_bceBeginButton;
-    UIButton *_ceEndButton;
-    UIButton *_bceEndButton;
+    UIButton *_eraButton;
+    UIButton *_beginEraButton;
+    UIButton *_endEraButton;
     NSInteger currentPhotoIdx;
     NSMutableArray *_selectedPhotos;
     CGFloat imageWidth;
@@ -50,6 +47,9 @@
     BOOL keyboardVisible;
     CGFloat topInset;
     UIImageView *navBarShadowView;
+    UIActionSheet *eraActionSheet;
+    UIActionSheet *beginEraActionSheet;
+    UIActionSheet *endEraActionSheet;
 }
 
 @property (strong, nonatomic) User *currentUser;
@@ -95,7 +95,7 @@
         topInset = 0;
     } else {
         [_dismissButton setHidden:YES];
-        UIBarButtonItem *dismissBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+        UIBarButtonItem *dismissBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
         self.navigationItem.leftBarButtonItem = dismissBarButtonItem;
         
         [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
@@ -357,21 +357,27 @@
         if (![self.art.interval.endRange isEqualToNumber:@0]){
             [parameters setObject:self.art.interval.endRange forKey:@"interval[end_range]"];
         }
-        if (self.art.interval.suffix && self.art.interval.suffix.length){
+        if (_eraButton.selected && self.art.interval.suffix.length){
             [parameters setObject:self.art.interval.suffix forKey:@"interval[suffix]"];
+        } else {
+            [parameters setObject:@"" forKey:@"interval[suffix]"];
         }
-        if (self.art.interval.beginSuffix && self.art.interval.beginSuffix.length){
+        if (_beginEraButton.selected && self.art.interval.beginSuffix.length){
             [parameters setObject:self.art.interval.beginSuffix forKey:@"interval[begin_suffix]"];
+        } else {
+            [parameters setObject:@"" forKey:@"interval[begin_suffix]"];
         }
-        if (self.art.interval.endSuffix && self.art.interval.endSuffix.length){
+        if (_endEraButton.selected && self.art.interval.endSuffix.length){
             [parameters setObject:self.art.interval.endSuffix forKey:@"interval[end_suffix]"];
+        } else {
+            [parameters setObject:@"" forKey:@"interval[end_suffix]"];
         }
     }
 
     if ([self.art.privateArt isEqualToNumber:@YES]){
-        [parameters setObject:@1 forKey:@"private"];
+        [parameters setObject:@1 forKey:@"priv"];
     } else {
-        [parameters setObject:@0 forKey:@"private"];
+        [parameters setObject:@0 forKey:@"priv"];
     }
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     if (self.artDelegate && [self.artDelegate respondsToSelector:@selector(newArtAdded:)]){
@@ -437,9 +443,6 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFNewArtCell *cell = [tableView dequeueReusableCellWithIdentifier:@"NewArtCell"];
-    if (SYSTEM_VERSION < 8.f){
-        [cell setBackgroundColor:[UIColor clearColor]];
-    }
     UIView *selectedView = [[UIView alloc] initWithFrame:cell.frame];
     [selectedView setBackgroundColor:[UIColor colorWithWhite:1 alpha:.05]];
     cell.selectedBackgroundView = selectedView;
@@ -471,9 +474,6 @@
         case 2:
         {
             WFDateMetadataCell *dateCell = [tableView dequeueReusableCellWithIdentifier:@"DateCell"];
-            if (SYSTEM_VERSION < 8.f){
-                [dateCell setBackgroundColor:[UIColor clearColor]];
-            }
             [dateCell setSelectionStyle:UITableViewCellSelectionStyleNone];
             dateTextField = dateCell.singleYearTextField;
             dateTextField.delegate = self;
@@ -487,20 +487,14 @@
             
             [dateCell.circaSwitch setOn:self.art.interval.circa.boolValue animated:YES];
             [dateCell.circaSwitch addTarget:self action:@selector(circaSwitchSwitched:) forControlEvents:UIControlEventValueChanged];
-            _ceButton = dateCell.ceButton;
-            [dateCell.ceButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
-            _bceButton = dateCell.bceButton;
-            [dateCell.bceButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+            _eraButton = dateCell.eraButton;
+            [dateCell.eraButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
             
-            _ceBeginButton = dateCell.ceBeginButton;
-            [dateCell.ceBeginButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
-            _ceEndButton = dateCell.ceEndButton;
-            [dateCell.ceEndButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+            _beginEraButton = dateCell.beginEraButton;
+            [dateCell.beginEraButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
             
-            _bceBeginButton = dateCell.bceBeginButton;
-            [dateCell.bceBeginButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
-            _bceEndButton = dateCell.bceEndButton;
-            [dateCell.bceEndButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
+            _endEraButton = dateCell.endEraButton;
+            [dateCell.endEraButton addTarget:self action:@selector(eraTapped:) forControlEvents:UIControlEventTouchUpInside];
             
             return dateCell;
         }
@@ -561,32 +555,16 @@
 }
 
 - (void)eraTapped:(UIButton*)button {
-    if (button == _ceButton){
-        [_ceButton setSelected:YES];
-        [_bceButton setSelected:NO];
-        [self.art.interval setSuffix:@"CE"];
-    } else if (button == _bceButton){
-        [_bceButton setSelected:YES];
-        [_ceButton setSelected:NO];
-        [self.art.interval setSuffix:@"BCE"];
-    } else if (button == _ceBeginButton){
-        [_bceBeginButton setSelected:NO];
-        [_ceBeginButton setSelected:YES];
-        [self.art.interval setBeginSuffix:@"CE"];
-    } else if (button == _bceBeginButton){
-        [_bceBeginButton setSelected:YES];
-        [_ceBeginButton setSelected:NO];
-        [self.art.interval setBeginSuffix:@"BCE"];
-    } else if (button == _ceEndButton){
-        [_bceEndButton setSelected:NO];
-        [_ceEndButton setSelected:YES];
-        [self.art.interval setEndSuffix:@"CE"];
-    } else if (button == _bceEndButton){
-        [_bceEndButton setSelected:YES];
-        [_ceEndButton setSelected:NO];
-        [self.art.interval setEndSuffix:@"BCE"];
+    if (button == _eraButton){
+        eraActionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"CE",@"BCE",@"Clear",nil];
+        [eraActionSheet showInView:self.view];
+    } else if (button == _beginEraButton){
+        beginEraActionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"CE",@"BCE",@"Clear",nil];
+        [beginEraActionSheet showInView:self.view];
+    } else if (button == _endEraButton){
+        endEraActionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"CE",@"BCE",@"Clear",nil];
+        [endEraActionSheet showInView:self.view];
     }
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
 }
 
 - (void)circaSwitchSwitched:(UISwitch*)circaSwitch {
@@ -594,6 +572,70 @@
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         
     }];
+}
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (actionSheet == eraActionSheet){
+        if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"CE"]){
+            [_eraButton setTitle:@"CE" forState:UIControlStateNormal];
+            [self.art.interval setSuffix:@"CE"];
+            [_eraButton setSelected:YES];
+            [_eraButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"BCE"]){
+            [_eraButton setTitle:@"BCE" forState:UIControlStateNormal];
+            [self.art.interval setSuffix:@"BCE"];
+            [_eraButton setSelected:YES];
+            [_eraButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Clear"]) {
+            [_eraButton setTitle:@"CE" forState:UIControlStateNormal];
+            [_eraButton setSelected:NO];
+            [_eraButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
+            [self.art.interval setSuffix:nil];
+        }
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
+    } else if (actionSheet == beginEraActionSheet){
+        if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"CE"]){
+            [_beginEraButton setTitle:@"CE" forState:UIControlStateNormal];
+            [self.art.interval setBeginSuffix:@"CE"];
+            [_beginEraButton setSelected:YES];
+            [_beginEraButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"BCE"]) {
+            [_beginEraButton setTitle:@"BCE" forState:UIControlStateNormal];
+            [self.art.interval setBeginSuffix:@"BCE"];
+            [_beginEraButton setSelected:YES];
+            [_beginEraButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Clear"])  {
+            [_beginEraButton setTitle:@"CE" forState:UIControlStateNormal];
+            [_beginEraButton setSelected:NO];
+            [_beginEraButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
+            [self.art.interval setBeginSuffix:nil];
+        }
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
+    } else if (actionSheet == endEraActionSheet){
+        if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"CE"]){
+            [_endEraButton setTitle:@"CE" forState:UIControlStateNormal];
+            [self.art.interval setEndSuffix:@"CE"];
+            [_endEraButton setSelected:YES];
+            [_endEraButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"BCE"]) {
+            [_endEraButton setTitle:@"BCE" forState:UIControlStateNormal];
+            [_endEraButton setSelected:YES];
+            [self.art.interval setEndSuffix:@"BCE"];
+            [_endEraButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Clear"])  {
+            [_endEraButton setTitle:@"CE" forState:UIControlStateNormal];
+            [_endEraButton setSelected:NO];
+            [_endEraButton setTitleColor:kPlaceholderTextColor forState:UIControlStateNormal];
+            [self.art.interval setEndSuffix:nil];
+        }
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
+    }
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -734,6 +776,7 @@
                         options:(animationCurve << 16)
                      animations:^{
                          self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight+70.f, 0); // random bottom spacer
+                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, keyboardHeight+70.f, 0); // random bottom spacer
                      }
                      completion:^(BOOL finished) {
 
@@ -743,14 +786,16 @@
 - (void)willHideKeyboard:(NSNotification *)notification {
     CGFloat duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     UIViewAnimationOptions animationCurve = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] unsignedIntegerValue];
+    keyboardVisible = NO;
     [UIView animateWithDuration:duration
                           delay:0
                         options:(animationCurve << 16)
                      animations:^{
                          self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, 0, 0);
                      }
                      completion:^(BOOL finished) {
-                         keyboardVisible = NO;
+                         
                      }];
 }
 

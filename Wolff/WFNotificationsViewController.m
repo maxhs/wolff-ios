@@ -37,7 +37,7 @@
         [backgroundToolbar setTranslucent:YES];
         [self.tableView setBackgroundView:backgroundToolbar];
         
-        UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"remove"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+        UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
         self.navigationItem.leftBarButtonItem = dismissButton;
         navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
         [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];

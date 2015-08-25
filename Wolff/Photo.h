@@ -17,6 +17,8 @@
 @property (nonatomic, retain) NSNumber * height;
 @property (nonatomic, retain) NSNumber * orientation;
 @property (nonatomic, retain) NSNumber * flagged;
+@property (nonatomic, retain) NSNumber * primary;
+@property (nonatomic, retain) NSNumber * orderIndex;
 @property (nonatomic, retain) NSString * largeImageUrl;
 @property (nonatomic, retain) NSString * thumbImageUrl;
 @property (nonatomic, retain) NSString * slideImageUrl;
