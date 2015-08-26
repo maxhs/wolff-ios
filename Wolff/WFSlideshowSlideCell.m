@@ -7,7 +7,7 @@
 //
 
 #import "WFSlideshowSlideCell.h"
-#import <SDWebImage/UIImageView+WebCache.h>
+#import <AFNetworking/UIImageView+AFNetworking.h>
 #import "Constants.h"
 #import "SlideText+helper.h"
 
@@ -47,8 +47,7 @@
     }
 }
 
-- (void)configureForPhotos:(NSOrderedSet *)photos inSlide:(Slide*)slide withImageManager:(SDWebImageManager *)imageManager{
-    [imageManager cancelAll];
+- (void)configureForPhotos:(NSOrderedSet *)photos inSlide:(Slide*)slide{
     
     CGFloat frameHeight = (IDIOM == IPAD) ? 660.f : 300.f;
     CGFloat singleWidth = (IDIOM == IPAD) ? 900.f : 460.f;
@@ -78,37 +77,36 @@
             
             Photo *photo = (Photo*)[photos firstObject];
             NSURL *art1thumbUrl = [NSURL URLWithString:photo.thumbImageUrl];
+            NSURLRequest *art1thumbUrlRequest = [NSURLRequest requestWithURL:art1thumbUrl cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
             NSURL *art1originalUrl = [NSURL URLWithString:photo.originalImageUrl];
+            NSURLRequest *art1originalUrlRequest = [NSURLRequest requestWithURL:art1originalUrl cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
             
-            [_artImageView1 sd_setImageWithURL:art1thumbUrl placeholderImage:nil options:(SDWebImageLowPriority) completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                //if the image is cached, no need to fade it in slowly
-                if (cacheType == SDImageCacheTypeNone && _artImageView1.image != nil){
+            [_artImageView1 setImageWithURLRequest:art1thumbUrlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+                [_artImageView1 setImage:image];
+                if (response){
                     [UIView animateWithDuration:.27 animations:^{
                         [_artImageView1 setAlpha:1.0];
-                        [_progressView1 setAlpha:1.0];
                     }];
                 } else {
-                    [UIView animateWithDuration:.14 animations:^{
-                        [_artImageView1 setAlpha:1.0];
-                        [_progressView1 setAlpha:1.0];
-                    }];
+                    [_artImageView1 setAlpha:1.0];
                 }
-            }];
-
-            self.imageDownloadOperation = [imageManager downloadImageWithURL:art1originalUrl options:(SDWebImageLowPriority) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                [_progressView1 setProgress:((CGFloat)receivedSize/(CGFloat)expectedSize)];
-            } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                CGFloat duration = cacheType == SDImageCacheTypeNone ?  kSlowAnimationDuration : kFastAnimationDuration;
-                [_progressView1 setAlpha:1.0];
-                [UIView transitionWithView:_artImageView1 duration:duration options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
-                    _artImageView1.image = image;
-                } completion:^(BOOL finished) {
-                    [UIView animateWithDuration:.23 animations:^{
-                        [_progressView1 setAlpha:0.0];
-                    } completion:^(BOOL finished) {
-                        
-                    }];
+                
+                [_artImageView1 setImageWithURLRequest:art1originalUrlRequest placeholderImage:nil success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
+                    if (response){
+                        [UIView transitionWithView:_artImageView1 duration:kSlowAnimationDuration options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
+                            _artImageView1.image = image;
+                        } completion:^(BOOL finished) {
+                            
+                        }];
+                    } else {
+                        _artImageView1.image = image;
+                    }
+                    
+                } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
+                    
                 }];
+            } failure:^(NSURLRequest * request, NSHTTPURLResponse * response, NSError *error) {
+               
             }];
             
         } else if (photos.count > 1) {
@@ -134,72 +132,69 @@
             
             Photo *photo2 = (Photo*)photos[0];
             NSURL *art2thumbUrl = [NSURL URLWithString:photo2.thumbImageUrl];
+            NSURLRequest *art2thumbUrlRequest = [NSURLRequest requestWithURL:art2thumbUrl cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
             NSURL *art2originalUrl = [NSURL URLWithString:photo2.originalImageUrl];
+            NSURLRequest *art2originalUrlRequest = [NSURLRequest requestWithURL:art2originalUrl cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
             
-            [_artImageView2 sd_setImageWithURL:art2thumbUrl placeholderImage:nil options:(SDWebImageLowPriority | SDWebImageContinueInBackground) completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                //if the image is cached, no need to fade it in
-                if (cacheType == SDImageCacheTypeNone && _artImageView2.image != nil){
+            [_artImageView2 setImageWithURLRequest:art2thumbUrlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+                [_artImageView2 setImage:image];
+                if (response){
                     [UIView animateWithDuration:.27 animations:^{
                         [_artImageView2 setAlpha:1.0];
-                        [_progressView2 setAlpha:1.0];
                     }];
                 } else {
-                    [UIView animateWithDuration:.14 animations:^{
-                        [_artImageView2 setAlpha:1.0];
-                        [_progressView2 setAlpha:1.0];
-                    }];
+                    [_artImageView2 setAlpha:1.0];
                 }
+                
+                [_artImageView2 setImageWithURLRequest:art2originalUrlRequest placeholderImage:nil success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
+                    if (response){
+                        [UIView transitionWithView:_artImageView2 duration:kSlowAnimationDuration options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
+                            _artImageView2.image = image;
+                        } completion:^(BOOL finished) {
+                            
+                        }];
+                    } else {
+                        _artImageView2.image = image;
+                    }
+                } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
+                    
+                }];
+            } failure:^(NSURLRequest * request, NSHTTPURLResponse * response, NSError *error) {
+                
             }];
             
-            self.imageDownloadOperation = [imageManager downloadImageWithURL:art2originalUrl options:(SDWebImageLowPriority | SDWebImageContinueInBackground) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                [_progressView2 setProgress:((CGFloat)receivedSize/(CGFloat)expectedSize)];
-            } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                CGFloat duration = cacheType == SDImageCacheTypeNone ?  kSlowAnimationDuration : kFastAnimationDuration;
-                [_progressView2 setAlpha:1.0];
-                [UIView transitionWithView:_artImageView2 duration:duration options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
-                    _artImageView2.image = image;
-                } completion:^(BOOL finished) {
-                    [UIView animateWithDuration:.23 animations:^{
-                        [_progressView2 setAlpha:0.0];
-                    } completion:^(BOOL finished) {
-
-                    }];
-                }];
-            }];
             
             Photo *photo3 = (Photo*)photos[1];
             NSURL *art3thumbUrl = [NSURL URLWithString:photo3.thumbImageUrl];
+            NSURLRequest *art3thumbUrlRequest = [NSURLRequest requestWithURL:art3thumbUrl cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
             NSURL *art3originalUrl = [NSURL URLWithString:photo3.originalImageUrl];
+            NSURLRequest *art3originalUrlRequest = [NSURLRequest requestWithURL:art3originalUrl cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
             
-            [_artImageView3 sd_setImageWithURL:art3thumbUrl placeholderImage:nil options:(SDWebImageLowPriority | SDWebImageContinueInBackground) completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                //if the image is cached, no need to fade it in
-                if (cacheType == SDImageCacheTypeNone && _artImageView3.image != nil){
+            [_artImageView3 setImageWithURLRequest:art3thumbUrlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+                [_artImageView3 setImage:image];
+                if (response){
                     [UIView animateWithDuration:.27 animations:^{
                         [_artImageView3 setAlpha:1.0];
-                        [_progressView3 setAlpha:1.0];
                     }];
                 } else {
-                    [UIView animateWithDuration:.14 animations:^{
-                        [_artImageView3 setAlpha:1.0];
-                        [_progressView3 setAlpha:1.0];
-                    }];
+                    [_artImageView3 setAlpha:1.0];
                 }
-            }];
-            
-            self.imageDownloadOperation = [imageManager downloadImageWithURL:art3originalUrl options:(SDWebImageLowPriority | SDWebImageContinueInBackground) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                [_progressView3 setProgress:((CGFloat)receivedSize/(CGFloat)expectedSize)];
-            } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                CGFloat duration = cacheType == SDImageCacheTypeNone ?  kSlowAnimationDuration : kFastAnimationDuration;
-                [_progressView3 setAlpha:1.0];
-                [UIView transitionWithView:_artImageView3 duration:duration options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
-                    _artImageView3.image = image;
-                } completion:^(BOOL finished) {
-                    [UIView animateWithDuration:.23 animations:^{
-                        [_progressView3 setAlpha:0.0];
-                    } completion:^(BOOL finished) {
-                        
-                    }];
+                
+                [_artImageView3 setImageWithURLRequest:art3originalUrlRequest placeholderImage:nil success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
+                    if (response){
+                        [UIView transitionWithView:_artImageView3 duration:kSlowAnimationDuration options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
+                            _artImageView3.image = image;
+                        } completion:^(BOOL finished) {
+                            
+                        }];
+                    } else {
+                        _artImageView3.image = image;
+                    }
+                } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
+                    
                 }];
+            } failure:^(NSURLRequest * request, NSHTTPURLResponse * response, NSError *error) {
+                
             }];
         }
     } else if (slide.slideTexts.count) {
@@ -210,10 +205,5 @@
         [self.mainTextLabel setText:slideText.body];
     }
 }
-
-// reduce the size of the image after it's been downloaded
-//- (UIImage *)imageManager:(SDWebImageManager *)imageManager transformDownloadedImage:(UIImage *)image withURL:(NSURL *)imageURL {
-//    return nil;
-//}
 
 @end

@@ -55,7 +55,7 @@
 }
 
 - (BOOL)hasValidFrame {
-    if ([self.width isEqualToNumber:@0] || [self.width isEqualToNumber:@0]){
+    if ([self.width isEqualToNumber:@0] || [self.width isEqualToNumber:@0] || [self.width isEqual:[NSNull null]] || [self.height isEqual:[NSNull null]] || !self.width || !self.height){
         return NO;
     } else {
         return YES;

@@ -13,8 +13,7 @@
 #import "Institution+helper.h"
 #import "Favorite+helper.h"
 #import "Location+helper.h"
-#import <SDWebImage/UIImageView+WebCache.h>
-#import <SDWebImage/UIButton+WebCache.h>
+#import <AFNetworking/UIButton+AFNetworking.h>
 #import "WFLightTableDetailsViewController.h"
 #import "WFLightTablesViewController.h"
 #import "WFAlert.h"
@@ -352,6 +351,7 @@ NSString* const deleteOption = @"Delete";
     
     for (Photo *photo in self.photo.art.photos){
         UIButton *imageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        
         [imageButton setShowsTouchWhenHighlighted:NO];
         [imageButton setAdjustsImageWhenHighlighted:NO];
         imageButton.imageView.contentMode = UIViewContentModeScaleAspectFill;
@@ -370,19 +370,21 @@ NSString* const deleteOption = @"Delete";
             }
         }
         
-        
-        [[SDWebImageManager sharedManager] downloadImageWithURL:[NSURL URLWithString:photo.slideImageUrl] options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-            [_progressIndicator setProgress:((CGFloat)receivedSize / (CGFloat)expectedSize)];
-        } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-            [imageButton setImage:image forState:UIControlStateNormal];
+        [_progressIndicator setHidden:YES];
+        __weak typeof(UIButton) *weakImageButton = imageButton;
+        NSURLRequest *imageRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:photo.slideImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
+        [imageButton setImageForState:UIControlStateNormal withURLRequest:imageRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+            [weakImageButton setImage:image forState:UIControlStateNormal];
+        } failure:^(NSError * error) {
             [UIView animateWithDuration:.23 animations:^{
-                [imageButton setAlpha:1.0];
+                [weakImageButton setAlpha:1.0];
             } completion:^(BOOL finished) {
                 [_progressIndicator removeFromSuperview];
-                imageButton.imageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
-                imageButton.imageView.layer.shouldRasterize = YES;
+                weakImageButton.imageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+                weakImageButton.imageView.layer.shouldRasterize = YES;
             }];
         }];
+
         [imageButton addTarget:self action:@selector(showFullScreen) forControlEvents:UIControlEventTouchUpInside];
         idx ++;
     }

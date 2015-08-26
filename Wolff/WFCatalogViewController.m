@@ -18,7 +18,7 @@
 #import "WFSettingsViewController.h"
 #import "WFLoginAnimator.h"
 #import "WFLoginViewController.h"
-#import <SDWebImage/UIImageView+WebCache.h>
+#import <AFNetworking/UIImageView+AFNetworking.h>
 #import "WFSettingsAnimator.h"
 #import "WFTablesAnimator.h"
 #import "WFLightTablesViewController.h"
@@ -432,7 +432,9 @@ static NSString *const logoutOption = @"Log out";
 }
 
 - (void)transitionToSlideshow:(Slideshow*)slideshow {
-    if (slideshow.user && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] || !slideshow.user){
+        return; // huh? we should never be getting here anyway
+    } else if ([slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
         [self slideshowSelected:slideshow];
         return;
     } else {
@@ -747,9 +749,10 @@ static NSString *const logoutOption = @"Log out";
 - (void)add {
     if (loggedIn){
         if (self.currentUser.customerPlan.length){
-            if (self.popover)
+            if (self.popover){
                 [self.popover dismissPopoverAnimated:YES];
-            [self resetArtBooleans];
+            }
+            [self resetTransitionBooleans];
             newArt = YES;
             WFNewArtViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"NewArt"];
             vc.artDelegate = self;
@@ -1748,7 +1751,7 @@ static NSString *const logoutOption = @"Log out";
                 comparison1 = [[WFInteractiveImageView alloc] initWithFrame:CGRectMake(10, 10, 125, 130) andPhoto:self.draggingView.photo];
                 comparison1.imageViewDelegate = self;
                 comparison1.contentMode = UIViewContentModeScaleAspectFit;
-                [comparison1 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.photo.slideImageUrl]];
+                [comparison1 setImageWithURL:[NSURL URLWithString:self.draggingView.photo.slideImageUrl]];
                 
                 comparison1LongPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(comparisonTap:)];
                 comparison1LongPress.minimumPressDuration = .14f;
@@ -1772,10 +1775,10 @@ static NSString *const logoutOption = @"Log out";
                 }
             }
             if (loc.x < -(kSidebarWidth/2)){
-                [comparison1 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.photo.slideImageUrl]];
+                [comparison1 setImageWithURL:[NSURL URLWithString:self.draggingView.photo.slideImageUrl]];
                 [comparison1 setPhoto:self.draggingView.photo];
             } else {
-                [comparison2 sd_setImageWithURL:[NSURL URLWithString:self.draggingView.photo.slideImageUrl]];
+                [comparison2 setImageWithURL:[NSURL URLWithString:self.draggingView.photo.slideImageUrl]];
                 [comparison2 setPhoto:self.draggingView.photo];
             }
             [self resetComparisonLabel];
@@ -2416,7 +2419,9 @@ static NSString *const logoutOption = @"Log out";
         }
         
         CGRect collectionFrame = self.collectionView.frame;
-        collectionFrame.size.width = width - kSidebarWidth;
+        if (IDIOM == IPAD){ // no need to manipulate the flow layout width on iPhone, since most of the slides will be out of view, anyway
+            collectionFrame.size.width = width - kSidebarWidth;
+        }
         collectionFrame.origin.x = offsetWidth;
         
         [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseOut animations:^{

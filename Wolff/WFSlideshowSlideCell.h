@@ -10,7 +10,6 @@
 #import "Slide+helper.h"
 #import "PhotoSlide+helper.h"
 #import "WFInteractiveImageView.h"
-#import <SDWebImage/SDWebImageManager.h>
 
 @interface WFSlideshowSlideCell : UICollectionViewCell
 @property (weak, nonatomic) IBOutlet UIView *containerView1;
@@ -24,9 +23,6 @@
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView3;
 @property (weak, nonatomic) IBOutlet UILabel *mainTextLabel;
 
-@property (strong, nonatomic) id <SDWebImageOperation> imageDownloadOperation;
-
-- (void)configureForPhotos:(NSOrderedSet*)photos inSlide:(Slide*)slide withImageManager:(SDWebImageManager*)imageManager;
-//- (void)recenterView:(WFInteractiveImageView*)viewToRecenter;
+- (void)configureForPhotos:(NSOrderedSet*)photos inSlide:(Slide*)slide;
 
 @end

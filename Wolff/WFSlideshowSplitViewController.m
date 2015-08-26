@@ -20,7 +20,6 @@
 #import "WFArtMetadataViewController.h"
 #import "WFSlideshowSettingsViewController.h"
 #import "WFInteractiveImageView.h"
-#import <SDWebImage/UIImageView+WebCache.h>
 #import "WFSaveMenuViewController.h"
 #import "WFAlert.h"
 #import "WFLightTablesViewController.h"
@@ -924,6 +923,7 @@ NSString* const playOption = @"Play";
                 } else {
                     [ProgressHUD dismiss];
                 }
+                [WFAlert show:[NSString stringWithFormat:@"\"%@\" created",self.slideshow.title] withTime:3.7f];
                 if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(slideshowCreated:)]){
                     [self.slideshowDelegate slideshowCreated:self.slideshow];
                 }
@@ -945,7 +945,7 @@ NSString* const playOption = @"Play";
                 [ProgressHUD dismiss];
                 [self.collectionView reloadData];
                 [self.tableView reloadData];
-                [WFAlert show:@"Saved" withTime:3.7f];
+                [WFAlert show:[NSString stringWithFormat:@"\"%@\" saved",self.slideshow.title] withTime:3.7f];
                 self.mainRequest = nil;
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -1096,7 +1096,8 @@ NSString* const playOption = @"Play";
     Photo *photo = [p MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     self.slideshow = [self.slideshow MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     
-    BOOL add; NSIndexPath *indexPathToReload;
+    BOOL add;
+    NSIndexPath *indexPathToReload;
     if ([self.slideshow.photos containsObject:photo]){
         indexPathToReload = [NSIndexPath indexPathForItem:[self.slideshow.photos indexOfObject:photo] inSection:0];
         [self.slideshow removePhoto:photo];
@@ -1152,9 +1153,7 @@ NSString* const playOption = @"Play";
         transparentBG = YES;
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
-        [self presentViewController:nav animated:YES completion:^{
-            
-        }];
+        [self presentViewController:nav animated:YES completion:NULL];
     }
 }
 

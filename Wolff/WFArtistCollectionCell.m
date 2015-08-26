@@ -8,7 +8,7 @@
 
 #import "WFArtistCollectionCell.h"
 #import "Constants.h"
-#import <SDWebImage/UIImageView+WebCache.h>
+#import <AFNetworking/UIImageView+AFNetworking.h>
 #import "Photo+helper.h"
 
 @implementation WFArtistCollectionCell
@@ -45,13 +45,18 @@
     Photo *coverPhoto = artist.photos.firstObject;
     if (coverPhoto.slideImageUrl.length){
         [_artistCoverImage setBackgroundColor:[UIColor colorWithWhite:0 alpha:0]];
-        [_artistCoverImage sd_setImageWithURL:[NSURL URLWithString:coverPhoto.slideImageUrl] placeholderImage:nil options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-            
-        } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-            [UIView animateWithDuration:kFastAnimationDuration animations:^{
+        NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:coverPhoto.slideImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
+        [_artistCoverImage setImageWithURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+            [_artistCoverImage setImage:image];
+            if (response){
+                [UIView animateWithDuration:kFastAnimationDuration animations:^{
+                    [_artistCoverImage setAlpha:1.0];
+                }];
+            } else {
                 [_artistCoverImage setAlpha:1.0];
-            }];
-        }];
+            }
+        } failure:NULL];
+        
     } else {
         [_artistCoverImage setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1]];
         [_artistCoverImage setImage:nil];

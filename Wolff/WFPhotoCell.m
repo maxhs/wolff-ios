@@ -8,14 +8,7 @@
 
 #import "WFPhotoCell.h"
 #import "Constants.h"
-#import <SDWebImage/UIButton+WebCache.h>
-#import <SDWebImage/UIImageView+WebCache.h>
-
-@interface WFPhotoCell () {
-    
-}
-
-@end
+#import <AFNetworking/UIImageView+AFNetworking.h>
 
 @implementation WFPhotoCell
 
@@ -81,25 +74,32 @@
     } else if (photo.isLandscape){
         [self.portraitArtImageView setHidden:YES];
         [self.landscapeArtImageView setHidden:NO];
-        [self.landscapeArtImageView sd_setImageWithURL:[NSURL URLWithString:photo.slideImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-            [UIView animateWithDuration:.23 animations:^{
+        NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:photo.slideImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
+        [self.landscapeArtImageView setImageWithURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+            [self.landscapeArtImageView setImage:image];
+            if (response){
+                [UIView animateWithDuration:kFastAnimationDuration animations:^{
+                    [self.landscapeArtImageView setAlpha:1.0];
+                }];
+            } else {
                 [self.landscapeArtImageView setAlpha:1.0];
-            } completion:^(BOOL finished) {
-                [self.landscapeArtImageView.layer setShouldRasterize:YES];
-                self.landscapeArtImageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
-            }];
-        }];
+            }
+        } failure:NULL];
+    
     } else {
         [self.portraitArtImageView setHidden:NO];
         [self.landscapeArtImageView setHidden:YES];
-        [self.portraitArtImageView sd_setImageWithURL:[NSURL URLWithString:photo.slideImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-            [UIView animateWithDuration:.23 animations:^{
+        NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:photo.slideImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
+        [self.portraitArtImageView setImageWithURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+            [self.portraitArtImageView setImage:image];
+            if (response){
+                [UIView animateWithDuration:kFastAnimationDuration animations:^{
+                    [self.portraitArtImageView setAlpha:1.0];
+                }];
+            } else {
                 [self.portraitArtImageView setAlpha:1.0];
-            } completion:^(BOOL finished) {
-                [self.portraitArtImageView.layer setShouldRasterize:YES];
-                self.portraitArtImageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
-            }];
-        }];
+            }
+        } failure:NULL];
     }
     
     [_privateLabel setHidden:[photo.privatePhoto isEqualToNumber:@YES] ? NO : YES];

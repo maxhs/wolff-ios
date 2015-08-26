@@ -8,7 +8,7 @@
 
 #import "WFSearchResultsCell.h"
 #import "Constants.h"
-#import <SDWebImage/UIImageView+WebCache.h>
+#import <AFNetworking/UIImageView+AFNetworking.h>
 
 @implementation WFSearchResultsCell
 
@@ -44,13 +44,21 @@
         [self.artistLabel setTextColor:[UIColor lightGrayColor]];
     }
     NSURL *artUrl = [NSURL URLWithString:photo.thumbImageUrl];
+    NSURLRequest *artUrlRequest = [NSURLRequest requestWithURL:artUrl cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
     self.imageTile.contentMode = UIViewContentModeScaleAspectFill;
     self.imageTile.clipsToBounds = YES;
     
-    [self.imageTile sd_setImageWithURL:artUrl placeholderImage:nil options:0 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-        [UIView animateWithDuration:.23f animations:^{
+    [self.imageTile setImageWithURLRequest:artUrlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+        [self.imageTile setImage:image];
+        if (response){
+            [UIView animateWithDuration:.23f animations:^{
+                [self.imageTile setAlpha:1.0];
+            }];
+        } else {
             [self.imageTile setAlpha:1.0];
-        }];
+        }
+    } failure:^(NSURLRequest * request, NSHTTPURLResponse * response, NSError * error) {
+        
     }];
 }
 

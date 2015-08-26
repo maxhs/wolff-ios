@@ -7,7 +7,8 @@
 //
 
 #import "WFSearchCollectionCell.h"
-#import <SDWebImage/UIImageView+WebCache.h>
+#import <AFNetworking/UIImageView+AFNetworking.h>
+#import "Constants.h"
 
 @implementation WFSearchCollectionCell
 
@@ -34,11 +35,18 @@
 - (void)configureForPhoto:(Photo *)photo {
     if (photo.thumbImageUrl.length){
         [self setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
-        [self.imageView sd_setImageWithURL:[NSURL URLWithString:photo.thumbImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-            [UIView animateWithDuration:.23 animations:^{
+        NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:photo.thumbImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
+        [self.imageView setImageWithURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+            [self.imageView setImage:image];
+            if (response){
+                [UIView animateWithDuration:kFastAnimationDuration animations:^{
+                    [self.imageView setAlpha:1.0];
+                }];
+            } else {
                 [self.imageView setAlpha:1.0];
-            }];
-        }];
+            }
+        } failure:NULL];
+        
     } else {
         [self setBackgroundColor:[UIColor clearColor]];
     }

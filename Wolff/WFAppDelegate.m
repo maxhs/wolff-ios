@@ -9,7 +9,6 @@
 #import "WFAppDelegate.h"
 #import <Mixpanel/Mixpanel.h>
 #import <Crashlytics/Crashlytics.h>
-#import <SDWebImage/SDWebImageManager.h>
 #import "WFAlert.h"
 #import "WFSlideshowViewController.h"
 #import "WFLoginViewController.h"
@@ -27,12 +26,7 @@
     [MagicalRecord setShouldDeleteStoreOnModelMismatch:YES];
     [MagicalRecord setupAutoMigratingCoreDataStack];
     [Stripe setDefaultPublishableKey:kStripePublishableKeyTest];
-    [self hackForPreloadingKeyboard];
     [self customizeAppearance];
-    
-#ifdef DEBUG
-    [[[SDWebImageManager sharedManager] imageCache] clearDisk];
-#endif
     
     [Mixpanel sharedInstanceWithToken:MIXPANEL_TOKEN];
     Mixpanel *mixpanel = [Mixpanel sharedInstance];
@@ -71,14 +65,6 @@
                 break;
         }
     }];
-}
-
-- (void)hackForPreloadingKeyboard {
-    UITextField *lagFreeField = [[UITextField alloc] init];
-    [self.window addSubview:lagFreeField];
-    [lagFreeField becomeFirstResponder];
-    [lagFreeField resignFirstResponder];
-    [lagFreeField removeFromSuperview];
 }
 
 - (void)connectWithParameters:(NSMutableDictionary *)parameters forSignup:(BOOL)signup {
@@ -244,6 +230,12 @@
 
 - (void)logout {
     //[self cleanAndResetDB];
+    [[Slideshow MR_findAll] enumerateObjectsUsingBlock:^(Slideshow *slideshow, NSUInteger idx, BOOL *stop) {
+        [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    }];
+    [[LightTable MR_findAll] enumerateObjectsUsingBlock:^(LightTable *lightTable, NSUInteger idx, BOOL *stop) {
+        [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    }];
     NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
     [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
     [NSUserDefaults resetStandardUserDefaults];

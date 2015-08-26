@@ -8,7 +8,7 @@
 
 #import "WFPartnerProfileHeader.h"
 #import "Constants.h"
-#import <SDWebImage/UIButton+WebCache.h>
+#import <AFNetworking/UIButton+AFNetworking.h>
 
 @implementation WFPartnerProfileHeader
 
@@ -44,10 +44,14 @@
 
 - (void)configureForPartner:(Partner *)partner {
     [_partnerPhotoButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1]];
-    [_partnerPhotoButton sd_setImageWithURL:[NSURL URLWithString:partner.avatarMedium] forState:UIControlStateNormal placeholderImage:[UIImage imageNamed:@"transparentIconWhite"] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+    NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:partner.avatarMedium] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
+    [_partnerPhotoButton setImageForState:UIControlStateNormal withURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+        [_partnerPhotoButton setImage:image forState:UIControlStateNormal];
         [UIView animateWithDuration:.23 animations:^{
             [_partnerPhotoButton setAlpha:1.0];
         }];
+    } failure:^(NSError * error) {
+        
     }];
     
     [_nameLabel setText:[NSString stringWithFormat:@"%@",partner.name]];

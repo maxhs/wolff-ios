@@ -7,7 +7,7 @@
 //
 
 #import "WFUserCollectionCell.h"
-#import <SDWebImage/UIImageView+WebCache.h>
+#import <AFNetworking/UIImageView+AFNetworking.h>
 #import "Constants.h"
 
 @implementation WFUserCollectionCell
@@ -35,13 +35,18 @@
     [_userNameLabel setAttributedText:attributedNameString];
     
     if (user.avatarLarge.length){
-        [_userProfileImage sd_setImageWithURL:[NSURL URLWithString:user.avatarLarge] placeholderImage:[UIImage imageNamed:@"transparentIconWhite"] options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-            
-        } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-            [UIView animateWithDuration:kFastAnimationDuration animations:^{
+        NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:user.avatarLarge] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
+        [_userProfileImage setImageWithURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+            [_userProfileImage setImage:image];
+            if (response){
+                [UIView animateWithDuration:kFastAnimationDuration animations:^{
+                    [_userProfileImage setAlpha:1.0];
+                }];
+            } else {
                 [_userProfileImage setAlpha:1.0];
-            }];
-        }];
+            }
+        } failure:NULL];
+       
     } else {
         [_userProfileImage setImage:[UIImage imageNamed:@"transparentIconWhite"]];
         [_userProfileImage setAlpha:1.0];

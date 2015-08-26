@@ -10,13 +10,13 @@
 #import "Constants.h"
 #import "Photo+helper.h"
 #import "Art+helper.h"
-#import <SDWebImage/UIImageView+WebCache.h>
+#import <AFNetworking/UIImageView+AFNetworking.h>
 
 @implementation WFLocationCollectionCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    [_locationNameLabel setTextAlignment:NSTextAlignmentLeft];
+    [_locationNameLabel setTextAlignment:NSTextAlignmentCenter];
 }
 
 - (void)prepareForReuse {
@@ -60,13 +60,19 @@
     }];
     if (coverPhoto.slideImageUrl.length){
         [_locationCoverImage setBackgroundColor:[UIColor colorWithWhite:0 alpha:0]];
-        [_locationCoverImage sd_setImageWithURL:[NSURL URLWithString:coverPhoto.slideImageUrl] placeholderImage:nil options:SDWebImageLowPriority progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-            
-        } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-            [UIView animateWithDuration:kFastAnimationDuration animations:^{
+        
+        NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:coverPhoto.slideImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
+        [_locationCoverImage setImageWithURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+            [_locationCoverImage setImage:image];
+            if (response){
+                [UIView animateWithDuration:kFastAnimationDuration animations:^{
+                    [_locationCoverImage setAlpha:1.0];
+                }];
+            } else {
                 [_locationCoverImage setAlpha:1.0];
-            }];
-        }];
+            }
+        } failure:NULL];
+    
     } else {
         [_locationCoverImage setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1]];
         [_locationCoverImage setImage:nil];

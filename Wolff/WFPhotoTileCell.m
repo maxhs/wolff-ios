@@ -7,18 +7,22 @@
 //
 
 #import "WFPhotoTileCell.h"
-#import <SDWebImage/UIImageView+WebCache.h>
+#import <AFNetworking/UIImageView+AFNetworking.h>
+#import "Constants.h"
 
 @implementation WFPhotoTileCell
 
 - (void)configureForPhoto:(Photo*)photo {
-    [self.artImageView sd_setImageWithURL:[NSURL URLWithString:photo.thumbImageUrl] placeholderImage:nil completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-        [UIView animateWithDuration:.23 animations:^{
+    NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:photo.thumbImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
+    [self.artImageView setImageWithURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+        [self.artImageView setImage:image];
+        if (response){
+            [UIView animateWithDuration:kFastAnimationDuration animations:^{
+                [self.artImageView setAlpha:1.0];
+            }];
+        } else {
             [self.artImageView setAlpha:1.0];
-        } completion:^(BOOL finished) {
-            [self.artImageView.layer setShouldRasterize:YES];
-            self.artImageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
-        }];
-    }];
+        }
+    } failure:NULL];
 }
 @end

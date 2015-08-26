@@ -228,7 +228,11 @@ static NSString * const reuseIdentifier = @"LocationCell";
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (IDIOM == IPAD){
-        return CGSizeMake(width/2,height/4);
+        if ((searching && indexPath.item == _filteredLocations.count) || indexPath.item == _locations.count){
+            return CGSizeMake(width/2,height/3);
+        } else {
+            return CGSizeMake(width/4,height/3);
+        }
     } else {
         return CGSizeMake(width,height/4);
     }

@@ -8,7 +8,7 @@
 
 #import "WFProfileHeader.h"
 #import "Constants.h"
-#import <SDWebImage/UIButton+WebCache.h>
+#import <AFNetworking/UIButton+AFNetworking.h>
 
 @implementation WFProfileHeader
 
@@ -42,11 +42,18 @@
 }
 - (void)configureForUser:(User *)user {
     [_userPhotoButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1]];
-    [_userPhotoButton sd_setImageWithURL:[NSURL URLWithString:user.avatarLarge] forState:UIControlStateNormal placeholderImage:[UIImage imageNamed:@"transparentIconWhite"] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-        [UIView animateWithDuration:.23 animations:^{
+    NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:user.avatarLarge] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
+    [_userPhotoButton setImageForState:UIControlStateNormal withURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+        [_userPhotoButton setImage:image forState:UIControlStateNormal];
+        if (response){
+            [UIView animateWithDuration:.23 animations:^{
+                [_userPhotoButton setAlpha:1.0];
+            }];
+        } else {
             [_userPhotoButton setAlpha:1.0];
-        }];
-    }];
+        }
+    } failure:NULL];
+
     NSString *prefix = user.prefix && user.prefix.length ? [NSString stringWithFormat:@"%@ ",user.prefix] : @"";
     [_nameLabel setText:[NSString stringWithFormat:@"%@%@",prefix,user.fullName]];
     [_institutionLabel setText:user.institution.name];

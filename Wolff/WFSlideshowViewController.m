@@ -19,7 +19,7 @@
 #import "WFProfileViewController.h"
 #import "WFPartnerProfileViewController.h"
 
-@interface WFSlideshowViewController () <UIToolbarDelegate, UIViewControllerTransitioningDelegate, UIGestureRecognizerDelegate, SDWebImageManagerDelegate> {
+@interface WFSlideshowViewController () <UIToolbarDelegate, UIViewControllerTransitioningDelegate, UIGestureRecognizerDelegate> {
     CGFloat width;
     CGFloat height;
     UIBarButtonItem *dismissButton;
@@ -65,7 +65,7 @@
 }
 
 @property (strong, nonatomic) Slide *currentSlide;
-@property (strong, nonatomic) SDWebImageManager *imageManager;
+@property (strong, nonatomic) User *currentUser;
 @end
 
 @implementation WFSlideshowViewController
@@ -77,13 +77,13 @@
     width = screenWidth(); height = screenHeight();
     [self.view setBackgroundColor:[UIColor blackColor]];
     if (self.slideshow) self.slideshow = [self.slideshow MR_inContext:[NSManagedObjectContext MR_defaultContext]];
-    
+    if (delegate.currentUser){
+        self.currentUser = [delegate.currentUser MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+    }
     barsVisible = NO; // by default
     metadataExpanded = NO; // by default
     [self setUpNavBar];
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
-    self.imageManager = [SDWebImageManager sharedManager];
-    self.imageManager.delegate = self;
     [self setupGestureRecognizers];
     [self setupMetadataContainer];
 }
@@ -377,7 +377,7 @@
         if (self.photos.count){
             WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
             [self assignViewsForCell:cell];
-            [cell configureForPhotos:self.photos.mutableCopy inSlide:nil withImageManager:self.imageManager];
+            [cell configureForPhotos:self.photos.mutableCopy inSlide:nil];
             
             return cell;
         } else if (indexPath.section == 0){
@@ -388,7 +388,7 @@
             WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
             self.currentSlide = self.slideshow.slides[indexPath.item];
             [self assignViewsForCell:cell];
-            [cell configureForPhotos:self.currentSlide.photos.mutableCopy inSlide:self.currentSlide withImageManager:self.imageManager];
+            [cell configureForPhotos:self.currentSlide.photos.mutableCopy inSlide:self.currentSlide];
             
             return cell;
         }
@@ -590,11 +590,15 @@
                 photoSlide = self.currentSlide.photoSlides[1];
             }
             if (photoSlide){
-                [photoSlide setPositionX:@(view.frame.origin.x)];
-                [photoSlide setPositionY:@(view.frame.origin.y)];
-                [photoSlide setWidth:@(view.frame.size.width)];
-                [photoSlide setHeight:@(view.frame.size.height)];
-                [photoSlide setScale:@([[view.layer valueForKeyPath:@"transform.scale"] floatValue])];
+                PhotoSlide *ps = [photoSlide MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+                [ps setPositionX:@(view.frame.origin.x)];
+                [ps setPositionY:@(view.frame.origin.y)];
+                [ps setWidth:@(view.frame.size.width)];
+                [ps setHeight:@(view.frame.size.height)];
+                [ps setScale:@([[view.layer valueForKeyPath:@"transform.scale"] floatValue])];
+//                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+//                    NSLog(@"Saving slide 1 after pan: %@ %@, %@ %@",ps.positionX, ps.positionY, ps.width, ps.height);
+//                }];
             }
         } else if (self.photos.count) {
             [(WFInteractiveImageView*)view setMoved:YES];
@@ -880,8 +884,45 @@
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        NSLog(@"Saving slideshow. Success? %u",success);
+    if (self.currentUser && self.slideshow && self.slideshow.user && [self.currentUser.identifier isEqualToNumber:self.slideshow.user.identifier]){
+        NSLog(@"Should be saving slideshow");
+        [self syncWithServer];
+    }
+}
+
+- (void)syncWithServer {
+    NSMutableArray *photoSlideArray = [NSMutableArray array];
+    [self.slideshow.slides enumerateObjectsUsingBlock:^(Slide *slide, NSUInteger idx, BOOL *stop) {
+        for (PhotoSlide *photoSlide in slide.photoSlides){
+            if (photoSlide.hasValidFrame){
+                NSMutableDictionary *photoSlideDict = [NSMutableDictionary dictionary];
+                [photoSlideDict setObject:photoSlide.positionX forKey:@"position_x"];
+                [photoSlideDict setObject:photoSlide.positionY forKey:@"position_y"];
+                [photoSlideDict setObject:photoSlide.width forKey:@"width"];
+                [photoSlideDict setObject:photoSlide.height forKey:@"height"];
+                [photoSlideDict setObject:photoSlide.identifier forKey:@"id"];
+                [photoSlideArray addObject:photoSlideDict];
+            }
+        }
+    }];
+    
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    }
+    if (photoSlideArray.count){
+        [parameters setObject:photoSlideArray forKey:@"slideshow[photo_slides]"];
+    }
+    
+    [manager PATCH:[NSString stringWithFormat:@"slideshows/%@/positioning",self.slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Success saving slideshow: %@",responseObject);
+        [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            
+        }];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed to sync slideshow prepositioning with server: %@",error.description);
+
     }];
 }
 

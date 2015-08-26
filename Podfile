@@ -1,8 +1,7 @@
-platform :ios, '7.0'
+platform :ios, ‘8.0’
 inhibit_all_warnings!
 
 pod 'AFNetworking'
-pod 'SDWebImage'
 pod 'MagicalRecord'
 pod 'Mixpanel'
 pod 'Stripe'
