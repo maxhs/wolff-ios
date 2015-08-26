@@ -4,37 +4,27 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>Pods-AFNetworking.xcscheme</key>
+		<key>AFNetworking.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>Pods-DateTools.xcscheme</key>
+		<key>DateTools.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>Pods-MagicalRecord.xcscheme</key>
+		<key>MagicalRecord.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>Pods-Mixpanel.xcscheme</key>
+		<key>Mixpanel.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>Pods-PaymentKit.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-		</dict>
-		<key>Pods-SDWebImage.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-		</dict>
-		<key>Pods-Stripe.xcscheme</key>
+		<key>PaymentKit.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
@@ -44,45 +34,55 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
+		<key>SDWebImage.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>Stripe.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>10EC5CB10F542D447F6972FB</key>
+		<key>05ADFDA875F105BB720C82A02D0CDEC6</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>44058C6E5DFE80B50CF3B1EE</key>
+		<key>2079A1310E8A9CBC1D1D89B6172894A4</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>6ADD6F5DEB1C3BE5807C2C04</key>
+		<key>49D8403CD468299C001184B4B4A7EAA9</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>763BC4E48ED0DF30E4AC0D5A</key>
+		<key>5352D432641F0656C90741034E32F31E</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>89EDF8C604EAAB1CF93E648B</key>
+		<key>56B4C6BF6AEC6FD77586F187395DEE2E</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>A206A7025444DC6D016EF6F9</key>
+		<key>5750B2BD606B86E345C673496EBC06C6</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>CE0D04432D8692E2721D920C</key>
+		<key>9ACB9A89C7A8B77525C0D644198E9161</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>DE6E641C4917BE46D61BF6C7</key>
+		<key>EBBF9B70E3E7C58399F2A0FFBCB702A0</key>
 		<dict>
 			<key>primary</key>
 			<true/>

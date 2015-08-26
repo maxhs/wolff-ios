@@ -351,7 +351,6 @@
 		50DB44971A58C40200856174 /* transparentIconWhite.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44941A58C40200856174 /* transparentIconWhite.png */; };
 		50DB44981A58C40200856174 /* transparentIconWhite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44951A58C40200856174 /* transparentIconWhite@2x.png */; };
 		50DB44991A58C40200856174 /* transparentIconWhite@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44961A58C40200856174 /* transparentIconWhite@3x.png */; };
-		50DB449C1A58C82700856174 /* WFComparisonViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50DB449B1A58C82700856174 /* WFComparisonViewController.m */; };
 		50DB58651B7D0C1C00F7D43D /* iphoneWalkthrough3@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB585F1B7D0C1C00F7D43D /* iphoneWalkthrough3@2x.png */; };
 		50DB58661B7D0C1C00F7D43D /* iphoneWalkthrough3.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB58601B7D0C1C00F7D43D /* iphoneWalkthrough3.png */; };
 		50DB58671B7D0C1C00F7D43D /* iphoneWalkthrough3@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB58611B7D0C1C00F7D43D /* iphoneWalkthrough3@3x.png */; };
@@ -953,8 +952,6 @@
 		50DB44941A58C40200856174 /* transparentIconWhite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = transparentIconWhite.png; sourceTree = "<group>"; };
 		50DB44951A58C40200856174 /* transparentIconWhite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "transparentIconWhite@2x.png"; sourceTree = "<group>"; };
 		50DB44961A58C40200856174 /* transparentIconWhite@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "transparentIconWhite@3x.png"; sourceTree = "<group>"; };
-		50DB449A1A58C82700856174 /* WFComparisonViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFComparisonViewController.h; sourceTree = "<group>"; };
-		50DB449B1A58C82700856174 /* WFComparisonViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFComparisonViewController.m; sourceTree = "<group>"; };
 		50DB585F1B7D0C1C00F7D43D /* iphoneWalkthrough3@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iphoneWalkthrough3@2x.png"; sourceTree = "<group>"; };
 		50DB58601B7D0C1C00F7D43D /* iphoneWalkthrough3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = iphoneWalkthrough3.png; sourceTree = "<group>"; };
 		50DB58611B7D0C1C00F7D43D /* iphoneWalkthrough3@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iphoneWalkthrough3@3x.png"; sourceTree = "<group>"; };
@@ -1375,15 +1372,6 @@
 			name = Artists;
 			sourceTree = "<group>";
 		};
-		503B221E1B385EE200DFB0D5 /* Comparison(s) - deprecated */ = {
-			isa = PBXGroup;
-			children = (
-				50DB449A1A58C82700856174 /* WFComparisonViewController.h */,
-				50DB449B1A58C82700856174 /* WFComparisonViewController.m */,
-			);
-			name = "Comparison(s) - deprecated";
-			sourceTree = "<group>";
-		};
 		50AC91F71A998172004148D2 /* Custom Objects */ = {
 			isa = PBXGroup;
 			children = (
@@ -1626,7 +1614,6 @@
 				503B22121B38584800DFB0D5 /* WebView */,
 				503B22131B38585200DFB0D5 /* Menus */,
 				503B22151B38588E00DFB0D5 /* Institution */,
-				503B221E1B385EE200DFB0D5 /* Comparison(s) - deprecated */,
 				50E760881AF6B831003F72AE /* Slideshows */,
 				503B22161B38591A00DFB0D5 /* ImagePicker */,
 				50E760871AF6B7F3003F72AE /* Search/Selected */,
@@ -2631,7 +2618,6 @@
 				F20FB2BF1A22A0A80007C905 /* WFNewArtViewController.m in Sources */,
 				502B3E971AE47A15001E0563 /* WFLeftMenuAnimator.m in Sources */,
 				50DB43A51A53611300856174 /* WFNotificationsViewController.m in Sources */,
-				50DB449C1A58C82700856174 /* WFComparisonViewController.m in Sources */,
 				F20FB2E61A24DBF50007C905 /* Artist+helper.m in Sources */,
 				F2CE0598198EAB7A0061DB94 /* WFSettingsCell.m in Sources */,
 				50B6FA7E1AC53025006703AA /* PhotoSlide+helper.m in Sources */,

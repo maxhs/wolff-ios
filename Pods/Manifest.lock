@@ -1,23 +1,23 @@
 PODS:
-  - AFNetworking (2.5.0):
-    - AFNetworking/NSURLConnection (= 2.5.0)
-    - AFNetworking/NSURLSession (= 2.5.0)
-    - AFNetworking/Reachability (= 2.5.0)
-    - AFNetworking/Security (= 2.5.0)
-    - AFNetworking/Serialization (= 2.5.0)
-    - AFNetworking/UIKit (= 2.5.0)
-  - AFNetworking/NSURLConnection (2.5.0):
+  - AFNetworking (2.6.0):
+    - AFNetworking/NSURLConnection (= 2.6.0)
+    - AFNetworking/NSURLSession (= 2.6.0)
+    - AFNetworking/Reachability (= 2.6.0)
+    - AFNetworking/Security (= 2.6.0)
+    - AFNetworking/Serialization (= 2.6.0)
+    - AFNetworking/UIKit (= 2.6.0)
+  - AFNetworking/NSURLConnection (2.6.0):
     - AFNetworking/Reachability
     - AFNetworking/Security
     - AFNetworking/Serialization
-  - AFNetworking/NSURLSession (2.5.0):
+  - AFNetworking/NSURLSession (2.6.0):
     - AFNetworking/Reachability
     - AFNetworking/Security
     - AFNetworking/Serialization
-  - AFNetworking/Reachability (2.5.0)
-  - AFNetworking/Security (2.5.0)
-  - AFNetworking/Serialization (2.5.0)
-  - AFNetworking/UIKit (2.5.0):
+  - AFNetworking/Reachability (2.6.0)
+  - AFNetworking/Security (2.6.0)
+  - AFNetworking/Serialization (2.6.0)
+  - AFNetworking/UIKit (2.6.0):
     - AFNetworking/NSURLConnection
     - AFNetworking/NSURLSession
   - Crashlytics (3.1.1)
@@ -33,9 +33,9 @@ PODS:
     - Mixpanel/MPCategoryHelpers (= 2.6.2)
   - Mixpanel/MPCategoryHelpers (2.6.2)
   - PaymentKit (1.1.1)
-  - SDWebImage (3.7.1):
-    - SDWebImage/Core (= 3.7.1)
-  - SDWebImage/Core (3.7.1)
+  - SDWebImage (3.7.3):
+    - SDWebImage/Core (= 3.7.3)
+  - SDWebImage/Core (3.7.3)
   - Stripe (2.2.2):
     - Stripe/Core (= 2.2.2)
   - Stripe/Core (2.2.2)
@@ -53,7 +53,7 @@ DEPENDENCIES:
   - Stripe
 
 SPEC CHECKSUMS:
-  AFNetworking: 96ac9bf3eda33582701cb1fcc5b896aa1e20311e
+  AFNetworking: 79f7eb1a0fcfa7beb409332b2ca49afe9ce53b05
   Crashlytics: 39ab395565bc03c29cdecd2b9d103ebf30930c10
   DateTools: c3d055af2c4d039c1791b5bffb1444ad1db32219
   Fabric: a9eabe53915e9f1db55a84dd2838737928675878
@@ -61,7 +61,7 @@ SPEC CHECKSUMS:
   MagicalRecord: f8a56bb87ab6552f20c4bb8681a1958a197ea3cd
   Mixpanel: e453f9abb7858742b1ab2b0434eac04f9f27c155
   PaymentKit: 323c25233af5060880daa0c31366d4b688c34487
-  SDWebImage: ed3095af2ff88b436426037444979b917f6c5575
+  SDWebImage: 1d2b1a1efda1ade1b00b6f8498865f8ddedc8a84
   Stripe: 839ddca5ad2153a073057852ce173d30f7df71d3
 
-COCOAPODS: 0.37.2
+COCOAPODS: 0.38.2

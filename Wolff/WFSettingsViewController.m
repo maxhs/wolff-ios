@@ -34,7 +34,6 @@
     UITextField *alternateTextField;
     UITextField *locationTextField;
     UIImageView *navBarShadowView;
-    BOOL iOS8;
     BOOL editing;
     BOOL changingPassword;
     NSIndexPath *indexPathToRemoveInstitution;
@@ -47,12 +46,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if (SYSTEM_VERSION >= 8.f){
-        iOS8 = YES;
-    } else {
-        iOS8 = NO;
-    }
-    
     self.title = @"Settings";
     [self.view setBackgroundColor:[UIColor clearColor]];
     [self.tableView setBackgroundColor:[UIColor clearColor]];
@@ -337,17 +330,13 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    if (section == 0){
-        return 0;
-    } else {
-        return 34;
-    }
+    return (section == 0) ? 0 : 34.f;
 }
 
 - (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     CGFloat headerHeight = section == 0 ? 0 : 34 ;
     UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, headerHeight)];
-    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, tableView.frame.size.width-10, 34)];
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 0, tableView.frame.size.width-10, headerHeight)];
     [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [headerLabel setTextColor:[UIColor colorWithWhite:1 alpha:.27]];
     switch (section) {
@@ -360,7 +349,6 @@
         case 3:
             [headerLabel setText:@"SECONDARY CONTACT INFORMATION"];
             break;
-            
         default:
             break;
     }

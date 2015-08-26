@@ -9,7 +9,7 @@
 #import "WFAppDelegate.h"
 #import <Mixpanel/Mixpanel.h>
 #import <Crashlytics/Crashlytics.h>
-#import <SDWebImage/SDImageCache.h>
+#import <SDWebImage/SDWebImageManager.h>
 #import "WFAlert.h"
 #import "WFSlideshowViewController.h"
 #import "WFLoginViewController.h"
@@ -29,6 +29,10 @@
     [Stripe setDefaultPublishableKey:kStripePublishableKeyTest];
     [self hackForPreloadingKeyboard];
     [self customizeAppearance];
+    
+#ifdef DEBUG
+    [[[SDWebImageManager sharedManager] imageCache] clearDisk];
+#endif
     
     [Mixpanel sharedInstanceWithToken:MIXPANEL_TOKEN];
     Mixpanel *mixpanel = [Mixpanel sharedInstance];

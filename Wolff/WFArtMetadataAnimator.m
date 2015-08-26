@@ -41,7 +41,6 @@
         [darkBackground setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
         [darkBackground setTag:kDarkBackgroundConstant];
         
-        
         WFArtMetadataViewController *artvc;
         if ([toViewController isKindOfClass:[UINavigationController class]]){
             UINavigationController *nav = (UINavigationController*)toViewController;

@@ -671,163 +671,6 @@
             </objects>
             <point key="canvasLocation" x="409" y="-149"/>
         </scene>
-        <!--Comparison View Controller-->
-        <scene sceneID="aV2-bj-umv">
-            <objects>
-                <viewController storyboardIdentifier="Comparison" automaticallyAdjustsScrollViewInsets="NO" id="Ish-LW-sOv" customClass="WFComparisonViewController" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="YVc-Ex-Kbf">
-                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" pagingEnabled="YES" dataMode="prototypes" id="PDa-dU-I1d">
-                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="10" minimumInteritemSpacing="10" id="qR2-Dh-K9Z">
-                                    <size key="itemSize" width="1024" height="768"/>
-                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                </collectionViewFlowLayout>
-                                <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="ComparisonCell" id="V6Z-Bl-zP3" customClass="WFSlideshowSlideCell">
-                                        <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                            <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <subviews>
-                                                <view multipleTouchEnabled="YES" contentMode="scaleAspectFit" id="2Ya-Kq-FIl" userLabel="containerView1">
-                                                    <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <subviews>
-                                                        <imageView multipleTouchEnabled="YES" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="M5Y-T3-98n" userLabel="artImageView1" customClass="WFInteractiveImageView">
-                                                            <rect key="frame" x="62" y="54" width="900" height="660"/>
-                                                            <autoresizingMask key="autoresizingMask"/>
-                                                        </imageView>
-                                                        <progressView opaque="NO" alpha="0.0" contentMode="scaleToFill" verticalHuggingPriority="750" id="K9E-KP-L3R">
-                                                            <rect key="frame" x="437" y="740" width="150" height="2"/>
-                                                            <autoresizingMask key="autoresizingMask"/>
-                                                        </progressView>
-                                                    </subviews>
-                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                                </view>
-                                                <view clipsSubviews="YES" contentMode="scaleAspectFit" id="nez-hy-3Nc" userLabel="containerView2">
-                                                    <rect key="frame" x="0.0" y="0.0" width="511" height="768"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="In9-pe-odM" userLabel="artImageView2" customClass="WFInteractiveImageView">
-                                                            <rect key="frame" x="25" y="54" width="480" height="660"/>
-                                                            <autoresizingMask key="autoresizingMask"/>
-                                                        </imageView>
-                                                        <progressView opaque="NO" alpha="0.0" contentMode="scaleToFill" verticalHuggingPriority="750" id="UW6-Xe-FKY">
-                                                            <rect key="frame" x="180" y="740" width="150" height="2"/>
-                                                            <autoresizingMask key="autoresizingMask"/>
-                                                        </progressView>
-                                                    </subviews>
-                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                                </view>
-                                                <view clipsSubviews="YES" contentMode="scaleAspectFit" id="kqr-rf-yCQ" userLabel="containerView3">
-                                                    <rect key="frame" x="513" y="0.0" width="511" height="768"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="jHm-Of-W8V" userLabel="artImageView3" customClass="WFInteractiveImageView">
-                                                            <rect key="frame" x="5" y="54" width="480" height="660"/>
-                                                            <autoresizingMask key="autoresizingMask"/>
-                                                        </imageView>
-                                                        <progressView opaque="NO" alpha="0.0" contentMode="scaleToFill" verticalHuggingPriority="750" id="IiP-rR-YB3">
-                                                            <rect key="frame" x="180" y="740" width="150" height="2"/>
-                                                            <autoresizingMask key="autoresizingMask"/>
-                                                        </progressView>
-                                                    </subviews>
-                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                                </view>
-                                            </subviews>
-                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                        </view>
-                                        <connections>
-                                            <outlet property="artImageView1" destination="M5Y-T3-98n" id="Via-Po-ISJ"/>
-                                            <outlet property="artImageView2" destination="In9-pe-odM" id="0i7-di-sit"/>
-                                            <outlet property="artImageView3" destination="jHm-Of-W8V" id="VD4-28-8wR"/>
-                                            <outlet property="containerView1" destination="2Ya-Kq-FIl" id="VE1-59-1TL"/>
-                                            <outlet property="containerView2" destination="nez-hy-3Nc" id="09a-UB-AWs"/>
-                                            <outlet property="containerView3" destination="kqr-rf-yCQ" id="7Lq-wt-YdP"/>
-                                            <outlet property="progressView1" destination="K9E-KP-L3R" id="ltW-nP-GBM"/>
-                                            <outlet property="progressView2" destination="UW6-Xe-FKY" id="Ndf-Ac-eeL"/>
-                                            <outlet property="progressView3" destination="IiP-rR-YB3" id="nP5-G4-JzG"/>
-                                        </connections>
-                                    </collectionViewCell>
-                                </cells>
-                                <connections>
-                                    <outlet property="dataSource" destination="Ish-LW-sOv" id="5Lf-gQ-uTT"/>
-                                    <outlet property="delegate" destination="Ish-LW-sOv" id="wlS-do-Gt7"/>
-                                </connections>
-                            </collectionView>
-                            <view contentMode="scaleToFill" id="ya5-ht-RMl" userLabel="Metadata Container">
-                                <rect key="frame" x="0.0" y="192" width="1024" height="384"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                <subviews>
-                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" directionalLockEnabled="YES" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" dataMode="prototypes" id="AIv-B2-Rsy">
-                                        <rect key="frame" x="0.0" y="0.0" width="1024" height="384"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="GeQ-Ll-3pV">
-                                            <size key="itemSize" width="50" height="50"/>
-                                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                        </collectionViewFlowLayout>
-                                        <cells>
-                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="SlideMetadataCell" id="bit-3v-kVe" customClass="WFSlideMetadataCollectionCell">
-                                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
-                                                <autoresizingMask key="autoresizingMask"/>
-                                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                                    <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="CBv-cF-98H" userLabel="Title Label">
-                                                            <rect key="frame" x="10" y="6" width="1004" height="44"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
-                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
-                                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="fm7-ca-Uhm" userLabel="Components Label">
-                                                            <rect key="frame" x="10" y="23" width="1004" height="44"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
-                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
-                                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
-                                                    </subviews>
-                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                                </view>
-                                                <connections>
-                                                    <outlet property="metadataComponentsLabel" destination="fm7-ca-Uhm" id="Rgb-Qt-OOT"/>
-                                                    <outlet property="titleLabel" destination="CBv-cF-98H" id="aVb-0f-pUd"/>
-                                                </connections>
-                                            </collectionViewCell>
-                                        </cells>
-                                        <connections>
-                                            <outlet property="dataSource" destination="5A9-EG-Bgk" id="Xwi-ge-2AK"/>
-                                            <outlet property="delegate" destination="5A9-EG-Bgk" id="82O-It-LzB"/>
-                                        </connections>
-                                    </collectionView>
-                                </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                            </view>
-                        </subviews>
-                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    </view>
-                    <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
-                    <connections>
-                        <outlet property="collectionView" destination="PDa-dU-I1d" id="iy2-cT-gbQ"/>
-                        <outlet property="metadataCollectionView" destination="AIv-B2-Rsy" id="TvC-x6-zFd"/>
-                        <outlet property="slideMetadataContainerView" destination="ya5-ht-RMl" id="fiG-SA-eKO"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="nau-aY-kJR" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="799" y="-4868"/>
-        </scene>
         <!--Slide Metadata View Controller-->
         <scene sceneID="37J-Ha-UTp">
             <objects>
@@ -1463,7 +1306,7 @@
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES"/>
                                 <subviews>
                                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Drag for comparison" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="9lg-C9-nPZ">
-                                        <rect key="frame" x="10" y="53" width="260" height="44"/>
+                                        <rect key="frame" x="10" y="53" width="260" height="43.999999999999993"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
@@ -1893,7 +1736,7 @@
                                         </connections>
                                     </scrollView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="hhK-VU-066" userLabel="Favorites button">
-                                        <rect key="frame" x="400.00000077824473" y="16" width="191" height="46"/>
+                                        <rect key="frame" x="400" y="16" width="191" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="    Add to favorites">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -1901,7 +1744,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="CZy-qv-iaO" userLabel="Light table button">
-                                        <rect key="frame" x="400.00000077824473" y="64" width="191" height="46"/>
+                                        <rect key="frame" x="400" y="64" width="191" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Drop to light table">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -1909,7 +1752,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Q3p-wV-O0q" userLabel="Flag button">
-                                        <rect key="frame" x="400.00000077824473" y="112" width="191" height="46"/>
+                                        <rect key="frame" x="400" y="112" width="191" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Flag">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -1917,7 +1760,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="pGY-Vz-g73" userLabel="Tag button">
-                                        <rect key="frame" x="400.00000077824473" y="160" width="191" height="46"/>
+                                        <rect key="frame" x="400" y="160" width="191" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Tag">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -1925,7 +1768,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="lN5-Jr-Blo" userLabel="Edit button">
-                                        <rect key="frame" x="400.00000077824473" y="208" width="191" height="46"/>
+                                        <rect key="frame" x="400" y="208" width="191" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Edit">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -1933,7 +1776,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="uYO-2W-NEp" userLabel="Delete button">
-                                        <rect key="frame" x="400.00000077824473" y="256" width="191" height="46"/>
+                                        <rect key="frame" x="400" y="256" width="191" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Delete">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>

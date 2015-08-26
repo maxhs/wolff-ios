@@ -31,7 +31,6 @@
 #import "WFCatalogHeaderView.h"
 #import "Favorite+helper.h"
 #import "WFInteractiveImageView.h"
-#import "WFComparisonViewController.h"
 #import "WFSlideshowFocusAnimator.h"
 #import "WFDismissableNavigationController.h"
 #import "WFNewLightTableAnimator.h"
@@ -1840,9 +1839,6 @@ static NSString *const logoutOption = @"Log out";
     if (comparison1 && comparison1.photo && comparison2 && comparison2.photo){
         [self resetTransitionBooleans];
         comparison = YES;
-        //WFComparisonViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Comparison"];
-        //vc.photos = [NSMutableOrderedSet orderedSetWithArray:@[comparison1.photo, comparison2.photo]];
-    
         WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
         [vc setPhotos:@[comparison1.photo,comparison2.photo]];
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];

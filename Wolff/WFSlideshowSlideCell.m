@@ -7,7 +7,6 @@
 //
 
 #import "WFSlideshowSlideCell.h"
-#import <SDWebImage/SDWebImageManager.h>
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "Constants.h"
 #import "SlideText+helper.h"
@@ -39,9 +38,6 @@
     [self resetVisibility:_progressView1];
     [self resetVisibility:_progressView2];
     [self resetVisibility:_progressView3];
-    //[self recenterView:_artImageView1];
-    //[self recenterView:_artImageView2];
-    //[self recenterView:_artImageView3];
 }
 
 - (void)resetVisibility:(UIView*)view {
@@ -51,46 +47,31 @@
     }
 }
 
-- (void)recenterView:(WFInteractiveImageView*)viewToRecenter{
-    viewToRecenter.transform = CGAffineTransformIdentity;
-    CGRect newFrame = viewToRecenter.frame;
-    if (viewToRecenter == _artImageView1){
-        newFrame.origin.x = (_containerView1.frame.size.width-newFrame.size.width) / 2;
-        newFrame.origin.y = (_containerView1.frame.size.height-newFrame.size.height) / 2;
-    } else if (viewToRecenter == _artImageView2){
-        newFrame.origin.x = (_containerView2.frame.size.width-newFrame.size.width) / 2;
-        newFrame.origin.y = (_containerView2.frame.size.height-newFrame.size.height) / 2;
-    } else if (viewToRecenter == _artImageView3){
-        newFrame.origin.x = (_containerView3.frame.size.width-newFrame.size.width) / 2;
-        newFrame.origin.y = (_containerView3.frame.size.height-newFrame.size.height) / 2;
-    }
-    if (newFrame.origin.x && newFrame.origin.y && newFrame.size.width > 0 && newFrame.size.height > 0){
-        [viewToRecenter setFrame:newFrame];
-    }
-}
-
-- (void)configureForPhotos:(NSOrderedSet *)photos inSlide:(Slide *)slide{
-    if (slide) {
-        self.slide = slide;
-    }
-
+- (void)configureForPhotos:(NSOrderedSet *)photos inSlide:(Slide*)slide withImageManager:(SDWebImageManager *)imageManager{
+    [imageManager cancelAll];
+    
+    CGFloat frameHeight = (IDIOM == IPAD) ? 660.f : 300.f;
+    CGFloat singleWidth = (IDIOM == IPAD) ? 900.f : 460.f;
+    CGFloat splitWidth = (IDIOM == IPAD) ? 480.f : 260.f;
+    CGFloat width = screenWidth(); CGFloat height = screenHeight();
+    
     if (photos.count){
         [self.mainTextLabel setHidden:YES];
-        _photos = photos;
         
         [self.artImageView1 setUserInteractionEnabled:YES];
         [self.artImageView2 setUserInteractionEnabled:YES];
         [self.artImageView3 setUserInteractionEnabled:YES];
         
         if (photos.count == 1){
-//            if (_slide && slide.photoSlides.count){
-//                PhotoSlide *photoSlide1 = slide.photoSlides[0];
-//                NSLog(@"photo slide 1: %@",photoSlide1);
-//                if (photoSlide1.hasValidFrame){
-//                    [_artImageView1 setFrame:CGRectMake(photoSlide1.positionX.floatValue, photoSlide1.positionY.floatValue, photoSlide1.width.floatValue, photoSlide1.height.floatValue)];
-//                }
-//            }
-            
+            if (slide && slide.photoSlides.count){
+                PhotoSlide *photoSlide1 = slide.photoSlides[0];
+                if (photoSlide1.hasValidFrame){
+                    [_artImageView1 setFrame:CGRectMake(photoSlide1.positionX.floatValue, photoSlide1.positionY.floatValue, photoSlide1.width.floatValue, photoSlide1.height.floatValue)];
+                    NSLog(@"Pre-positioning slide 1: %@ %@, %@ %@",photoSlide1.positionX, photoSlide1.positionY, photoSlide1.width, photoSlide1.height);
+                } else {
+                    [_artImageView1 setFrame:CGRectMake((width/2-singleWidth/2), (height/2-frameHeight/2), singleWidth, frameHeight)];
+                }
+            }
             [self.containerView1 setHidden:NO];
             [self.containerView2 setHidden:YES];
             [self.containerView3 setHidden:YES];
@@ -99,7 +80,7 @@
             NSURL *art1thumbUrl = [NSURL URLWithString:photo.thumbImageUrl];
             NSURL *art1originalUrl = [NSURL URLWithString:photo.originalImageUrl];
             
-            [_artImageView1 sd_setImageWithURL:art1thumbUrl placeholderImage:nil options:(SDWebImageLowPriority | SDWebImageContinueInBackground) completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+            [_artImageView1 sd_setImageWithURL:art1thumbUrl placeholderImage:nil options:(SDWebImageLowPriority) completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
                 //if the image is cached, no need to fade it in slowly
                 if (cacheType == SDImageCacheTypeNone && _artImageView1.image != nil){
                     [UIView animateWithDuration:.27 animations:^{
@@ -113,7 +94,8 @@
                     }];
                 }
             }];
-            [[SDWebImageManager sharedManager] downloadImageWithURL:art1originalUrl options:(SDWebImageLowPriority | SDWebImageContinueInBackground) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+
+            self.imageDownloadOperation = [imageManager downloadImageWithURL:art1originalUrl options:(SDWebImageLowPriority) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
                 [_progressView1 setProgress:((CGFloat)receivedSize/(CGFloat)expectedSize)];
             } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
                 CGFloat duration = cacheType == SDImageCacheTypeNone ?  kSlowAnimationDuration : kFastAnimationDuration;
@@ -130,18 +112,22 @@
             }];
             
         } else if (photos.count > 1) {
-//            if (_slide && slide.photoSlides.count > 1){
-//                PhotoSlide *photoSlide1 = slide.photoSlides[0];
-//                if (photoSlide1.hasValidFrame){
-//                    NSLog(@"photo slide 1: %@",photoSlide1);
-//                    [_artImageView2 setFrame:CGRectMake(photoSlide1.positionX.floatValue, photoSlide1.positionY.floatValue, photoSlide1.width.floatValue, photoSlide1.height.floatValue)];
-//                }
-//                PhotoSlide *photoSlide2 = slide.photoSlides[1];
-//                if (photoSlide2.hasValidFrame){
-//                    NSLog(@"photo slide 2: %@",photoSlide2);
-//                    [_artImageView3 setFrame:CGRectMake(photoSlide2.positionX.floatValue, photoSlide2.positionY.floatValue, photoSlide2.width.floatValue, photoSlide2.height.floatValue)];
-//                }
-//            }
+            if (slide && slide.photoSlides.count > 1){
+                PhotoSlide *photoSlide2 = slide.photoSlides[0];
+                if (photoSlide2.hasValidFrame){
+                    [_artImageView2 setFrame:CGRectMake(photoSlide2.positionX.floatValue, photoSlide2.positionY.floatValue, photoSlide2.width.floatValue, photoSlide2.height.floatValue)];
+                    NSLog(@"Pre-positioning slide 2: %@ %@, %@ %@",photoSlide2.positionX, photoSlide2.positionY, photoSlide2.width, photoSlide2.height);
+                } else {
+                    [_artImageView2 setFrame:CGRectMake((width/4-splitWidth/2), (height/2-frameHeight/2), splitWidth, frameHeight)];
+                }
+                PhotoSlide *photoSlide3 = slide.photoSlides[1];
+                if (photoSlide3.hasValidFrame){
+                    [_artImageView3 setFrame:CGRectMake(photoSlide3.positionX.floatValue, photoSlide3.positionY.floatValue, photoSlide3.width.floatValue, photoSlide3.height.floatValue)];
+                    NSLog(@"Pre-positioning slide 3: %@ %@, %@ %@",photoSlide3.positionX, photoSlide3.positionY, photoSlide3.width, photoSlide3.height);
+                } else {
+                    [_artImageView3 setFrame:CGRectMake((width/4-splitWidth/2), (height/2-frameHeight/2), splitWidth, frameHeight)];
+                }
+            }
             [self.containerView1 setHidden:YES];
             [self.containerView2 setHidden:NO];
             [self.containerView3 setHidden:NO];
@@ -165,7 +151,7 @@
                 }
             }];
             
-            [[SDWebImageManager sharedManager] downloadImageWithURL:art2originalUrl options:(SDWebImageLowPriority | SDWebImageContinueInBackground) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+            self.imageDownloadOperation = [imageManager downloadImageWithURL:art2originalUrl options:(SDWebImageLowPriority | SDWebImageContinueInBackground) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
                 [_progressView2 setProgress:((CGFloat)receivedSize/(CGFloat)expectedSize)];
             } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
                 CGFloat duration = cacheType == SDImageCacheTypeNone ?  kSlowAnimationDuration : kFastAnimationDuration;
@@ -200,7 +186,7 @@
                 }
             }];
             
-            [[SDWebImageManager sharedManager] downloadImageWithURL:art3originalUrl options:(SDWebImageLowPriority | SDWebImageContinueInBackground) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+            self.imageDownloadOperation = [imageManager downloadImageWithURL:art3originalUrl options:(SDWebImageLowPriority | SDWebImageContinueInBackground) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
                 [_progressView3 setProgress:((CGFloat)receivedSize/(CGFloat)expectedSize)];
             } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
                 CGFloat duration = cacheType == SDImageCacheTypeNone ?  kSlowAnimationDuration : kFastAnimationDuration;
@@ -216,7 +202,7 @@
                 }];
             }];
         }
-    } else {
+    } else if (slide.slideTexts.count) {
         [self.mainTextLabel setHidden:NO];
         [self.mainTextLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
         [self.mainTextLabel setTextColor:[UIColor whiteColor]];
@@ -224,5 +210,10 @@
         [self.mainTextLabel setText:slideText.body];
     }
 }
+
+// reduce the size of the image after it's been downloaded
+//- (UIImage *)imageManager:(SDWebImageManager *)imageManager transformDownloadedImage:(UIImage *)image withURL:(NSURL *)imageURL {
+//    return nil;
+//}
 
 @end
