@@ -61,12 +61,9 @@
 @implementation WFNewArtViewController
 
 - (void)viewDidLoad {
-    [super viewDidLoad];    
-//    if (IDIOM != IPAD) {
-//        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
-//        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
-//    }
-    width = screenWidth(); height = screenHeight();
+    [super viewDidLoad];
+    width = screenWidth();
+    height = screenHeight();
     
     [self.view setBackgroundColor:[UIColor clearColor]];
     [self.tableView setBackgroundColor:[UIColor clearColor]];

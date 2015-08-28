@@ -1,5 +1,6 @@
 platform :ios, ‘8.0’
 inhibit_all_warnings!
+link_with 'Wolff', 'Sail-Tests'
 
 pod 'AFNetworking'
 pod 'MagicalRecord'

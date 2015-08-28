@@ -53,6 +53,9 @@
     if ([dictionary objectForKey:@"thumb_image_url"] && [dictionary objectForKey:@"thumb_image_url"] != [NSNull null]){
         self.thumbImageUrl = [dictionary objectForKey:@"thumb_image_url"];
     }
+    if ([dictionary objectForKey:@"medium_image_url"] && [dictionary objectForKey:@"medium_image_url"] != [NSNull null]){
+        self.mediumImageUrl = [dictionary objectForKey:@"medium_image_url"];
+    }
     if ([dictionary objectForKey:@"slide_image_url"] && [dictionary objectForKey:@"slide_image_url"] != [NSNull null]){
         self.slideImageUrl = [dictionary objectForKey:@"slide_image_url"];
     }

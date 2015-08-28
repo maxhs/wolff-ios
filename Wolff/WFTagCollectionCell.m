@@ -15,7 +15,7 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    [_tagNameLabel setTextAlignment:NSTextAlignmentLeft];
+    [_tagNameLabel setTextAlignment:NSTextAlignmentCenter];
 }
 
 - (void)prepareForReuse {

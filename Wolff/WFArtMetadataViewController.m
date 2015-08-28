@@ -371,7 +371,7 @@ NSString* const deleteOption = @"Delete";
         }
         
         [_progressIndicator setHidden:YES];
-        __weak typeof(UIButton) *weakImageButton = imageButton;
+        __weak typeof(UIButton*) weakImageButton = imageButton;
         NSURLRequest *imageRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:photo.slideImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
         [imageButton setImageForState:UIControlStateNormal withURLRequest:imageRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
             [weakImageButton setImage:image forState:UIControlStateNormal];

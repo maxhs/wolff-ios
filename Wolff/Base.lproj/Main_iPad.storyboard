@@ -1076,6 +1076,13 @@
                                                     <rect key="frame" x="63" y="33" width="130" height="190"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </imageView>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="gzP-2O-rMe">
+                                                    <rect key="frame" x="15" y="211" width="30" height="30"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                    <state key="normal" image="partnerBadge.png">
+                                                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                                    </state>
+                                                </button>
                                                 <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="blueCheck.png" id="kSo-Fz-FnN">
                                                     <rect key="frame" x="220" y="220" width="25" height="25"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
@@ -1086,6 +1093,7 @@
                                         <connections>
                                             <outlet property="checkmark" destination="kSo-Fz-FnN" id="MqY-LS-NfS"/>
                                             <outlet property="landscapeArtImageView" destination="dhQ-8D-Tcy" id="kko-lx-91J"/>
+                                            <outlet property="partnerBadge" destination="gzP-2O-rMe" id="C96-Zc-JOh"/>
                                             <outlet property="portraitArtImageView" destination="4r3-Mr-zpt" id="qvW-PT-Nhy"/>
                                             <outlet property="privateLabel" destination="s6T-KQ-kUz" id="vbV-P4-Tri"/>
                                             <outlet property="slideContainerView" destination="JRA-ZV-BxT" id="6C2-67-z4n"/>
@@ -1736,7 +1744,7 @@
                                         </connections>
                                     </scrollView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="hhK-VU-066" userLabel="Favorites button">
-                                        <rect key="frame" x="400" y="16" width="191.00000038618194" height="46"/>
+                                        <rect key="frame" x="400.00000076004767" y="16" width="191" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="    Add to favorites">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -1744,7 +1752,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="CZy-qv-iaO" userLabel="Light table button">
-                                        <rect key="frame" x="400.00000038618191" y="64" width="191" height="46"/>
+                                        <rect key="frame" x="400.00000076004767" y="64" width="191" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Drop to light table">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -1752,7 +1760,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Q3p-wV-O0q" userLabel="Flag button">
-                                        <rect key="frame" x="400.00000038618191" y="112" width="191" height="46"/>
+                                        <rect key="frame" x="400.00000076004767" y="112" width="191" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Flag">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -1760,7 +1768,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="pGY-Vz-g73" userLabel="Tag button">
-                                        <rect key="frame" x="400.00000038618191" y="160" width="191" height="46"/>
+                                        <rect key="frame" x="400" y="160" width="191.00000076004764" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Tag">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -1768,7 +1776,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="lN5-Jr-Blo" userLabel="Edit button">
-                                        <rect key="frame" x="400.00000038618191" y="208" width="191" height="46"/>
+                                        <rect key="frame" x="400.00000076004767" y="208" width="191" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Edit">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -1776,7 +1784,7 @@
                                         </state>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="uYO-2W-NEp" userLabel="Delete button">
-                                        <rect key="frame" x="400.00000038618191" y="256" width="191" height="46"/>
+                                        <rect key="frame" x="400.00000076004767" y="256" width="191" height="46"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="   Delete">
                                             <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
@@ -3475,6 +3483,13 @@
                                                     <rect key="frame" x="33" y="63" width="190" height="130"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </imageView>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="kd2-1d-Ww3" userLabel="Partner Badge">
+                                                    <rect key="frame" x="21" y="205" width="30" height="30"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                    <state key="normal" image="partnerBadge.png">
+                                                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                                    </state>
+                                                </button>
                                                 <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="blueCheck.png" id="LGl-hY-lEo">
                                                     <rect key="frame" x="215" y="216" width="25" height="25"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
@@ -3485,6 +3500,7 @@
                                         <connections>
                                             <outlet property="checkmark" destination="LGl-hY-lEo" id="7D4-TV-CK4"/>
                                             <outlet property="landscapeArtImageView" destination="U0c-Ek-uOI" id="KQP-lZ-ixf"/>
+                                            <outlet property="partnerBadge" destination="kd2-1d-Ww3" id="6pz-fS-9bo"/>
                                             <outlet property="portraitArtImageView" destination="qGr-mt-z5I" id="H3T-Rg-gWj"/>
                                             <outlet property="slideContainerView" destination="IKF-DB-25P" id="feS-ed-lce"/>
                                         </connections>
@@ -3588,6 +3604,7 @@
         <image name="left.png" width="20" height="20"/>
         <image name="leftWhite.png" width="20" height="20"/>
         <image name="lightTableWalkthroughIcon.png" width="68" height="50"/>
+        <image name="partnerBadge.png" width="30" height="30"/>
         <image name="remove.png" width="25" height="25"/>
         <image name="right.png" width="20" height="20"/>
         <image name="rightWhite.png" width="20" height="20"/>

@@ -17,7 +17,12 @@
 #import "PhotoSlide+helper.h"
 #import "WFSlideMetadataCollectionCell.h"
 #import "WFProfileViewController.h"
+#import <AFNetworking/UIImageView+AFNetworking.h>
 #import "WFPartnerProfileViewController.h"
+#import "WFResizeImageOperation.h"
+#import "SlideText+helper.h"
+
+//#import "TiledImageBuilder.h"
 
 @interface WFSlideshowViewController () <UIToolbarDelegate, UIViewControllerTransitioningDelegate, UIGestureRecognizerDelegate> {
     CGFloat width;
@@ -63,7 +68,7 @@
     CGRect kOriginalArtImageFrame2;
     CGRect kOriginalArtImageFrame3;
 }
-
+@property (strong, nonatomic) NSOperationQueue *slideshowQ;
 @property (strong, nonatomic) Slide *currentSlide;
 @property (strong, nonatomic) User *currentUser;
 @end
@@ -80,6 +85,9 @@
     if (delegate.currentUser){
         self.currentUser = [delegate.currentUser MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     }
+    self.slideshowQ = [[NSOperationQueue alloc] init];
+    self.slideshowQ.maxConcurrentOperationCount = 2;
+    
     barsVisible = NO; // by default
     metadataExpanded = NO; // by default
     [self setUpNavBar];
@@ -372,6 +380,53 @@
     }
 }
 
+- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
+    
+}
+
+- (void)drawPhoto:(Photo*)photo inImageView:(UIImageView*)artImageView {
+    @autoreleasepool {
+        NSURL *artThumbUrl = [NSURL URLWithString:photo.thumbImageUrl];
+        NSURLRequest *artThumbUrlRequest = [NSURLRequest requestWithURL:artThumbUrl];
+        NSURL *artOriginalUrl = [NSURL URLWithString:photo.originalImageUrl];
+        NSURLRequest *artOriginalUrlRequest = [NSURLRequest requestWithURL:artOriginalUrl];
+        
+        __weak typeof(UIImageView) *iv = artImageView;
+        [iv setImageWithURLRequest:artThumbUrlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+            [iv setImage:image];
+            if (response){
+                [UIView animateWithDuration:.27 animations:^{
+                    [iv setAlpha:1.0];
+                }];
+            } else {
+                [iv setAlpha:1.0];
+            }
+            
+            [iv setImageWithURLRequest:artOriginalUrlRequest placeholderImage:nil success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
+//                if (response && response.expectedContentLength > 4000000){
+//                    WFResizeImageOperation *q = [[WFResizeImageOperation alloc] initWithImage:image];
+//                    q.qualityOfService = NSQualityOfServiceDefault;
+//                    q.queuePriority = NSOperationQueuePriorityVeryHigh;
+//                    q.doneBlock = ^(UIImage * resizedImage) {
+//                        if (iv){
+//                            NSLog(@"The block just finished. Dissolving now...");
+//                            //[UIView transitionWithView:iv duration:kDefaultAnimationDuration options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
+//                                iv.image = image;
+//                            //} completion:^(BOOL finished) {
+//                                
+//                            //}];
+//                        }
+//                    };
+//                    [self.slideshowQ addOperation:q];
+//                } else {
+                    iv.image = image;
+//                }
+                
+            } failure:NULL];
+        } failure:NULL];
+    }
+}
+
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (collectionView == self.collectionView){
         if (self.photos.count){
@@ -387,8 +442,31 @@
         } else {
             WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
             self.currentSlide = self.slideshow.slides[indexPath.item];
+            [cell configureForPhotos:self.currentSlide.photos inSlide:self.currentSlide];
             [self assignViewsForCell:cell];
-            [cell configureForPhotos:self.currentSlide.photos.mutableCopy inSlide:self.currentSlide];
+            
+            [self.slideshowQ cancelAllOperations]; // ensure that the photo resize queue is clear
+            
+            if (self.currentSlide.photos.count){
+                NSOrderedSet *photos = self.currentSlide.photos;
+                [cell.mainTextLabel setHidden:YES];
+                
+                if (self.currentSlide.photos.count == 1){
+                    Photo *photo = (Photo*)[photos firstObject];
+                    [self drawPhoto:photo inImageView:cell.artImageView1];
+                } else if (photos.count > 1) {
+                    Photo *photo2 = (Photo*)photos[0];
+                    [self drawPhoto:photo2 inImageView:cell.artImageView2];
+                    Photo *photo3 = (Photo*)photos[1];
+                    [self drawPhoto:photo3 inImageView:cell.artImageView3];
+                }
+            } else if (self.currentSlide.slideTexts.count) {
+                [cell.mainTextLabel setHidden:NO];
+                [cell.mainTextLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+                [cell.mainTextLabel setTextColor:[UIColor whiteColor]];
+                SlideText *slideText = self.currentSlide.slideTexts.firstObject;
+                [cell.mainTextLabel setText:slideText.body];
+            }
             
             return cell;
         }
