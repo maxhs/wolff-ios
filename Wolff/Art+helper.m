@@ -54,6 +54,9 @@
     if ([dictionary objectForKey:@"depth"] && [dictionary objectForKey:@"depth"] != [NSNull null]){
         self.depth = [dictionary objectForKey:@"depth"];
     }
+    if ([dictionary objectForKey:@"community_editable"] && [dictionary objectForKey:@"community_editable"] != [NSNull null]){
+        self.communityEditable = [dictionary objectForKey:@"community_editable"];
+    }
     if ([dictionary objectForKey:@"uploaded_epoch_time"] && [dictionary objectForKey:@"uploaded_epoch_time"] != [NSNull null]) {
         NSTimeInterval _interval = [[dictionary objectForKey:@"uploaded_epoch_time"] doubleValue];
         self.uploadedDate = [NSDate dateWithTimeIntervalSince1970:_interval];

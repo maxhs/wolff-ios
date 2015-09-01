@@ -44,6 +44,7 @@ NSString* const tagOption = @"Tag";
 NSString* const lightTableOption = @"Drop to light table";
 NSString* const flagOption = @"Flag";
 NSString* const editOption = @"Edit";
+NSString* const communityEditOption = @"Community Edit";
 NSString* const deleteOption = @"Delete";
 
 @interface WFArtMetadataViewController () <UITextViewDelegate, UIPopoverControllerDelegate, UIAlertViewDelegate, UIViewControllerTransitioningDelegate, WFLightTablesDelegate, WFLightTableDelegate, WFLoginDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectIconsDelegate, WFSelectMaterialsDelegate, WFSelectTagsDelegate, UIActionSheetDelegate, UITextFieldDelegate> {
@@ -89,6 +90,7 @@ NSString* const deleteOption = @"Delete";
     UIActionSheet *beginEraActionSheet;
     UIActionSheet *endEraActionSheet;
 }
+@property (strong, nonatomic) AFHTTPRequestOperation *mainRequest;
 @property (strong, nonatomic) User *currentUser;
 @property (strong, nonatomic) Favorite *favorite;
 @property (strong, nonatomic) UIPopoverController *popover;
@@ -119,9 +121,10 @@ NSString* const deleteOption = @"Delete";
     self.photoScrollView.delegate = self;
     self.photoScrollView.pagingEnabled = YES;
     [self.photoScrollView setCanCancelContentTouches:YES];
+    [self drawHeader];
     
     if (IDIOM == IPAD){
-        [self drawHeader];
+        //[self drawHeader];
     } else {
         moreButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"more"] style:UIBarButtonItemStylePlain target:self action:@selector(showiPhoneOptions)];
         self.navigationItem.rightBarButtonItem = moreButton;
@@ -143,14 +146,18 @@ NSString* const deleteOption = @"Delete";
         
         NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
         [[UIDevice currentDevice] setValue:value forKey:@"orientation"]; // force portrait orientation
-        [self drawHeader];
+        
     }
+    width = screenWidth();
+    height = screenHeight();
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    originalViewFrame = self.view.frame;
-    originalNavFrame = self.navigationController.view.frame;
+    if (IDIOM == IPAD){
+        originalViewFrame = self.view.frame;
+        originalNavFrame = self.navigationController.view.frame;
+    }
 }
 
 - (void)setupDateFormatter {
@@ -167,11 +174,7 @@ NSString* const deleteOption = @"Delete";
         dismissFrame.origin.x = viewSize.width-dismissFrame.size.width;
         [self.dismissButton setFrame:dismissFrame];
     } else {
-        if (self.photo.art.photos.count > 1){
-            topImageContainerFrame.size.height = width + 88.f;
-        } else {
-            topImageContainerFrame.size.height = width + 44.f;
-        }
+        topImageContainerFrame.size.height = width + (self.photo.art.photos.count > 1 ? 88.f : 44.f);
         [_topImageContainerView setFrame:topImageContainerFrame];
     }
     
@@ -184,14 +187,16 @@ NSString* const deleteOption = @"Delete";
     [_dismissButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
 
     [self setupPhotoScrollView];
-    NSLog(@"where is the scroll view? %@",self.photoScrollView);
 }
 
 - (void)showiPhoneOptions {
     UIActionSheet *iPhoneOptionsSheet = [[UIActionSheet alloc] initWithTitle:[NSString stringWithFormat:@"Options for \"%@\"",self.photo.art.title] delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:self.currentUser && _favorite ? unfavoriteOption : favoriteOption, lightTableOption, tagOption, flagOption, nil];
+    
     if (self.currentUser && [self.photo.user.identifier isEqualToNumber:self.currentUser.identifier]){
         [iPhoneOptionsSheet addButtonWithTitle:editOption];
         [iPhoneOptionsSheet addButtonWithTitle:deleteOption];
+    } else if ([self.photo.art.communityEditable isEqualToNumber:@YES]){
+        [iPhoneOptionsSheet addButtonWithTitle:communityEditOption];
     }
     iPhoneOptionsSheet.delegate = self;
     [iPhoneOptionsSheet showInView:self.view];
@@ -284,13 +289,11 @@ NSString* const deleteOption = @"Delete";
             dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
                 [self presentFlagActionSheet];
             });
-            
-        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:editOption]){
+        } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:editOption] || [[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:communityEditOption]){
             dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
             dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
                 [self edit];
             });
-            
         } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:deleteOption]){
             dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
             dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
@@ -538,9 +541,7 @@ NSString* const deleteOption = @"Delete";
                 lightTables = YES;
                 nav.transitioningDelegate = self;
                 nav.modalPresentationStyle = UIModalPresentationCustom;
-                [self presentViewController:nav animated:YES completion:^{
-                    
-                }];
+                [self presentViewController:nav animated:YES completion:NULL];
             }
             
         } else {
@@ -642,7 +643,7 @@ NSString* const deleteOption = @"Delete";
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
     
     if (editMode){
-        CGRect newViewFrame = originalViewFrame;
+        CGRect newViewFrame = originalViewFrame; // only relevant for iPad
         if (IDIOM == IPAD){
             newViewFrame.origin.y = 0;
             newViewFrame.origin.x -= 100;
@@ -732,37 +733,29 @@ NSString* const deleteOption = @"Delete";
 }
 
 - (void)loadPhotoMetadata {
-    if (![self.photo.identifier isEqualToNumber:@0]){
-        [manager GET:[NSString stringWithFormat:@"photos/%@",self.photo.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            //NSLog(@"Success fetching metadata: %@",responseObject);
-            if ([responseObject objectForKey:@"text"]){
-                if ([[responseObject objectForKey:@"text"] isEqualToString:kNoPhoto]){
-                    [self.photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-                    [WFAlert show:@"Sorry, but something went wrong while trying to fetch this art.\n\nThe creator likely expunged it from our database." withTime:3.7f];
-                    if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(photoDeleted:)]){
-                        [self.metadataDelegate photoDeleted:self.photo];
-                    }
-                    
-                } else if ([[responseObject objectForKey:@"text"] isEqualToString:kArtDeleted]){
-                    [self.photo.art MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-                    if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(artDeleted:)]){
-                        [self.metadataDelegate artDeleted:self.photo.art];
-                    }
-                }
-                [self dismiss];
-            } else {
-                [self.photo populateFromDictionary:[responseObject objectForKey:@"photo"]];
-                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                    [self drawHeader];
-                    [self.tableView reloadData];
-                }];
+    if (self.mainRequest) return;
+    
+    self.mainRequest = [manager GET:[NSString stringWithFormat:@"photos/%@",self.photo.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //NSLog(@"Success fetching metadata: %@",responseObject);
+        [self.photo populateFromDictionary:[responseObject objectForKey:@"photo"]];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            if (self.mainRequest && !self.mainRequest.isCancelled){
+                [self.tableView reloadData];
             }
-        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Error fetching art metadata: %@",error.description);
+            self.mainRequest = nil;
         }];
-    }
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        if ([operation.responseString isEqualToString:kNoPhoto]){
+            [self.photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+            [WFAlert show:@"Sorry, but something went wrong while trying to fetch this record.\n\nThe creator may have expunged it from our database." withTime:3.7f];
+            if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(photoDeleted:)]){
+                [self.metadataDelegate photoDeleted:self.photo];
+            }
+            [self dismiss];
+        }
+    }];
 }
 
 - (void)saveMetadata {
@@ -1062,6 +1055,7 @@ NSString* const deleteOption = @"Delete";
         CGSize size = [artistTextView sizeThatFits:CGSizeMake(artistTextView.frame.size.width, CGFLOAT_MAX)];
         rowHeight = size.height;
     } else if (indexPath.row == 2){
+        
         if (editMode){
             return 110.f;
         } else {
@@ -1355,23 +1349,24 @@ NSString* const deleteOption = @"Delete";
     }
 }
 
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
-    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        width = size.width;
-        height = size.height;
-        
-        if (IDIOM != IPAD){
-            CGRect dismissFrame = self.dismissButton.frame;
-            dismissFrame.origin.x = size.width-dismissFrame.size.width;
-            [self.dismissButton setFrame:dismissFrame];
-            [self drawHeader];
-        }
-        
-    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        
-    }];
-}
+// Don't allow rotation on metadata view for now
+//- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+//    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+//    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+//        width = size.width;
+//        height = size.height;
+//        
+//        if (IDIOM != IPAD){
+//            CGRect dismissFrame = self.dismissButton.frame;
+//            dismissFrame.origin.x = size.width-dismissFrame.size.width;
+//            [self.dismissButton setFrame:dismissFrame];
+//            [self drawHeader];
+//        }
+//        
+//    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+//        
+//    }];
+//}
 
 - (void)flag {
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
@@ -1617,16 +1612,18 @@ NSString* const deleteOption = @"Delete";
             [self edit];
         }
     } else {
-        dispatch_async(dispatch_get_main_queue(), ^{ // ensure the dismiss happens RIGHT NOW
-            [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
-        });
+        [self dismissViewControllerAnimated:YES completion:NULL];
     }
 }
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self.mainRequest cancel];
+    self.mainRequest = nil;
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning]; // Dispose of any resources that can be recreated.
 }
 
 @end

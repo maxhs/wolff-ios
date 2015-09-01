@@ -54,7 +54,14 @@
     CGFloat splitWidth = (IDIOM == IPAD) ? 480.f : 260.f;
     CGFloat width = screenWidth(); CGFloat height = screenHeight();
   
-    if (photos.count){
+    if (slide.slideTexts.count) {
+        [self.mainTextLabel setHidden:NO];
+        [self.mainTextLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+        [self.mainTextLabel setTextColor:[UIColor whiteColor]];
+        SlideText *slideText = slide.slideTexts.firstObject;
+        [self.mainTextLabel setText:slideText.body];
+        
+    } else if (photos.count){
         [self.mainTextLabel setHidden:YES];
         
         [self.artImageView1 setUserInteractionEnabled:YES];
@@ -75,6 +82,30 @@
             [self.containerView2 setHidden:YES];
             [self.containerView3 setHidden:YES];
         
+            Photo *photo1 = photos[0];
+            NSURLRequest *artThumbUrlRequest1 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo1.thumbImageUrl]];
+            NSURLRequest *artOriginalUrlRequest1 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo1.largeImageUrl]];
+            
+            [_artImageView1 setImageWithURLRequest:artThumbUrlRequest1 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+                [_artImageView1 setImage:image];
+                if (response){
+                    [UIView animateWithDuration:.27 animations:^{
+                        [_artImageView1 setAlpha:1.0];
+                    }];
+                } else {
+                    [_artImageView1 setAlpha:1.0];
+                }
+                
+                [_artImageView1 setImageWithURLRequest:artOriginalUrlRequest1 placeholderImage:nil success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
+                    if (response){
+                        [UIView transitionWithView:_artImageView1 duration:kDefaultAnimationDuration options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
+                            _artImageView1.image = image;
+                        } completion:NULL];
+                    } else {
+                        _artImageView1.image = image;
+                    }
+                } failure:NULL];
+            } failure:NULL];
             
         } else if (photos.count > 1) {
             if (slide && slide.photoSlides.count > 1){
@@ -97,14 +128,56 @@
             [self.containerView2 setHidden:NO];
             [self.containerView3 setHidden:NO];
 
+            Photo *photo2 = photos[0];
+            NSURLRequest *artThumbUrlRequest2 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo2.thumbImageUrl]];
+            NSURLRequest *artOriginalUrlRequest2 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo2.largeImageUrl]];
             
+            [_artImageView2 setImageWithURLRequest:artThumbUrlRequest2 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+                [_artImageView2 setImage:image];
+                if (response){
+                    [UIView animateWithDuration:.27 animations:^{
+                        [_artImageView2 setAlpha:1.0];
+                    }];
+                } else {
+                    [_artImageView2 setAlpha:1.0];
+                }
+                
+                [_artImageView2 setImageWithURLRequest:artOriginalUrlRequest2 placeholderImage:nil success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
+                    if (response){
+                        [UIView transitionWithView:_artImageView2 duration:kDefaultAnimationDuration options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
+                            _artImageView2.image = image;
+                        } completion:NULL];
+                    } else {
+                        _artImageView2.image = image;
+                    }
+                } failure:NULL];
+            } failure:NULL];
+            
+            Photo *photo3 = photos[1];
+            NSURLRequest *artThumbUrlRequest3 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo3.thumbImageUrl]];
+            NSURLRequest *artOriginalUrlRequest3 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo3.largeImageUrl]];
+            
+            [_artImageView3 setImageWithURLRequest:artThumbUrlRequest3 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+                [_artImageView3 setImage:image];
+                if (response){
+                    [UIView animateWithDuration:.27 animations:^{
+                        [_artImageView3 setAlpha:1.0];
+                    }];
+                } else {
+                    [_artImageView3 setAlpha:1.0];
+                }
+                
+                [_artImageView3 setImageWithURLRequest:artOriginalUrlRequest3 placeholderImage:nil success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
+                    if (response){
+                        [UIView transitionWithView:_artImageView3 duration:kDefaultAnimationDuration options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
+                            _artImageView3.image = image;
+                        } completion:NULL];
+                    } else {
+                        _artImageView3.image = image;
+                    }
+                } failure:NULL];
+            } failure:NULL];
         }
-    } else if (slide.slideTexts.count) {
-        [self.mainTextLabel setHidden:NO];
-        [self.mainTextLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
-        [self.mainTextLabel setTextColor:[UIColor whiteColor]];
-        SlideText *slideText = slide.slideTexts.firstObject;
-        [self.mainTextLabel setText:slideText.body];
     }
 }
 

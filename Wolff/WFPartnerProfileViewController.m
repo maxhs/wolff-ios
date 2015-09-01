@@ -15,6 +15,7 @@
 #import "WFArtMetadataViewController.h"
 #import "WFWebViewController.h"
 #import "WFPartnerProfileHeader.h"
+#import "WFNoRotateNavController.h"
 
 @interface WFPartnerProfileViewController () <UIViewControllerTransitioningDelegate, WFMetadataDelegate> {
     WFAppDelegate *delegate;
@@ -190,19 +191,24 @@
 
 - (void)showMetadata:(Photo*)photo{
     WFArtMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"ArtMetadata"];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.view.clipsToBounds = YES;
     vc.metadataDelegate = self;
     [vc setPhoto:photo];
+    
+    UINavigationController *nav;
     if (IDIOM == IPAD){
-        nav.transitioningDelegate = self;
-        nav.modalPresentationStyle = UIModalPresentationCustom;
         [self resetBooleans];
         photos = YES;
+        nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        nav.view.clipsToBounds = YES;
+    } else {
+        nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
+        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
+        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
     }
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 #pragma mark Dismiss & Transition Methods

@@ -390,7 +390,7 @@
             }
             if ([self.art.privateArt isEqualToNumber:@YES]){
                 [photo setPrivatePhoto:@YES];
-                [formData appendPartWithFormData:[@"1" dataUsingEncoding:NSUTF8StringEncoding] name:@"photos[][private]"];
+                [formData appendPartWithFormData:[@"1" dataUsingEncoding:NSUTF8StringEncoding] name:@"photos[][priv]"];
             }
             NSMutableArray *iconIds = [NSMutableArray arrayWithCapacity:photo.icons.count];
             for (Icon *icon in photo.icons){
@@ -421,7 +421,7 @@
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             if ([self.art.privateArt isEqualToNumber:@YES]){
-                [WFAlert show:@"Congratulations! We've added this art to your private collection." withTime:3.3f];
+                [WFAlert show:@"We're adding this art to your collection." withTime:3.3f];
             } else {
                 [WFAlert show:@"Congratulations! We've added your art to the catalog." withTime:3.3f];
             }
@@ -744,11 +744,7 @@
 }
 
 - (void)switchSwitched:(UISwitch*)thisSwitch {
-    if (thisSwitch.isOn){
-        [self.art setPrivateArt:@YES];
-    } else {
-        [self.art setPrivateArt:@NO];
-    }
+    [self.art setPrivateArt:thisSwitch.isOn ? @YES : @NO];
 }
 
 - (void)showPhotoLibrary {

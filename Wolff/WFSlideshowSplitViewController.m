@@ -78,6 +78,7 @@ NSString* const playOption = @"Play";
 @property (nonatomic) NSIndexPath *slideStartIndex;
 @property (nonatomic) NSIndexPath *slideMoveToIndexPath;
 @property (strong, nonatomic) AFHTTPRequestOperation *mainRequest;
+@property (strong, nonatomic) AFHTTPRequestOperation *deleteRequest;
 
 @end
 
@@ -325,6 +326,7 @@ NSString* const playOption = @"Play";
     [self.tableView endUpdates];
 }
 
+// only applies to left tableView
 - (void)slideSingleTap:(UITapGestureRecognizer*)gestureRecognizer {
     CGPoint loc = [gestureRecognizer locationInView:self.tableView];
     NSIndexPath *selectedIndexPath = [self.tableView indexPathForRowAtPoint:loc];
@@ -335,13 +337,13 @@ NSString* const playOption = @"Play";
         activeSlide = self.slideshow.slides[selectedIndexPath.row];
         
         WFSlideTableCell *cell = (WFSlideTableCell*)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
-        if (activeSlide.photos.count > 1){
+        if (activeSlide.photoSlides.count > 1){
             if (loc.x <= 150.f){
                 activeImageView = cell.artImageView2;
             } else {
                 activeImageView = cell.artImageView3;
             }
-        } else if (activeSlide.photos.count == 1) {
+        } else if (activeSlide.photoSlides.count) {
             activeImageView = cell.artImageView1;
         }
         
@@ -353,7 +355,7 @@ NSString* const playOption = @"Play";
         UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:removeItemTitle action:@selector(removeArt:)];
         
         UIMenuController *menuController = [UIMenuController sharedMenuController];
-        if (activeSlide.photos.count){
+        if (activeSlide.photoSlides.count){
             [menuController setMenuItems:@[resetMenuItem]];
         } else if (activeSlide.slideTexts.count) {
             [menuController setMenuItems:@[editTextItem, resetMenuItem]];
@@ -371,24 +373,25 @@ NSString* const playOption = @"Play";
 - (void)removeArt:(UIMenuController*)menuController {
     NSPredicate *photoSlidePredicate = [NSPredicate predicateWithFormat:@"slide.identifier == %@ and photo.identifier == %@",activeSlide.identifier, activeImageView.photo.identifier];
     PhotoSlide *photoSlide = [PhotoSlide MR_findFirstWithPredicate:photoSlidePredicate inContext:[NSManagedObjectContext MR_defaultContext]];
+
     if (photoSlide && activeSlide){
+        [self.tableView beginUpdates];
         [activeSlide removePhotoSlide:photoSlide];
-        if (activeSlide.photos.count){
+        
+        if (activeSlide.photoSlides.count){
             [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
         } else {
-            [self.tableView beginUpdates];
             [self.slideshow removeSlide:activeSlide fromIndex:activeSlide.index.integerValue];
             [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            
             [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
-            [self.tableView endUpdates];
-            
             activeSlide = nil;
-            activeImageView = nil;
-            activeIndexPath = nil;
         }
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            
-        }];
+        
+        activeImageView = nil;
+        activeIndexPath = nil;
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+        [self.tableView endUpdates];
     }
 }
 
@@ -846,7 +849,7 @@ NSString* const playOption = @"Play";
 }
 
 - (void)post {
-    if (self.mainRequest) return;
+    if (self.mainRequest || self.mainRequest.isCancelled) return;
     
     if (self.popover) [self.popover dismissPopoverAnimated:YES];
     if (titleTextField.isEditing) [titleTextField resignFirstResponder];
@@ -1023,6 +1026,8 @@ NSString* const playOption = @"Play";
         [self.popover dismissPopoverAnimated:YES];
     }
     if (lightTable.identifier && ![lightTable.identifier isEqualToNumber:@0]){
+        if (self.deleteRequest) return;
+        
         [lightTable removeSlideshow:self.slideshow];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             
@@ -1030,14 +1035,16 @@ NSString* const playOption = @"Play";
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         [parameters setObject:self.slideshow.identifier forKey:@"slideshow_id"];
-        [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove_slideshow",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        self.deleteRequest = [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove_slideshow",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success removing slideshow from light table: %@",responseObject);
             [WFAlert show:[NSString stringWithFormat:@"\"%@\" removed from \"%@\"",self.slideshow.title, lightTable.name] withTime:3.3f];
             [ProgressHUD dismiss];
+            self.deleteRequest = nil;
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to remove slideshow from light table: %@",error.description);
             [WFAlert show:@"Sorry, but something went wrong while trying to unshare this slideshow.\n\nPlease try again soon." withTime:3.3f];
             [ProgressHUD dismiss];
+            self.deleteRequest = nil;
         }];
     } else {
         [lightTable removeSlideshow:self.slideshow];
@@ -1096,33 +1103,14 @@ NSString* const playOption = @"Play";
     Photo *photo = [p MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     self.slideshow = [self.slideshow MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     
-    BOOL add;
-    NSIndexPath *indexPathToReload;
     if ([self.slideshow.photos containsObject:photo]){
-        indexPathToReload = [NSIndexPath indexPathForItem:[self.slideshow.photos indexOfObject:photo] inSection:0];
         [self.slideshow removePhoto:photo];
-        add = NO;
     } else {
         [self.slideshow addPhoto:photo];
-        indexPathToReload = [NSIndexPath indexPathForItem:0 inSection:0];
-        add = YES;
     }
     
-    NSLog(@"slideshow photo count: %lu",(unsigned long)self.slideshow.photos.count);
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        if (IDIOM == IPAD){
-            [self.collectionView performBatchUpdates:^{
-                if (add){
-                    [self.collectionView insertItemsAtIndexPaths:@[indexPathToReload]];
-                } else {
-                    [self.collectionView deleteItemsAtIndexPaths:@[indexPathToReload]];
-                }
-            } completion:^(BOOL finished) {
-                if (add) [self.collectionView scrollToItemAtIndexPath:indexPathToReload atScrollPosition:UICollectionViewScrollPositionTop animated:YES];
-            }];
-        } else {
-            [self.collectionView reloadData];
-        }
+        [self.collectionView reloadData];
     }];
 }
 
@@ -1198,18 +1186,14 @@ NSString* const playOption = @"Play";
             UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
             nav.transitioningDelegate = self;
             nav.modalPresentationStyle = UIModalPresentationCustom;
-            [self presentViewController:nav animated:YES completion:^{
-                
-            }];
+            [self presentViewController:nav animated:YES completion:NULL];
         } else {
             WFNoRotateNavController *nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
             NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
             [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
             dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
             dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                [self presentViewController:nav animated:YES completion:^{
-                    
-                }];
+                [self presentViewController:nav animated:YES completion:NULL];
             });
         }
     
@@ -1221,19 +1205,21 @@ NSString* const playOption = @"Play";
 - (void)showMetadata:(Photo*)photo{
     WFArtMetadataViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"ArtMetadata"];
     [vc setPhoto:photo];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.transitioningDelegate = self;
-    nav.modalPresentationStyle = UIModalPresentationCustom;
-    [self resetTransitionBooleans];
-    nav.view.clipsToBounds = YES;
+    UINavigationController *nav;
     if (IDIOM == IPAD){
+        [self resetTransitionBooleans];
         showMetadata = YES;
+        nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.transitioningDelegate = self;
+        nav.modalPresentationStyle = UIModalPresentationCustom;
+        nav.view.clipsToBounds = YES;
     } else {
-        transparentBG = YES;
+        nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
+        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
+        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
     }
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 - (void)dismissMetadata {
@@ -1347,10 +1333,15 @@ NSString* const playOption = @"Play";
 }
 
 - (void)deleteSlideshow {
+    if (self.deleteRequest) return;
+    
     [ProgressHUD show:@"Deleting..."];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-    [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",self.slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    }
+    
+    self.deleteRequest = [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",self.slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success deleting this slideshow: %@",responseObject);
         [self deleteAndMoveOn];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -1371,6 +1362,7 @@ NSString* const playOption = @"Play";
         }
         [ProgressHUD dismiss];
         [self dismiss];
+        self.deleteRequest = nil;
     }];
 }
 
@@ -1383,7 +1375,7 @@ NSString* const playOption = @"Play";
 }
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
+    [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -1392,10 +1384,10 @@ NSString* const playOption = @"Play";
         [self.popover dismissPopoverAnimated:YES];
     }
     [self saveSlideshowWithUI:NO];
+    if (self.mainRequest) [self.mainRequest cancel];
 }
 
 - (void)cancelAutosave {
-    NSLog(@"cancel autosave");
     [saveTimer invalidate];
     saveTimer = nil;
 }

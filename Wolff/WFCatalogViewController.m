@@ -151,7 +151,8 @@ static NSString *const logoutOption = @"Log out";
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self setAutomaticallyAdjustsScrollViewInsets:NO];
-    width = screenWidth(); height = screenHeight();
+    width = screenWidth();
+    height = screenHeight();
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
@@ -653,8 +654,8 @@ static NSString *const logoutOption = @"Log out";
                 }];
                 [_favoritePhotos sortUsingDescriptors:@[reverseChronologicalSort]];
                 
-                NSLog(@"_myPhotos count: %lu",(unsigned long)_myPhotos.count);
-                NSLog(@"_favorites count: %lu",(unsigned long)_favoritePhotos.count);
+//                NSLog(@"_myPhotos count: %lu",(unsigned long)_myPhotos.count);
+//                NSLog(@"_favorites count: %lu",(unsigned long)_favoritePhotos.count);
                 
                 [self.collectionView reloadData];
                 [self.tableView reloadData];
@@ -780,24 +781,14 @@ static NSString *const logoutOption = @"Log out";
     if (showFavorites || showLightTable || self.searchBar.text.length){
         //don't animate the changes if the user is looking at a light table, their favorites, or searching.
     } else {
-        [self.collectionView performBatchUpdates:^{
-            NSMutableArray *indexPathArray = [NSMutableArray array];
-            [art.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
-                if ([photo.user.identifier isEqualToNumber:self.currentUser.identifier]/*[photo.privatePhoto isEqualToNumber:@YES] || [photo.art.privateArt isEqualToNumber:@YES]*/){
-                    [_myPhotos insertObject:photo atIndex:idx];
-                    
-                    if (showMyArt){
-                        [indexPathArray addObject:[NSIndexPath indexPathForItem:idx inSection:0]];
-                    }
-                } else {
-                    [_photos insertObject:photo atIndex:0];
-                    [indexPathArray addObject:[NSIndexPath indexPathForItem:idx inSection:0]];
-                }
-            }];
-            [self.collectionView insertItemsAtIndexPaths:indexPathArray];
-        } completion:^(BOOL finished) {
-            
+        [art.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
+            if ([photo.user.identifier isEqualToNumber:self.currentUser.identifier]){
+                [_myPhotos insertObject:photo atIndex:idx];
+            } else {
+                [_photos insertObject:photo atIndex:0];
+            }
         }];
+        [self.collectionView reloadData];
     }
 }
 
@@ -1536,20 +1527,18 @@ static NSString *const logoutOption = @"Log out";
     }
     
     if (sidebarIsVisible || self.searchBar.text.length || showFavorites || showLightTable || showMyArt){
-        dispatch_async(dispatch_get_main_queue(), ^(void){
-            [self resetArtBooleans];
-            self.lightTable = nil;
-            
-            if (sidebarIsVisible){
-                [self showSidebar];
-            }
-            searchText = @"";
-            [self.searchBar setText:@""];
-            [self.searchBar resignFirstResponder];
-            [self.view endEditing:YES];
-            [self.collectionView reloadData];
-            [self.tableView reloadData];
-        });
+        [self resetArtBooleans];
+        self.lightTable = nil;
+        
+        if (sidebarIsVisible){
+            [self showSidebar];
+        }
+        searchText = @"";
+        [self.searchBar setText:@""];
+        [self.searchBar resignFirstResponder];
+        [self.view endEditing:YES];
+        [self.collectionView reloadData];
+        [self.tableView reloadData];
     }
 }
 
@@ -1575,17 +1564,15 @@ static NSString *const logoutOption = @"Log out";
     if (!selectedIndexPath) return;
     
     Photo *photo;
-    if (showMyArt){
+    if (showMyArt && _myPhotos.count){
         photo = _myPhotos[selectedIndexPath.item];
-    } else if (showLightTable){
+    } else if (showLightTable && self.lightTable.photos.count){
         photo = self.lightTable.photos[selectedIndexPath.item];
-    } else if (showFavorites){
+    } else if (showFavorites && _favoritePhotos.count){
         photo = _favoritePhotos[selectedIndexPath.item];
-    } else if (self.searchBar.text.length){
-        if (_filteredPhotos.count){
-            photo = _filteredPhotos[selectedIndexPath.item];
-        }
-    } else {
+    } else if (self.searchBar.text.length && _filteredPhotos.count){
+        photo = _filteredPhotos[selectedIndexPath.item];
+    } else if (_photos.count > selectedIndexPath.item) {
         photo = _photos[selectedIndexPath.item];
     }
     if (photo && selectedIndexPath){
@@ -1594,8 +1581,7 @@ static NSString *const logoutOption = @"Log out";
         } else {
             [_selectedPhotos addObject:photo];
         }
-        [self.collectionView reloadData];
-        //[self.collectionView reloadItemsAtIndexPaths:@[selectedIndexPath]];
+        [self.collectionView reloadItemsAtIndexPaths:@[selectedIndexPath]];
         [selectedLabel setText:[NSString stringWithFormat:@"%lu",(unsigned long)_selectedPhotos.count]];
         [self configureSelectedButton];
     }
@@ -1790,17 +1776,28 @@ static NSString *const logoutOption = @"Log out";
                 WFPhotoCell *movedCell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.moveToIndexPath];
                 WFPhotoCell *oldIndexCell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
                 
-                NSNumber *thisNumber = [_photos objectAtIndex:self.startIndex.row];
-                [_photos removeObjectAtIndex:self.startIndex.row];
-                if (self.moveToIndexPath.row < self.startIndex.row) {
-                    [_photos insertObject:thisNumber atIndex:self.moveToIndexPath.row];
-                } else {
-                    [_photos insertObject:thisNumber atIndex:self.moveToIndexPath.row];
+                NSNumber *thisNumber;
+                if (showMyArt && _myPhotos.count){
+                    thisNumber = _myPhotos[self.startIndex.item];
+                } else if (showLightTable && self.lightTable.photos.count){
+                    thisNumber = self.lightTable.photos[self.startIndex.item];
+                } else if (showFavorites && _favoritePhotos.count){
+                    thisNumber = _favoritePhotos[self.startIndex.item];
+                } else if (self.searchBar.text.length){
+                    if (_filteredPhotos.count){
+                        thisNumber = [_filteredPhotos objectAtIndex:self.startIndex.item];
+                    }
+                } else if (_photos.count) {
+                    thisNumber = [_photos objectAtIndex:self.startIndex.item];
+                }
+                
+                if (thisNumber){
+                    [_photos removeObjectAtIndex:self.startIndex.item];
+                    [_photos insertObject:thisNumber atIndex:self.moveToIndexPath.item];
                 }
                 
                 CGPoint moveToPoint = [self.view convertPoint:movedCell.center fromView:nil];
                 [UIView animateWithDuration:.27f animations:^{
-
                     self.draggingView.layer.anchorPoint = moveToPoint;
                     self.draggingView.center = moveToPoint;
                     [self.draggingView setAlpha:0.0];
@@ -1961,12 +1958,11 @@ static NSString *const logoutOption = @"Log out";
         nav.view.clipsToBounds = YES;
     } else {
         nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
+        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
+        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
     }
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self presentViewController:nav animated:YES completion:NULL];
-    });
-    
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 #pragma mark - Metadata Delegate

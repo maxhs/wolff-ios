@@ -38,6 +38,11 @@
     self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
 }
 
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    [self.textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
+}
+
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
 

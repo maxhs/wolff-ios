@@ -50,35 +50,35 @@ static BOOL dump_memory_usage(struct task_basic_info *info);
 
 
 #ifndef NDEBUG
-static void dumpMapper(const char *str, mapper *m)
-{
-	printf("MAP: %s\n", str);
-	printf(" fd = %d\n", m->fd);
-	printf(" emptyAddr = %p\n", m->emptyAddr);
-	printf(" addr = %p\n", m->addr);
-	printf(" mappedSize = %lu\n", m->mappedSize);
-	printf(" height = %lu\n", m->height);
-	printf(" width = %lu\n", m->width);
-	printf(" bytesPerRow = %lu\n", m->bytesPerRow);
-	printf(" emptyTileRowSize = %lu\n", m->emptyTileRowSize);
-	putchar('\n');
-}
+//static void dumpMapper(const char *str, mapper *m)
+//{
+//	printf("MAP: %s\n", str);
+//	printf(" fd = %d\n", m->fd);
+//	printf(" emptyAddr = %p\n", m->emptyAddr);
+//	printf(" addr = %p\n", m->addr);
+//	printf(" mappedSize = %lu\n", m->mappedSize);
+//	printf(" height = %lu\n", m->height);
+//	printf(" width = %lu\n", m->width);
+//	printf(" bytesPerRow = %lu\n", m->bytesPerRow);
+//	printf(" emptyTileRowSize = %lu\n", m->emptyTileRowSize);
+//	putchar('\n');
+//}
 #endif
 
 #ifndef NDEBUG
-static void dumpIMS(const char *str, imageMemory *i)
-{
-	printf("IMS: %s\n", str);
-	dumpMapper("map:", &i->map);
-
-	printf(" idx = %ld\n", i->index);
-	printf(" cols = %ld\n", i->cols);
-	printf(" rows = %ld\n", i->rows);
-	printf(" outline = %ld\n", i->outLine);
-	printf(" col = %ld\n", i->col);
-	printf(" row = %ld\n", i->row);
-	putchar('\n');
-}
+//static void dumpIMS(const char *str, imageMemory *i)
+//{
+//	printf("IMS: %s\n", str);
+//	dumpMapper("map:", &i->map);
+//
+//	printf(" idx = %ld\n", i->index);
+//	printf(" cols = %ld\n", i->cols);
+//	printf(" rows = %ld\n", i->rows);
+//	printf(" outline = %ld\n", i->outLine);
+//	printf(" col = %ld\n", i->col);
+//	printf(" row = %ld\n", i->row);
+//	putchar('\n');
+//}
 #endif
 
 //static BOOL tileBuilder(imageMemory *im, BOOL useMMAP, int32_t ubc_thresh);

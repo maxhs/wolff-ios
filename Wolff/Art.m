@@ -22,6 +22,7 @@
 @dynamic visible;
 @dynamic photos;
 @dynamic user;
+@dynamic communityEditable;
 @dynamic createdDate;
 @dynamic uploadedDate;
 @dynamic favorites;

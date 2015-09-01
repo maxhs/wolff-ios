@@ -189,7 +189,9 @@
 - (NSString *)ownersToSentence {
     NSMutableArray *owners = [NSMutableArray arrayWithCapacity:self.owners.count];
     [self.owners enumerateObjectsUsingBlock:^(User *user, NSUInteger idx, BOOL *stop) {
-        [owners addObject:user.fullName];
+        if (user.fullName.length){
+            [owners addObject:user.fullName];
+        }
     }];
     return [owners toSentence];
 }
@@ -197,7 +199,9 @@
 - (NSString *)membersToSentence {
     NSMutableArray *users = [NSMutableArray arrayWithCapacity:self.users.count];
     [self.users enumerateObjectsUsingBlock:^(User *user, NSUInteger idx, BOOL *stop) {
-        [users addObject:user.fullName];
+        if (user.fullName.length){
+            [users addObject:user.fullName];
+        }
     }];
     return [users toSentence];
 }

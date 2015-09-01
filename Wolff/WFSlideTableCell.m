@@ -53,6 +53,7 @@
             [_artImageView2 setHidden:YES];
             [_artImageView3 setHidden:YES];
             PhotoSlide *photoSlide = slide.photoSlides.firstObject;
+            [_artImageView1 setPhoto:photoSlide.photo]; // have a photo reference
             NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:photoSlide.photo.slideImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
             [_artImageView1 setImageWithURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
                 [_artImageView1 setImage:image];
@@ -71,6 +72,7 @@
             [_artImageView3 setHidden:NO];
             
             PhotoSlide *photoSlide2 = slide.photoSlides[0];
+            [_artImageView2 setPhoto:photoSlide2.photo];
             NSURLRequest *urlRequest2 = [NSURLRequest requestWithURL:[NSURL URLWithString:photoSlide2.photo.slideImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
             [_artImageView2 setImageWithURLRequest:urlRequest2 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
                 [_artImageView2 setImage:image];
@@ -84,6 +86,7 @@
             } failure:NULL];
             
             PhotoSlide *photoSlide3 = slide.photoSlides[1];
+            [_artImageView3 setPhoto:photoSlide3.photo];
             NSURLRequest *urlRequest3 = [NSURLRequest requestWithURL:[NSURL URLWithString:photoSlide3.photo.slideImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
             [_artImageView3 setImageWithURLRequest:urlRequest3 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
                 [_artImageView3 setImage:image];

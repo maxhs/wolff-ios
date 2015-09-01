@@ -37,6 +37,7 @@
     UITextField *membersTextField;
     UITextView *descriptionTextView;
 }
+@property (strong, nonatomic) AFHTTPRequestOperation *mainRequest;
 @property (strong, nonatomic) NSMutableOrderedSet *owners;
 @property (strong, nonatomic) NSMutableOrderedSet *users;
 @property (strong, nonatomic) User *currentUser;
@@ -51,7 +52,8 @@
     manager = delegate.manager;
     self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
     
-    width = screenWidth(); height = screenHeight();
+    width = screenWidth();
+    height = screenHeight();
     
     if (self.lightTable){
         self.lightTable = [self.lightTable MR_inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -195,11 +197,14 @@
 }
 
 - (void)loadLightTable {
-    [manager GET:[NSString stringWithFormat:@"light_tables/%@",self.lightTable.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success loading table from internet: %@",responseObject);
+    if (self.mainRequest) return;
+    
+    self.mainRequest = [manager GET:[NSString stringWithFormat:@"light_tables/%@",self.lightTable.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //NSLog(@"Success loading table from internet: %@",responseObject);
         [self.lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            //[self.collectionView reloadData];
+            [self.tableView reloadData];
+            self.mainRequest = nil;
         }];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -297,6 +302,11 @@
             [tableKeyTextField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
             if (self.lightTable){
                 [tableKeyTextField setText:self.lightTable.code];
+                [tableKeyTextField setBackgroundColor:[UIColor clearColor]];
+                [tableKeyTextField setTextColor:[UIColor whiteColor]];
+                [tableKeyTextField setUserInteractionEnabled:NO];
+            } else {
+                [tableKeyTextField setUserInteractionEnabled:YES];
             }
             [tableKeyTextField setPlaceholder:@"Your light table key"];
             [tableKeyTextField setReturnKeyType:UIReturnKeyNext];
@@ -311,6 +321,11 @@
             [confirmTableKeyTextField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
             if (self.lightTable){
                 [confirmTableKeyTextField setText:self.lightTable.code];
+                [confirmTableKeyTextField setBackgroundColor:[UIColor clearColor]];
+                [confirmTableKeyTextField setTextColor:[UIColor whiteColor]];
+                [confirmTableKeyTextField setUserInteractionEnabled:NO];
+            } else {
+                [confirmTableKeyTextField setUserInteractionEnabled:YES];
             }
             [confirmTableKeyTextField setPlaceholder:@"Confirm that your table key matches"];
             [confirmTableKeyTextField setReturnKeyType:UIReturnKeyGo];
@@ -766,6 +781,8 @@
 
 - (void)viewWillDisappear:(BOOL)animated {
     [self doneEditing];
+    [self.mainRequest cancel];
+    self.mainRequest = nil;
     [super viewWillDisappear:animated];
 }
 
