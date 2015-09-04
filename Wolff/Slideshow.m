@@ -20,6 +20,6 @@
 @dynamic discussions;
 @dynamic photos;
 @dynamic lightTables;
-@dynamic user;
+@dynamic owner;
 
 @end

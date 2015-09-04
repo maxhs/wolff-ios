@@ -88,9 +88,9 @@
                 self.currentUser = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [self.currentUser populateFromDictionary:userDict];
+            [self setUserDefaults];
             
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [self setUserDefaults];
                 if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(loginSuccessful)]) {
                     [self.loginDelegate loginSuccessful];
                 }
@@ -180,7 +180,6 @@
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)pushMessage {
     [[Mixpanel sharedInstance] trackPushNotification:pushMessage];
-    NSLog(@"Did receive a push: %@",pushMessage);
 }
 
 - (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
@@ -197,7 +196,7 @@
         [_manager POST:[NSString stringWithFormat:@"users/%@/push_tokens",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success posting a push token: %@",responseObject);
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Failure posting a push token: %@",error.description);
+            //NSLog(@"Failure posting a push token: %@",error.description);
         }];
     }
 }

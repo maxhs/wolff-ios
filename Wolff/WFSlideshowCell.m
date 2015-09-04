@@ -46,7 +46,7 @@
 
 - (void)configureForSlideshow:(Slideshow *)slideshow {
     [self.textLabel setText:@""];
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [slideshow.owner.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
         [_actionButton setImage:[UIImage imageNamed:@"whiteTrash"] forState:UIControlStateNormal];
         [_actionButton setBackgroundColor:[UIColor redColor]];
     } else {

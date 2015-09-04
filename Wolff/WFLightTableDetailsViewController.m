@@ -38,6 +38,7 @@
     UITextView *descriptionTextView;
 }
 @property (strong, nonatomic) AFHTTPRequestOperation *mainRequest;
+@property (strong, nonatomic) AFHTTPRequestOperation *postRequest;
 @property (strong, nonatomic) NSMutableOrderedSet *owners;
 @property (strong, nonatomic) NSMutableOrderedSet *users;
 @property (strong, nonatomic) User *currentUser;
@@ -103,10 +104,12 @@
         [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
         self.navigationController.navigationBar.translucent = YES;
         self.navigationController.view.backgroundColor = [UIColor clearColor];
-        if ([self.lightTable.identifier isEqualToNumber:@0]){
-            rightBarButton = [[UIBarButtonItem alloc] initWithTitle:@"Create" style:UIBarButtonItemStylePlain target:self action:@selector(post)];
-        } else {
+        if (_joinMode){
+            rightBarButton = [[UIBarButtonItem alloc] initWithTitle:@"Join" style:UIBarButtonItemStylePlain target:self action:@selector(post)];
+        } else if (![_lightTable.identifier isEqualToNumber:@0]){
             rightBarButton = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStylePlain target:self action:@selector(post)];
+        } else {
+            rightBarButton = [[UIBarButtonItem alloc] initWithTitle:@"Create" style:UIBarButtonItemStylePlain target:self action:@selector(post)];
         }
         
         self.navigationItem.rightBarButtonItem = rightBarButton;
@@ -199,16 +202,19 @@
 - (void)loadLightTable {
     if (self.mainRequest) return;
     
+    [ProgressHUD show:[NSString stringWithFormat:@"Fetching details for \"%@\"",self.lightTable.name]];
     self.mainRequest = [manager GET:[NSString stringWithFormat:@"light_tables/%@",self.lightTable.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success loading table from internet: %@",responseObject);
         [self.lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [self.tableView reloadData];
             self.mainRequest = nil;
+            [ProgressHUD dismiss];
         }];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to get light table from API: %@",error.description);
+        [ProgressHUD dismiss];
     }];
 }
 
@@ -364,7 +370,9 @@
 - (NSString *)peopleToSentence:(NSMutableOrderedSet*)people {
     NSMutableArray *peoples = [NSMutableArray arrayWithCapacity:people.count];
     [people enumerateObjectsUsingBlock:^(User *user, NSUInteger idx, BOOL *stop) {
-        [peoples addObject:user.fullName];
+        if (user.fullName.length){
+            [peoples addObject:user.fullName];
+        }
     }];
     return [peoples toSentence];
 }
@@ -443,6 +451,8 @@
 }
 
 - (void)createLightTable {
+    if (self.postRequest) return;
+    
     NSMutableDictionary *parameters = [self generateParameters];
     if (parameters == nil){
         return;
@@ -466,7 +476,7 @@
     
     [self doneEditing];
     [ProgressHUD show:[NSString stringWithFormat:@"Creating \"%@\"",nameTextField.text]];
-    [manager POST:@"light_tables" parameters:@{@"light_table":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    self.postRequest = [manager POST:@"light_tables" parameters:@{@"light_table":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success creating a light table: %@", responseObject);
         self.lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
         [self.lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
@@ -476,7 +486,8 @@
                 [self.lightTableDelegate didCreateLightTable:self.lightTable];
             }
             [ProgressHUD dismiss];
-            [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
+            self.postRequest = nil;
+            [self dismissViewControllerAnimated:YES completion:NULL];
         }];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -486,10 +497,13 @@
         } else {
             NSLog(@"Error creating a light table: %@",error.description);
         }
+        self.postRequest = nil;
     }];
 }
 
 - (void)saveLightTable {
+    if (self.postRequest) return;
+    
     [self doneEditing];
     NSMutableDictionary *parameters = [self generateParameters];
     if (tableKeyTextField.text.length){
@@ -510,7 +524,7 @@
     }
     
     [ProgressHUD show:@"Saving light table..."];
-    [manager PATCH:[NSString stringWithFormat:@"light_tables/%@",self.lightTable.identifier] parameters:@{@"light_table":parameters,@"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    self.postRequest = [manager PATCH:[NSString stringWithFormat:@"light_tables/%@",self.lightTable.identifier] parameters:@{@"light_table":parameters,@"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success saving a light table: %@", responseObject);
         [self.lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -518,6 +532,7 @@
                 [self.lightTableDelegate didUpdateLightTable:self.lightTable];
             }
             [ProgressHUD dismiss];
+            self.postRequest = nil;
             [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
         }];
         
@@ -528,6 +543,7 @@
         } else {
             NSLog(@"Error saving a light table: %@",error.description);
         }
+        self.postRequest = nil;
     }];
 }
 
@@ -658,6 +674,8 @@
 }
 
 - (void)joinLightTable {
+    if (self.postRequest) return;
+    
     [self.view endEditing:YES];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     if (tableKeyTextField.text.length){
@@ -668,7 +686,7 @@
     }
     
     [ProgressHUD show:@"Searching for light table..."];
-    [manager POST:@"light_tables/join" parameters:@{@"light_table":parameters, @"user_id":self.currentUser.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    self.postRequest = [manager POST:@"light_tables/join" parameters:@{@"light_table":parameters, @"user_id":self.currentUser.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Response object for joining a light table: %@",responseObject);
         NSDictionary *lightTableDict = [responseObject objectForKey:@"light_table"];
         self.lightTable = [LightTable MR_findFirstByAttribute:@"identifier" withValue:[lightTableDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -696,6 +714,7 @@
             NSLog(@"Error joining light table: %@",error.description);
         }
         [ProgressHUD dismiss];
+        self.postRequest = nil;
     }];
 }
 
@@ -783,6 +802,8 @@
     [self doneEditing];
     [self.mainRequest cancel];
     self.mainRequest = nil;
+    [self.postRequest cancel];
+    self.postRequest = nil;
     [super viewWillDisappear:animated];
 }
 

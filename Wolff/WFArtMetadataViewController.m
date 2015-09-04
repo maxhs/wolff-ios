@@ -271,9 +271,7 @@ NSString* const deleteOption = @"Delete";
             [self.photo.art.interval setEndSuffix:nil];
         }
         
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            
-        }];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     } else {
         if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:unfavoriteOption]){
             [self unfavorite];
@@ -387,7 +385,6 @@ NSString* const deleteOption = @"Delete";
                 weakImageButton.imageView.layer.shouldRasterize = YES;
             }];
         }];
-
         [imageButton addTarget:self action:@selector(showFullScreen) forControlEvents:UIControlEventTouchUpInside];
         idx ++;
     }
@@ -585,7 +582,6 @@ NSString* const deleteOption = @"Delete";
 }
 
 - (void)lightTableSelected:(LightTable *)l {
-    //refetch the light table
     LightTable *lightTable = [l MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     [lightTable addPhoto:self.photo];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
@@ -595,7 +591,7 @@ NSString* const deleteOption = @"Delete";
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         [parameters setObject:self.photo.identifier forKey:@"photo_id"];
         [manager POST:[NSString stringWithFormat:@"light_tables/%@/add",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success dropping metadata photo to light table: %@",responseObject);
+            //NSLog(@"Success dropping metadata photo to light table: %@",responseObject);
             if ([responseObject objectForKey:@"success"] && [[responseObject objectForKey:@"success"] isEqualToNumber:@1]){
                 if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(droppedPhoto:toLightTable:)]){
                     [self.metadataDelegate droppedPhoto:self.photo toLightTable:lightTable];

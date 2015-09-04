@@ -23,7 +23,7 @@
 @property (nonatomic, retain) NSOrderedSet *discussions;
 @property (nonatomic, retain) NSOrderedSet *photos;
 @property (nonatomic, retain) NSOrderedSet *lightTables;
-@property (nonatomic, retain) User * user;
+@property (nonatomic, retain) User * owner;
 @end
 
 @interface Slideshow (CoreDataGeneratedAccessors)

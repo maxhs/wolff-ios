@@ -84,7 +84,7 @@
             user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [user populateFromDictionary:userDict];
-        self.user = user;
+        self.owner = user;
     }
 }
 

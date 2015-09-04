@@ -433,9 +433,9 @@ static NSString *const logoutOption = @"Log out";
 }
 
 - (void)transitionToSlideshow:(Slideshow*)slideshow {
-    if (![[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] || !slideshow.user){
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] || !slideshow.owner){
         return; // huh? we should never be getting here anyway
-    } else if ([slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+    } else if ([slideshow.owner.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
         [self slideshowSelected:slideshow];
         return;
     } else {
@@ -563,7 +563,7 @@ static NSString *const logoutOption = @"Log out";
         [parameters setObject:[NSNumber numberWithInt:round([[NSDate date] timeIntervalSince1970])] forKey:@"after_date"]; // today
     }
     if (loggedIn){
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+        //[parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         if (showMyArt){
             [parameters setObject:@YES forKey:@"my_art"];
         }
@@ -587,12 +587,12 @@ static NSString *const logoutOption = @"Log out";
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 if (self.searchBar.text.length){
                     [self filterContentForSearchText:searchText scope:nil];
-                    if (!photosDict.count){
-                        NSLog(@"Searching, but can't search more");
-                        canSearchMore = NO;
-                    } else {
+                    if (photosDict.count){
                         NSLog(@"Searching, CAN search more");
                         canSearchMore = YES;
+                    } else {
+                        NSLog(@"Searching, but can't search more");
+                        canSearchMore = NO;
                     }
                 } else if (showMyArt){
                     if (!photosDict.count){
@@ -612,6 +612,8 @@ static NSString *const logoutOption = @"Log out";
             }];
         } else {
             canLoadMore = NO;
+            canSearchMore = NO;
+            canLoadMoreOfMyArt = NO;
             [self endRefresh];
             NSLog(@"How many photos did we pull? %lu. Can we load more? %u",(unsigned long)photosDict.count, canLoadMore);
         }
@@ -1041,7 +1043,7 @@ static NSString *const logoutOption = @"Log out";
     NSNumber *slideshowId = @(button.tag);
     Slideshow *slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:slideshowId inContext:[NSManagedObjectContext MR_defaultContext]];
     if (!slideshow) return;
-    if ([slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+    if ([slideshow.owner.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
         [self deleteSlideshow:slideshow atIndexPath:nil];
     } else {
         [self removeSlideshow:slideshow atIndexPath:nil];
@@ -1228,11 +1230,12 @@ static NSString *const logoutOption = @"Log out";
                 if (self.currentUser.customerPlan.length){
                     if (_lightTables.count){
                         LightTable *lightTable = _lightTables[indexPath.row];
-                        if (_lightTable == lightTable){
+                        if ([self.lightTable.identifier isEqualToNumber:lightTable.identifier]){
                             self.lightTable = nil;
                             showLightTable = NO;
                             [self.collectionView reloadData];
                         } else {
+                            // the below method will set self.lightTable, so no need to set it here
                             [self showLightTable:lightTable];
                         }
                         [tableView reloadSections:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 3)] withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -1325,7 +1328,7 @@ static NSString *const logoutOption = @"Log out";
 - (void)newLightTable {
     if (loggedIn){
         if (IDIOM == IPAD){
-            [self newLightTableWithJoinBool:YES];
+            [self newLightTableWithJoinBool:NO];
         } else {
             [[[UIActionSheet alloc] initWithTitle:@"What do you want to do?" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:createALightTablePlaceholder, joinLightTablePlaceholder, nil] showInView:self.view];
         }
@@ -1391,6 +1394,8 @@ static NSString *const logoutOption = @"Log out";
 }
 
 - (void)didCreateLightTable:(LightTable *)table {
+    LightTable *lightTable = [table MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+    [self.currentUser addLightTable:lightTable];
     if (!slideshowSidebarMode && sidebarIsVisible){
         [self.tableView reloadData];
     }
@@ -1449,11 +1454,11 @@ static NSString *const logoutOption = @"Log out";
         return _myPhotos.count;
     } else if (showLightTable){
         if (self.lightTable && self.lightTable.name.length){
-            self.searchBar.placeholder = [NSString stringWithFormat:@"Search %@",_lightTable.name];
+            self.searchBar.placeholder = [NSString stringWithFormat:@"Search %@",self.lightTable.name];
         } else {
             self.searchBar.placeholder = @"Search light table";
         }
-        return _lightTable.photos.count;
+        return self.lightTable.photos.count;
     } else if (showFavorites){
         self.searchBar.placeholder = @"Search favorites";
         return _favoritePhotos.count;
@@ -1547,12 +1552,16 @@ static NSString *const logoutOption = @"Log out";
         float bottomEdge = scrollView.contentOffset.y + scrollView.frame.size.height;
         if (bottomEdge >= scrollView.contentSize.height) {
             // at the bottom of the scrollView
-            if (canSearchMore && self.searchBar.text.length){
-                [self loadBeforePhoto:_filteredPhotos.lastObject];
+            if (self.searchBar.text.length){
+                if (canSearchMore) {
+                    [self loadBeforePhoto:_filteredPhotos.lastObject];
+                }
             } else if (showMyArt) {
                 
-            } else if (canLoadMore && _photos.count){
-                [self loadBeforePhoto:_photos.lastObject];
+            } else if (_photos.count){
+                if (canLoadMore){
+                    [self loadBeforePhoto:_photos.lastObject];
+                }
             }
         }
     }
@@ -1607,6 +1616,17 @@ static NSString *const logoutOption = @"Log out";
     Photo *photo = self.lightTable.photos[indexPathForLightTableArtToRemove.item];
     [self.lightTable removePhoto:photo];
     
+    // remove via API
+    [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove",self.lightTable.identifier] parameters:@{@"photo_id":photo.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"success removing photo from light table: %@",responseObject);
+        if (sidebarIsVisible){
+            [self.tableView reloadData];
+        }
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"failed to remove photo from light table: %@",error.description);
+    }];
+    
+    // remove locally
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         if (indexPathForLightTableArtToRemove) {
             [self.collectionView deleteItemsAtIndexPaths:@[indexPathForLightTableArtToRemove]];
@@ -1619,67 +1639,28 @@ static NSString *const logoutOption = @"Log out";
             [self.draggingView removeFromSuperview];
         }];
     }];
-    
-    [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove",self.lightTable.identifier] parameters:@{@"photo_id":photo.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"success removing photo from light table: %@",responseObject);
-        if (sidebarIsVisible){
-            [self.tableView reloadData];
-        }
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"failed to remove photo from light table: %@",error.description);
-    }];
 }
 
 - (void)addPhotoToLightTable:(Photo*)photo {
     NSIndexPath *newArtIndexPath = [NSIndexPath indexPathForItem:self.lightTable.photos.count inSection:0];
     [self.lightTable addPhoto:photo];
     [self.collectionView insertItemsAtIndexPaths:@[newArtIndexPath]];
-    
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        
-    }];
+
+    // save to API
     [manager POST:[NSString stringWithFormat:@"light_tables/%@/add",self.lightTable.identifier] parameters:@{@"photo_id":photo.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"success adding art from light table: %@",responseObject);
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"failed to add art from light table: %@",error.description);
     }];
+    
+    // save locally
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        
+    }];
 }
 
 - (void)longPressed:(UILongPressGestureRecognizer*)gestureRecognizer {
     CGPoint loc = [gestureRecognizer locationInView:self.collectionView];
-//    if (showFavorites){
-//        //trying to interact with a favorite
-//        if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
-//            [self becomeFirstResponder];
-//            
-//            indexPathForFavoriteToRemove = [self.collectionView indexPathForItemAtPoint:loc];
-//            NSString *menuItemTitle = NSLocalizedString(@"Remove", @"Remove this art from your favorites.");
-//            UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeFavorite:)];
-//            UIMenuController *menuController = [UIMenuController sharedMenuController];
-//            [menuController setMenuItems:@[resetMenuItem]];
-//            CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
-//            CGRect menuLocation = CGRectMake(location.x, location.y, 0, 0);
-//            [menuController setTargetRect:menuLocation inView:[gestureRecognizer view]];
-//            [menuController setMenuVisible:YES animated:YES];
-//        }
-//        return;
-//    } else if (showLightTable){
-//        //trying to interact with a light table piece
-//        if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
-//            [self becomeFirstResponder];
-//            
-//            indexPathForLightTableArtToRemove = [self.collectionView indexPathForItemAtPoint:loc];
-//            NSString *menuItemTitle = NSLocalizedString(@"Remove", @"Remove this art from your favorites.");
-//            UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:menuItemTitle action:@selector(removeLightTablePhoto:)];
-//            UIMenuController *menuController = [UIMenuController sharedMenuController];
-//            [menuController setMenuItems:@[resetMenuItem]];
-//            CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
-//            CGRect menuLocation = CGRectMake(location.x, location.y, 0, 0);
-//            [menuController setTargetRect:menuLocation inView:[gestureRecognizer view]];
-//            [menuController setMenuVisible:YES animated:YES];
-//        }
-//        return;
-//    }
     
     CGFloat heightInScreen = fmodf((loc.y-self.collectionView.contentOffset.y), CGRectGetHeight(self.collectionView.frame));
     CGFloat hoverOffset;
@@ -1729,7 +1710,12 @@ static NSString *const logoutOption = @"Log out";
     }
     
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
-        NSLog(@"does collection view contain point? %u",CGRectContainsPoint(self.collectionView.frame, loc));
+        NSLog(@"What's the collection frame: %@",self.collectionView);
+        CGRect adjustedCollectionRect = self.collectionView.frame; // create an "adjusted" rec that is slightly more narrow and shorter than the frame so that we can detect dragging off to the sides and bottom
+        adjustedCollectionRect.origin.x += 44.f;
+        adjustedCollectionRect.size.width -= 88.f; // double the padding, to take the adjusted x position into account
+        adjustedCollectionRect.size.height -= 44.f;
+        NSLog(@"does collection view contain point? %u",CGRectContainsPoint(adjustedCollectionRect, loc));
         //NSLog(@"loc x: %f and y %f, showlighttable? %u",loc.x, loc.y, showLightTable);
         // comparison mode
         if (loc.x < 0 && loc.y > (_comparisonContainerView.frame.origin.y - 128)){ // 128 is half the width of an art slide, since the point we're grabbing is a center point, not the origin
@@ -1755,7 +1741,6 @@ static NSString *const logoutOption = @"Log out";
                     comparison2LongPress.minimumPressDuration = .14f;
                     [comparison2 addGestureRecognizer:comparison2LongPress];
                     [comparison2 setUserInteractionEnabled:YES];
-                    
                     [_comparisonContainerView addSubview:comparison2];
                     [comparisonTap requireGestureRecognizerToFail:comparison2LongPress];
                 }
@@ -1772,58 +1757,17 @@ static NSString *const logoutOption = @"Log out";
         } else if (self.draggingView) {
             self.moveToIndexPath = [self.collectionView indexPathForItemAtPoint:loc];
             if (self.moveToIndexPath) {
+                [self resetDraggingView];
                 
-                WFPhotoCell *movedCell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.moveToIndexPath];
-                WFPhotoCell *oldIndexCell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
+                // disable drag to reorder
+            } else if (showLightTable && !CGRectContainsPoint(adjustedCollectionRect, loc)) {
                 
-                NSNumber *thisNumber;
-                if (showMyArt && _myPhotos.count){
-                    thisNumber = _myPhotos[self.startIndex.item];
-                } else if (showLightTable && self.lightTable.photos.count){
-                    thisNumber = self.lightTable.photos[self.startIndex.item];
-                } else if (showFavorites && _favoritePhotos.count){
-                    thisNumber = _favoritePhotos[self.startIndex.item];
-                } else if (self.searchBar.text.length){
-                    if (_filteredPhotos.count){
-                        thisNumber = [_filteredPhotos objectAtIndex:self.startIndex.item];
-                    }
-                } else if (_photos.count) {
-                    thisNumber = [_photos objectAtIndex:self.startIndex.item];
+                if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [self.lightTable includesOwnerId:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+                    indexPathForLightTableArtToRemove = self.startIndex;
+                    [self removeLightTablePhoto:nil];
                 }
                 
-                if (thisNumber){
-                    [_photos removeObjectAtIndex:self.startIndex.item];
-                    [_photos insertObject:thisNumber atIndex:self.moveToIndexPath.item];
-                }
-                
-                CGPoint moveToPoint = [self.view convertPoint:movedCell.center fromView:nil];
-                [UIView animateWithDuration:.27f animations:^{
-                    self.draggingView.layer.anchorPoint = moveToPoint;
-                    self.draggingView.center = moveToPoint;
-                    [self.draggingView setAlpha:0.0];
-                    [oldIndexCell.contentView setAlpha:1.f];
-                    [movedCell.contentView setAlpha:1.f];
-                } completion:^(BOOL finished) {
-                    [self.draggingView removeFromSuperview];
-                    self.draggingView = nil;
-                    self.startIndex = nil;
-                }];
-                
-                //change items
-                __weak typeof(self) weakSelf = self;
-                [self.collectionView performBatchUpdates:^{
-                    __strong typeof(self) strongSelf = weakSelf;
-                    if (strongSelf) {
-                        [strongSelf.collectionView deleteItemsAtIndexPaths:@[ self.startIndex ]];
-                        [strongSelf.collectionView insertItemsAtIndexPaths:@[ strongSelf.moveToIndexPath ]];
-                    }
-                } completion:^(BOOL finished) {
-                    
-                }];
-            } else if (showLightTable && !CGRectContainsPoint(self.collectionView.frame, loc)) {
-                NSLog(@"get rid of it");
-                indexPathForLightTableArtToRemove = self.startIndex;
-                [self removeLightTablePhoto:nil];
+                [self resetDraggingView];
             } else {
                 [self resetDraggingView];
             }
@@ -1831,6 +1775,57 @@ static NSString *const logoutOption = @"Log out";
             loc = CGPointZero;
         }
     }
+}
+
+- (void)dragToReorder {
+    WFPhotoCell *movedCell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.moveToIndexPath];
+    WFPhotoCell *oldIndexCell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
+    
+    NSNumber *thisNumber;
+    if (showMyArt && _myPhotos.count){
+        thisNumber = _myPhotos[self.startIndex.item];
+    } else if (showLightTable && self.lightTable.photos.count){
+        thisNumber = self.lightTable.photos[self.startIndex.item];
+    } else if (showFavorites && _favoritePhotos.count){
+        thisNumber = _favoritePhotos[self.startIndex.item];
+    } else if (self.searchBar.text.length){
+        if (_filteredPhotos.count){
+            thisNumber = [_filteredPhotos objectAtIndex:self.startIndex.item];
+        }
+    } else if (_photos.count) {
+        thisNumber = [_photos objectAtIndex:self.startIndex.item];
+    }
+    
+    if (thisNumber){
+        [_photos removeObjectAtIndex:self.startIndex.item];
+        [_photos insertObject:thisNumber atIndex:self.moveToIndexPath.item];
+    }
+    
+    CGPoint moveToPoint = [self.view convertPoint:movedCell.center fromView:nil];
+    [UIView animateWithDuration:.27f animations:^{
+        self.draggingView.layer.anchorPoint = moveToPoint;
+        self.draggingView.center = moveToPoint;
+        [self.draggingView setAlpha:0.0];
+        [oldIndexCell.contentView setAlpha:1.f];
+        [movedCell.contentView setAlpha:1.f];
+    } completion:^(BOOL finished) {
+        [self.draggingView removeFromSuperview];
+        self.draggingView = nil;
+        self.startIndex = nil;
+    }];
+    
+    //change items
+    __weak typeof(self) weakSelf = self;
+    [self.collectionView performBatchUpdates:^{
+        __strong typeof(self) strongSelf = weakSelf;
+        if (strongSelf) {
+            [strongSelf.collectionView deleteItemsAtIndexPaths:@[ self.startIndex ]];
+            [strongSelf.collectionView insertItemsAtIndexPaths:@[ strongSelf.moveToIndexPath ]];
+        }
+    } completion:^(BOOL finished) {
+        
+    }];
+
 }
 
 #pragma mark - Comparison Seciton

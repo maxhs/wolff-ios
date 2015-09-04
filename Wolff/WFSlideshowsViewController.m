@@ -18,6 +18,7 @@
 }
 @property (strong, nonatomic) AFHTTPRequestOperation *mainRequest;
 @property (strong, nonatomic) User *currentUser;
+@property (strong, nonatomic) NSMutableOrderedSet *ownedSlideShows;
 @end
 
 @implementation WFSlideshowsViewController
@@ -27,7 +28,9 @@
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
     self.currentUser = [delegate.currentUser MR_inContext:[NSManagedObjectContext MR_defaultContext]];
-
+    self.ownedSlideShows = [NSMutableOrderedSet orderedSet];
+    [self filterUserSlideshows];
+    
     [self loadSlideshows];
     
     refreshControl = [[UIRefreshControl alloc] init];
@@ -50,7 +53,7 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    CGFloat contentSizeHeight = self.currentUser.slideshows.count ? 54.f*(self.currentUser.slideshows.count+1) : 54.f * 2;
+    CGFloat contentSizeHeight = self.ownedSlideShows.count ? 54.f*(self.ownedSlideShows.count+1) : 54.f * 2;
     [self setPreferredContentSize:CGSizeMake(420, contentSizeHeight)];
 }
 
@@ -61,6 +64,7 @@
 
 - (void)loadSlideshows {
     if (self.mainRequest) return;
+    
     [ProgressHUD show:@"Fetching your slideshows..."];
     self.mainRequest = [manager GET:[NSString stringWithFormat:@"users/%@/slideshow_titles",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success getting slideshows: %@",responseObject);
@@ -72,7 +76,17 @@
     }];
 }
 
+- (void)filterUserSlideshows {
+    [self.ownedSlideShows removeAllObjects];
+    [self.currentUser.slideshows enumerateObjectsUsingBlock:^(Slideshow *slideshow, NSUInteger idx, BOOL *stop) {
+        if ([slideshow.owner.identifier isEqualToNumber:self.currentUser.identifier]){
+            [self.ownedSlideShows addObject:slideshow];
+        }
+    }];
+}
+
 - (void)endLoading {
+    [self filterUserSlideshows];
     [self.tableView reloadData];
     self.mainRequest = nil;
     [ProgressHUD dismiss];
@@ -91,12 +105,12 @@
     if (section == 0){
         return 1;
     } else {
-        if (!self.mainRequest && self.currentUser.slideshows.count == 0){
+        if (!self.mainRequest && self.ownedSlideShows.count == 0){
             return 1;
             [tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
         } else {
             [tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
-            return self.currentUser.slideshows.count;
+            return self.ownedSlideShows.count;
         }
     }
 }
@@ -119,7 +133,7 @@
     } else {
         [cell.imageView setImage:nil];
     
-        Slideshow *slideshow = self.currentUser.slideshows[indexPath.row];
+        Slideshow *slideshow = self.ownedSlideShows[indexPath.row];
         [cell.textLabel setTextAlignment:NSTextAlignmentLeft];
         if (slideshow.title.length){
             [cell.textLabel setText:slideshow.title];
@@ -141,7 +155,7 @@
         }
     } else {
         if (self.slideshowsDelegate && [self.slideshowsDelegate respondsToSelector:@selector(slideshowSelected:)]) {
-            Slideshow *slideshow = self.currentUser.slideshows[indexPath.row];
+            Slideshow *slideshow = self.ownedSlideShows[indexPath.row];
             [self.slideshowsDelegate slideshowSelected:slideshow];
         }
     }
@@ -160,7 +174,7 @@
 }
 
 - (void)confirmDeletion {
-    Slideshow *slideshow = self.currentUser.slideshows[indexPathForDeletion.row];
+    Slideshow *slideshow = self.ownedSlideShows[indexPathForDeletion.row];
     NSString *title = slideshow.title.length ? [NSString stringWithFormat:@"\"%@\"",slideshow.title] : @"this slideshow";
     [[[UIAlertView alloc] initWithTitle:@"Confirmation Needed" message:[NSString stringWithFormat:@"Are you sure you want to delete %@? This can NOT be undone.",title] delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Delete",nil] show];
 }
@@ -174,7 +188,7 @@
 }
 
 - (void)deleteSlideshow {
-    Slideshow *slideshow = self.currentUser.slideshows[indexPathForDeletion.row];
+    Slideshow *slideshow = self.ownedSlideShows[indexPathForDeletion.row];
     NSLog(@"Slideshow we're about to delete: %@",slideshow);
     if (slideshow && ![slideshow.identifier isEqualToNumber:@0]){
         [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {

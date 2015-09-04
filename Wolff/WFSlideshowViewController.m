@@ -611,9 +611,6 @@
                 [ps setWidth:@(view.frame.size.width)];
                 [ps setHeight:@(view.frame.size.height)];
                 [ps setScale:@([[view.layer valueForKeyPath:@"transform.scale"] floatValue])];
-//                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-//                    NSLog(@"Saving slide 1 after pan: %@ %@, %@ %@",ps.positionX, ps.positionY, ps.width, ps.height);
-//                }];
             }
         } else if (self.photos.count) {
             [(WFInteractiveImageView*)view setMoved:YES];
@@ -899,7 +896,7 @@
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
-    if (self.currentUser && self.slideshow && self.slideshow.user && [self.currentUser.identifier isEqualToNumber:self.slideshow.user.identifier]){
+    if (self.currentUser && self.slideshow && self.slideshow.owner && [self.currentUser.identifier isEqualToNumber:self.slideshow.owner.identifier]){
         NSLog(@"Should be saving slideshow");
         [self syncWithServer];
     }

@@ -23,8 +23,8 @@
 
 - (void)configureForSlideshow:(Slideshow *)slideshow {
     [_titleLabel setText:slideshow.title];
-    [_authorLabel setText:slideshow.user.fullName];
-    [_institutionLabel setText:slideshow.user.institution.name];
+    [_authorLabel setText:slideshow.owner.fullName];
+    [_institutionLabel setText:slideshow.owner.institution.name];
     [_wolffLabel setTextColor:[UIColor colorWithWhite:1 alpha:.77f]];
     [_wolffIcon setAlpha:.77f];
 }

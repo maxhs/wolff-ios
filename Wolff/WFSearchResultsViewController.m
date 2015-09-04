@@ -266,14 +266,12 @@
 }
 
 - (void)newLightTable {
-    //NSLog(@"new light table from search delegate");
     if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(newLightTableForSelected)]) {
         [self.searchDelegate newLightTableForSelected];
     }
 }
 
 - (void)batchFavorite {
-    NSLog(@"should be batch favoriting");
     if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(batchFavorite)]){
         [self.searchDelegate batchFavorite];
     }

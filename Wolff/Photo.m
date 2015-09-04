@@ -16,7 +16,6 @@
 @dynamic privatePhoto;
 @dynamic largeImageUrl;
 @dynamic thumbImageUrl;
-@dynamic mediumImageUrl;
 @dynamic slideImageUrl;
 @dynamic originalImageUrl;
 @dynamic flagged;

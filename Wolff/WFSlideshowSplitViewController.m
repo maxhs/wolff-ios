@@ -86,11 +86,9 @@ NSString* const playOption = @"Play";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if (IDIOM == IPAD){
-        width = screenWidth(); height = screenHeight();
-    } else {
-        width = screenWidth(); height = screenHeight();
-    }
+    width = screenWidth();
+    height = screenHeight();
+    
     landscape = self.view.frame.size.width > self.view.frame.size.height ? YES : NO;
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
@@ -104,7 +102,7 @@ NSString* const playOption = @"Play";
         [self redrawSlideshow];
     } else {
         self.slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-        self.slideshow.user = self.currentUser;
+        self.slideshow.owner = self.currentUser;
         self.slideshow.photos = self.selectedPhotos;
         
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -206,7 +204,7 @@ NSString* const playOption = @"Play";
         if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
             if ([self.slideshow.identifier isEqualToNumber:@0]){
                 self.navigationItem.rightBarButtonItems = @[playButton, settingsButton, searchButton, saveButton, shareButton];
-            } else if ([self.slideshow.user.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+            } else if ([self.slideshow.owner.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
                 self.navigationItem.rightBarButtonItems = @[playButton, settingsButton, searchButton, saveButton, shareButton];
             } else {
                 self.navigationItem.rightBarButtonItems = @[playButton, searchButton];
@@ -1274,11 +1272,11 @@ NSString* const playOption = @"Play";
 - (void)textFieldDidEndEditing:(UITextField *)textField {
     if (textField == titleTextField) {
         if (titleTextField.text.length){
-            [self.slideshow setTitle:titleTextField.text];
             [textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:0]];
         } else {
             [textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.06]];
         }
+        [self.slideshow setTitle:titleTextField.text];
     }
 }
 

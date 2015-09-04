@@ -21,7 +21,6 @@
 @property (nonatomic, retain) NSNumber * orderIndex;
 @property (nonatomic, retain) NSString * largeImageUrl;
 @property (nonatomic, retain) NSString * thumbImageUrl;
-@property (nonatomic, retain) NSString * mediumImageUrl;
 @property (nonatomic, retain) NSString * slideImageUrl;
 @property (nonatomic, retain) NSString * originalImageUrl;
 @property (nonatomic, retain) NSString * credit;
