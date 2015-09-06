@@ -340,8 +340,14 @@ static NSString *const logoutOption = @"Log out";
         [ProgressHUD dismiss];
         newUser = YES;
         WFWalkthroughViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Walkthrough"];
-        vc.modalPresentationStyle = UIModalPresentationCustom;
-        vc.transitioningDelegate = self;
+        if (IDIOM == IPAD){
+            vc.modalPresentationStyle = UIModalPresentationCustom;
+            vc.transitioningDelegate = self;
+        } else {
+            NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
+            [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+        }
+        
         [self presentViewController:vc animated:YES completion:^{
             [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kExistingUser];
         }];
@@ -1710,13 +1716,11 @@ static NSString *const logoutOption = @"Log out";
     }
     
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
-        NSLog(@"What's the collection frame: %@",self.collectionView);
         CGRect adjustedCollectionRect = self.collectionView.frame; // create an "adjusted" rec that is slightly more narrow and shorter than the frame so that we can detect dragging off to the sides and bottom
-        adjustedCollectionRect.origin.x += 44.f;
+        adjustedCollectionRect.origin.x = 44.f;
         adjustedCollectionRect.size.width -= 88.f; // double the padding, to take the adjusted x position into account
-        adjustedCollectionRect.size.height -= 44.f;
-        NSLog(@"does collection view contain point? %u",CGRectContainsPoint(adjustedCollectionRect, loc));
-        //NSLog(@"loc x: %f and y %f, showlighttable? %u",loc.x, loc.y, showLightTable);
+        adjustedCollectionRect.size.height -= 88.f; // 2 * 44.f to account for navBar
+    
         // comparison mode
         if (loc.x < 0 && loc.y > (_comparisonContainerView.frame.origin.y - 128)){ // 128 is half the width of an art slide, since the point we're grabbing is a center point, not the origin
             if (!comparison1) {
@@ -1732,7 +1736,6 @@ static NSString *const logoutOption = @"Log out";
                 [_comparisonContainerView addSubview:comparison1];
                 [comparisonTap requireGestureRecognizerToFail:comparison1LongPress];
             } else {
-        
                 if (!comparison2){
                     comparison2 = [[WFInteractiveImageView alloc] initWithFrame:CGRectMake(comparison1.frame.size.width+comparison1.frame.origin.x+10, 10, 125, 130) andPhoto:self.draggingView.photo];
                     comparison2.contentMode = UIViewContentModeScaleAspectFit;
@@ -1755,18 +1758,15 @@ static NSString *const logoutOption = @"Log out";
             [self resetComparisonLabel];
             [self resetDraggingView];
         } else if (self.draggingView) {
-            self.moveToIndexPath = [self.collectionView indexPathForItemAtPoint:loc];
-            if (self.moveToIndexPath) {
-                [self resetDraggingView];
-                
-                // disable drag to reorder
-            } else if (showLightTable && !CGRectContainsPoint(adjustedCollectionRect, loc)) {
-                
+            
+            // disable drag to reorder //
+            //self.moveToIndexPath = [self.collectionView indexPathForItemAtPoint:loc];
+            //[self dragToReorder];
+            if (self.lightTable && !CGRectContainsPoint(adjustedCollectionRect, loc)) {
                 if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [self.lightTable includesOwnerId:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
                     indexPathForLightTableArtToRemove = self.startIndex;
                     [self removeLightTablePhoto:nil];
                 }
-                
                 [self resetDraggingView];
             } else {
                 [self resetDraggingView];
@@ -2271,13 +2271,19 @@ static NSString *const logoutOption = @"Log out";
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         [vc setSlideshow:newSlideshow];
         
-        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-        nav.transitioningDelegate = self;
-        nav.modalPresentationStyle = UIModalPresentationCustom;
+        UINavigationController *nav;
+        if (IDIOM == IPAD){
+            nav = [[UINavigationController alloc] initWithRootViewController:vc];
+            nav.transitioningDelegate = self;
+            nav.modalPresentationStyle = UIModalPresentationCustom;
+        } else {
+            nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
+            NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
+            [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+        }
+        
         [self resetTransitionBooleans];
-        [self presentViewController:nav animated:YES completion:^{
-            
-        }];
+        [self presentViewController:nav animated:YES completion:NULL];
     } else {
         [WFAlert show:@"Creating new slideshows requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
     }
@@ -2292,21 +2298,23 @@ static NSString *const logoutOption = @"Log out";
         WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
         vc.slideshowDelegate = self;
         [vc setSlideshow:slideshow];
-        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-        nav.transitioningDelegate = self;
-        nav.modalPresentationStyle = UIModalPresentationCustom;
-        
+        UINavigationController *nav;
+        [self resetTransitionBooleans];
         if (IDIOM == IPAD){
-            [self resetTransitionBooleans];
+            nav = [[UINavigationController alloc] initWithRootViewController:vc];
+            nav.transitioningDelegate = self;
+            nav.modalPresentationStyle = UIModalPresentationCustom;
             [self presentViewController:nav animated:YES completion:NULL];
         } else {
+            nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
+            NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
+            [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+            
             if (self.presentedViewController){// dismiss the presented VC, if applicable
                 [self dismissViewControllerAnimated:YES completion:^{
-                    [self resetTransitionBooleans];
                     [self presentViewController:nav animated:YES completion:NULL];
                 }];
             } else {
-                [self resetTransitionBooleans];
                 [self presentViewController:nav animated:YES completion:NULL];
             }
         }

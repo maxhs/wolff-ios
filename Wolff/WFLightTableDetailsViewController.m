@@ -207,6 +207,8 @@
         //NSLog(@"Success loading table from internet: %@",responseObject);
         [self.lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            self.owners = self.lightTable.owners.mutableCopy;
+            self.users = self.lightTable.users.mutableCopy;
             [self.tableView reloadData];
             self.mainRequest = nil;
             [ProgressHUD dismiss];
@@ -323,6 +325,7 @@
             }
             break;
         case 3:
+            [cell.cellLabel setText:@"CONFIRM TABLE KEY"];
             confirmTableKeyTextField = cell.textField;
             [confirmTableKeyTextField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
             if (self.lightTable){
@@ -335,13 +338,12 @@
             }
             [confirmTableKeyTextField setPlaceholder:@"Confirm that your table key matches"];
             [confirmTableKeyTextField setReturnKeyType:UIReturnKeyGo];
-            [cell.cellLabel setText:@"CONFIRM TABLE KEY"];
-        
+            
             break;
         case 4:
+            [cell.cellLabel setText:@"OWNERS"];
             ownersTextField = cell.textField;
             [ownersTextField setPlaceholder:@"Select who can manage this light table"];
-            [cell.cellLabel setText:@"OWNERS"];
             [ownersTextField setUserInteractionEnabled:NO];
             if (self.owners.count){
                 [cell.textField setText:[self peopleToSentence:self.owners]];

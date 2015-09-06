@@ -29,6 +29,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    width = screenWidth();
+    height = screenHeight();
     delegate = [UIApplication sharedApplication].delegate;
     delegate.loginDelegate = self;
     manager = delegate.manager;
@@ -43,14 +45,6 @@
         CGRect lastNameFrame = _lastNameTextField.frame;
         lastNameFrame.origin.x = firstNameFrame.origin.x + firstNameFrame.size.width+2.f;
         [_lastNameTextField setFrame:lastNameFrame];
-    }
-    
-    if (SYSTEM_VERSION >= 8.f){
-        width = screenWidth();
-        height = screenHeight();
-    } else {
-        width = screenHeight();
-        height = screenWidth();
     }
 
     [self textFieldTreatment:_emailTextField];
@@ -302,7 +296,11 @@
                 _termsButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
                 _forgotPasswordButton.transform = CGAffineTransformMakeTranslation(0, -keyboardHeight);
             } else {
-                _loginButton.transform = CGAffineTransformMakeTranslation(0, -11);
+                _loginButton.transform = CGAffineTransformMakeTranslation(0, -17);
+                _emailTextField.transform = CGAffineTransformMakeTranslation(0, -12);
+                _passwordTextField.transform = CGAffineTransformMakeTranslation(0, -12);
+                _firstNameTextField.transform = CGAffineTransformMakeTranslation(0, -12);
+                _lastNameTextField.transform = CGAffineTransformMakeTranslation(0, -12);
             }
         }
         
@@ -338,6 +336,10 @@
                 _forgotPasswordButton.transform = CGAffineTransformIdentity;
             } else {
                 _loginButton.transform = CGAffineTransformIdentity;
+                _firstNameTextField.transform = CGAffineTransformIdentity;
+                _lastNameTextField.transform = CGAffineTransformIdentity;
+                _emailTextField.transform = CGAffineTransformIdentity;
+                _passwordTextField.transform = CGAffineTransformIdentity;
             }
         }
     } completion:^(BOOL finished) {

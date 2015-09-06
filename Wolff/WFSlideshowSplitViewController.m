@@ -16,6 +16,7 @@
 #import "WFSlideshowFocusAnimator.h"
 #import "WFSearchResultsViewController.h"
 #import "WFPhotoCell.h"
+#import "WFPhotoTileCell.h"
 #import "WFArtMetadataAnimator.h"
 #import "WFArtMetadataViewController.h"
 #import "WFSlideshowSettingsViewController.h"
@@ -88,7 +89,6 @@ NSString* const playOption = @"Play";
     [super viewDidLoad];
     width = screenWidth();
     height = screenHeight();
-    
     landscape = self.view.frame.size.width > self.view.frame.size.height ? YES : NO;
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
@@ -130,7 +130,6 @@ NSString* const playOption = @"Play";
     UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(slideDoubleTap:)];
     doubleTap.numberOfTapsRequired = 2;
     [self.tableView addGestureRecognizer:doubleTap];
-    
     [singleTap requireGestureRecognizerToFail:doubleTap];
     
     UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
@@ -140,6 +139,12 @@ NSString* const playOption = @"Play";
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didHideEditMenu:) name:UIMenuControllerDidHideMenuNotification object:nil];
+    
+    if (IDIOM != IPAD){
+        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
+        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+        [self.collectionView setBackgroundColor:[UIColor whiteColor]];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -148,11 +153,12 @@ NSString* const playOption = @"Play";
     topInset = self.navigationController.navigationBar.frame.size.height; // manually set the top inset
     self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
     [self.tableView setContentOffset:CGPointMake(0, -topInset)];
+    
     if (IDIOM != IPAD){
-        [self adjustForSize:self.view.frame.size];
+        [self.tableView setFrame:CGRectMake(0, 0, kSidebarWidth, height)];
+        [self.collectionView setFrame:CGRectMake(kSidebarWidth, 0, width-kSidebarWidth, height)];
     }
-    [self.tableView reloadData];
-    [self.collectionView reloadData];
+    
     if (!saveTimer){
         saveTimer = [NSTimer scheduledTimerWithTimeInterval:30.f target:self selector:@selector(autosaveLocally) userInfo:nil repeats:YES];
     }
@@ -169,23 +175,6 @@ NSString* const playOption = @"Play";
     if (!titleTextField.text.length){
         [titleTextField becomeFirstResponder];
     }
-}
-
-- (void)refreshSlideshow {
-//    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-//    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-//    [manager GET:[NSString stringWithFormat:@"slideshows/%@",self.slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-//        //NSLog(@"Success refreshing slideshow: %@",responseObject);
-//        [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
-//        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-//            [self.collectionView reloadData];
-//            [self.tableView reloadData];
-//            [ProgressHUD dismiss];
-//        }];
-//    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-//        [ProgressHUD dismiss];
-//        NSLog(@"Failed to refresh slideshow");
-//    }];
 }
 
 #pragma mark - View Setup
@@ -350,15 +339,17 @@ NSString* const playOption = @"Play";
         NSString *editTextItemTitle = NSLocalizedString(@"Edit text", @"Edit slide text");
         UIMenuItem *editTextItem = [[UIMenuItem alloc] initWithTitle:editTextItemTitle action:@selector(editText:)];
         NSString *removeItemTitle = NSLocalizedString(@"Remove", @"Remove art from slide");
-        UIMenuItem *resetMenuItem = [[UIMenuItem alloc] initWithTitle:removeItemTitle action:@selector(removeArt:)];
+        UIMenuItem *removeMenuItem = [[UIMenuItem alloc] initWithTitle:removeItemTitle action:@selector(removeArt:)];
+        NSString *newSlideTitle = NSLocalizedString(@"Add blank slide", @"Add a new slide");
+        UIMenuItem *newSlideMenuItem = [[UIMenuItem alloc] initWithTitle:newSlideTitle action:@selector(newSlide:)];
         
         UIMenuController *menuController = [UIMenuController sharedMenuController];
         if (activeSlide.photoSlides.count){
-            [menuController setMenuItems:@[resetMenuItem]];
+            [menuController setMenuItems:@[removeMenuItem, newSlideMenuItem]];
         } else if (activeSlide.slideTexts.count) {
-            [menuController setMenuItems:@[editTextItem, resetMenuItem]];
+            [menuController setMenuItems:@[editTextItem, removeMenuItem, newSlideMenuItem]];
         } else {
-            [menuController setMenuItems:@[addTextItem]];
+            [menuController setMenuItems:@[addTextItem, newSlideMenuItem]];
         }
         
         CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
@@ -391,6 +382,17 @@ NSString* const playOption = @"Play";
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         [self.tableView endUpdates];
     }
+}
+
+- (void)newSlide:(UIMenuController*)menuController {
+    Slide *newSlide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    [self.tableView beginUpdates];
+    NSIndexPath *indexPathToInsert = [NSIndexPath indexPathForRow:activeSlide.index.integerValue + 1 inSection:0];
+    [self.slideshow addSlide:newSlide atIndex:activeSlide.index.integerValue + 1];
+    [self.tableView insertRowsAtIndexPaths:@[indexPathToInsert] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self.tableView endUpdates];
+    activeImageView = nil;
+    activeIndexPath = nil;
 }
 
 - (void)addText:(UIMenuController*)menuController {
@@ -458,7 +460,8 @@ NSString* const playOption = @"Play";
     if (IDIOM == IPAD){
         return CGSizeMake((width-kSidebarWidth)/3,(width-kSidebarWidth)/3);
     } else {
-        return CGSizeMake(width/2,width/2);
+        CGFloat newWidth = (collectionView.frame.size.width/2)-1;
+        return CGSizeMake(newWidth,newWidth);
     }
 }
 
@@ -478,11 +481,18 @@ NSString* const playOption = @"Play";
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SlideshowArtCell" forIndexPath:indexPath];
-    [cell.contentView setAlpha:1.0];
     Photo *photo = self.slideshow.photos[indexPath.item];
-    [cell configureForPhoto:photo];
-    return cell;
+    if (IDIOM == IPAD){
+        WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SlideshowArtCell" forIndexPath:indexPath];
+        [cell.contentView setAlpha:1.0];
+        [cell configureForPhoto:photo];
+        return cell;
+    } else {
+        WFPhotoTileCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SlideshowArtCell" forIndexPath:indexPath];
+        [cell.contentView setAlpha:1.0];
+        [cell configureForPhoto:photo];
+        return cell;
+    }
 }
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath{
@@ -516,28 +526,27 @@ NSString* const playOption = @"Play";
 
 - (void)longPressed:(UILongPressGestureRecognizer*)gestureRecognizer {
     CGPoint loc = [gestureRecognizer locationInView:self.view];
-    CGPoint photoLoc;
-    if (IDIOM == IPAD || landscape){
-        photoLoc = CGPointMake(loc.x - kSidebarWidth, loc.y + self.collectionView.contentOffset.y);
-    } else {
-        photoLoc = CGPointMake(loc.x, loc.y + self.collectionView.contentOffset.y);
-    }
+    CGPoint photoLoc = CGPointMake(loc.x - kSidebarWidth, loc.y + self.collectionView.contentOffset.y);
     CGPoint slideLoc = CGPointMake(loc.x, loc.y + self.tableView.contentOffset.y);
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
         //NSLog(@"loc x: %f, loc y: %f", loc.x,loc.y);
         
-        BOOL iPadBool = (loc.x > kSidebarWidth && self.slideshow.photos.count);
-        
-        if ((IDIOM == IPAD && iPadBool) || (IDIOM != IPAD && self.slideshow.photos.count)) {
+        if (loc.x > kSidebarWidth && self.slideshow.photos.count) {
             self.photoStartIndex = [self.collectionView indexPathForItemAtPoint:photoLoc];
             if (self.photoStartIndex) {
-                
-                WFPhotoCell *cell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.photoStartIndex];
                 self.selectedPhoto = self.slideshow.photos[self.photoStartIndex.item];
-                self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:self.selectedPhoto];
                 
-                [cell.contentView setAlpha:0.1f];
+                if (IDIOM == IPAD){
+                    WFPhotoCell *cell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.photoStartIndex];
+                    self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:self.selectedPhoto];
+                    [cell.contentView setAlpha:0.1f];
+                } else {
+                    WFPhotoTileCell *cell = (WFPhotoTileCell*)[self.collectionView cellForItemAtIndexPath:self.photoStartIndex];
+                    self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:self.selectedPhoto];
+                    [cell.contentView setAlpha:0.1f];
+                }
+                
                 [self.view addSubview:self.draggingView];
                 self.draggingView.center = loc;
                 self.dragViewStartLocation = self.draggingView.center;
@@ -736,14 +745,6 @@ NSString* const playOption = @"Play";
     }];
 }
 
-- (void)adjustForSize:(CGSize)size {
-    if (size.width > size.height){
-        
-    } else {
-        
-    }
-}
-
 - (void)confirmRemovePhoto {
     removePhotoAlertView = [[UIAlertView alloc] initWithTitle:@"Please confirm" message:[NSString stringWithFormat:@"Are you sure you want to remove \"%@\" from this slideshow?",self.selectedPhoto.art.title] delegate:nil cancelButtonTitle:@"Cancel" otherButtonTitles:@"Remove",nil];
     removePhotoAlertView.delegate = self;
@@ -847,7 +848,7 @@ NSString* const playOption = @"Play";
 }
 
 - (void)post {
-    if (self.mainRequest || self.mainRequest.isCancelled) return;
+    if (self.mainRequest || self.mainRequest.isCancelled || !self.slideshow) return;
     
     if (self.popover) [self.popover dismissPopoverAnimated:YES];
     if (titleTextField.isEditing) [titleTextField resignFirstResponder];
@@ -1271,12 +1272,14 @@ NSString* const playOption = @"Play";
 
 - (void)textFieldDidEndEditing:(UITextField *)textField {
     if (textField == titleTextField) {
+        self.slideshow = [self.slideshow MR_inContext:[NSManagedObjectContext MR_defaultContext]];
         if (titleTextField.text.length){
             [textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:0]];
+            [self.slideshow setTitle:titleTextField.text];
         } else {
             [textField setBackgroundColor:[UIColor colorWithWhite:1 alpha:.06]];
+            [self.slideshow setTitle:@""];
         }
-        [self.slideshow setTitle:titleTextField.text];
     }
 }
 

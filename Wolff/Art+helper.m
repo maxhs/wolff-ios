@@ -24,6 +24,7 @@
 
 @implementation Art (helper)
 - (void)populateFromDictionary:(NSDictionary*)dictionary {
+    //NSLog(@"art helper: %@",dictionary);
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }

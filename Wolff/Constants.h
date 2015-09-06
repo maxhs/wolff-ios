@@ -69,7 +69,7 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kMuseoSansSemiboldItalic @"MuseoSans-700Italic"
 #define kMuseoSansBold @"MuseoSans-900"
 #define kMuseoSansBoldItalic @"MuseoSans-900Italic"
-#define kLato @"Lato-Regular"
+/*#define kLato @"Lato-Regular"
 #define kLatoItalic @"Lato-Italic"
 #define kLatoLight @"Lato-Light"
 #define kLatoLightItalic @"Lato-LightItalic"
@@ -78,7 +78,7 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kLatoBlack @"Lato-Black"
 #define kLatoBlackItalic @"Lato-BlackItalic"
 #define kLatoBold @"Lato-Bold"
-#define kLatoBoldItalic @"Lato-BoldItalic"
+#define kLatoBoldItalic @"Lato-BoldItalic"*/
 
 #define kAddLocationPlaceholder @"+  add a new location"
 #define kAddTagPlaceholder @"+  add a new tag"

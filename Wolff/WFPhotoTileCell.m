@@ -12,6 +12,16 @@
 
 @implementation WFPhotoTileCell
 
+- (void)awakeFromNib {
+    [super awakeFromNib];    
+}
+
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    [self.artImageView setImage:nil];
+    [self.artImageView setAlpha:0.0];
+}
+
 - (void)configureForPhoto:(Photo*)photo {
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:photo.thumbImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
     [self.artImageView setImageWithURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
@@ -24,5 +34,16 @@
             [self.artImageView setAlpha:1.0];
         }
     } failure:NULL];
+}
+
+- (UIImage *)getRasterizedImageCopy {
+    CGSize size = self.frame.size;
+    size.width += 10;
+    size.height += 10;
+    UIGraphicsBeginImageContextWithOptions(size, self.isOpaque, 0.0);
+    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return image;
 }
 @end

@@ -14,7 +14,6 @@
 
 @property (weak, nonatomic) IBOutlet UILabel *slideNumberLabel;
 @property (weak, nonatomic) IBOutlet UIView *slideContainerView;
-@property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (weak, nonatomic) IBOutlet UILabel *slideTextLabel;
 @property (weak, nonatomic) IBOutlet WFInteractiveImageView *artImageView1;
 @property (weak, nonatomic) IBOutlet WFInteractiveImageView *artImageView2;

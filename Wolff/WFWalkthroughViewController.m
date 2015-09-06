@@ -68,6 +68,10 @@
     [self.view4 setFrame:view4rect];
 }
 
+- (BOOL)shouldAutorotate {
+    return NO;
+}
+
 - (void)setUpMotionEffects {
     UIInterpolatingMotionEffect *verticalMotionEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.y" type:UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis];
     verticalMotionEffect.minimumRelativeValue = @(-33);

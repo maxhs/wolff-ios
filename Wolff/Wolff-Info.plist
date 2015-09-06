@@ -25,7 +25,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>4</string>
 	<key>Fabric</key>
 	<dict>
 		<key>APIKey</key>
@@ -45,17 +45,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>MuseoSans-100.ttf</string>
-		<string>Lato-HaiIta.ttf</string>
-		<string>Lato-Hai.ttf</string>
-		<string>Lato-Reg.ttf</string>
-		<string>Lato-RegIta.ttf</string>
-		<string>Lato-Lig.ttf</string>
-		<string>Lato-BolIta.ttf</string>
-		<string>Lato-Bol.ttf</string>
-		<string>Lato-LigIta.ttf</string>
 		<string>MuseoSans-100italic.ttf</string>
-		<string>Lato-Bla.ttf</string>
-		<string>Lato-BlaIta.ttf</string>
 		<string>MuseoSans-300.ttf</string>
 		<string>MuseoSans-300italic.ttf</string>
 		<string>MuseoSans-500.ttf</string>

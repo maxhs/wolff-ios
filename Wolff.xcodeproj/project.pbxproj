@@ -405,11 +405,6 @@
 		50FB5F7C1A3F2AA8004D6062 /* tables@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5F761A3F2AA8004D6062 /* tables@2x.png */; };
 		50FB5F7D1A3F2AA8004D6062 /* tables@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5F771A3F2AA8004D6062 /* tables@3x.png */; };
 		50FB5F801A3F3734004D6062 /* Citation.m in Sources */ = {isa = PBXBuildFile; fileRef = 50FB5F7F1A3F3734004D6062 /* Citation.m */; };
-		50FB5FE81A40E6CC004D6062 /* Lato-Bla.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5FE31A40E6CC004D6062 /* Lato-Bla.ttf */; };
-		50FB5FE91A40E6CC004D6062 /* Lato-BlaIta.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5FE41A40E6CC004D6062 /* Lato-BlaIta.ttf */; };
-		50FB5FEA1A40E6CC004D6062 /* Lato-Hai.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5FE51A40E6CC004D6062 /* Lato-Hai.ttf */; };
-		50FB5FEB1A40E6CC004D6062 /* Lato-HaiIta.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5FE61A40E6CC004D6062 /* Lato-HaiIta.ttf */; };
-		50FB5FEC1A40E6CC004D6062 /* Lato-LigIta.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50FB5FE71A40E6CC004D6062 /* Lato-LigIta.ttf */; };
 		89A305D0012E4E388F5AA7E8 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 278A29F5F94F48DE9193F246 /* libPods.a */; };
 		F20A3EB719EB1A29008E0D4C /* UIFontDescriptor+Custom.m in Sources */ = {isa = PBXBuildFile; fileRef = F20A3EB619EB1A29008E0D4C /* UIFontDescriptor+Custom.m */; };
 		F20A3EBA19EB1AFD008E0D4C /* Location.m in Sources */ = {isa = PBXBuildFile; fileRef = F20A3EB919EB1AFD008E0D4C /* Location.m */; };
@@ -418,11 +413,6 @@
 		F20A3EC319EB1B24008E0D4C /* Location+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F20A3EC219EB1B24008E0D4C /* Location+helper.m */; };
 		F20A3ECA19EB37A4008E0D4C /* Photo.m in Sources */ = {isa = PBXBuildFile; fileRef = F20A3EC919EB37A4008E0D4C /* Photo.m */; };
 		F20A3ECD19EB37B1008E0D4C /* Photo+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F20A3ECC19EB37B1008E0D4C /* Photo+helper.m */; };
-		F20D2E9F19EB095F00CA54C0 /* Lato-Reg.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F20D2E9A19EB095F00CA54C0 /* Lato-Reg.ttf */; };
-		F20D2EA019EB095F00CA54C0 /* Lato-RegIta.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F20D2E9B19EB095F00CA54C0 /* Lato-RegIta.ttf */; };
-		F20D2EA119EB095F00CA54C0 /* Lato-Lig.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F20D2E9C19EB095F00CA54C0 /* Lato-Lig.ttf */; };
-		F20D2EA219EB095F00CA54C0 /* Lato-BolIta.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F20D2E9D19EB095F00CA54C0 /* Lato-BolIta.ttf */; };
-		F20D2EA319EB095F00CA54C0 /* Lato-Bol.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F20D2E9E19EB095F00CA54C0 /* Lato-Bol.ttf */; };
 		F20FB2BF1A22A0A80007C905 /* WFNewArtViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB2BE1A22A0A80007C905 /* WFNewArtViewController.m */; };
 		F20FB2C21A22AFC60007C905 /* Favorite.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB2C11A22AFC60007C905 /* Favorite.m */; };
 		F20FB2C51A22AFDE0007C905 /* Favorite+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = F20FB2C41A22AFDE0007C905 /* Favorite+helper.m */; };
@@ -1056,11 +1046,6 @@
 		50FB5F771A3F2AA8004D6062 /* tables@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "tables@3x.png"; sourceTree = "<group>"; };
 		50FB5F7E1A3F3734004D6062 /* Citation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Citation.h; sourceTree = "<group>"; };
 		50FB5F7F1A3F3734004D6062 /* Citation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Citation.m; sourceTree = "<group>"; };
-		50FB5FE31A40E6CC004D6062 /* Lato-Bla.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-Bla.ttf"; sourceTree = "<group>"; };
-		50FB5FE41A40E6CC004D6062 /* Lato-BlaIta.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-BlaIta.ttf"; sourceTree = "<group>"; };
-		50FB5FE51A40E6CC004D6062 /* Lato-Hai.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-Hai.ttf"; sourceTree = "<group>"; };
-		50FB5FE61A40E6CC004D6062 /* Lato-HaiIta.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-HaiIta.ttf"; sourceTree = "<group>"; };
-		50FB5FE71A40E6CC004D6062 /* Lato-LigIta.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-LigIta.ttf"; sourceTree = "<group>"; };
 		7317AE0722CA214E63ADDDD9 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		F20A3EB519EB1A29008E0D4C /* UIFontDescriptor+Custom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIFontDescriptor+Custom.h"; sourceTree = "<group>"; };
 		F20A3EB619EB1A29008E0D4C /* UIFontDescriptor+Custom.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIFontDescriptor+Custom.m"; sourceTree = "<group>"; };
@@ -1076,11 +1061,6 @@
 		F20A3EC919EB37A4008E0D4C /* Photo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Photo.m; sourceTree = "<group>"; };
 		F20A3ECB19EB37B1008E0D4C /* Photo+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Photo+helper.h"; sourceTree = "<group>"; };
 		F20A3ECC19EB37B1008E0D4C /* Photo+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "Photo+helper.m"; sourceTree = "<group>"; };
-		F20D2E9A19EB095F00CA54C0 /* Lato-Reg.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-Reg.ttf"; sourceTree = "<group>"; };
-		F20D2E9B19EB095F00CA54C0 /* Lato-RegIta.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-RegIta.ttf"; sourceTree = "<group>"; };
-		F20D2E9C19EB095F00CA54C0 /* Lato-Lig.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-Lig.ttf"; sourceTree = "<group>"; };
-		F20D2E9D19EB095F00CA54C0 /* Lato-BolIta.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-BolIta.ttf"; sourceTree = "<group>"; };
-		F20D2E9E19EB095F00CA54C0 /* Lato-Bol.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Lato-Bol.ttf"; sourceTree = "<group>"; };
 		F20FB2BD1A22A0A80007C905 /* WFNewArtViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFNewArtViewController.h; sourceTree = "<group>"; };
 		F20FB2BE1A22A0A80007C905 /* WFNewArtViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFNewArtViewController.m; sourceTree = "<group>"; };
 		F20FB2C01A22AFC60007C905 /* Favorite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Favorite.h; sourceTree = "<group>"; };
@@ -1873,16 +1853,6 @@
 		F2CE0548198E6C5E0061DB94 /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
-				50FB5FE31A40E6CC004D6062 /* Lato-Bla.ttf */,
-				50FB5FE41A40E6CC004D6062 /* Lato-BlaIta.ttf */,
-				50FB5FE51A40E6CC004D6062 /* Lato-Hai.ttf */,
-				50FB5FE61A40E6CC004D6062 /* Lato-HaiIta.ttf */,
-				50FB5FE71A40E6CC004D6062 /* Lato-LigIta.ttf */,
-				F20D2E9A19EB095F00CA54C0 /* Lato-Reg.ttf */,
-				F20D2E9B19EB095F00CA54C0 /* Lato-RegIta.ttf */,
-				F20D2E9C19EB095F00CA54C0 /* Lato-Lig.ttf */,
-				F20D2E9D19EB095F00CA54C0 /* Lato-BolIta.ttf */,
-				F20D2E9E19EB095F00CA54C0 /* Lato-Bol.ttf */,
 				50952E7C1A47F70E00485831 /* MuseoSans-100.ttf */,
 				50952E7D1A47F70E00485831 /* MuseoSans-100italic.ttf */,
 				50952E7E1A47F70E00485831 /* MuseoSans-300.ttf */,
@@ -2365,7 +2335,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				50DB58651B7D0C1C00F7D43D /* iphoneWalkthrough3@2x.png in Resources */,
-				50FB5FEB1A40E6CC004D6062 /* Lato-HaiIta.ttf in Resources */,
 				501473F41A3EA136000422B8 /* image@2x.png in Resources */,
 				F28C77FC18E1E4950088B4C9 /* Main_iPad.storyboard in Resources */,
 				508DC98D1A5B7C4D00B1C008 /* blueCheckbox@2x.png in Resources */,
@@ -2397,7 +2366,6 @@
 				50952EAC1A480BD000485831 /* camera@2x.png in Resources */,
 				50B325601AA14B96003B7DB2 /* blueFavorite@3x.png in Resources */,
 				50952E9A1A47FD8100485831 /* flag@2x.png in Resources */,
-				50FB5FE81A40E6CC004D6062 /* Lato-Bla.ttf in Resources */,
 				50D7A9DB1A6234E3007FE14C /* logout.png in Resources */,
 				5080E6BC1AD8CA880097BD9F /* search15@2x.png in Resources */,
 				50952E861A47F70E00485831 /* MuseoSans-100italic.ttf in Resources */,
@@ -2510,7 +2478,6 @@
 				50AC920A1A9A6AAA004148D2 /* menuBlackSettings.png in Resources */,
 				50DB43D31A537AC500856174 /* dropToLightTable.png in Resources */,
 				50DDEC961B84E5D500F55324 /* rightArrow.png in Resources */,
-				F20D2EA019EB095F00CA54C0 /* Lato-RegIta.ttf in Resources */,
 				50316E441B70F51400B2171B /* lightTableWalkthroughIcon.png in Resources */,
 				50B7B9331B580E2600701F9B /* paintbrush@2x.png in Resources */,
 				50952E9B1A47FD8100485831 /* flag@3x.png in Resources */,
@@ -2538,7 +2505,6 @@
 				50DB586A1B7D0C1C00F7D43D /* iphoneWalkthrough1@3x.png in Resources */,
 				50316E331B70EEC200B2171B /* walkthrough3@2x.png in Resources */,
 				505D3B561A64ABA300CD70DE /* blueTables@2x.png in Resources */,
-				50FB5FEA1A40E6CC004D6062 /* Lato-Hai.ttf in Resources */,
 				50AC920C1A9A6AAA004148D2 /* menuBlackSettings@3x.png in Resources */,
 				505D3B991A65D32A00CD70DE /* walkthrough2.jpg in Resources */,
 				501473FE1A3EA136000422B8 /* trash@3x.png in Resources */,
@@ -2555,7 +2521,6 @@
 				F2A9580C19E222FC00A3B471 /* icon-180.png in Resources */,
 				50DB44081A546A8B00856174 /* blueCheck@2x.png in Resources */,
 				50DB44631A5756D600856174 /* whiteTrash@3x.png in Resources */,
-				F20D2EA319EB095F00CA54C0 /* Lato-Bol.ttf in Resources */,
 				50DB44531A57054500856174 /* people.png in Resources */,
 				508DC98E1A5B7C4D00B1C008 /* blueCheckbox@3x.png in Resources */,
 				50B325611AA14B96003B7DB2 /* blueLock.png in Resources */,
@@ -2564,10 +2529,8 @@
 				508DC9561A5B725F00B1C008 /* whitePlus.png in Resources */,
 				508DC93A1A5B6FA900B1C008 /* refresh@3x.png in Resources */,
 				50DB44781A58682800856174 /* shareArrow@3x.png in Resources */,
-				50FB5FEC1A40E6CC004D6062 /* Lato-LigIta.ttf in Resources */,
 				505D3B711A64AECA00CD70DE /* slideshow@2x.png in Resources */,
 				50316E2F1B70EEC200B2171B /* walkthrough1.png in Resources */,
-				F20D2E9F19EB095F00CA54C0 /* Lato-Reg.ttf in Resources */,
 				F2A957FC19E220F100A3B471 /* icon-50.png in Resources */,
 				505D3B6F1A64AECA00CD70DE /* saffronSlideshow@3x.png in Resources */,
 				50D973281B5E996E00518042 /* tag@3x.png in Resources */,
@@ -2605,7 +2568,6 @@
 				50952EAD1A480BD000485831 /* camera@3x.png in Resources */,
 				F2A957FD19E220F100A3B471 /* icon-57.png in Resources */,
 				508DC9881A5B7C1500B1C008 /* whiteCheckbox@3x.png in Resources */,
-				F20D2EA219EB095F00CA54C0 /* Lato-BolIta.ttf in Resources */,
 				50316E361B70EEC200B2171B /* walkthrough2@2x.png in Resources */,
 				501473F81A3EA136000422B8 /* lightbulb@3x.png in Resources */,
 				50952EA61A47FE3300485831 /* share@2x.png in Resources */,
@@ -2625,7 +2587,6 @@
 				50DB44381A5503FC00856174 /* cloudUpload.png in Resources */,
 				508DC9461A5B702200B1C008 /* blackSettings@3x.png in Resources */,
 				50B7B93A1B580EF500701F9B /* whitePaintbrush@3x.png in Resources */,
-				50FB5FE91A40E6CC004D6062 /* Lato-BlaIta.ttf in Resources */,
 				50B7B92F1B580E2600701F9B /* paintbrushBlue.png in Resources */,
 				F28C77F018E1E4950088B4C9 /* InfoPlist.strings in Resources */,
 				50DB44151A54705B00856174 /* whiteFavorite@2x.png in Resources */,
@@ -2652,7 +2613,6 @@
 				50B7B9391B580EF500701F9B /* whitePaintbrush@2x.png in Resources */,
 				501473F61A3EA136000422B8 /* lightbulb.png in Resources */,
 				50FB5F7A1A3F2AA8004D6062 /* download@3x.png in Resources */,
-				F20D2EA119EB095F00CA54C0 /* Lato-Lig.ttf in Resources */,
 				50B7B9321B580E2600701F9B /* paintbrush.png in Resources */,
 				505D3BB31A660FCD00CD70DE /* lock@2x.png in Resources */,
 				50DB44111A54705B00856174 /* whiteLock.png in Resources */,

@@ -203,13 +203,18 @@
         previousButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"leftArrow"] style:UIBarButtonItemStylePlain target:self action:@selector(previousSlide:)];
         nextButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"rightArrow"] style:UIBarButtonItemStylePlain target:self action:@selector(nextSlide:)];
         slideNumberButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:self action:nil];
-        slideshowTitleButtonItem = [[UIBarButtonItem alloc] initWithTitle:self.slideshow.title style:UIBarButtonItemStylePlain target:self action:nil];
-        
         [slideNumberButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
-        [slideshowTitleButtonItem setTitleTextAttributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0],NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
         
+        UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, width*.6, self.navigationController.navigationBar.frame.size.height)];
+        [titleLabel setAdjustsFontSizeToFitWidth:YES];
+        [titleLabel setMinimumScaleFactor:.5f];
+        [titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+        [titleLabel setTextColor:[UIColor whiteColor]];
+        [titleLabel setText:self.slideshow.title];
+        slideshowTitleButtonItem = [[UIBarButtonItem alloc] initWithCustomView:titleLabel];
         self.navigationItem.leftBarButtonItems = @[dismissButton, slideshowTitleButtonItem];
         self.navigationItem.rightBarButtonItems = @[nextButton, slideNumberButtonItem, previousButton];
+        
     } else {
         self.navigationItem.leftBarButtonItem = dismissButton;
     }
@@ -927,7 +932,7 @@
     }
     
     [manager PATCH:[NSString stringWithFormat:@"slideshows/%@/positioning",self.slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success saving slideshow: %@",responseObject);
+        //NSLog(@"Success saving slideshow: %@",responseObject);
         [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             

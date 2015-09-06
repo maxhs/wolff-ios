@@ -21,6 +21,7 @@
     AFHTTPRequestOperationManager *manager;
     CGFloat width;
     CGFloat height;
+    CGFloat itemWidth;
     CGFloat keyboardHeight;
     CGFloat topInset;
     NSMutableArray *_photos;
@@ -48,11 +49,8 @@
     [super viewDidLoad];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    if (SYSTEM_VERSION >= 8.f){
-        width = screenWidth(); height = screenHeight();
-    } else {
-        width = screenHeight(); height = screenWidth();
-    }
+    width = screenWidth();
+    height = screenHeight();
 
     [self.tableView setBackgroundColor:[UIColor clearColor]];
     self.tableView.rowHeight = 80.f;
@@ -110,8 +108,9 @@
         [self.navigationItem setLeftBarButtonItems:@[lightTableButton, flexibleSpace1, slideshowButton, flexibleSpace2, clearBarButton]];
         [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
         [self.collectionView setBackgroundColor:[UIColor blackColor]];
+        itemWidth = 100.f;
     } else {
-        
+        itemWidth = (width/4);
         UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.view.frame];
         [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
         [backgroundToolbar setTranslucent:YES];
@@ -121,7 +120,7 @@
         [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
         [self.tableView setSeparatorColor:[UIColor colorWithWhite:0 alpha:.14]];
         [self.collectionView setBackgroundColor:[UIColor blackColor]];
-        dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
+        dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
         self.navigationItem.leftBarButtonItem = dismissButton;
         cancelButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(doneEditing)];
         if (_shouldShowSearchBar){
@@ -307,9 +306,10 @@
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    width = size.width; height = size.height;
+    width = size.width;
+    height = size.height;
     landscape = size.width > size.height ? YES : NO;
-    
+    itemWidth = width/3;
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
         if (IDIOM != IPAD){
             [self.collectionView reloadData];
@@ -323,11 +323,7 @@
 #pragma mark – UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (IDIOM == IPAD){
-        return CGSizeMake(100,100);
-    } else {
-        return CGSizeMake(width/3, width/3);
-    }
+    return CGSizeMake(itemWidth, itemWidth);
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -566,9 +562,7 @@
 }
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

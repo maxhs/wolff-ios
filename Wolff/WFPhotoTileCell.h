@@ -11,5 +11,6 @@
 
 @interface WFPhotoTileCell : UICollectionViewCell
 @property (weak, nonatomic) IBOutlet UIImageView *artImageView;
+- (UIImage *)getRasterizedImageCopy;
 - (void)configureForPhoto:(Photo*)photo;
 @end

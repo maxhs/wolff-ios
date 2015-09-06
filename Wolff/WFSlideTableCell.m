@@ -25,12 +25,7 @@
     [_artImageView2 setContentMode:UIViewContentModeScaleAspectFit];
     [_artImageView3 setContentMode:UIViewContentModeScaleAspectFit];
     
-    [_scrollView setBackgroundColor:[UIColor clearColor]];
     [_slideTextLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0]];
-}
-
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    
 }
 
 - (void)prepareForReuse {
