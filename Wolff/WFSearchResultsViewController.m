@@ -278,15 +278,14 @@
 
 - (void)newSlideshow {
     NSLog(@"New slideshow from slideshows -> search/select");
-    [self dismissViewControllerAnimated:YES completion:^{
-        if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(slideshowSelected:)]) {
-            [self.searchDelegate slideshowForSelected:nil];
-        }
-    }];
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(newSlideshow)]) {
+        [self.searchDelegate newSlideshow];
+    }
 }
 
 - (void)slideshowSelected:(Slideshow *)slideshow {
-    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(slideshowSelected:)]) {
+    NSLog(@"Existing slideshow selected from slideshows -> search/select");
+    if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(slideshowForSelected:)]) {
         [self.searchDelegate slideshowForSelected:slideshow];
     }
 }

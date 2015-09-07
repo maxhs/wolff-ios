@@ -325,7 +325,7 @@ NSString* const deleteOption = @"Delete";
         [_nextPhotoButton setEnabled:YES];
     }
 
-    [self setPhotoCredit];
+    [self setPostedBy];
 }
 
 - (void)setupPhotoScrollView {
@@ -395,7 +395,7 @@ NSString* const deleteOption = @"Delete";
     self.photoScrollView.layer.shouldRasterize = YES;
 }
 
-- (void)setPhotoCredit {
+- (void)setPostedBy {
     NSString *stringContent;
     if (self.photo.partners.count){
         stringContent = self.photo.partnersToSentence;
@@ -1001,9 +1001,17 @@ NSString* const deleteOption = @"Delete";
         }
             break;
         case 7:
+        {
             [cell.label setText:@"CREDIT / RIGHTS"];
-            [cell.textView setText:(self.photo.credit.length ? self.photo.credit : self.photo.user.fullName)];
+            NSString *credit = @"";
+            if (self.photo.credit.length){
+                credit = self.photo.credit;
+            } else if (self.photo.art.credit.length){
+                credit = self.photo.art.credit;
+            }
+            [cell.textView setText:credit];
             creditTextView = cell.textView;
+        }
             break;
         case 8:
             [cell.label setText:@"NOTES"];

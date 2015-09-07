@@ -122,7 +122,7 @@ typedef enum {
             [set addObject:slideshow];
         }
         for (Slideshow *slideshow in self.slideshows){
-            if (![set containsObject:slideshow]){
+            if (![set containsObject:slideshow] && !slideshow.slides.count){
                 [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
             }
         }
@@ -141,7 +141,7 @@ typedef enum {
             [set addObject:slideshow];
         }
         for (Slideshow *slideshow in self.slideshows){
-            if (![set containsObject:slideshow]){
+            if (![set containsObject:slideshow] && !slideshow.slides.count){
                 [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
             }
         }

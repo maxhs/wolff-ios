@@ -179,8 +179,8 @@
     [headerView setBackgroundColor:[UIColor clearColor]];
     
     UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, 34.f)];
-    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
-    [headerLabel setTextColor:IDIOM == IPAD ? [UIColor colorWithWhite:.5 alpha:.5] : [UIColor whiteColor]];
+    [headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
+    [headerLabel setTextColor:IDIOM == IPAD ? [UIColor colorWithWhite:.5 alpha:1] : [UIColor whiteColor]];
     [headerLabel setText:@"TAP TO SHARE"];
     [headerLabel setTextAlignment:NSTextAlignmentCenter];
     [headerView addSubview:headerLabel];

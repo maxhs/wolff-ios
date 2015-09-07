@@ -34,6 +34,9 @@
     if ([dictionary objectForKey:@"notes"] && [dictionary objectForKey:@"notes"] != [NSNull null]){
         self.notes = [dictionary objectForKey:@"notes"];
     }
+    if ([dictionary objectForKey:@"credit"] && [dictionary objectForKey:@"credit"] != [NSNull null]){
+        self.credit = [dictionary objectForKey:@"credit"];
+    }
     if ([dictionary objectForKey:@"not_extant"] && [dictionary objectForKey:@"not_extant"] != [NSNull null]){
         self.notExtant = [dictionary objectForKey:@"not_extant"];
     }
@@ -233,7 +236,13 @@
     [self.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
         [credits addObject:photo.credit];
     }];
-    return [credits toSentence];
+    if (credits.count){
+        return [credits toSentence];
+    } else if (self.credit){
+        return self.credit;
+    } else {
+        return @"";
+    }
 }
 
 - (NSString *)locationsToSentence {

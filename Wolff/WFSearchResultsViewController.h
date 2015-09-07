@@ -21,6 +21,7 @@
 - (void)newLightTableForSelected;
 - (void)batchSelectForLightTable:(LightTable*)lightTable;
 - (void)slideshowForSelected:(Slideshow*)slideshow;
+- (void)newSlideshow;
 @end
 
 @interface WFSearchResultsViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>

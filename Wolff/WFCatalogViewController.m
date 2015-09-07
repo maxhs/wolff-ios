@@ -416,33 +416,36 @@ static NSString *const logoutOption = @"Log out";
 }
 
 - (void)loadSlideshow:(Slideshow*)slideshow {
-    [ProgressHUD show:[NSString stringWithFormat:@"Fetching \"%@\"...",slideshow.title]];
-    [manager GET:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        //NSLog(@"Success loading slideshow: %@",responseObject);
-        if ([responseObject objectForKey:@"slideshow"]){
+    if ([slideshow.identifier isEqualToNumber:@0]){
+        // the slideshow is local only
+        [self transitionToSlideshow:slideshow];
+    } else {
+        [ProgressHUD show:[NSString stringWithFormat:@"Fetching \"%@\"...",slideshow.title]];
+        [manager GET:[NSString stringWithFormat:@"slideshows/%@",slideshow.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            //NSLog(@"Success loading slideshow: %@",responseObject);
             [slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
-        } else {
             
-        }
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                [ProgressHUD dismiss];
+                [self transitionToSlideshow:slideshow];
+            }];
+            
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            NSLog(@"Failed to load slideshow: %@",error.description);
             [ProgressHUD dismiss];
+            [[[UIAlertView alloc] initWithTitle:@"Uh oh" message:@"We weren't able to pull the latest info for this slideshow, so we're showing you what's currently on your device." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
             [self transitionToSlideshow:slideshow];
         }];
-        
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"Failed to load slideshow: %@",error.description);
-        [ProgressHUD dismiss];
-        [[[UIAlertView alloc] initWithTitle:@"Uh oh" message:@"We weren't able to pull the latest info for this slideshow, so we're showing you what's currently on your device." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
-        [self transitionToSlideshow:slideshow];
-        
-    }];
+    }
 }
 
 - (void)transitionToSlideshow:(Slideshow*)slideshow {
-    if (![[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] || !slideshow.owner){
-        return; // huh? we should never be getting here anyway
+    if ([slideshow.identifier isEqualToNumber:@0]){
+        // this slideshow has not been sync'd with the server yet, hence the 0 as a slideshow_id
+        [self editSlideshow:slideshow];
+        return;
     } else if ([slideshow.owner.identifier isEqualToNumber:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
-        [self slideshowSelected:slideshow];
+        [self editSlideshow:slideshow];
         return;
     } else {
         WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
@@ -1205,7 +1208,7 @@ static NSString *const logoutOption = @"Log out";
     if (slideshowSidebarMode){
         Slideshow *slideshow;
         if (indexPath.section == 0){
-            [self newSlideshow:NO];
+            [self newSlideshow];
             return;
         } else if (indexPath.section == _lightTables.count + 1){
             slideshow = _uncategorizesSlideshows[indexPath.row];
@@ -1214,7 +1217,9 @@ static NSString *const logoutOption = @"Log out";
             if (lightTable.slideshows.count > indexPath.row) slideshow = lightTable.slideshows[indexPath.row];
         }
         
-        if (slideshow) [self loadSlideshow:slideshow];
+        if (slideshow) {
+            [self loadSlideshow:slideshow];
+        }
     } else {
         if (indexPath.section == 0){
             if (indexPath.row == 0){
@@ -2120,7 +2125,7 @@ static NSString *const logoutOption = @"Log out";
     if (notification.lightTable){
         [self showLightTable:notification.lightTable];
     } else if (notification.slideshow){
-        [self slideshowSelected:notification.slideshow];
+        [self editSlideshow:notification.slideshow];
     } else if (notification.photo){
         [self showMetadata:notification.photo];
     } else if (notification.art){
@@ -2252,11 +2257,9 @@ static NSString *const logoutOption = @"Log out";
 }
 
 - (void)newSlideshow {
-    [self newSlideshow:YES];
-}
-
-- (void)newSlideshow:(BOOL)withSelectedPhotos {
-    [self.popover dismissPopoverAnimated:YES];
+    if (self.popover){
+        [self.popover dismissPopoverAnimated:YES];
+    }
     if (self.currentUser.customerPlan.length){
         WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
         [vc setPhotos:_photos];
@@ -2264,32 +2267,39 @@ static NSString *const logoutOption = @"Log out";
         
         // create the new slideshow
         Slideshow *newSlideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-        if (_selectedPhotos.count && withSelectedPhotos){
+        if (_selectedPhotos.count){
             [newSlideshow setPhotos:_selectedPhotos];
             [vc setSelectedPhotos:[NSMutableOrderedSet orderedSetWithOrderedSet:_selectedPhotos]];
         }
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         [vc setSlideshow:newSlideshow];
+        [self resetTransitionBooleans];
         
         UINavigationController *nav;
         if (IDIOM == IPAD){
             nav = [[UINavigationController alloc] initWithRootViewController:vc];
             nav.transitioningDelegate = self;
             nav.modalPresentationStyle = UIModalPresentationCustom;
+            [self presentViewController:nav animated:YES completion:NULL];
         } else {
             nav = [[WFNoRotateNavController alloc] initWithRootViewController:vc];
             NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
             [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+            if (self.presentedViewController){
+                // dismiss whatever we're already presenting before presenting ANOTHER vc
+                [self dismissViewControllerAnimated:YES completion:^{
+                    [self presentViewController:nav animated:YES completion:NULL];
+                }];
+            } else {
+                [self presentViewController:nav animated:YES completion:NULL];
+            }
         }
-        
-        [self resetTransitionBooleans];
-        [self presentViewController:nav animated:YES completion:NULL];
     } else {
         [WFAlert show:@"Creating new slideshows requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
     }
 }
 
-- (void)slideshowSelected:(Slideshow *)s {
+- (void)editSlideshow:(Slideshow *)s {
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
@@ -2310,7 +2320,8 @@ static NSString *const logoutOption = @"Log out";
             NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
             [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
             
-            if (self.presentedViewController){// dismiss the presented VC, if applicable
+            // dismiss the presented VC, if applicable
+            if (self.presentedViewController){
                 [self dismissViewControllerAnimated:YES completion:^{
                     [self presentViewController:nav animated:YES completion:NULL];
                 }];
@@ -2685,7 +2696,6 @@ static NSString *const logoutOption = @"Log out";
     } else {
         [WFAlert show:@"Creating new light tables requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
     }
-    
 }
 
 - (void)slideshowForSelected:(Slideshow *)s {
@@ -2707,27 +2717,28 @@ static NSString *const logoutOption = @"Log out";
             if (photoIds.count){
                 if ([slideshow.identifier isEqualToNumber:@0]){
                     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                        [self newSlideshow:YES];
+                        [self newSlideshow];
                     }];
-                } else {
-                    //NSString *title = slideshow.title.length ? slideshow.title : @"No title";
-                    //NSString *photoCount = _selectedPhotos.count == 1 ? [NSString stringWithFormat:@"1 photo dropped to \"%@\"",title] : [NSString stringWithFormat:@"%lu photos dropped to \"%@\"",(unsigned long)_selectedPhotos.count,title];
-                    //[WFAlert show:photoCount withTime:3.3f];
+                } else if (delegate.connected) {
+                    [ProgressHUD show:[NSString stringWithFormat:@"Adding to \"%@\"",slideshow.title]];
                     [manager PATCH:[NSString stringWithFormat:@"slideshows/%@/add_photos",slideshow.identifier] parameters:@{@"slideshow":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
                         //NSLog(@"Success dropping photos to slideshow: %@",responseObject);
                         [slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
                         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                             [self.tableView reloadData];
-                            [self slideshowSelected:slideshow];
+                            [ProgressHUD dismiss];
+                            [self editSlideshow:slideshow];
                         }];
                         
                     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                        
+                        [ProgressHUD dismiss];
                     }];
+                } else {
+                    [self editSlideshow:slideshow];
                 }
             }
         } else {
-            [self newSlideshow:YES];
+            [self newSlideshow];
         }
     } else {
         [WFAlert show:@"Dropping selected art into a slideshow requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];

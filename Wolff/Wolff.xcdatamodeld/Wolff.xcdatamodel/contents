@@ -11,6 +11,7 @@
         <attribute name="beginDateRange" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="communityEditable" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="createdDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="credit" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="depth" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
         <attribute name="endDateRange" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="flagged" optional="YES" attributeType="Boolean" syncable="YES"/>
@@ -340,7 +341,7 @@
     </entity>
     <elements>
         <element name="Alternate" positionX="288" positionY="342" width="128" height="120"/>
-        <element name="Art" positionX="270" positionY="252" width="128" height="480"/>
+        <element name="Art" positionX="270" positionY="252" width="128" height="495"/>
         <element name="Artist" positionX="306" positionY="279" width="128" height="253"/>
         <element name="Card" positionX="288" positionY="342" width="128" height="165"/>
         <element name="Citation" positionX="288" positionY="342" width="128" height="88"/>

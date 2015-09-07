@@ -31,9 +31,9 @@
 #import "WFTransparentBGModalAnimator.h"
 
 NSString* const shareOption = @"Share";
-NSString* const searchOption = @"Search for images";
+NSString* const searchOption = @"Select images";
 NSString* const saveOption = @"Save";
-NSString* const settingsOption = @"Slideshow settings";
+NSString* const settingsOption = @"Settings";
 NSString* const playOption = @"Play";
 
 @interface WFSlideshowSplitViewController () <UIViewControllerTransitioningDelegate, UIAlertViewDelegate, UIActionSheetDelegate, WFSearchDelegate, WFSlideTextDelegate, WFSlideshowSettingsDelegate, UIPopoverControllerDelegate,  UITextFieldDelegate, WFImageViewDelegate, WFSaveSlideshowDelegate, WFLightTablesDelegate> {
@@ -140,24 +140,19 @@ NSString* const playOption = @"Play";
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didHideEditMenu:) name:UIMenuControllerDidHideMenuNotification object:nil];
     
+    topInset = self.navigationController.navigationBar.frame.size.height; // manually set the top inset
+    self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+    [self.tableView setContentOffset:CGPointMake(0, -topInset)];
+    [self.collectionView setBackgroundColor:[UIColor whiteColor]];
     if (IDIOM != IPAD){
-        NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft];
-        [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
-        [self.collectionView setBackgroundColor:[UIColor whiteColor]];
+        [self.tableView setFrame:CGRectMake(0, 0, kSidebarWidth, height)];
+        [self.collectionView setFrame:CGRectMake(kSidebarWidth, 0, width-kSidebarWidth, height)];
     }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     navBarShadowView.hidden = YES;
-    topInset = self.navigationController.navigationBar.frame.size.height; // manually set the top inset
-    self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
-    [self.tableView setContentOffset:CGPointMake(0, -topInset)];
-    
-    if (IDIOM != IPAD){
-        [self.tableView setFrame:CGRectMake(0, 0, kSidebarWidth, height)];
-        [self.collectionView setFrame:CGRectMake(kSidebarWidth, 0, width-kSidebarWidth, height)];
-    }
     
     if (!saveTimer){
         saveTimer = [NSTimer scheduledTimerWithTimeInterval:30.f target:self selector:@selector(autosaveLocally) userInfo:nil repeats:YES];
@@ -208,7 +203,7 @@ NSString* const playOption = @"Play";
 }
 
 - (void)showSlideshowOptionsActionSheet {
-    UIActionSheet *slideshowOptions = [[UIActionSheet alloc] initWithTitle:@"Slideshow options"
+    UIActionSheet *slideshowOptions = [[UIActionSheet alloc] initWithTitle:@"Your slideshow options"
                                                                   delegate:self
                                                          cancelButtonTitle:@"Cancel"
                                                     destructiveButtonTitle:nil
@@ -347,9 +342,9 @@ NSString* const playOption = @"Play";
         if (activeSlide.photoSlides.count){
             [menuController setMenuItems:@[removeMenuItem, newSlideMenuItem]];
         } else if (activeSlide.slideTexts.count) {
-            [menuController setMenuItems:@[editTextItem, removeMenuItem, newSlideMenuItem]];
+            [menuController setMenuItems:@[removeMenuItem, editTextItem, newSlideMenuItem]];
         } else {
-            [menuController setMenuItems:@[addTextItem, newSlideMenuItem]];
+            [menuController setMenuItems:@[removeMenuItem, addTextItem, newSlideMenuItem]];
         }
         
         CGPoint location = [gestureRecognizer locationInView:[gestureRecognizer view]];
@@ -359,29 +354,40 @@ NSString* const playOption = @"Play";
     }
 }
 
+- (void)redrawSlideshowWithDelay {
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .33f * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [self.tableView reloadData];
+    });
+}
+
 - (void)removeArt:(UIMenuController*)menuController {
+    if (!activeSlide) return;
+    
     NSPredicate *photoSlidePredicate = [NSPredicate predicateWithFormat:@"slide.identifier == %@ and photo.identifier == %@",activeSlide.identifier, activeImageView.photo.identifier];
     PhotoSlide *photoSlide = [PhotoSlide MR_findFirstWithPredicate:photoSlidePredicate inContext:[NSManagedObjectContext MR_defaultContext]];
 
-    if (photoSlide && activeSlide){
-        [self.tableView beginUpdates];
+    [self.tableView beginUpdates];
+    if (photoSlide){
         [activeSlide removePhotoSlide:photoSlide];
-        
-        if (activeSlide.photoSlides.count){
-            [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-        } else {
-            [self.slideshow removeSlide:activeSlide fromIndex:activeSlide.index.integerValue];
-            [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
-            
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
-            activeSlide = nil;
-        }
-        
-        activeImageView = nil;
-        activeIndexPath = nil;
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-        [self.tableView endUpdates];
     }
+    
+    if (activeSlide.photoSlides.count){
+        [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+    } else {
+        [self.slideshow removeSlide:activeSlide fromIndex:activeSlide.index.integerValue];
+        [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        
+        [self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+        [self redrawSlideshowWithDelay];
+        activeSlide = nil;
+    }
+    
+    activeImageView = nil;
+    activeIndexPath = nil;
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    
+    [self.tableView endUpdates];
 }
 
 - (void)newSlide:(UIMenuController*)menuController {
@@ -391,6 +397,8 @@ NSString* const playOption = @"Play";
     [self.slideshow addSlide:newSlide atIndex:activeSlide.index.integerValue + 1];
     [self.tableView insertRowsAtIndexPaths:@[indexPathToInsert] withRowAnimation:UITableViewRowAnimationAutomatic];
     [self.tableView endUpdates];
+    
+    [self redrawSlideshowWithDelay];
     activeImageView = nil;
     activeIndexPath = nil;
 }
@@ -417,6 +425,7 @@ NSString* const playOption = @"Play";
 - (void)createdSlideText:(SlideText *)slideText {
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:[self.slideshow.slides indexOfObject:activeSlide] inSection:0];
     [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self redrawSlideshowWithDelay];
 }
 
 - (void)updatedSlideText:(SlideText *)slideText {
@@ -460,7 +469,7 @@ NSString* const playOption = @"Play";
     if (IDIOM == IPAD){
         return CGSizeMake((width-kSidebarWidth)/3,(width-kSidebarWidth)/3);
     } else {
-        CGFloat newWidth = (collectionView.frame.size.width/2)-1;
+        CGFloat newWidth = ((width-kSidebarWidth)/2)-1;
         return CGSizeMake(newWidth,newWidth);
     }
 }
@@ -614,6 +623,7 @@ NSString* const playOption = @"Play";
                 
                     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                         [self.tableView reloadRowsAtIndexPaths:@[indexPathForSlideCell] withRowAnimation:UITableViewRowAnimationAutomatic];
+                        [self.tableView reloadData];
                     }];
                     [self endPressAnimation];
                     return;
@@ -649,7 +659,6 @@ NSString* const playOption = @"Play";
                         self.draggingView.transform = CGAffineTransformIdentity;
                         [self.draggingView setAlpha:.77f];
                     } completion:^(BOOL finished) {
-                        //[self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
                         [self.tableView reloadData];
                         [self.draggingView removeFromSuperview];
                         self.draggingView = nil;
@@ -673,7 +682,6 @@ NSString* const playOption = @"Play";
                         [UIView animateWithDuration:.23f animations:^{
                             self.draggingView.transform = CGAffineTransformIdentity;
                         } completion:^(BOOL finished) {
-                            //[self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
                             [self.tableView reloadData];
                             [self.draggingView removeFromSuperview];
                             self.draggingView = nil;
@@ -708,42 +716,46 @@ NSString* const playOption = @"Play";
     [self endPressAnimation];
 }
 
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
-    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    width = size.width;
-    height = size.height;
-    landscape = size.width > size.height ? YES : NO;
-    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        if (IDIOM != IPAD){
-            if (landscape){
-                CGRect tableFrame = self.tableView.frame;
-                tableFrame.origin.x = 0;
-                tableFrame.size.width = width/2;
-                [self.tableView setFrame:tableFrame];
-                
-                CGRect collectionFrame = self.collectionView.frame;
-                collectionFrame.origin.x = width/2;
-                collectionFrame.size.width = width/2;
-                [self.collectionView setFrame:collectionFrame];
-            } else {
-                CGRect tableFrame = self.tableView.frame;
-                tableFrame.origin.x = 0;
-                tableFrame.size.width = 0;
-                [self.tableView setFrame:tableFrame];
-                
-                CGRect collectionFrame = self.collectionView.frame;
-                collectionFrame.origin.x = 0;
-                collectionFrame.size.width = width;
-                [self.collectionView setFrame:collectionFrame];
-            }
-            
-            [self.collectionView reloadData];
-            [self.tableView reloadData];
-        }
-    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        
-    }];
+- (BOOL)shouldAutorotate {
+    return NO;
 }
+
+//- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+//    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+//    width = size.width;
+//    height = size.height;
+//    landscape = size.width > size.height ? YES : NO;
+//    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+//        if (IDIOM != IPAD){
+//            if (landscape){
+//                CGRect tableFrame = self.tableView.frame;
+//                tableFrame.origin.x = 0;
+//                tableFrame.size.width = width/2;
+//                [self.tableView setFrame:tableFrame];
+//                
+//                CGRect collectionFrame = self.collectionView.frame;
+//                collectionFrame.origin.x = width/2;
+//                collectionFrame.size.width = width/2;
+//                [self.collectionView setFrame:collectionFrame];
+//            } else {
+//                CGRect tableFrame = self.tableView.frame;
+//                tableFrame.origin.x = 0;
+//                tableFrame.size.width = 0;
+//                [self.tableView setFrame:tableFrame];
+//                
+//                CGRect collectionFrame = self.collectionView.frame;
+//                collectionFrame.origin.x = 0;
+//                collectionFrame.size.width = width;
+//                [self.collectionView setFrame:collectionFrame];
+//            }
+//            
+//            [self.collectionView reloadData];
+//            [self.tableView reloadData];
+//        }
+//    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+//        
+//    }];
+//}
 
 - (void)confirmRemovePhoto {
     removePhotoAlertView = [[UIAlertView alloc] initWithTitle:@"Please confirm" message:[NSString stringWithFormat:@"Are you sure you want to remove \"%@\" from this slideshow?",self.selectedPhoto.art.title] delegate:nil cancelButtonTitle:@"Cancel" otherButtonTitles:@"Remove",nil];

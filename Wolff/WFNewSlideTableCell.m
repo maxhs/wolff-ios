@@ -15,7 +15,7 @@
     [super awakeFromNib];
     [self setBackgroundColor:[UIColor colorWithWhite:1 alpha:.17]];
     [_slideContainerView setBackgroundColor:[UIColor blackColor]];
-    [_addPromptButton.titleLabel setFont:[UIFont fontWithName:kMuseoSansThin size:50]];
+    [_addPromptButton.titleLabel setFont:[UIFont fontWithName:kMuseoSansThin size:43]];
     [_addPromptButton setHidden:NO];
     [_addPromptButton setTitleColor:[UIColor colorWithWhite:1 alpha:.33] forState:UIControlStateNormal];
     [_addPromptButton.titleLabel setNumberOfLines:0];
