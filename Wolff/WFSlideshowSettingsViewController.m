@@ -8,7 +8,7 @@
 
 #import "WFSlideshowSettingsViewController.h"
 #import "WFSlideshowSettingsCell.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 #import "Constants.h"
 #import "WFUtilities.h"
 

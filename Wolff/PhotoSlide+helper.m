@@ -9,7 +9,7 @@
 #import "PhotoSlide+helper.h"
 #import "Photo+helper.h"
 #import "Slide+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 
 @implementation PhotoSlide (helper)
 - (void)populateFromDictionary:(NSDictionary *)dictionary {
@@ -39,7 +39,7 @@
         NSDictionary *photoDict = [dictionary objectForKey:@"photo"];
         Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[photoDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!photo){
-            photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [photo populateFromDictionary:photoDict];
         self.photo = photo;
@@ -47,7 +47,7 @@
     if ([dictionary objectForKey:@"slide_id"] && [dictionary objectForKey:@"slide_id"] != [NSNull null]){
         Slide *slide = [Slide MR_findFirstByAttribute:@"identifier" withValue:[dictionary objectForKey:@"slide_id"] inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!slide){
-            slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            slide = [Slide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         slide.identifier = [dictionary objectForKey:@"slide_id"];
         self.slide = slide;

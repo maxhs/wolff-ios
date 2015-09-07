@@ -8,7 +8,7 @@
 
 #import "Institution+helper.h"
 #import "Art+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 
 @implementation Institution (helper)
 
@@ -29,7 +29,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!art){
-                art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                art = [Art MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [art populateFromDictionary:dict];
             [set addObject:art];

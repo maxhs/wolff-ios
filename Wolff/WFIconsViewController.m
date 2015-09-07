@@ -116,7 +116,7 @@ static NSString * const reuseIdentifier = @"IconCell";
                 for (id dict in [responseObject objectForKey:@"icons"]){
                     Icon *icon = [Icon MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                     if (!icon){
-                        icon = [Icon MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                        icon = [Icon MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                     }
                     [icon populateFromDictionary:dict];
                     [_filteredIcons addObject:icon];
@@ -363,7 +363,7 @@ static NSString * const reuseIdentifier = @"IconCell";
         [self.view endEditing:YES];
     });
     
-    Icon *icon = [Icon MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    Icon *icon = [Icon MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     icon.name = iconTextField.text;
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:icon.name forKey:@"name"];

@@ -11,7 +11,7 @@
 #import "Photo+helper.h"
 #import "User+helper.h"
 #import "LightTable+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 
 @implementation Favorite (helper)
 
@@ -26,7 +26,7 @@
     if ([dictionary objectForKey:@"art_id"] && [dictionary objectForKey:@"art_id"] != [NSNull null]){
         Art *art = [Art MR_findFirstByAttribute:@"identifier" withValue:[dictionary objectForKey:@"art_id"]inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!art){
-            art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            art = [Art MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             art.identifier = [dictionary objectForKey:@"art_id"];
         }
         self.art = art;
@@ -35,7 +35,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"photo_id"]];
         Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!photo){
-            photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             photo.identifier = [dictionary objectForKey:@"photo_id"];
         }
         self.photo = photo;
@@ -43,7 +43,7 @@
     if ([dictionary objectForKey:@"user_id"] && [dictionary objectForKey:@"user_id"] != [NSNull null]){
         User *user = [User MR_findFirstByAttribute:@"identifier" withValue:[dictionary objectForKey:@"user_id"]inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!user){
-            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            user = [User MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             user.identifier = [dictionary objectForKey:@"user_id"];
         }
         self.user = user;
@@ -51,7 +51,7 @@
     if ([dictionary objectForKey:@"light_table_id"] && [dictionary objectForKey:@"light_table_id"] != [NSNull null]){
         LightTable *table = [LightTable MR_findFirstByAttribute:@"identifier" withValue:[dictionary objectForKey:@"light_table_id"]inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!table){
-            table = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            table = [LightTable MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             table.identifier = [dictionary objectForKey:@"light_table_id"];
         }
         self.table = table;

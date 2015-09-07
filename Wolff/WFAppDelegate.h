@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 #import <AFNetworking/AFHTTPRequestOperationManager.h>
 #import "Constants.h"
 #import "ProgressHUD.h"

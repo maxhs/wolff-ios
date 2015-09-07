@@ -9,7 +9,7 @@
 #import "WFSlideshowCell.h"
 #import "Constants.h"
 #import "User+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 
 @implementation WFSlideshowCell
 

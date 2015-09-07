@@ -8,7 +8,7 @@
 
 #import "Interval+helper.h"
 #import "Art+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 
 @implementation Interval (helper)
 - (void)populateFromDictionary:(NSDictionary*)dictionary {

@@ -8,7 +8,7 @@
 
 #import "Partner+helper.h"
 #import "Photo+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 #import "NSArray+ToSentence.h"
 #import "Location+helper.h"
 #import "WFUtilities.h"
@@ -45,7 +45,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!photo){
-                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [photo populateFromDictionary:dict];
             [set addObject:photo];
@@ -58,7 +58,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Location *location = [Location MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!location){
-                location = [Location MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                location = [Location MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [location populateFromDictionary:dict];
             [set addObject:location];

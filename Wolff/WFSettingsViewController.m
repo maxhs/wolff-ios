@@ -425,7 +425,7 @@
     [ProgressHUD show:[NSString stringWithFormat:@"Adding \"%@\"",alternateTextField.text]];
     [manager POST:@"alternates" parameters:@{@"alternate":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success creating an alternate: %@", responseObject);
-        Alternate *newAlternate = [Alternate MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        Alternate *newAlternate = [Alternate MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         [newAlternate populateFromDictionary:[responseObject objectForKey:@"alternate"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [ProgressHUD dismiss];
@@ -499,7 +499,7 @@
     [manager DELETE:[NSString stringWithFormat:@"alternates/%@",alternateForDeletion.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success deleting an alternate: %@",responseObject);
         [self.tableView beginUpdates];
-        [alternateForDeletion MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [alternateForDeletion MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         [self.tableView deleteRowsAtIndexPaths:@[indexPathToDeleteAlternate] withRowAnimation:UITableViewRowAnimationAutomatic];
         [self.tableView endUpdates];

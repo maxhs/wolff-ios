@@ -11,7 +11,7 @@
 #import "Art+helper.h"
 #import "Discussion+helper.h"
 #import "User+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 #import "NSArray+ToSentence.h"
 
 @implementation LightTable (helper)
@@ -41,7 +41,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!slideshow){
-                slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                slideshow = [Slideshow MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [slideshow populateFromDictionary:dict];
             [set addObject:slideshow];
@@ -54,7 +54,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!photo){
-                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [photo populateFromDictionary:dict];
             [set addObject:photo];
@@ -67,7 +67,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!user){
-                user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                user = [User MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [user populateFromDictionary:dict];
             [set addObject:user];
@@ -80,7 +80,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             User *owner = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!owner){
-                owner = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                owner = [User MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [owner populateFromDictionary:dict];
             [set addObject:owner];
@@ -93,7 +93,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", ownerId];
             User *owner = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!owner){
-                owner = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                owner = [User MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                 owner.identifier = ownerId;
             }
             [set addObject:owner];
@@ -106,7 +106,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Discussion *discussion = [Discussion MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!discussion){
-                discussion = [Discussion MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                discussion = [Discussion MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [discussion populateFromDictionary:dict];
             [set addObject:discussion];

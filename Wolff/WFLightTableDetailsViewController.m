@@ -480,7 +480,7 @@
     [ProgressHUD show:[NSString stringWithFormat:@"Creating \"%@\"",nameTextField.text]];
     self.postRequest = [manager POST:@"light_tables" parameters:@{@"light_table":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success creating a light table: %@", responseObject);
-        self.lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        self.lightTable = [LightTable MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         [self.lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
 
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
@@ -693,7 +693,7 @@
         NSDictionary *lightTableDict = [responseObject objectForKey:@"light_table"];
         self.lightTable = [LightTable MR_findFirstByAttribute:@"identifier" withValue:[lightTableDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!self.lightTable){
-            self.lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            self.lightTable = [LightTable MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         
         [self.lightTable populateFromDictionary:lightTableDict];
@@ -795,7 +795,7 @@
 - (void)dismiss {
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
         if (delegate.connected && [self.lightTable.identifier isEqualToNumber:@0]){
-            [self.lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [self.lightTable MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
     }];
 }

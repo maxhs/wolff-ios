@@ -121,7 +121,7 @@ static NSString * const reuseIdentifier = @"TagCell";
                     for (id dict in tagsDict){
                         Tag *tag = [Tag MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                         if (!tag){
-                            tag = [Tag MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                            tag = [Tag MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                         }
                         [tag populateFromDictionary:dict];
                     }
@@ -323,7 +323,7 @@ static NSString * const reuseIdentifier = @"TagCell";
         [self doneEditing];
     });
     
-    Tag *tag = [Tag MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    Tag *tag = [Tag MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     tag.name = tagNameTextField.text;
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     if (tag.name.length){

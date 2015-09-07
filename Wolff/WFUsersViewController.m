@@ -79,7 +79,7 @@ static NSString * const reuseIdentifier = @"UserCell";
             for (id dict in [responseObject objectForKey:@"users"]){
                 User *user = [User MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                 if (!user){
-                    user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                    user = [User MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                 }
                 [user populateFromDictionary:dict];
             }
@@ -272,7 +272,7 @@ static NSString * const reuseIdentifier = @"UserCell";
         [self.view endEditing:YES];
     });
     
-    User *user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    User *user = [User MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     
     NSArray *wordsAndEmptyStrings = [userNameField.text componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     NSArray *words = [wordsAndEmptyStrings filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"length > 0"]];

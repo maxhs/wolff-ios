@@ -44,7 +44,7 @@
     [_lightTables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
     [_lightTables enumerateObjectsUsingBlock:^(LightTable *lightTable, NSUInteger idx, BOOL *stop) {
         if ([lightTable.identifier isEqualToNumber:@0]){
-            [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [lightTable MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
     }];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
@@ -98,7 +98,7 @@
             if ([dict isKindOfClass:[NSDictionary class]]){
                 LightTable *lightTable = [LightTable MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                 if (!lightTable){
-                    lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                    lightTable = [LightTable MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                 }
                 [lightTable populateFromDictionary:dict];
                 [self.currentUser addLightTable:lightTable];

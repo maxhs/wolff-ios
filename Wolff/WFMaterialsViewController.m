@@ -114,7 +114,7 @@ static NSString * const reuseIdentifier = @"MaterialCell";
             for (id dict in [responseObject objectForKey:@"materials"]){
                 Material *material = [Material MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext    :[NSManagedObjectContext MR_defaultContext]];
                 if (!material){
-                    material = [Material MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                    material = [Material MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                 }
                 [material populateFromDictionary:dict];
                 [_filteredMaterials addObject:material];
@@ -348,7 +348,7 @@ static NSString * const reuseIdentifier = @"MaterialCell";
         [self.view endEditing:YES];
     });
     
-    Material *material = [Material MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    Material *material = [Material MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     material.name = materialTextField.text;
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:material.name forKey:@"name"];

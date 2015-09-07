@@ -454,7 +454,7 @@
                 for (NSDictionary *dict in [responseObject objectForKey:@"photos"]) {
                     Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                     if (!photo){
-                        photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                        photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                     }
                     [photo populateFromDictionary:dict];
                     [_photos addObject:photo];

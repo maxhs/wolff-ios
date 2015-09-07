@@ -8,7 +8,7 @@
 
 #import "Alternate+helper.h"
 #import "User+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 
 @implementation Alternate (helper)
 
@@ -29,7 +29,7 @@
     if ([dictionary objectForKey:@"user_id"] && [dictionary objectForKey:@"user_id"] != [NSNull null]){
         User *user = [User MR_findFirstByAttribute:@"identifier" withValue:[dictionary objectForKey:@"user_id"]inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!user){
-            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            user = [User MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             user.identifier = [dictionary objectForKey:@"user_id"];
         }
         self.user = user;

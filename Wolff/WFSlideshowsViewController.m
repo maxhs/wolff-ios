@@ -197,7 +197,7 @@
             [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
             [self.tableView endUpdates];
             
-            [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 
             }];
@@ -208,7 +208,7 @@
     } else {
         [self.tableView beginUpdates];
         [self.currentUser removeSlideshow:slideshow];
-        [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             [self.tableView deleteRowsAtIndexPaths:@[indexPathForDeletion] withRowAnimation:UITableViewRowAnimationAutomatic];
             [self.tableView endUpdates];

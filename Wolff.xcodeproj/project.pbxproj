@@ -450,12 +450,6 @@
 		F28C77FC18E1E4950088B4C9 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F28C77FA18E1E4950088B4C9 /* Main_iPad.storyboard */; };
 		F28C77FF18E1E4950088B4C9 /* Wolff.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = F28C77FD18E1E4950088B4C9 /* Wolff.xcdatamodeld */; };
 		F28C780718E1E4950088B4C9 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F28C780618E1E4950088B4C9 /* Images.xcassets */; };
-		F28C780E18E1E4950088B4C9 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F28C780D18E1E4950088B4C9 /* XCTest.framework */; };
-		F28C780F18E1E4950088B4C9 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F28C77E318E1E4950088B4C9 /* Foundation.framework */; };
-		F28C781018E1E4950088B4C9 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F28C77E718E1E4950088B4C9 /* UIKit.framework */; };
-		F28C781118E1E4950088B4C9 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F28C77E918E1E4950088B4C9 /* CoreData.framework */; };
-		F28C781918E1E4950088B4C9 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F28C781718E1E4950088B4C9 /* InfoPlist.strings */; };
-		F28C781B18E1E4950088B4C9 /* WolffTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C781A18E1E4950088B4C9 /* WolffTests.m */; };
 		F298A1BE19523065005B13EA /* WFLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F298A1BD19523065005B13EA /* WFLoginViewController.m */; };
 		F2A957FA19E220F100A3B471 /* icon-29.png in Resources */ = {isa = PBXBuildFile; fileRef = F2A957EE19E220F100A3B471 /* icon-29.png */; };
 		F2A957FB19E220F100A3B471 /* icon-40.png in Resources */ = {isa = PBXBuildFile; fileRef = F2A957EF19E220F100A3B471 /* icon-40.png */; };
@@ -494,16 +488,6 @@
 		F2CE05BB19913ECC0061DB94 /* WFLightTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE05BA19913ECC0061DB94 /* WFLightTableCell.m */; };
 		F2CE05C2199141C40061DB94 /* WFLoginAnimator.m in Sources */ = {isa = PBXBuildFile; fileRef = F2CE05C1199141C40061DB94 /* WFLoginAnimator.m */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		F28C781218E1E4950088B4C9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F28C77D818E1E4950088B4C9 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = F28C77DF18E1E4950088B4C9;
-			remoteInfo = Wolff;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		06ADCAD831A6A6A91CE03B9B /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
@@ -1129,7 +1113,6 @@
 		F28C77FB18E1E4950088B4C9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main_iPad.storyboard; sourceTree = "<group>"; };
 		F28C77FE18E1E4950088B4C9 /* Wolff.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Wolff.xcdatamodel; sourceTree = "<group>"; };
 		F28C780618E1E4950088B4C9 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		F28C780C18E1E4950088B4C9 /* WolffTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WolffTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F28C780D18E1E4950088B4C9 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		F28C781618E1E4950088B4C9 /* WolffTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "WolffTests-Info.plist"; sourceTree = "<group>"; };
 		F28C781818E1E4950088B4C9 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -1212,17 +1195,6 @@
 				F28C77E418E1E4950088B4C9 /* Foundation.framework in Frameworks */,
 				509D84CC1B8FEFBE00433D98 /* libturbojpeg.a in Frameworks */,
 				89A305D0012E4E388F5AA7E8 /* libPods.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F28C780918E1E4950088B4C9 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F28C780E18E1E4950088B4C9 /* XCTest.framework in Frameworks */,
-				F28C781118E1E4950088B4C9 /* CoreData.framework in Frameworks */,
-				F28C781018E1E4950088B4C9 /* UIKit.framework in Frameworks */,
-				F28C780F18E1E4950088B4C9 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1692,7 +1664,6 @@
 			isa = PBXGroup;
 			children = (
 				F28C77E018E1E4950088B4C9 /* Wolff.app */,
-				F28C780C18E1E4950088B4C9 /* WolffTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2274,24 +2245,6 @@
 			productReference = F28C77E018E1E4950088B4C9 /* Wolff.app */;
 			productType = "com.apple.product-type.application";
 		};
-		F28C780B18E1E4950088B4C9 /* WolffTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = F28C782118E1E4950088B4C9 /* Build configuration list for PBXNativeTarget "WolffTests" */;
-			buildPhases = (
-				F28C780818E1E4950088B4C9 /* Sources */,
-				F28C780918E1E4950088B4C9 /* Frameworks */,
-				F28C780A18E1E4950088B4C9 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				F28C781318E1E4950088B4C9 /* PBXTargetDependency */,
-			);
-			name = WolffTests;
-			productName = WolffTests;
-			productReference = F28C780C18E1E4950088B4C9 /* WolffTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -2304,9 +2257,6 @@
 				TargetAttributes = {
 					F28C77DF18E1E4950088B4C9 = {
 						DevelopmentTeam = N9HB58Z52R;
-					};
-					F28C780B18E1E4950088B4C9 = {
-						TestTargetID = F28C77DF18E1E4950088B4C9;
 					};
 				};
 			};
@@ -2324,7 +2274,6 @@
 			projectRoot = "";
 			targets = (
 				F28C77DF18E1E4950088B4C9 /* Wolff */,
-				F28C780B18E1E4950088B4C9 /* WolffTests */,
 			);
 		};
 /* End PBXProject section */
@@ -2628,14 +2577,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F28C780A18E1E4950088B4C9 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F28C781918E1E4950088B4C9 /* InfoPlist.strings in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -2869,23 +2810,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F28C780818E1E4950088B4C9 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F28C781B18E1E4950088B4C9 /* WolffTests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		F28C781318E1E4950088B4C9 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = F28C77DF18E1E4950088B4C9 /* Wolff */;
-			targetProxy = F28C781218E1E4950088B4C9 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		F28C77EE18E1E4950088B4C9 /* InfoPlist.strings */ = {
@@ -2933,6 +2858,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_BITCODE = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -2972,6 +2898,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
+				ENABLE_BITCODE = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -2997,6 +2924,10 @@
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
@@ -3069,6 +3000,10 @@
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
@@ -3133,47 +3068,6 @@
 			};
 			name = Release;
 		};
-		F28C782218E1E4950088B4C9 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Wolff.app/Wolff";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = NO;
-				GCC_PREFIX_HEADER = "";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-					"MR_ENABLE_ACTIVE_RECORD_LOGGING=0",
-				);
-				INFOPLIST_FILE = "WolffTests/WolffTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = xctest;
-			};
-			name = Debug;
-		};
-		F28C782318E1E4950088B4C9 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Wolff.app/Wolff";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = NO;
-				GCC_PREFIX_HEADER = "";
-				INFOPLIST_FILE = "WolffTests/WolffTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = xctest;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -3191,15 +3085,6 @@
 			buildConfigurations = (
 				F28C781F18E1E4950088B4C9 /* Debug */,
 				F28C782018E1E4950088B4C9 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		F28C782118E1E4950088B4C9 /* Build configuration list for PBXNativeTarget "WolffTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				F28C782218E1E4950088B4C9 /* Debug */,
-				F28C782318E1E4950088B4C9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

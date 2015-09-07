@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "B464243BDA0E22C4DB9867761D9B16C3AA71F64D",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "B464243BDA0E22C4DB9867761D9B16C3AA71F64D" : 0,
+    "9278C54127CACC302E1B4A7D09D8492CBC4018E8" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "9981A306-A304-43ED-B48A-054C86FD239F",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "B464243BDA0E22C4DB9867761D9B16C3AA71F64D" : "wolff-ios",
+    "9278C54127CACC302E1B4A7D09D8492CBC4018E8" : "PhotoScrollerNetwork"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Wolff",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "Wolff.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/dhoerl\/PhotoScrollerNetwork.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "9278C54127CACC302E1B4A7D09D8492CBC4018E8"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/maxhs\/wolff-ios.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "B464243BDA0E22C4DB9867761D9B16C3AA71F64D"
+    }
+  ]
+}

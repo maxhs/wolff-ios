@@ -206,12 +206,12 @@
         if ([responseObject objectForKey:@"text"] && [[responseObject objectForKey:@"text"] isEqualToString:kNotAuthorized]){
             
         } else {
-            [card MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [card MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to delete a card: %@",error.description);
-        [card MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [card MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     }];
 }

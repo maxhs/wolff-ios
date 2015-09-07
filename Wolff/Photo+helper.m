@@ -11,7 +11,7 @@
 #import "User+helper.h"
 #import "Icon+helper.h"
 #import "LightTable+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 #import "NSArray+ToSentence.h"
 #import "Tag+helper.h"
 #import "Partner+helper.h"
@@ -72,7 +72,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"art_id"]];
         Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!art){
-            art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            art = [Art MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         art.identifier = [dictionary objectForKey:@"art_id"];
         self.art = art;
@@ -82,7 +82,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
         Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!art){
-            art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            art = [Art MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [art populateFromDictionary:dict];
         self.art = art;
@@ -92,7 +92,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"user_id"]];
         User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!user){
-            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            user = [User MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         user.identifier = [dictionary objectForKey:@"user_id"];
         self.user = user;
@@ -101,7 +101,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
         User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!user){
-            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            user = [User MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [user populateFromDictionary:dict];
         self.user = user;
@@ -112,7 +112,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Icon *icon = [Icon MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!icon){
-                icon = [Icon MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                icon = [Icon MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [icon populateFromDictionary:dict];
             [set addObject:icon];
@@ -125,7 +125,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Tag *tag = [Tag MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!tag){
-                tag = [Tag MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                tag = [Tag MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [tag populateFromDictionary:dict];
             [set addObject:tag];
@@ -138,7 +138,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             LightTable *lightTable = [LightTable MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!lightTable){
-                lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                lightTable = [LightTable MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [lightTable populateFromDictionary:dict];
             [set addObject:lightTable];
@@ -151,7 +151,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Partner *partner = [Partner MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!partner){
-                partner = [Partner MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                partner = [Partner MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [partner populateFromDictionary:dict];
             [set addObject:partner];

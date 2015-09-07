@@ -391,14 +391,14 @@ static NSString *const logoutOption = @"Log out";
                 NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
                 Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
                 if (!slideshow){
-                    slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                    slideshow = [Slideshow MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                 }
                 [slideshow populateFromDictionary:dict];
                 [tempSet addObject:slideshow];
             }
             for (Slideshow *slideshow in _slideshows){
                 if (![tempSet containsObject:slideshow]){
-                    [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                    [slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                 }
             }
             _slideshows = tempSet;
@@ -482,7 +482,7 @@ static NSString *const logoutOption = @"Log out";
     } else {
         canLoadMore = YES;
         [_photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
-            [photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [photo MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }];
         [_filteredPhotos removeAllObjects];
         [_photos removeAllObjects];
@@ -584,7 +584,7 @@ static NSString *const logoutOption = @"Log out";
             for (id dict in photosDict) {
                 Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                 if (!photo){
-                    photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                    photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                 }
                 [photo populateFromDictionary:dict];
                 [_photos addObject:photo];
@@ -724,7 +724,7 @@ static NSString *const logoutOption = @"Log out";
     for (id dict in photos){
         Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!photo){
-            photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [photo populateFromDictionary:dict];
     }
@@ -1074,7 +1074,7 @@ static NSString *const logoutOption = @"Log out";
     if ([_uncategorizesSlideshows containsObject:slideshow]){
         [_uncategorizesSlideshows removeObject:slideshow];
     }
-    [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         [UIView animateWithDuration:kFastAnimationDuration animations:^{
             [self.tableView reloadData];
@@ -1090,7 +1090,7 @@ static NSString *const logoutOption = @"Log out";
     if ([_uncategorizesSlideshows containsObject:slideshow]){
         [_uncategorizesSlideshows removeObject:slideshow];
     }
-    [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         [UIView animateWithDuration:kFastAnimationDuration animations:^{
             [self.tableView reloadData];
@@ -1152,7 +1152,7 @@ static NSString *const logoutOption = @"Log out";
     }
     
     [self.tableView beginUpdates];
-    [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [lightTable MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         _lightTables = _lightTables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
         
@@ -1185,7 +1185,7 @@ static NSString *const logoutOption = @"Log out";
     }
     
     [self.tableView beginUpdates];
-    [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [lightTable MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         _lightTables = _lightTables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
         
@@ -1974,7 +1974,7 @@ static NSString *const logoutOption = @"Log out";
     for (Photo *photo in art.photos){
         [self removePhoto:photo];
     }
-    [art MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [art MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     [self.collectionView reloadData];
 }
@@ -1989,7 +1989,7 @@ static NSString *const logoutOption = @"Log out";
     [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
         if (favorite.photo == photo){
             [_favoritePhotos removeObject:photo];
-            [favorite MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [favorite MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             *stop = YES;
         }
     }];
@@ -2039,7 +2039,7 @@ static NSString *const logoutOption = @"Log out";
     } else {
         [_photos removeObject:photo];
     }
-    [photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [photo MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         [self.collectionView reloadData];
     }];
@@ -2266,7 +2266,7 @@ static NSString *const logoutOption = @"Log out";
         vc.slideshowDelegate = self;
         
         // create the new slideshow
-        Slideshow *newSlideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        Slideshow *newSlideshow = [Slideshow MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         if (_selectedPhotos.count){
             [newSlideshow setPhotos:_selectedPhotos];
             [vc setSelectedPhotos:[NSMutableOrderedSet orderedSetWithOrderedSet:_selectedPhotos]];
@@ -2756,7 +2756,7 @@ static NSString *const logoutOption = @"Log out";
         NSMutableArray *photoIds = [NSMutableArray arrayWithCapacity:_selectedPhotos.count];
         for (Photo *photo in _selectedPhotos){
             [photoIds addObject:photo.identifier];
-            Favorite *favorite = [Favorite MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            Favorite *favorite = [Favorite MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             favorite.photo = photo;
             [_favoritePhotos addObject:photo];
             [self.currentUser addFavorite:favorite];

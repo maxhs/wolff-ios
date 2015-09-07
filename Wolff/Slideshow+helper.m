@@ -10,7 +10,7 @@
 #import "Slide+helper.h"
 #import "LightTable+helper.h"
 #import "User+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 
 @implementation Slideshow (helper)
 - (void)populateFromDictionary:(NSDictionary *)dictionary{
@@ -38,14 +38,14 @@
         for (NSDictionary *dict in [dictionary objectForKey:@"slides"]){
             Slide *slide = [Slide MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!slide){
-                slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                slide = [Slide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [slide populateFromDictionary:dict];
             [slides addObject:slide];
         }
         for (Slide *slide in self.slides){
             if (![slides containsObject:slide]){
-                [slide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                [slide MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
         }
         self.slides = slides;
@@ -56,7 +56,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!photo){
-                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [photo populateFromDictionary:dict];
             [set addObject:photo];
@@ -69,7 +69,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             LightTable *lightTable = [LightTable MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!lightTable){
-                lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                lightTable = [LightTable MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [lightTable populateFromDictionary:dict];
             [set addObject:lightTable];
@@ -81,7 +81,7 @@
         NSDictionary *userDict = [dictionary objectForKey:@"user"];
         User *user = [User MR_findFirstByAttribute:@"identifier" withValue:[userDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!user){
-            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            user = [User MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [user populateFromDictionary:userDict];
         self.owner = user;

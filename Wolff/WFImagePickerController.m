@@ -11,7 +11,7 @@
 #import "Constants.h"
 #import "WFUtilities.h"
 #import "ProgressHUD.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 #import "Photo+helper.h"
 
 @interface WFImagePickerController () {
@@ -211,7 +211,7 @@ static NSString * const reuseIdentifier = @"PhotoCell";
             [_selectedAssets enumerateObjectsUsingBlock:^(ALAsset *asset, NSUInteger idx, BOOL *stop) {
                 ALAssetRepresentation *imageRep = [asset defaultRepresentation];
                 UIImage *fullImage = [UIImage imageWithCGImage:[imageRep fullResolutionImage] scale:imageRep.scale orientation:(UIImageOrientation)imageRep.orientation];
-                Photo *photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                Photo *photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                 [photo setImage:fullImage];
                 [photo setFileName:[imageRep filename]];
                 [photoArray addObject:photo];

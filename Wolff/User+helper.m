@@ -11,7 +11,7 @@
 #import "Slideshow+helper.h"
 #import "LightTable+helper.h"
 #import "Alternate+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 #import "WFUtilities.h"
 #import "Constants.h"
 #import "Card+helper.h"
@@ -116,14 +116,14 @@ typedef enum {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!slideshow){
-                slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                slideshow = [Slideshow MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [slideshow populateFromDictionary:dict];
             [set addObject:slideshow];
         }
         for (Slideshow *slideshow in self.slideshows){
             if (![set containsObject:slideshow] && !slideshow.slides.count){
-                [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                [slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
         }
         self.slideshows = set;
@@ -135,14 +135,14 @@ typedef enum {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!slideshow){
-                slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                slideshow = [Slideshow MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [slideshow populateFromDictionary:dict];
             [set addObject:slideshow];
         }
         for (Slideshow *slideshow in self.slideshows){
             if (![set containsObject:slideshow] && !slideshow.slides.count){
-                [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                [slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
         }
         self.slideshows = set;
@@ -154,14 +154,14 @@ typedef enum {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             LightTable *table = [LightTable MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!table){
-                table = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                table = [LightTable MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [table populateFromDictionary:dict];
             [set addObject:table];
         }
         for (LightTable *table in self.lightTables){
             if (![set containsObject:table]){
-                [table MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                [table MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
         }
         self.lightTables = set;
@@ -173,14 +173,14 @@ typedef enum {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             LightTable *table = [LightTable MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!table){
-                table = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                table = [LightTable MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [table populateFromDictionary:dict];
             [set addObject:table];
         }
         for (LightTable *table in self.lightTables){
             if (![set containsObject:table]){
-                [table MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                [table MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
         }
         self.lightTables = set;
@@ -192,7 +192,7 @@ typedef enum {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Institution *institution = [Institution MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!institution){
-                institution = [Institution MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                institution = [Institution MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [institution populateFromDictionary:dict];
             [set addObject:institution];
@@ -206,7 +206,7 @@ typedef enum {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Card *card = [Card MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!card){
-                card = [Card MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                card = [Card MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [card populateFromDictionary:dict];
             [set addObject:card];
@@ -220,7 +220,7 @@ typedef enum {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Favorite *favorite = [Favorite MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!favorite){
-                favorite = [Favorite MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                favorite = [Favorite MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [favorite populateFromDictionary:dict];
             [set addObject:favorite];
@@ -228,7 +228,7 @@ typedef enum {
         for (Favorite *favorite in self.favorites){
             if (![set containsObject:favorite]){
                 NSLog(@"deleting a favorite: %@",favorite.photo.art.title);
-                [favorite MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                [favorite MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
         }
         self.favorites = set;
@@ -240,7 +240,7 @@ typedef enum {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!photo){
-                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [photo populateFromDictionary:dict];
             [set addObject:photo];
@@ -255,7 +255,7 @@ typedef enum {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!photo){
-                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [photo populateFromDictionary:dict];
             [set addObject:photo];
@@ -269,14 +269,14 @@ typedef enum {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Alternate *alternate = [Alternate MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!alternate){
-                alternate = [Alternate MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                alternate = [Alternate MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [alternate populateFromDictionary:dict];
             [set addObject:alternate];
         }
         for (Alternate *alternate in self.alternates){
             if (![set containsObject:alternate]){
-                [alternate MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                [alternate MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
         }
         self.alternates = set;

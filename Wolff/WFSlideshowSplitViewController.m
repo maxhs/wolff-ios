@@ -101,7 +101,7 @@ NSString* const playOption = @"Play";
         [self setUpNavButtons];
         [self redrawSlideshow];
     } else {
-        self.slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+        self.slideshow = [Slideshow MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         self.slideshow.owner = self.currentUser;
         self.slideshow.photos = self.selectedPhotos;
         
@@ -299,7 +299,7 @@ NSString* const playOption = @"Play";
 
 - (void)addNewSlide {
     NSInteger slideCount = self.slideshow.slides.count;
-    Slide *newSlide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    Slide *newSlide = [Slide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [newSlide setSlideshow:self.slideshow];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     [self.tableView beginUpdates];
@@ -376,7 +376,7 @@ NSString* const playOption = @"Play";
         [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
     } else {
         [self.slideshow removeSlide:activeSlide fromIndex:activeSlide.index.integerValue];
-        [activeSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [activeSlide MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         
         [self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
         [self redrawSlideshowWithDelay];
@@ -391,7 +391,7 @@ NSString* const playOption = @"Play";
 }
 
 - (void)newSlide:(UIMenuController*)menuController {
-    Slide *newSlide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    Slide *newSlide = [Slide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [self.tableView beginUpdates];
     NSIndexPath *indexPathToInsert = [NSIndexPath indexPathForRow:activeSlide.index.integerValue + 1 inSection:0];
     [self.slideshow addSlide:newSlide atIndex:activeSlide.index.integerValue + 1];
@@ -611,7 +611,7 @@ NSString* const playOption = @"Play";
                     // adding to existing slide
                     Slide *slide = [self.slideshow.slides objectAtIndex:indexPathForSlideCell.row];
                     
-                    PhotoSlide *photoSlide = [PhotoSlide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                    PhotoSlide *photoSlide = [PhotoSlide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                     [photoSlide setPhoto:self.selectedPhoto];
                     if (!slide.photos.count){
                         [slide addPhotoSlide:photoSlide];
@@ -700,8 +700,8 @@ NSString* const playOption = @"Play";
 }
 
 - (void)addSlideIntoSidebar {
-    Slide *slide = [Slide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-    PhotoSlide *photoSlide = [PhotoSlide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    Slide *slide = [Slide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+    PhotoSlide *photoSlide = [PhotoSlide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [photoSlide setPhoto:self.selectedPhoto];
     
     [slide addPhotoSlide:photoSlide];
@@ -1368,7 +1368,7 @@ NSString* const playOption = @"Play";
 }
 
 - (void)deleteAndMoveOn {
-    [self.slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+    [self.slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [[NSManagedObjectContext MR_defaultContext]MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
         if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(shouldReloadSlideshows)]){
             [self.slideshowDelegate shouldReloadSlideshows];
@@ -1409,7 +1409,7 @@ NSString* const playOption = @"Play";
     [super viewDidDisappear:animated];
     [self cancelAutosave];
     if (!self.slideshow.slides.count && !self.slideshow.photos.count && !self.slideshow.title.length){
-        [self.slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [self.slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         [self saveSlideshowWithUI:NO];
     }
 }

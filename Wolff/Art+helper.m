@@ -19,7 +19,7 @@
 #import "Icon+helper.h"
 #import "Tag+helper.h"
 #import "User+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 #import "NSArray+ToSentence.h"
 
 @implementation Art (helper)
@@ -71,7 +71,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!photo){
-                photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [photo populateFromDictionary:dict];
             [set addObject:photo];
@@ -85,7 +85,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
         Interval *interval = [Interval MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!interval){
-            interval = [Interval MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            interval = [Interval MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [interval populateFromDictionary:dict];
         self.interval = interval;
@@ -95,7 +95,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
         User *user = [User MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!user){
-            user = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            user = [User MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [user populateFromDictionary:dict];
         self.user = user;
@@ -106,7 +106,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Artist *artist = [Artist MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!artist){
-                artist = [Artist MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                artist = [Artist MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [artist populateFromDictionary:dict];
             [set addObject:artist];
@@ -119,7 +119,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Material *material = [Material MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!material){
-                material = [Material MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                material = [Material MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [material populateFromDictionary:dict];
             [set addObject:material];
@@ -132,7 +132,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Movement *movement = [Movement MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!movement){
-                movement = [Movement MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                movement = [Movement MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [movement populateFromDictionary:dict];
             [set addObject:movement];
@@ -145,7 +145,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Citation *citation = [Citation MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!citation){
-                citation = [Citation MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                citation = [Citation MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [citation populateFromDictionary:dict];
             [set addObject:citation];
@@ -158,7 +158,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Location *location = [Location MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!location){
-                location = [Location MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                location = [Location MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [location populateFromDictionary:dict];
             [set addObject:location];
@@ -171,7 +171,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Icon *icon = [Icon MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!icon){
-                icon = [Icon MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                icon = [Icon MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [icon populateFromDictionary:dict];
             [set addObject:icon];
@@ -184,7 +184,7 @@
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Tag *tag = [Tag MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!tag){
-                tag = [Tag MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                tag = [Tag MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [tag populateFromDictionary:dict];
             [set addObject:tag];

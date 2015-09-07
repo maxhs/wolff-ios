@@ -10,7 +10,7 @@
 #import "SlideText+helper.h"
 #import "PhotoSlide+helper.h"
 #import "Art+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 
 @implementation Slide (helper)
 
@@ -30,7 +30,7 @@
         for (NSDictionary *photoDict in [dictionary objectForKey:@"photo_slides"]){
             PhotoSlide *photoSlide = [PhotoSlide MR_findFirstByAttribute:@"identifier" withValue:[photoDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!photoSlide){
-                photoSlide = [PhotoSlide MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                photoSlide = [PhotoSlide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [photoSlide populateFromDictionary:photoDict];
             photoSlide.slide = self;
@@ -38,7 +38,7 @@
         }
         for (PhotoSlide *photoSlide in self.photoSlides){
             if (![set containsObject:photoSlide]){
-                [photoSlide MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                [photoSlide MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
         }
         self.photoSlides = set;
@@ -48,14 +48,14 @@
         for (NSDictionary *textDict in [dictionary objectForKey:@"slide_texts"]){
             SlideText *slideText = [SlideText MR_findFirstByAttribute:@"identifier" withValue:[textDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!slideText){
-                slideText = [SlideText MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                slideText = [SlideText MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [slideText populateFromDictionary:textDict];
             [set addObject:slideText];
         }
         for (SlideText *slideText in self.slideTexts){
             if (![set containsObject:slideText]){
-                [slideText MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+                [slideText MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
         }
         self.slideTexts = set;

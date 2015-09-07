@@ -70,7 +70,7 @@
         for (id dict in [responseObject objectForKey:@"notifications"]){
             Notification *notification = [Notification MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!notification){
-                notification = [Notification MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                notification = [Notification MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [notification populateFromDictionary:dict];
             [_notifications addObject:notification];
@@ -106,7 +106,7 @@
         
         // destroy all traces of that notification
         indexPathForDeletion = nil;
-        [_notificationToDelete MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [_notificationToDelete MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to delete notificaiton: %@",error.description);
     }];

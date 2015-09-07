@@ -66,7 +66,7 @@
         for (id dict in [responseObject objectForKey:@"institutions"]){
             Institution *institution = [Institution MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"]];
             if (!institution){
-                institution = [Institution MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                institution = [Institution MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [institution populateFromDictionary:dict];
         }
@@ -114,7 +114,7 @@
         for (id dict in [responseObject objectForKey:@"institutions"]){
             Institution *institution = [Institution MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"]];
             if (!institution){
-                institution = [Institution MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                institution = [Institution MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [institution populateFromDictionary:dict];
         }

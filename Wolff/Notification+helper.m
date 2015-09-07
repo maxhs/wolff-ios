@@ -13,7 +13,7 @@
 #import "Art+helper.h"
 #import "LightTable+helper.h"
 #import "Discussion+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 
 @implementation Notification (helper)
 - (void)populateFromDictionary:(NSDictionary *)dictionary{
@@ -34,7 +34,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"slideshow"] objectForKey:@"id"]];
         Slideshow *slideshow = [Slideshow MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!slideshow){
-            slideshow = [Slideshow MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            slideshow = [Slideshow MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [slideshow populateFromDictionary:[dictionary objectForKey:@"slideshow"]];
         self.slideshow = slideshow;
@@ -43,7 +43,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"light_table"] objectForKey:@"id"]];
         LightTable *lightTable = [LightTable MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!lightTable){
-            lightTable = [LightTable MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            lightTable = [LightTable MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [lightTable populateFromDictionary:[dictionary objectForKey:@"light_table"]];
         self.lightTable = lightTable;
@@ -52,7 +52,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"discussion"] objectForKey:@"id"]];
         Discussion *discussion = [Discussion MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!discussion){
-            discussion = [Discussion MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            discussion = [Discussion MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [discussion populateFromDictionary:[dictionary objectForKey:@"discussion"]];
         self.discussion = discussion;
@@ -61,7 +61,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"art"] objectForKey:@"id"]];
         Art *art = [Art MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!art){
-            art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            art = [Art MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [art populateFromDictionary:[dictionary objectForKey:@"art"]];
         self.art = art;
@@ -70,7 +70,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [[dictionary objectForKey:@"photo"] objectForKey:@"id"]];
         Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!photo){
-            photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [photo populateFromDictionary:[dictionary objectForKey:@"photo"]];
         self.photo = photo;

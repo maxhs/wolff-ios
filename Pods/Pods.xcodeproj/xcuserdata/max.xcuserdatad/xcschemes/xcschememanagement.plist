@@ -24,11 +24,6 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
-		<key>PaymentKit.xcscheme</key>
-		<dict>
-			<key>isShown</key>
-			<false/>
-		</dict>
 		<key>Pods.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -42,37 +37,32 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>1A84A2EA9715646ABAC5107DB90CC2FB</key>
+		<key>050E0DEB9C9D9411E4D5A78DD364A17C</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>5526936895F612E0F2CED1058E3FE08E</key>
+		<key>276A9D02A7EC7BBC6DDB48D0D39BF9B5</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>5750B2BD606B86E345C673496EBC06C6</key>
+		<key>2EA71F48BD35DDCFF11451617988B459</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>5D3A095AEE56E245E33C9AA2C5CFE6C9</key>
+		<key>39EEBE855F686676E51F53C7A7476B4D</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>7E9233FC4EBB3B68CD1B413AD72174BA</key>
+		<key>641BAC678C50B45AD4A8C57BAEC3C695</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>BEC3448CC8F2B61C13342E4F35909228</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>F21780E516165B7C9C230043AAF36650</key>
+		<key>8DED280B2683FAAB5C5C5242ACBB798C</key>
 		<dict>
 			<key>primary</key>
 			<true/>

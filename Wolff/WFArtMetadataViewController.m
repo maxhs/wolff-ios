@@ -743,7 +743,7 @@ NSString* const deleteOption = @"Delete";
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         if ([operation.responseString isEqualToString:kNoPhoto]){
-            [self.photo MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [self.photo MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
             [WFAlert show:@"Sorry, but something went wrong while trying to fetch this record.\n\nThe creator may have expunged it from our database." withTime:3.7f];
             if (self.metadataDelegate && [self.metadataDelegate respondsToSelector:@selector(photoDeleted:)]){
@@ -1243,7 +1243,7 @@ NSString* const deleteOption = @"Delete";
             [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
             [manager POST:[NSString stringWithFormat:@"photos/%@/favorite",self.photo.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
                 NSLog(@"posting favorite: %@",responseObject);
-                _favorite = [Favorite MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                _favorite = [Favorite MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                 [_favorite populateFromDictionary:[responseObject objectForKey:@"favorite"]];
                 [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                     [_favoriteButton setTitle:@"   Favorited!" forState:UIControlStateNormal];
@@ -1272,7 +1272,7 @@ NSString* const deleteOption = @"Delete";
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         [manager DELETE:[NSString stringWithFormat:@"favorites/%@",_favorite.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success deleting favorite: %@",responseObject);
-            [_favorite MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+            [_favorite MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             _favorite = nil;
             
             [_favoriteButton setTitle:@"    Add to favorites" forState:UIControlStateNormal];

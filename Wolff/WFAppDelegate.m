@@ -12,7 +12,6 @@
 #import "WFAlert.h"
 #import "WFSlideshowViewController.h"
 #import "WFLoginViewController.h"
-#import <Stripe/Stripe.h>
 #import "WFNoRotateNavController.h"
 #import "WFWalkthroughViewController.h"
 #import "WFNewArtViewController.h"
@@ -25,7 +24,7 @@
     [Crashlytics startWithAPIKey:@"fdf66a0a10b6fc2a0f7052c9758873dc992773d5"];
     [MagicalRecord setShouldDeleteStoreOnModelMismatch:YES];
     [MagicalRecord setupAutoMigratingCoreDataStack];
-    [Stripe setDefaultPublishableKey:kStripePublishableKeyTest];
+    //[Stripe setDefaultPublishableKey:kStripePublishableKeyTest];
     [self customizeAppearance];
     
     [Mixpanel sharedInstanceWithToken:MIXPANEL_TOKEN];
@@ -85,7 +84,7 @@
             NSDictionary *userDict = [responseObject objectForKey:@"user"];
             self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[userDict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!self.currentUser){
-                self.currentUser = [User MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                self.currentUser = [User MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [self.currentUser populateFromDictionary:userDict];
             [self setUserDefaults];
@@ -128,7 +127,7 @@
     }];
 }
 
--(NSUInteger)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
+- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
     if (IDIOM == IPAD){
         return UIInterfaceOrientationMaskLandscape;
     } else {
@@ -230,10 +229,10 @@
 - (void)logout {
     //[self cleanAndResetDB];
     [[Slideshow MR_findAll] enumerateObjectsUsingBlock:^(Slideshow *slideshow, NSUInteger idx, BOOL *stop) {
-        [slideshow MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     }];
     [[LightTable MR_findAll] enumerateObjectsUsingBlock:^(LightTable *lightTable, NSUInteger idx, BOOL *stop) {
-        [lightTable MR_deleteInContext:[NSManagedObjectContext MR_defaultContext]];
+        [lightTable MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     }];
     NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
     [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];

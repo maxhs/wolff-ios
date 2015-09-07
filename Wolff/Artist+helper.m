@@ -8,7 +8,7 @@
 
 #import "Artist+helper.h"
 #import "Photo+helper.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 
 @implementation Artist (helper)
 
@@ -29,7 +29,7 @@
     if ([dict objectForKey:@"cover_photo"] && [dict objectForKey:@"cover_photo"] != [NSNull null]){
         Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[[dict objectForKey:@"cover_photo"] objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!photo) {
-            photo = [Photo MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }
         [photo populateFromDictionary:[dict objectForKey:@"cover_photo"]];
         NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];

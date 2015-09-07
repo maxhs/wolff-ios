@@ -123,7 +123,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
                     for (id dict in locationsDict){
                         Location *location = [Location MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                         if (!location){
-                            location = [Location MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                            location = [Location MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                         }
                         [location populateFromDictionary:dict];
                     }
@@ -393,7 +393,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
         [self.view endEditing:YES];
     });
     
-    Location *location = [Location MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    Location *location = [Location MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     location.name = locationNameTextField.text;
     location.city = cityTextField.text;
     location.state = stateTextField.text;

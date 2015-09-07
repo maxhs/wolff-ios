@@ -2,18 +2,28 @@
 //  STPAPIConnection.h
 //  Stripe
 //
-//  Created by Phil Cohen on 4/9/14.
+//  Created by Jack Flintermann on 1/8/15.
+//  Copyright (c) 2015 Stripe, Inc. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+@import Foundation;
 
-typedef void (^APIConnectionCompletionBlock)(NSURLResponse *response, NSData *body, NSError *requestError);
+
+
+typedef void (^STPAPIConnectionCompletionBlock)(NSURLResponse * __nullable response, NSData * __nullable body, NSError * __nullable requestError);
 
 // Like NSURLConnection but verifies that the server isn't using a revoked certificate.
-@interface STPAPIConnection : NSObject
+@interface STPAPIConnection : NSObject<NSURLConnectionDelegate, NSURLConnectionDataDelegate>
 
-- (id)initWithRequest:(NSURLRequest *)request;
+- (nonnull instancetype)initWithRequest:(nonnull NSURLRequest *)request;
+- (void)runOnOperationQueue:(nonnull NSOperationQueue *)queue completion:(nullable STPAPIConnectionCompletionBlock)handler;
 
-- (void)runOnOperationQueue:(NSOperationQueue *)queue completion:(APIConnectionCompletionBlock)handler;
+@property (nonatomic) BOOL started;
+@property (nonatomic, copy, nonnull) NSURLRequest *request;
+@property (nonatomic, strong, nullable) NSURLConnection *connection;
+@property (nonatomic, strong, nullable) NSMutableData *receivedData;
+@property (nonatomic, strong, nullable) NSURLResponse *receivedResponse;
+@property (nonatomic, strong, nullable) NSError *overrideError; // Replaces the request's error
+@property (nonatomic, copy, nullable) STPAPIConnectionCompletionBlock completionBlock;
 
 @end

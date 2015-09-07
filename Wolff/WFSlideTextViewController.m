@@ -7,7 +7,7 @@
 //
 
 #import "WFSlideTextViewController.h"
-#import <MagicalRecord/CoreData+MagicalRecord.h>
+#import <MagicalRecord/MagicalRecord.h>
 #import "WFAppDelegate.h"
 #import "WFUtilities.h"
 #import "Constants.h"
@@ -144,7 +144,7 @@
                 [self dismiss];
             }];
         } else {
-            self.slideText = [SlideText MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+            self.slideText = [SlideText MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             [self.slideText setSlide:self.slide];
             [self.slideText setBody:self.textView.text];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {

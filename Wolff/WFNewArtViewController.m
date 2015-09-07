@@ -74,8 +74,8 @@
     imageWidth = 262.f;
     imageHeight = 170.f;
     [self setupSlideContainer];
-    self.art = [Art MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
-    Interval *interval = [Interval MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    self.art = [Art MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+    Interval *interval = [Interval MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [self.art setInterval:interval];
     [_photoCountLabel setTextColor:[UIColor colorWithWhite:1 alpha:.33]];
     [_photoCountLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption2 forFont:kMuseoSansLight] size:0]];

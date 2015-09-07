@@ -112,7 +112,7 @@ static NSString * const reuseIdentifier = @"ArtistCell";
             for (id dict in [responseObject objectForKey:@"artists"]){
                 Artist *artist = [Artist MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext    :[NSManagedObjectContext MR_defaultContext]];
                 if (!artist){
-                    artist = [Artist MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+                    artist = [Artist MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                 }
                 [artist populateFromDictionary:dict];
             }
@@ -330,7 +330,7 @@ static NSString * const reuseIdentifier = @"ArtistCell";
         [self.view endEditing:YES];
     });
     
-    Artist *artist = [Artist MR_createInContext:[NSManagedObjectContext MR_defaultContext]];
+    Artist *artist = [Artist MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     artist.name = artistNameField.text;
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:artist.name forKey:@"name"];
