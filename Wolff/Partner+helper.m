@@ -29,6 +29,9 @@
     if ([dictionary objectForKey:@"url"] && [dictionary objectForKey:@"url"] != [NSNull null]){
         self.url = [dictionary objectForKey:@"url"];
     }
+    if ([dictionary objectForKey:@"public_photo_count"] && [dictionary objectForKey:@"public_photo_count"] != [NSNull null]){
+        self.publicPhotoCount = [dictionary objectForKey:@"public_photo_count"];
+    }
     if ([dictionary objectForKey:@"avatar_small"] && [dictionary objectForKey:@"avatar_small"] != [NSNull null]){
         self.avatarSmall = [dictionary objectForKey:@"avatar_small"];
     }

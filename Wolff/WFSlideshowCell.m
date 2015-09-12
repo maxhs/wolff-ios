@@ -50,7 +50,7 @@
         [_actionButton setImage:[UIImage imageNamed:@"whiteTrash"] forState:UIControlStateNormal];
         [_actionButton setBackgroundColor:[UIColor redColor]];
     } else {
-        [_actionButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
+        [_actionButton setImage:[UIImage imageNamed:@"dismissWhite"] forState:UIControlStateNormal];
         [_actionButton setBackgroundColor:[UIColor clearColor]];
     }
     

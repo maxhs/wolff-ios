@@ -14,35 +14,32 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    [_nameLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]];
-    [_locationLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
-    [_partnerSinceLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
+    [_nameLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:IDIOM == IPAD ? UIFontTextStyleHeadline : UIFontTextStyleSubheadline forFont:kMuseoSans] size:0]];
+    [_partnerSinceLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     
-    [_photoCountButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
+    [_photoCountButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [_photoCountButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_photoCountButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
     _photoCountButton.layer.cornerRadius = 7.f;
     _photoCountButton.clipsToBounds = YES;
-    
-    [_slideshowsButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
-    [_slideshowsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [_slideshowsButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
-    _slideshowsButton.layer.cornerRadius = 7.f;
-    _slideshowsButton.clipsToBounds = YES;
-    [_slideshowsButton setHidden:YES];
-    
-    [_lightTablesButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0]];
+
+    [_lightTablesButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [_lightTablesButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_lightTablesButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.23]];
     _lightTablesButton.layer.cornerRadius = 7.f;
     _lightTablesButton.clipsToBounds = YES;
     [_lightTablesButton setHidden:YES];
     
-    [_urlButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansLightItalic] size:0]];
+    [_urlButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSansItalic] size:0]];
     [_urlButton setTitleColor:kElectricBlue forState:UIControlStateNormal];
 }
 
 - (void)configureForPartner:(Partner *)partner {
+    [_nameLabel setText:[NSString stringWithFormat:@"%@",partner.name]];
+    
+    NSString *photoCount = partner.publicPhotoCount.intValue == 1 ? @"1 image" : [NSString stringWithFormat:@"%@ images",partner.publicPhotoCount];
+    [_photoCountButton setTitle:photoCount forState:UIControlStateNormal];
+    
     [_partnerPhotoButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1]];
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:partner.avatarMedium] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
     [_partnerPhotoButton setImageForState:UIControlStateNormal withURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
@@ -53,9 +50,6 @@
     } failure:^(NSError * error) {
         
     }];
-    
-    [_nameLabel setText:[NSString stringWithFormat:@"%@",partner.name]];
-    [_locationLabel setText:partner.locationsToSentence];
     
     if (partner.url.length){
         [_urlButton setHidden:NO];

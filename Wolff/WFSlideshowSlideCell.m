@@ -60,6 +60,13 @@
         [self.mainTextLabel setTextColor:[UIColor whiteColor]];
         SlideText *slideText = slide.slideTexts.firstObject;
         [self.mainTextLabel setText:slideText.body];
+        if ([slideText.alignment isEqualToNumber:@(WFSlideTextAlignmentCenter)]){
+            [self.mainTextLabel setTextAlignment:NSTextAlignmentCenter];
+        } else if ([slideText.alignment isEqualToNumber:@(WFSlideTextAlignmentLeft)]){
+            [self.mainTextLabel setTextAlignment:NSTextAlignmentLeft];
+        } else {
+            [self.mainTextLabel setTextAlignment:NSTextAlignmentRight];
+        }
         
     } else if (photos.count){
         [self.mainTextLabel setHidden:YES];

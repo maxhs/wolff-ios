@@ -16,6 +16,7 @@
 @implementation Favorite (helper)
 
 - (void)populateFromDictionary:(NSDictionary*)dictionary {
+    //NSLog(@"Favorite helper dictionary: %@",dictionary);
     if ([dictionary objectForKey:@"id"] && [dictionary objectForKey:@"id"] != [NSNull null]){
         self.identifier = [dictionary objectForKey:@"id"];
     }
@@ -31,7 +32,17 @@
         }
         self.art = art;
     }
-    if ([dictionary objectForKey:@"photo_id"] && [dictionary objectForKey:@"photo_id"] != [NSNull null]){
+    
+    if ([dictionary objectForKey:@"photo"] && [dictionary objectForKey:@"photo"] != [NSNull null]){
+        NSDictionary *photoDict = [dictionary objectForKey:@"photo"];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [photoDict objectForKey:@"id"]];
+        Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!photo){
+            photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        [photo populateFromDictionary:photoDict];
+        self.photo = photo;
+    } else if ([dictionary objectForKey:@"photo_id"] && [dictionary objectForKey:@"photo_id"] != [NSNull null]){
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dictionary objectForKey:@"photo_id"]];
         Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
         if (!photo){

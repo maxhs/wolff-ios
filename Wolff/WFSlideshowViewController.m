@@ -568,12 +568,14 @@
 }
 
 - (void)handlePan:(UIPanGestureRecognizer*)gestureRecognizer {
-    CGPoint fullTranslation = [gestureRecognizer locationInView:self.view];
     if (metadataExpanded) return;
+    
+    CGPoint fullTranslation = [gestureRecognizer locationInView:self.view];
     CGPoint translation = [gestureRecognizer translationInView:self.collectionView];
     NSIndexPath *indexPathForGesture = [self.collectionView indexPathForItemAtPoint:[gestureRecognizer locationInView:self.collectionView]];
     if (self.slideshow && [self.slideshow.showTitleSlide isEqualToNumber:@YES] && indexPathForGesture.section == 0) return;
-    UIView *view = nil; WFSlideshowSlideCell *cell;
+    UIView *view = nil;
+    WFSlideshowSlideCell *cell;
     if (indexPathForGesture){
         cell = (WFSlideshowSlideCell*)[self.collectionView cellForItemAtIndexPath:indexPathForGesture];
         if (!cell.containerView1.hidden){
@@ -902,7 +904,6 @@
     [super viewWillDisappear:animated];
     [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     if (self.currentUser && self.slideshow && self.slideshow.owner && [self.currentUser.identifier isEqualToNumber:self.slideshow.owner.identifier]){
-        NSLog(@"Should be saving slideshow");
         [self syncWithServer];
     }
 }

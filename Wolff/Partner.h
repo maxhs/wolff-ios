@@ -19,6 +19,7 @@
 @property (nonatomic, retain) NSString * url;
 @property (nonatomic, retain) NSString * avatarSmall;
 @property (nonatomic, retain) NSString * avatarMedium;
+@property (nonatomic, retain) NSNumber * publicPhotoCount;
 @property (nonatomic, retain) NSDate * createdDate;
 @property (nonatomic, retain) NSOrderedSet *photos;
 @property (nonatomic, retain) NSOrderedSet *locations;

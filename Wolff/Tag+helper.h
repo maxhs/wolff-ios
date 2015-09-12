@@ -7,6 +7,7 @@
 //
 
 #import "Tag.h"
+#import "Photo+helper.h"
 
 @interface Tag (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;

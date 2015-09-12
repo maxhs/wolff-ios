@@ -30,7 +30,6 @@
 @dynamic fileName;
 @dynamic orientation;
 @dynamic icons;
-@dynamic tags;
 @dynamic tables;
 @dynamic credit;
 @dynamic notes;

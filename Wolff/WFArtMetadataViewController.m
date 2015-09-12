@@ -1004,10 +1004,10 @@ NSString* const deleteOption = @"Delete";
         {
             [cell.label setText:@"CREDIT / RIGHTS"];
             NSString *credit = @"";
-            if (self.photo.credit.length){
-                credit = self.photo.credit;
-            } else if (self.photo.art.credit.length){
+            if (self.photo.art.credit.length){
                 credit = self.photo.art.credit;
+            } else if (self.photo.credit.length){
+                credit = self.photo.credit;
             }
             [cell.textView setText:credit];
             creditTextView = cell.textView;
@@ -1242,7 +1242,7 @@ NSString* const deleteOption = @"Delete";
             NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
             [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
             [manager POST:[NSString stringWithFormat:@"photos/%@/favorite",self.photo.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                NSLog(@"posting favorite: %@",responseObject);
+                //NSLog(@"posting favorite: %@",responseObject);
                 _favorite = [Favorite MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                 [_favorite populateFromDictionary:[responseObject objectForKey:@"favorite"]];
                 [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {

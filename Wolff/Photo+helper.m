@@ -119,19 +119,20 @@
         }
         self.icons = set;
     }
-    if ([dictionary objectForKey:@"tags"] && [dictionary objectForKey:@"tags"] != [NSNull null]){
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dict in [dictionary objectForKey:@"tags"]){
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Tag *tag = [Tag MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!tag){
-                tag = [Tag MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-            }
-            [tag populateFromDictionary:dict];
-            [set addObject:tag];
-        }
-        self.tags = set;
-    }
+//    if ([dictionary objectForKey:@"tags"] && [dictionary objectForKey:@"tags"] != [NSNull null]){
+//        NSArray *tagArray = [dictionary objectForKey:@"tags"];
+//        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithCapacity:tagArray.count];
+//        for (id dict in tagArray){
+//            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+//            Tag *tag = [Tag MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+//            if (!tag){
+//                tag = [Tag MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+//            }
+//            [tag populateFromDictionary:dict];
+//            [set addObject:tag];
+//        }
+//        self.tags = set;
+//    }
     if ([dictionary objectForKey:@"light_tables"] && [dictionary objectForKey:@"light_tables"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"light_tables"]){

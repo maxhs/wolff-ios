@@ -26,12 +26,13 @@
     CGFloat width;
     BOOL photos;
     BOOL slideshows;
-    BOOL lightTables;
+    BOOL canLoadMore;
     UIImageView *navBarShadowView;
     NSDateFormatter *partnerSinceDateFormatter;
-    NSArray *_publicPhotos;
+    NSMutableOrderedSet *_publicPhotos;
 }
-
+@property (strong, nonatomic) AFHTTPRequestOperation *loadPartnerRequest;
+@property (strong, nonatomic) AFHTTPRequestOperation *photosRequest;
 @end
 
 @implementation WFPartnerProfileViewController
@@ -56,6 +57,7 @@
     self.navigationItem.titleView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"whiteLogo"]];
     
     [self loadPartner];
+    [self loadPartnerPhotosBeforePhoto:nil];
     partnerSinceDateFormatter = [[NSDateFormatter alloc] init];
     [partnerSinceDateFormatter setDateFormat:@"MMM yy"];
     
@@ -63,37 +65,87 @@
     [self getPublicPhotos];
 }
 
+- (void)getPublicPhotos {
+    NSPredicate *publicPhotoPredicate = [NSPredicate predicateWithFormat:@"ANY partners.identifier == %@ && privatePhoto != %@ && art.privateArt != %@",self.partner.identifier, @YES, @YES];
+    _publicPhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllSortedBy:@"createdDate" ascending:NO withPredicate:publicPhotoPredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
+    [self.collectionView reloadData];
+}
+
 - (void)loadPartner {
+    if (self.loadPartnerRequest) return;
     [ProgressHUD show:@"Fetching info..."];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     }
-    [manager GET:[NSString stringWithFormat:@"partners/%@",self.partner.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    self.loadPartnerRequest = [manager GET:[NSString stringWithFormat:@"partners/%@",self.partner.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success loading partner details: %@",responseObject);
         [self.partner populateFromDictionary:[responseObject objectForKey:@"partner"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             self.title = self.partner.name;
-            [self getPublicPhotos];
             [ProgressHUD dismiss];
+            self.loadPartnerRequest = nil;
         }];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to load partner details: %@",error.description);
         [ProgressHUD dismiss];
+        self.loadPartnerRequest = nil;
     }];
 }
 
-- (void)getPublicPhotos {
-    NSPredicate *publicPhotoPredicate = [NSPredicate predicateWithFormat:@"ANY partners.identifier == %@ && privatePhoto != %@ && art.privateArt != %@",self.partner.identifier, @YES, @YES];
-    _publicPhotos = [Photo MR_findAllSortedBy:@"createdDate" ascending:NO withPredicate:publicPhotoPredicate inContext:[NSManagedObjectContext MR_defaultContext]];
-    [_collectionView reloadData];
+- (void)loadPartnerPhotosBeforePhoto:(Photo*)photo {
+    if (self.photosRequest) return;
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    //[parameters setObject:@(ART_THROTTLE) forKey:@"count"];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    }
+    if (photo){
+        [parameters setObject:[NSNumber numberWithInt:round([photo.createdDate timeIntervalSince1970])] forKey:@"before_date"]; // last item in feed
+    } else {
+        [parameters setObject:[NSNumber numberWithInt:round([[NSDate date] timeIntervalSince1970])] forKey:@"before_date"]; // today
+    }
+    self.photosRequest = [manager GET:[NSString stringWithFormat:@"partners/%@/photos",self.partner.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //NSLog(@"Success loading partner photos: %@",responseObject);
+        NSArray *photoDict = [responseObject objectForKey:@"photos"];
+        if (photoDict.count){
+            canLoadMore = YES;
+            [self parsePhotos:[responseObject objectForKey:@"photos"]];
+            //[self.partner populateFromDictionary:responseObject];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                [ProgressHUD dismiss];
+                self.photosRequest = nil;
+            }];
+        } else {
+            canLoadMore = NO;
+            [ProgressHUD dismiss];
+            self.photosRequest = nil;
+        }
+        NSLog(@"Success loading %lu partner photos",(unsigned long)[photoDict count]);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        //NSLog(@"Failed to load partner photos: %@",error.description);
+        [ProgressHUD dismiss];
+        self.photosRequest = nil;
+    }];
+}
+
+- (void)parsePhotos:(NSArray*)photosArray {
+    [photosArray enumerateObjectsUsingBlock:^(id dict, NSUInteger idx, BOOL * stop) {
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
+        Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+        if (!photo){
+            photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+        }
+        [photo populateFromDictionary:dict];
+        [_publicPhotos addObject:photo];
+    }];
+    [self.collectionView reloadData];
 }
 
 - (void)resetBooleans {
     photos = NO;
     slideshows = NO;
-    lightTables = NO;
 }
 
 - (void)goToUrl {
@@ -106,9 +158,7 @@
     }
     [vc setUrl:[NSURL URLWithString:urlString]];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
@@ -133,16 +183,20 @@
     if (IDIOM == IPAD){
         return CGSizeMake(width/4, width/4);
     } else {
-        if (width >= 414.f){
-            return CGSizeMake(width/2, width/2);
-        } else {
-            return CGSizeMake(width, width);
-        }
+        return CGSizeMake(width/2, width/2);
     }
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
     return UIEdgeInsetsMake(0, 0, 0, 0);
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
+    if (IDIOM == IPAD){
+        return CGSizeMake(width,270);
+    } else {
+        return CGSizeMake(width,160);
+    }
 }
 
 #pragma mark - CollectionView data source
@@ -169,8 +223,6 @@
         WFPartnerProfileHeader *headerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"PartnerProfileHeader" forIndexPath:indexPath];
         [headerView setBackgroundColor:[UIColor clearColor]];
         [headerView configureForPartner:self.partner];
-        NSString *photoCount = _publicPhotos.count == 1 ? @"1 image" : [NSString stringWithFormat:@"%lu images",(unsigned long)_publicPhotos.count];
-        [headerView.photoCountButton setTitle:photoCount forState:UIControlStateNormal];
         [headerView.partnerSinceLabel setText:[NSString stringWithFormat:@"Partner since %@",[partnerSinceDateFormatter stringFromDate:self.partner.createdDate]]];
         if (self.partner.url.length){
             [headerView.urlButton addTarget:self action:@selector(goToUrl) forControlEvents:UIControlEventTouchUpInside];
@@ -187,6 +239,20 @@
         [self showMetadata:photo];
     }
     [collectionView deselectItemAtIndexPath:indexPath animated:YES];
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    if (scrollView == self.collectionView){
+        float bottomEdge = scrollView.contentOffset.y + scrollView.frame.size.height;
+        if (bottomEdge >= scrollView.contentSize.height) {
+            // at the bottom of the scrollView
+            if (_publicPhotos.count){
+                if (canLoadMore){
+                    [self loadPartnerPhotosBeforePhoto:_publicPhotos.lastObject];
+                }
+            }
+        }
+    }
 }
 
 - (void)showMetadata:(Photo*)photo{
@@ -226,11 +292,14 @@
     return animator;
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self.photosRequest cancel];
+    [self.loadPartnerRequest cancel];
+}
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+    [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
 - (void)didReceiveMemoryWarning {

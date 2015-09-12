@@ -371,7 +371,7 @@
     if (selected.count){
         [dismissButton setImage:[UIImage imageNamed:@"left"]];
     } else {
-        [dismissButton setImage:[UIImage imageNamed:@"remove"]];
+        [dismissButton setImage:[UIImage imageNamed:@"dismissWhite"]];
     }
     [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
     if (self.searchDelegate && [self.searchDelegate respondsToSelector:@selector(searchDidSelectPhoto:)]) {

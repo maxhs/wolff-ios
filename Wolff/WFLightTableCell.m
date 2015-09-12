@@ -47,7 +47,7 @@
     [_editButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_editButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
     
-    [_leaveButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
+    [_leaveButton setImage:[UIImage imageNamed:@"dismissWhite"] forState:UIControlStateNormal];
     _leaveButton.titleLabel.layer.shadowColor = [UIColor blackColor].CGColor;
     _leaveButton.titleLabel.layer.shadowRadius = 1.4f;
     _leaveButton.titleLabel.layer.shadowOpacity = .23f;

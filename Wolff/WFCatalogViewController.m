@@ -120,8 +120,6 @@ static NSString *const logoutOption = @"Log out";
     UITapGestureRecognizer *catalogDoubleTap;
     UITapGestureRecognizer *comparisonTap;
     
-    NSIndexPath *indexPathForFavoriteToRemove;
-    NSIndexPath *indexPathForLightTableArtToRemove;
     WFInteractiveImageView *comparison1;
     WFInteractiveImageView *comparison2;
     
@@ -144,6 +142,7 @@ static NSString *const logoutOption = @"Log out";
 @property (strong, nonatomic) AFHTTPRequestOperation *mainRequest;
 @property (strong, nonatomic) AFHTTPRequestOperation *dashboardRequest;
 @property (strong, nonatomic) AFHTTPRequestOperation *lightTableRequest;
+@property (strong, nonatomic) AFHTTPRequestOperation *slideshowRequest;
 @end
 
 @implementation WFCatalogViewController
@@ -186,7 +185,7 @@ static NSString *const logoutOption = @"Log out";
     canLoadMore = YES;
     canSearchMore = YES;
     canLoadMoreOfMyArt = YES;
-    
+    [self setUpNavBar]; //set up the nav buttons AND determine logged in status
     if (IDIOM != IPAD){
         CGRect tableFrame = self.tableView.frame;
         CGRect comparisonFrame = self.comparisonContainerView.frame;
@@ -205,8 +204,6 @@ static NSString *const logoutOption = @"Log out";
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loggedOut) name:LOGGED_OUT object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willHideEditMenu:) name:UIMenuControllerWillHideMenuNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didHideEditMenu:) name:UIMenuControllerDidHideMenuNotification object:nil];
-    
-    [self setUpNavBar]; //set up the nav buttons
 }
 
 - (void)setUpNavBar {
@@ -383,7 +380,7 @@ static NSString *const logoutOption = @"Log out";
 
 - (void)loadSlideshows {
     [ProgressHUD show:@"Refreshing slideshows..."];
-    [manager GET:[NSString stringWithFormat:@"users/%@/slideshow_titles",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    self.slideshowRequest = [manager GET:[NSString stringWithFormat:@"users/%@/slideshow_titles",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success loading slideshows: %@",responseObject);
         if ([responseObject objectForKey:@"slideshows"]){
             NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithCapacity:[[responseObject objectForKey:@"slideshows"] count]];
@@ -405,13 +402,17 @@ static NSString *const logoutOption = @"Log out";
         }
         
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            [self.tableView reloadData];
+            if (self.slideshowRequest && !self.slideshowRequest.isCancelled){
+                [self.tableView reloadData];
+            }
             [self endRefresh];
+            self.slideshowRequest = nil;
         }];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to load slideshows: %@",error.description);
         [self endRefresh];
+        self.slideshowRequest = nil;
     }];
 }
 
@@ -477,6 +478,10 @@ static NSString *const logoutOption = @"Log out";
         [self loadMyArt];
     } else if (showFavorites){
         [_favoritePhotos removeAllObjects];
+        [[Favorite MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]] enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL * stop) {
+            [favorite MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+        }];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
         [self loadFavorites];
     } else {
@@ -484,6 +489,8 @@ static NSString *const logoutOption = @"Log out";
         [_photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
             [photo MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         }];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+        
         [_filteredPhotos removeAllObjects];
         [_photos removeAllObjects];
         [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
@@ -540,7 +547,6 @@ static NSString *const logoutOption = @"Log out";
         [WFAlert show:kLogoutMessage withTime:3.3f];
         [self loadBeforePhoto:nil];
     });
-    
 }
 
 - (void)loggedOut {
@@ -568,16 +574,17 @@ static NSString *const logoutOption = @"Log out";
 
     if (lastPhoto){
         [parameters setObject:[NSNumber numberWithInt:round([lastPhoto.createdDate timeIntervalSince1970])] forKey:@"before_date"]; // last item in feed
-    } else {
-        [parameters setObject:[NSNumber numberWithInt:round([[NSDate date] timeIntervalSince1970])] forKey:@"after_date"]; // today
     }
     if (loggedIn){
-        //[parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         if (showMyArt){
             [parameters setObject:@YES forKey:@"my_art"];
         }
     }
+    
     self.mainRequest = [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        if (collectionViewRefresh.isRefreshing) [collectionViewRefresh endRefreshing];
+        
         NSDictionary *photosDict = [responseObject objectForKey:@"photos"];
         if (photosDict.count){
             NSLog(@"How many photos did we pull? %lu. Can we load more? %u",(unsigned long)photosDict.count, canLoadMore);
@@ -596,27 +603,20 @@ static NSString *const logoutOption = @"Log out";
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 if (self.searchBar.text.length){
                     [self filterContentForSearchText:searchText scope:nil];
-                    if (photosDict.count){
-                        NSLog(@"Searching, CAN search more");
-                        canSearchMore = YES;
-                    } else {
-                        NSLog(@"Searching, but can't search more");
-                        canSearchMore = NO;
-                    }
+                    canSearchMore = photosDict.count ? YES : NO;
                 } else if (showMyArt){
-                    if (!photosDict.count){
-                        canLoadMoreOfMyArt = NO;
-                    } else {
-                        canLoadMoreOfMyArt = YES;
+                    canLoadMoreOfMyArt = photosDict.count ? YES : NO;
+                    if (self.mainRequest && !self.mainRequest.isCancelled){
+                        [self.collectionView reloadData];
                     }
                 } else {
-                    if (!photosDict.count){
-                        canLoadMore = NO;
-                    } else {
-                        canLoadMore = YES;
+                    canLoadMore = photosDict.count ? YES : NO;
+                    if (self.mainRequest && !self.mainRequest.isCancelled){
+                        [self.collectionView reloadData];
                     }
-                    [self.collectionView reloadData];
                 }
+                
+                self.mainRequest = nil;
                 [self endRefresh];
             }];
         } else {
@@ -624,6 +624,7 @@ static NSString *const logoutOption = @"Log out";
             canSearchMore = NO;
             canLoadMoreOfMyArt = NO;
             [self endRefresh];
+            self.mainRequest = nil;
             NSLog(@"How many photos did we pull? %lu. Can we load more? %u",(unsigned long)photosDict.count, canLoadMore);
         }
         
@@ -633,7 +634,6 @@ static NSString *const logoutOption = @"Log out";
 }
 
 - (void)endRefresh {
-    self.mainRequest = nil;
     [ProgressHUD dismiss];
     if (tableViewRefresh.isRefreshing){
         [tableViewRefresh endRefreshing];
@@ -645,31 +645,21 @@ static NSString *const logoutOption = @"Log out";
 
 - (void)loadLightTables {
     if (self.dashboardRequest) return;
+    
     if (self.currentUser){
         [ProgressHUD show:@"Refreshing your light tables..."];
-        
         self.dashboardRequest = [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success getting user dashboard: %@", responseObject);
             [self.currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-
-                NSPredicate *myPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
-                _myPhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:myPredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
-                NSSortDescriptor *reverseChronologicalSort = [NSSortDescriptor sortDescriptorWithKey:@"createdDate" ascending:NO];
-                [_myPhotos sortUsingDescriptors:@[reverseChronologicalSort]];
             
-                [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
-                    if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
-                        [_favoritePhotos addObject:favorite.photo];
-                    }
-                }];
-                [_favoritePhotos sortUsingDescriptors:@[reverseChronologicalSort]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+                [self fetchMyPhotos];
+
+                if (self.dashboardRequest && !self.dashboardRequest.isCancelled){
+                    [self.collectionView reloadData];
+                    [self.tableView reloadData];
+                }
                 
-//                NSLog(@"_myPhotos count: %lu",(unsigned long)_myPhotos.count);
-//                NSLog(@"_favorites count: %lu",(unsigned long)_favoritePhotos.count);
-                
-                [self.collectionView reloadData];
-                [self.tableView reloadData];
                 [self endRefresh];
                 self.dashboardRequest = nil;
             }];
@@ -684,28 +674,35 @@ static NSString *const logoutOption = @"Log out";
     }
 }
 
+- (void)fetchMyPhotos {
+    // fetch my photos
+    NSPredicate *myPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+    _myPhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:myPredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
+    NSSortDescriptor *reverseChronologicalSort = [NSSortDescriptor sortDescriptorWithKey:@"createdDate" ascending:NO];
+    [_myPhotos sortUsingDescriptors:@[reverseChronologicalSort]];
+    // fetch/sort my favorites
+    [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
+        if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
+            [_favoritePhotos addObject:favorite.photo];
+        }
+    }];
+    [_favoritePhotos sortUsingDescriptors:@[reverseChronologicalSort]];
+}
+
 - (void)loadMyArt {
     if (self.dashboardRequest) return;
     if (self.currentUser){
         [ProgressHUD show:@"Fetching your art..."];
         self.dashboardRequest = [manager GET:[NSString stringWithFormat:@"users/%@/art",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            [self endRefresh];
+            
             //NSLog(@"Success getting user art: %@", responseObject);
             [self parsePhotos:[responseObject objectForKey:@"photos"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                NSPredicate *myPredicate = [NSPredicate predicateWithFormat:@"user.identifier == %@",[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
-                _myPhotos = [NSMutableOrderedSet orderedSetWithArray:[Photo MR_findAllWithPredicate:myPredicate inContext:[NSManagedObjectContext MR_defaultContext]]];
-                
-                NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"createdDate" ascending:NO];
-                [_myPhotos sortUsingDescriptors:@[sort]];
-                
-                NSLog(@"_myPhotos count: %lu",(unsigned long)_myPhotos.count);
-                [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
-                    if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
-                        [_favoritePhotos addObject:favorite.photo];
-                    }
-                }];
-                NSLog(@"_favorites count: %lu",(unsigned long)_favoritePhotos.count);
-                [self.collectionView reloadData];
+                [self fetchMyPhotos];
+                if (self.dashboardRequest && !self.dashboardRequest.isCancelled){
+                    [self.collectionView reloadData];
+                }
                 [self endRefresh];
                 self.dashboardRequest = nil;
             }];
@@ -714,7 +711,7 @@ static NSString *const logoutOption = @"Log out";
             //NSLog(@"Failed to get user art: %@",error.description);
             [[[UIAlertView alloc] initWithTitle:@"Sorry" message:@"Something went wrong while trying to load your art. Please try again soon." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil] show];
             
-            [self endRefresh];
+            
             self.dashboardRequest = nil;
         }];
     }
@@ -732,20 +729,27 @@ static NSString *const logoutOption = @"Log out";
 
 - (void)loadFavorites {
     if (self.dashboardRequest) return;
+    
     if (self.currentUser){
         [ProgressHUD show:@"Refreshing your favorites..."];
         self.dashboardRequest = [manager GET:[NSString stringWithFormat:@"users/%@/favorites",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success getting user favorites: %@", responseObject);
-            [self parsePhotos:[responseObject objectForKey:@"photos"]];
+            [self endRefresh];
+            
+            for (id favoriteDict in [responseObject objectForKey:@"photos"]){
+                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"photo.identifier == %@ and user.identifier == %@",[favoriteDict objectForKey:@"id"],self.currentUser.identifier];
+                Favorite *favorite = [Favorite MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+                if (!favorite){
+                    favorite = [Favorite MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+                }
+                [favorite populateFromDictionary:@{@"photo":favoriteDict}];
+                [_favoritePhotos addObject:favorite.photo];
+            }
             
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [self.currentUser.favorites enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL *stop) {
-                    if (favorite.photo && ![_favoritePhotos containsObject:favorite.photo]) {
-                        [_favoritePhotos addObject:favorite.photo];
-                    }
-                }];
-                [self.collectionView reloadData];
-                [self endRefresh];
+                if (self.dashboardRequest && !self.dashboardRequest.isCancelled){
+                    [self.collectionView reloadData];
+                }
                 self.dashboardRequest = nil;
             }];
             
@@ -897,6 +901,9 @@ static NSString *const logoutOption = @"Log out";
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (slideshowSidebarMode){
         WFSlideshowCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SlideshowCell" forIndexPath:indexPath];
+        if (cell == nil) {
+            cell = [[WFSlideshowCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"SlideshowCell"];
+        }
         [cell setBackgroundColor:[UIColor clearColor]];
         if (indexPath.section == 0){
             [cell.iconImageView setImage:[UIImage imageNamed:@"whitePlus"]];
@@ -1297,6 +1304,9 @@ static NSString *const logoutOption = @"Log out";
         } else {
             [self resetArtBooleans];
             showFavorites = YES;
+            if (!_favoritePhotos.count){
+                [self loadFavorites];
+            }
         }
         [self.collectionView reloadData];
     } else {
@@ -1312,24 +1322,30 @@ static NSString *const logoutOption = @"Log out";
         showLightTable = YES;
     }
     self.lightTable = lightTable;
-    [self loadLightTable:_lightTable];
+    [self loadLightTable:self.lightTable];
 }
 
 - (void)loadLightTable:(LightTable*)lightTable {
     if (self.lightTableRequest) return;
+    
     if (lightTable && ![lightTable.identifier isEqualToNumber:@0]){
         NSString *title = lightTable.name.length ? [NSString stringWithFormat:@"\"%@\"",lightTable.name] : @"\"table without a name\"";
         [ProgressHUD show:[NSString stringWithFormat:@"Loading %@",title]];
         self.lightTableRequest = [manager GET:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success loading light table: %@",responseObject);
-            [lightTable populateFromDictionary:[responseObject objectForKey:@"table"]];
-            [self.collectionView reloadData];
-            self.lightTableRequest = nil;
-            [self endRefresh];
+            [self.lightTable populateFromDictionary:[responseObject objectForKey:@"table"]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
+                if (self.lightTableRequest && !self.lightTableRequest.isCancelled){
+                    [self.collectionView reloadData];
+                }
+                
+                [self endRefresh];
+                self.lightTableRequest = nil;
+            }];
+            
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Error loading light table: %@",error.description);
             [self endRefresh];
-            [self.collectionView reloadData];
             self.lightTableRequest = nil;
         }];
     }
@@ -1490,18 +1506,16 @@ static NSString *const logoutOption = @"Log out";
         photo = _filteredPhotos[indexPath.item];
     } else if (showMyArt){
         photo = _myPhotos[indexPath.item];
-    } else if (showLightTable){
+    } else if (showLightTable && self.lightTable){
         photo = self.lightTable.photos[indexPath.item];
     } else if (showFavorites){
         photo = _favoritePhotos[indexPath.item];
-    } else {
+    } else if (_photos.count){
         photo = _photos[indexPath.item];
     }
-    [cell configureForPhoto:photo];
-    if ([_selectedPhotos containsObject:photo]){
-        [cell.checkmark setHidden:NO];
-    } else {
-        [cell.checkmark setHidden:YES];
+    if (photo){
+        [cell configureForPhoto:photo];
+        [cell.checkmark setHidden:[_selectedPhotos containsObject:photo] ? NO : YES];
     }
     return cell;
 }
@@ -1617,20 +1631,47 @@ static NSString *const logoutOption = @"Log out";
     }
 }
 
-- (void)removeFavorite:(UIMenuController*)menuController {
-    Art *art = _favoritePhotos[indexPathForFavoriteToRemove.item];
-    [_favoritePhotos removeObject:art];
-    [self.collectionView deleteItemsAtIndexPaths:@[indexPathForFavoriteToRemove]];
+- (void)removeFavorite:(NSIndexPath*)indexPath {
+    Photo *photo = _favoritePhotos[indexPath.item];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"photo.identifier == %@ and user.identifier == %@",photo.identifier, [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]];
+    Favorite *favorite = [Favorite MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+    if (!favorite){
+        [self resetDraggingView];
+        return;
+    }
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
+    
+    // remove via API
+    [manager DELETE:[NSString stringWithFormat:@"favorites/%@",favorite.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"success removing favorite: %@",responseObject);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"failed to remove favorite: %@",error.description);
+    }];
+    
+    // remove locally
+    [favorite MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+    [_favoritePhotos removeObject:photo];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
+        [self.collectionView deleteItemsAtIndexPaths:@[indexPath]];
+        [UIView animateWithDuration:kDefaultAnimationDuration animations:^{
+            [self.draggingView setAlpha:0.0];
+        } completion:^(BOOL finished) {
+            [self.draggingView removeFromSuperview];
+            
+        }];
+    }];
 }
 
-- (void)removeLightTablePhoto:(UIMenuController*)menuController {
-    Photo *photo = self.lightTable.photos[indexPathForLightTableArtToRemove.item];
+- (void)removeLightTablePhoto:(NSIndexPath*)indexPath {
+    Photo *photo = self.lightTable.photos[indexPath.item];
+    if (!photo) return;
     [self.lightTable removePhoto:photo];
     
     // remove via API
     [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove",self.lightTable.identifier] parameters:@{@"photo_id":photo.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"success removing photo from light table: %@",responseObject);
-        if (sidebarIsVisible){
+        if (sidebarIsVisible && !slideshowSidebarMode){
             [self.tableView reloadData];
         }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -1639,11 +1680,7 @@ static NSString *const logoutOption = @"Log out";
     
     // remove locally
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        if (indexPathForLightTableArtToRemove) {
-            [self.collectionView deleteItemsAtIndexPaths:@[indexPathForLightTableArtToRemove]];
-        } else {
-            [self.collectionView reloadData];
-        }
+        [self.collectionView deleteItemsAtIndexPaths:@[indexPath]];
         [UIView animateWithDuration:kDefaultAnimationDuration animations:^{
             [self.draggingView setAlpha:0.0];
         } completion:^(BOOL finished) {
@@ -1764,15 +1801,29 @@ static NSString *const logoutOption = @"Log out";
             [self resetDraggingView];
         } else if (self.draggingView) {
             
-            // disable drag to reorder //
+            // No more drag to reorder //
             //self.moveToIndexPath = [self.collectionView indexPathForItemAtPoint:loc];
             //[self dragToReorder];
-            if (self.lightTable && !CGRectContainsPoint(adjustedCollectionRect, loc)) {
-                if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [self.lightTable includesOwnerId:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
-                    indexPathForLightTableArtToRemove = self.startIndex;
-                    [self removeLightTablePhoto:nil];
+            // ** //
+            
+            if (showLightTable){
+                if (self.lightTable && !CGRectContainsPoint(adjustedCollectionRect, loc)) {
+                    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] && [self.lightTable includesOwnerId:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]]){
+                        // the following will delete the item from the collection view, so no need to call resetDraggingView
+                        [self removeLightTablePhoto:self.startIndex];
+                    } else {
+                        [self resetDraggingView];
+                    }
+                } else {
+                    [self resetDraggingView];
                 }
-                [self resetDraggingView];
+            } else if (showFavorites){
+                if (loggedIn && !CGRectContainsPoint(adjustedCollectionRect, loc)) {
+                    // the following will delete the item from the collection view, so no need to call resetDraggingView
+                    [self removeFavorite:self.startIndex];
+                } else {
+                    [self resetDraggingView];
+                }
             } else {
                 [self resetDraggingView];
             }
@@ -2650,8 +2701,7 @@ static NSString *const logoutOption = @"Log out";
     } else {
         _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
     }
-    
-    NSLog(@"filtered photo count: %lu",(unsigned long)_filteredPhotos.count);
+
     [self.collectionView reloadData];
 }
 
@@ -2800,8 +2850,6 @@ static NSString *const logoutOption = @"Log out";
 
 - (void)didHideEditMenu:(id)sender {
     [self resignFirstResponder];
-    indexPathForFavoriteToRemove = nil;
-    indexPathForLightTableArtToRemove = nil;
 }
 
 // UIMenuController requires that we can become first responder or it won't display
@@ -2854,18 +2902,15 @@ static NSString *const logoutOption = @"Log out";
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-    [ProgressHUD dismiss];
     [super viewWillDisappear:animated];
-    if (tableViewRefresh.isRefreshing){
-        [tableViewRefresh endRefreshing];
-    }
+    [ProgressHUD dismiss];
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
-}
-
-- (void)viewDidDisappear:(BOOL)animated {
-    [super viewDidDisappear:animated];
+    [self.dashboardRequest cancel];
+    [self.mainRequest cancel];
+    [self.slideshowRequest cancel];
+    [self.lightTableRequest cancel];
 }
 
 - (void)didReceiveMemoryWarning {

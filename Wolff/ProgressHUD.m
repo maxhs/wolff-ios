@@ -80,9 +80,7 @@
         [hud setBarStyle:UIBarStyleBlackTranslucent];
 		hud.translucent = YES;
 		hud.layer.cornerRadius = 7;
-        //hud.layer.borderColor = kDarkerGrayColor.CGColor;
-        //hud.layer.borderWidth = 1.f;
-		hud.layer.masksToBounds = YES;
+		hud.clipsToBounds = YES;
 
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(rotate:) name:UIDeviceOrientationDidChangeNotification object:nil];
 	}

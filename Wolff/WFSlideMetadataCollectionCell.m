@@ -73,7 +73,10 @@
         [componentsString appendAttributedString:tagsString];
     }
     
-    if (photo.credit.length){
+    if (photo.art.credit.length){
+        creditString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",photo.art.credit] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:IDIOM == IPAD ? UIFontTextStyleBody : UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
+        [componentsString appendAttributedString:creditString];
+    } else if (photo.credit.length){
         creditString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"\n%@",photo.credit] attributes:@{NSFontAttributeName:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:IDIOM == IPAD ? UIFontTextStyleBody : UIFontTextStyleCaption1 forFont:kMuseoSansLight] size:0], NSForegroundColorAttributeName : [UIColor whiteColor], NSParagraphStyleAttributeName:paragraphStyle}];
         [componentsString appendAttributedString:creditString];
     }

@@ -51,8 +51,9 @@
         self.slides = slides;
     }
     if ([dictionary objectForKey:@"photos"] && [dictionary objectForKey:@"photos"] != [NSNull null]){
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dict in [dictionary objectForKey:@"photos"]){
+        NSArray *photoArray = [dictionary objectForKey:@"photos"];
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithCapacity:photoArray.count];
+        for (id dict in photoArray){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
             if (!photo){

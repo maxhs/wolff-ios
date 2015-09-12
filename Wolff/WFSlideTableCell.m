@@ -99,6 +99,13 @@
                 SlideText *slideText = slide.slideTexts.firstObject;
                 [_slideTextLabel setText:slideText.body];
                 [_slideTextLabel setHidden:NO];
+                if ([slideText.alignment isEqualToNumber:@(WFSlideTextAlignmentCenter)]){
+                    [_slideTextLabel setTextAlignment:NSTextAlignmentCenter];
+                } else if ([slideText.alignment isEqualToNumber:@(WFSlideTextAlignmentLeft)]){
+                    [_slideTextLabel setTextAlignment:NSTextAlignmentLeft];
+                } else {
+                    [_slideTextLabel setTextAlignment:NSTextAlignmentRight];
+                }
             }
             [_artImageView1 setImage:nil];
             [_artImageView2 setImage:nil];

@@ -40,6 +40,7 @@
     NSIndexPath *indexPathToDeleteAlternate;
 }
 @property (strong, nonatomic) UIPopoverController *popover;
+@property (strong, nonatomic) AFHTTPRequestOperation *mainRequest;
 @end
 
 @implementation WFSettingsViewController
@@ -92,14 +93,18 @@
 }
 
 - (void)loadUserDetails {
-    [manager GET:[NSString stringWithFormat:@"%@/users/%@/edit",kApiBaseUrl,self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    self.mainRequest = [manager GET:[NSString stringWithFormat:@"%@/users/%@/edit",kApiBaseUrl,self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success getting user details: %@",responseObject);
         [self.currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            [self.tableView reloadData];
+            if (self.mainRequest && !self.mainRequest.isCancelled){
+                [self.tableView reloadData];
+            }
+            self.mainRequest = nil;
         }];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to get user details: %@",error.description);
+        self.mainRequest = nil;
     }];
 }
 
@@ -625,6 +630,11 @@
     } else {
         [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
     }
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self.mainRequest cancel];
 }
 
 - (void)didReceiveMemoryWarning {

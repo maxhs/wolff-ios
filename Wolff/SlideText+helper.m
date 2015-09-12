@@ -29,5 +29,8 @@
     if ([dictionary objectForKey:@"position_y"] && [dictionary objectForKey:@"position_y"] != [NSNull null]){
         self.positionY = [dictionary objectForKey:@"position_y"];
     }
+    if ([dictionary objectForKey:@"alignment"] && [dictionary objectForKey:@"alignment"] != [NSNull null]){
+        self.alignment = [dictionary objectForKey:@"alignment"];
+    }
 }
 @end

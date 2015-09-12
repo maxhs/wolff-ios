@@ -19,6 +19,7 @@
 @property (nonatomic, retain) NSNumber * positionX;
 @property (nonatomic, retain) NSNumber * positionY;
 @property (nonatomic, retain) NSString * body;
+@property (nonatomic, retain) NSNumber * alignment;
 @property (nonatomic, retain) Slide *slide;
 
 @end

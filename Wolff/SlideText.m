@@ -18,6 +18,7 @@
 @dynamic positionX;
 @dynamic positionY;
 @dynamic body;
+@dynamic alignment;
 @dynamic slide;
 
 @end

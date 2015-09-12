@@ -30,7 +30,6 @@
 @property (nonatomic, retain) NSOrderedSet *slides;
 @property (nonatomic, retain) NSOrderedSet *photoSlides;
 @property (nonatomic, retain) NSOrderedSet *icons;
-@property (nonatomic, retain) NSOrderedSet *tags;
 @property (nonatomic, retain) NSOrderedSet *tables;
 @property (nonatomic, retain) NSOrderedSet *artists;
 @property (nonatomic, retain) NSOrderedSet *notifications;

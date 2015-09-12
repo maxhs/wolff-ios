@@ -63,11 +63,10 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WFSaveMenuCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SaveMenuCell" forIndexPath:indexPath];
-    if (IDIOM == IPAD){
-        [cell.textLabel setTextColor:[UIColor blackColor]];
-    } else {
-        [cell.textLabel setTextColor:[UIColor whiteColor]];
-    }
+    UIView *selectedBackgroundView = [[UIView alloc] initWithFrame:cell.frame];
+    [selectedBackgroundView setBackgroundColor:[UIColor blackColor]];
+    [cell setSelectedBackgroundView:selectedBackgroundView];
+    [cell.textLabel setTextColor:IDIOM == IPAD ? [UIColor blackColor] : [UIColor whiteColor]];
     
     if (indexPath.row == 0){
         [cell.imageView setImage:IDIOM == IPAD ? [UIImage imageNamed:@"cloudUpload"] : [UIImage imageNamed:@"whiteCloudUpload"]];
@@ -76,7 +75,6 @@
         [cell.imageView setImage:IDIOM == IPAD ? [UIImage imageNamed:@"mobile"] : [UIImage imageNamed:@"whiteMobile"]];
         [cell.textLabel setText:@"Enable offline mode"];
     }
-    
     return cell;
 }
 

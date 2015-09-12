@@ -21,6 +21,7 @@
 @dynamic avatarMedium;
 @dynamic avatarSmall;
 @dynamic createdDate;
+@dynamic publicPhotoCount;
 @dynamic photos;
 @dynamic locations;
 @dynamic users;

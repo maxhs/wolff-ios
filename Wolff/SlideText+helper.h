@@ -6,6 +6,12 @@
 //  Copyright (c) 2015 Wolff. All rights reserved.
 //
 
+typedef enum {
+    WFSlideTextAlignmentCenter  = 0,
+    WFSlideTextAlignmentLeft    = 1,
+    WFSlideTextAlignmentRight   = 2,
+} WFSlideTextAlignment;
+
 #import "SlideText.h"
 
 @interface SlideText (helper)

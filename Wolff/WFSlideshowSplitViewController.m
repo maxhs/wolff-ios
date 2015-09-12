@@ -313,18 +313,14 @@ NSString* const playOption = @"Play";
     CGPoint loc = [gestureRecognizer locationInView:self.tableView];
     NSIndexPath *selectedIndexPath = [self.tableView indexPathForRowAtPoint:loc];
     
-    if (selectedIndexPath.section == 0){
+    if (selectedIndexPath.section == 0 && self.slideshow.slides.count){
         [self becomeFirstResponder];
         activeIndexPath = selectedIndexPath;
         activeSlide = self.slideshow.slides[selectedIndexPath.row];
         
         WFSlideTableCell *cell = (WFSlideTableCell*)[self.tableView cellForRowAtIndexPath:selectedIndexPath];
         if (activeSlide.photoSlides.count > 1){
-            if (loc.x <= 150.f){
-                activeImageView = cell.artImageView2;
-            } else {
-                activeImageView = cell.artImageView3;
-            }
+            activeImageView = loc.x <= 150.f ? cell.artImageView2 : cell.artImageView3;
         } else if (activeSlide.photoSlides.count) {
             activeImageView = cell.artImageView1;
         }
@@ -623,7 +619,7 @@ NSString* const playOption = @"Play";
                 
                     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                         [self.tableView reloadRowsAtIndexPaths:@[indexPathForSlideCell] withRowAnimation:UITableViewRowAnimationAutomatic];
-                        [self.tableView reloadData];
+                        [self redrawSlideshowWithDelay];
                     }];
                     [self endPressAnimation];
                     return;
@@ -860,7 +856,7 @@ NSString* const playOption = @"Play";
 }
 
 - (void)post {
-    if (self.mainRequest || self.mainRequest.isCancelled || !self.slideshow) return;
+    if (self.mainRequest || !self.slideshow) return;
     
     if (self.popover) [self.popover dismissPopoverAnimated:YES];
     if (titleTextField.isEditing) [titleTextField resignFirstResponder];
@@ -910,7 +906,7 @@ NSString* const playOption = @"Play";
                 if (slideText.body.length){
                     [slideTextDict setObject:slideText.body forKey:@"body"];
                 }
-
+                [slideTextDict setObject:slideText.alignment forKey:@"alignment"];
                 [slideTexts addObject:slideTextDict];
             }];
             [slideObject setObject:slideTexts forKey:@"slide_texts"];
@@ -979,7 +975,7 @@ NSString* const playOption = @"Play";
 }
 
 - (void)cloudDownload {
-    NSLog(@"Should be downloading");
+    NSLog(@"Should be cloud downloading");
 }
 
 - (void)share {

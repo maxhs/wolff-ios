@@ -13,10 +13,8 @@
 
 @property (weak, nonatomic) IBOutlet UIButton *partnerPhotoButton;
 @property (weak, nonatomic) IBOutlet UILabel *nameLabel;
-@property (weak, nonatomic) IBOutlet UILabel *locationLabel;
 @property (weak, nonatomic) IBOutlet UILabel *partnerSinceLabel;
 @property (weak, nonatomic) IBOutlet UIButton *photoCountButton;
-@property (weak, nonatomic) IBOutlet UIButton *slideshowsButton;
 @property (weak, nonatomic) IBOutlet UIButton *lightTablesButton;
 @property (weak, nonatomic) IBOutlet UIButton *urlButton;
 - (void)configureForPartner:(Partner*)partner;

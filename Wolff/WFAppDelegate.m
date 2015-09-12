@@ -24,6 +24,7 @@
     [Crashlytics startWithAPIKey:@"fdf66a0a10b6fc2a0f7052c9758873dc992773d5"];
     [MagicalRecord setShouldDeleteStoreOnModelMismatch:YES];
     [MagicalRecord setupAutoMigratingCoreDataStack];
+    [MagicalRecord setLoggingLevel:MagicalRecordLoggingLevelError];
     //[Stripe setDefaultPublishableKey:kStripePublishableKeyTest];
     [self customizeAppearance];
     
@@ -53,12 +54,12 @@
         switch (status) {
             case AFNetworkReachabilityStatusReachableViaWWAN:
             case AFNetworkReachabilityStatusReachableViaWiFi:
-                NSLog(@"Connected");
+                //NSLog(@"Connected");
                 _connected = YES;
                 break;
             case AFNetworkReachabilityStatusNotReachable:
             default:
-                NSLog(@"Not online");
+                //NSLog(@"Not online");
                 _connected = NO;
                 [self offlineNotification];
                 break;
@@ -103,7 +104,6 @@
     
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Response string: %@",operation.responseString);
-        
         if (!_connected) {
             [self offlineNotification];
         } else if ([operation.responseString isEqualToString:kNoEmail]){
@@ -155,6 +155,10 @@
     [[NSUserDefaults standardUserDefaults] setObject:self.currentUser.firstName forKey:kUserDefaultsFirstName];
     [[NSUserDefaults standardUserDefaults] setObject:self.currentUser.lastName forKey:kUserDefaultsLastName];
     [[NSUserDefaults standardUserDefaults] synchronize];
+    
+    [[Crashlytics sharedInstance] setUserIdentifier:self.currentUser.identifier.stringValue];
+    [[Crashlytics sharedInstance] setUserEmail:self.currentUser.email];
+    [[Crashlytics sharedInstance] setUserName:self.currentUser.fullName];
 }
 
 - (void)customizeAppearance {
