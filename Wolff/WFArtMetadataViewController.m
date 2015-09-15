@@ -419,6 +419,8 @@ NSString* const deleteOption = @"Delete";
     } else {
         [_postedByButton setHidden:YES];
     }
+    [_postedByButton setContentHorizontalAlignment:UIControlContentHorizontalAlignmentCenter];
+    [_postedByButton setContentVerticalAlignment:UIControlContentVerticalAlignmentCenter];
     [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:6 inSection:0],[NSIndexPath indexPathForRow:7 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
 }
 

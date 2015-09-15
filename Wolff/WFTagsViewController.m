@@ -426,7 +426,7 @@ static NSString * const reuseIdentifier = @"TagCell";
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [ProgressHUD dismiss];
-    self.mainRequest = nil;
+    [self.mainRequest cancel];
 }
 
 - (void)doneEditing {

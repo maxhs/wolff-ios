@@ -301,11 +301,15 @@ NSString* const playOption = @"Play";
     NSInteger slideCount = self.slideshow.slides.count;
     Slide *newSlide = [Slide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [newSlide setSlideshow:self.slideshow];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    [self.tableView beginUpdates];
     NSIndexPath *indexPathForNewSlide = [NSIndexPath indexPathForRow:slideCount inSection:0];
+    
+    [self.tableView beginUpdates];
     [self.tableView insertRowsAtIndexPaths:@[indexPathForNewSlide] withRowAnimation:UITableViewRowAnimationAutomatic];
     [self.tableView endUpdates];
+    
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
+        
+    }];
 }
 
 // only applies to left tableView
@@ -363,27 +367,29 @@ NSString* const playOption = @"Play";
     NSPredicate *photoSlidePredicate = [NSPredicate predicateWithFormat:@"slide.identifier == %@ and photo.identifier == %@",activeSlide.identifier, activeImageView.photo.identifier];
     PhotoSlide *photoSlide = [PhotoSlide MR_findFirstWithPredicate:photoSlidePredicate inContext:[NSManagedObjectContext MR_defaultContext]];
 
-    [self.tableView beginUpdates];
     if (photoSlide){
         [activeSlide removePhotoSlide:photoSlide];
     }
     
     if (activeSlide.photoSlides.count){
+        [self.tableView beginUpdates];
         [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+        [self.tableView endUpdates];
     } else {
         [self.slideshow removeSlide:activeSlide fromIndex:activeSlide.index.integerValue];
         [activeSlide MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-        
+        [self.tableView beginUpdates];
         [self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-        [self redrawSlideshowWithDelay];
+        [self.tableView endUpdates];
         activeSlide = nil;
     }
-    
+
+    [self redrawSlideshowWithDelay];
     activeImageView = nil;
     activeIndexPath = nil;
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    
-    [self.tableView endUpdates];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
+        
+    }];
 }
 
 - (void)newSlide:(UIMenuController*)menuController {
@@ -696,20 +702,24 @@ NSString* const playOption = @"Play";
 }
 
 - (void)addSlideIntoSidebar {
+    // create the slide and fill it up with delicious photos
     Slide *slide = [Slide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     PhotoSlide *photoSlide = [PhotoSlide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [photoSlide setPhoto:self.selectedPhoto];
-    
     [slide addPhotoSlide:photoSlide];
     [slide setIndex:@(self.slideshow.slides.count)];
-    [self.tableView beginUpdates];
     [self.slideshow addSlide:slide atIndex:slide.index.integerValue];
+    
+    // update the view
+    [self.tableView beginUpdates];
     [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:(slide.index.integerValue) inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
     [self.tableView endUpdates];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
-    }];
+    [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
     [self endPressAnimation];
+    
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
+        
+    }];
 }
 
 - (BOOL)shouldAutorotate {
@@ -771,11 +781,12 @@ NSString* const playOption = @"Play";
 
 - (void)removePhoto {
     [self.slideshow removePhoto:self.selectedPhoto];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     [self.collectionView performBatchUpdates:^{
         [self.collectionView deleteItemsAtIndexPaths:@[self.photoStartIndex]];
     } completion:^(BOOL finished) {
-        
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
+            
+        }];
     }];
     [self removePhotoAnimation];
 }
@@ -942,7 +953,7 @@ NSString* const playOption = @"Play";
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to create a slideshow: %@",error.description);
             [WFAlert show:@"Sorry, but something went wrong while saving your slideshow to the cloud.\n\nWe've saved it locally in the meantime." withTime:3.7f];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+            
             [ProgressHUD dismiss];
             self.mainRequest = nil;
         }];
@@ -951,17 +962,18 @@ NSString* const playOption = @"Play";
         self.mainRequest = [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",self.slideshow.identifier] parameters:@{@"slideshow":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success saving a slideshow: %@",responseObject);
             [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
+            
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 [ProgressHUD dismiss];
-                [self.collectionView reloadData];
-                [self.tableView reloadData];
                 [WFAlert show:[NSString stringWithFormat:@"\"%@\" saved",self.slideshow.title] withTime:3.7f];
                 self.mainRequest = nil;
             }];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to save a slideshow: %@",error.description);
             [WFAlert show:@"Sorry, but something went wrong while saving your slideshow to the cloud.\n\nWe've saved it locally in the meantime." withTime:3.7f];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
+                
+            }];
             [ProgressHUD dismiss];
             self.mainRequest = nil;
         }];

@@ -38,6 +38,11 @@
     [_manager.requestSerializer setValue:(IDIOM == IPAD) ? @"2" : @"1" forHTTPHeaderField:@"device_type"];
     [self setupConnectionObserver];
 
+    // LAUNCH_DATE gets set after the welcome walkthrough
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:LAUNCH_DATE]){
+        [self newInstall];
+    }
+    
     if (IDIOM == IPAD && [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPadToken]){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPadToken] forKey:@"mobile_token"];
         [self connectWithParameters:parameters forSignup:NO];   // automatically log the user in
@@ -65,6 +70,10 @@
                 break;
         }
     }];
+}
+
+- (void)newInstall {
+    [[NSUserDefaults standardUserDefaults] setObject:[NSDate date] forKey:LAUNCH_DATE];
 }
 
 - (void)connectWithParameters:(NSMutableDictionary *)parameters forSignup:(BOOL)signup {
@@ -231,17 +240,31 @@
 }
 
 - (void)logout {
+    [WFTracking trackEvent:@"Logout" withProperties:nil];
+    
+    // preserve our counters
+    NSNumber *artMetadataViewCount = [[NSUserDefaults standardUserDefaults] objectForKey:ART_METADATA_VIEW_COUNT];
+    NSNumber *catalogViewCount = [[NSUserDefaults standardUserDefaults] objectForKey:CATALOG_VIEW_COUNT];
+    NSDate *launchDate = [[NSUserDefaults standardUserDefaults] objectForKey:LAUNCH_DATE];
+    self.currentUser = nil;
+
     //[self cleanAndResetDB];
-    [[Slideshow MR_findAll] enumerateObjectsUsingBlock:^(Slideshow *slideshow, NSUInteger idx, BOOL *stop) {
-        [slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-    }];
-    [[LightTable MR_findAll] enumerateObjectsUsingBlock:^(LightTable *lightTable, NSUInteger idx, BOOL *stop) {
-        [lightTable MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-    }];
+    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Photo MR_findAll]];
+    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Art MR_findAll]];
+    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Slideshow MR_findAll]];
+    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Slide MR_findAll]];
+    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[LightTable MR_findAll]];
+    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Favorite MR_findAll]];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    
     NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
     [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
     [NSUserDefaults resetStandardUserDefaults];
+    
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kExistingUser];
+    [[NSUserDefaults standardUserDefaults] setObject:catalogViewCount forKey:CATALOG_VIEW_COUNT];
+    [[NSUserDefaults standardUserDefaults] setObject:artMetadataViewCount forKey:ART_METADATA_VIEW_COUNT];
+    [[NSUserDefaults standardUserDefaults] setObject:launchDate forKey:LAUNCH_DATE];
     [[NSUserDefaults standardUserDefaults] synchronize];
     if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(logout)]){
         [self.loginDelegate logout];

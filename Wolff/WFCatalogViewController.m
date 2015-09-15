@@ -1667,15 +1667,15 @@ static NSString *const logoutOption = @"Log out";
     Photo *photo = self.lightTable.photos[indexPath.item];
     if (!photo) return;
     [self.lightTable removePhoto:photo];
+    if (sidebarIsVisible && !slideshowSidebarMode){
+        [self.tableView reloadData];
+    }
     
     // remove via API
     [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove",self.lightTable.identifier] parameters:@{@"photo_id":photo.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"success removing photo from light table: %@",responseObject);
-        if (sidebarIsVisible && !slideshowSidebarMode){
-            [self.tableView reloadData];
-        }
+        NSLog(@"Success removing photo from light table: %@",responseObject);
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"failed to remove photo from light table: %@",error.description);
+        NSLog(@"Failed to remove photo from light table: %@",error.description);
     }];
     
     // remove locally
@@ -1696,20 +1696,17 @@ static NSString *const logoutOption = @"Log out";
 
     // save to API
     [manager POST:[NSString stringWithFormat:@"light_tables/%@/add",self.lightTable.identifier] parameters:@{@"photo_id":photo.identifier} success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"success adding art from light table: %@",responseObject);
+        //NSLog(@"Success adding art from light table: %@",responseObject);
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"failed to add art from light table: %@",error.description);
+        NSLog(@"Failed to add art from light table: %@",error.description);
     }];
     
     // save locally
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        
-    }];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
 }
 
 - (void)longPressed:(UILongPressGestureRecognizer*)gestureRecognizer {
     CGPoint loc = [gestureRecognizer locationInView:self.collectionView];
-    
     CGFloat heightInScreen = fmodf((loc.y-self.collectionView.contentOffset.y), CGRectGetHeight(self.collectionView.frame));
     CGFloat hoverOffset;
     sidebarIsVisible ? (hoverOffset = kSidebarWidth) : (hoverOffset = 0);

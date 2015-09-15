@@ -179,7 +179,6 @@
     NSValue *keyboardValue = info[UIKeyboardFrameEndUserInfoKey];
     CGRect convertedKeyboardFrame = [self.view convertRect:keyboardValue.CGRectValue fromView:self.view.window];
     keyboardHeight = convertedKeyboardFrame.size.height;
-    CGFloat originY = self.navigationController.navigationBar.frame.size.height;
     [UIView animateWithDuration:duration
                           delay:0
                         options:curve | UIViewAnimationOptionBeginFromCurrentState

@@ -91,7 +91,7 @@
         
             Photo *photo1 = photos[0];
             NSURLRequest *artThumbUrlRequest1 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo1.thumbImageUrl]];
-            NSURLRequest *artOriginalUrlRequest1 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo1.largeImageUrl]];
+            NSURLRequest *artOriginalUrlRequest1 = [NSURLRequest requestWithURL:[NSURL URLWithString:slide ? photo1.largeImageUrl : photo1.originalImageUrl]];
             
             [_artImageView1 setImageWithURLRequest:artThumbUrlRequest1 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
                 [_artImageView1 setImage:image];
@@ -137,7 +137,7 @@
 
             Photo *photo2 = photos[0];
             NSURLRequest *artThumbUrlRequest2 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo2.thumbImageUrl]];
-            NSURLRequest *artOriginalUrlRequest2 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo2.largeImageUrl]];
+            NSURLRequest *artOriginalUrlRequest2 = [NSURLRequest requestWithURL:[NSURL URLWithString:slide ? photo2.largeImageUrl : photo2.originalImageUrl]];
             
             [_artImageView2 setImageWithURLRequest:artThumbUrlRequest2 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
                 [_artImageView2 setImage:image];
@@ -162,7 +162,7 @@
             
             Photo *photo3 = photos[1];
             NSURLRequest *artThumbUrlRequest3 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo3.thumbImageUrl]];
-            NSURLRequest *artOriginalUrlRequest3 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo3.largeImageUrl]];
+            NSURLRequest *artOriginalUrlRequest3 = [NSURLRequest requestWithURL:[NSURL URLWithString:slide ? photo3.largeImageUrl : photo3.originalImageUrl]];
             
             [_artImageView3 setImageWithURLRequest:artThumbUrlRequest3 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
                 [_artImageView3 setImage:image];

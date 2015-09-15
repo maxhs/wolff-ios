@@ -59,6 +59,11 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kUserDefaultsDeviceToken @"deviceToken"
 #define kLogoutMessage @"You've been successfully logged out.\n\nSee you again real soon."
 
+#define ART_METADATA_VIEW_COUNT @"Art metadata view count"
+#define CATALOG_VIEW_COUNT @"Catalog view count"
+#define SIGNUP_DATE @"Signup date"
+#define LAUNCH_DATE @"Launch date"
+
 #define kMuseoSansThin @"MuseoSans-100"
 #define kMuseoSansThinItalic @"MuseoSans-100Italic"
 #define kMuseoSansLight @"MuseoSans-300"
