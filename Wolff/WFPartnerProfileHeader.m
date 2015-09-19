@@ -37,9 +37,12 @@
 - (void)configureForPartner:(Partner *)partner {
     [_nameLabel setText:[NSString stringWithFormat:@"%@",partner.name]];
     
-    NSString *photoCount = partner.publicPhotoCount.intValue == 1 ? @"1 image" : [NSString stringWithFormat:@"%@ images",partner.publicPhotoCount];
-    [_photoCountButton setTitle:photoCount forState:UIControlStateNormal];
-    
+    if (partner.publicPhotoCount.intValue > 0){
+        NSString *photoCount = partner.publicPhotoCount.intValue == 1 ? @"1 image" : [NSString stringWithFormat:@"%@ images",partner.publicPhotoCount];
+        [_photoCountButton setTitle:photoCount forState:UIControlStateNormal];
+    } else {
+        [_photoCountButton setTitle:nil forState:UIControlStateNormal];
+    }
     [_partnerPhotoButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.1]];
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:partner.avatarMedium] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
     [_partnerPhotoButton setImageForState:UIControlStateNormal withURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {

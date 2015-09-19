@@ -15,6 +15,7 @@
 #import "WFAlert.h"
 #import "WFUtilities.h"
 #import "Alternate+helper.h"
+#import "WFTracking.h"
 
 @interface WFSettingsViewController () <UITextFieldDelegate, UIPopoverControllerDelegate, WFInstitutionSearchDelegate> {
     WFAppDelegate *delegate;
@@ -65,6 +66,7 @@
     [self registerForKeyboardNotifications];
     [self setUpNavigationButtons];
     changingPassword = NO;
+    [WFTracking trackEvent:@"Settings" withProperties:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated {

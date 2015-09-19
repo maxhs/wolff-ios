@@ -29,6 +29,7 @@
 #import "WFUtilities.h"
 #import "WFNoRotateNavController.h"
 #import "WFTransparentBGModalAnimator.h"
+#import "WFTracking.h"
 
 NSString* const shareOption = @"Share";
 NSString* const searchOption = @"Select images";
@@ -104,14 +105,11 @@ NSString* const playOption = @"Play";
         self.slideshow = [Slideshow MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         self.slideshow.owner = self.currentUser;
         self.slideshow.photos = self.selectedPhotos;
-        
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            [self setUpTitleView];
-            [self setUpNavButtons];
-            [self redrawSlideshow];
-            [titleTextField becomeFirstResponder];
-            [self.collectionView setUserInteractionEnabled:YES];
-        }];
+        [self setUpTitleView];
+        [self setUpNavButtons];
+        [self redrawSlideshow];
+        [titleTextField becomeFirstResponder];
+        [self.collectionView setUserInteractionEnabled:YES];
     }
     
     [self.navigationController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
@@ -148,6 +146,9 @@ NSString* const playOption = @"Play";
         [self.tableView setFrame:CGRectMake(0, 0, kSidebarWidth, height)];
         [self.collectionView setFrame:CGRectMake(kSidebarWidth, 0, width-kSidebarWidth, height)];
     }
+    
+    NSMutableDictionary *trackingParameters = [WFTracking generateTrackingPropertiesForSlideshow:self.slideshow];
+    [WFTracking trackEvent:@"Slideshow Make View" withProperties:trackingParameters];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -298,18 +299,14 @@ NSString* const playOption = @"Play";
 }
 
 - (void)addNewSlide {
-    NSInteger slideCount = self.slideshow.slides.count;
     Slide *newSlide = [Slide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-    [newSlide setSlideshow:self.slideshow];
-    NSIndexPath *indexPathForNewSlide = [NSIndexPath indexPathForRow:slideCount inSection:0];
-    
+    [newSlide setSlideshow:[self.slideshow MR_inContext:[NSManagedObjectContext MR_defaultContext]]];
+    NSIndexPath *indexPathForNewSlide = [NSIndexPath indexPathForRow:self.slideshow.slides.count-1 inSection:0];
     [self.tableView beginUpdates];
     [self.tableView insertRowsAtIndexPaths:@[indexPathForNewSlide] withRowAnimation:UITableViewRowAnimationAutomatic];
     [self.tableView endUpdates];
     
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
-        
-    }];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
 }
 
 // only applies to left tableView
@@ -387,16 +384,15 @@ NSString* const playOption = @"Play";
     [self redrawSlideshowWithDelay];
     activeImageView = nil;
     activeIndexPath = nil;
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
-        
-    }];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
 }
 
 - (void)newSlide:(UIMenuController*)menuController {
     Slide *newSlide = [Slide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-    [self.tableView beginUpdates];
     NSIndexPath *indexPathToInsert = [NSIndexPath indexPathForRow:activeSlide.index.integerValue + 1 inSection:0];
     [self.slideshow addSlide:newSlide atIndex:activeSlide.index.integerValue + 1];
+    
+    [self.tableView beginUpdates];
     [self.tableView insertRowsAtIndexPaths:@[indexPathToInsert] withRowAnimation:UITableViewRowAnimationAutomatic];
     [self.tableView endUpdates];
     
@@ -613,6 +609,12 @@ NSString* const playOption = @"Play";
                     // adding to existing slide
                     Slide *slide = [self.slideshow.slides objectAtIndex:indexPathForSlideCell.row];
                     
+                    //dont do anything if it's already got text
+                    if (slide.slideTexts.count){
+                        [self endPressAnimation];
+                        return;
+                    }
+                    
                     PhotoSlide *photoSlide = [PhotoSlide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                     [photoSlide setPhoto:self.selectedPhoto];
                     if (!slide.photos.count){
@@ -622,12 +624,14 @@ NSString* const playOption = @"Play";
                     } else {
                         [slide replacePhotoSlideAtIndex:0 withPhotoSlide:photoSlide];
                     }
-                
-                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                        [self.tableView reloadRowsAtIndexPaths:@[indexPathForSlideCell] withRowAnimation:UITableViewRowAnimationAutomatic];
-                        [self redrawSlideshowWithDelay];
-                    }];
+                    [self.tableView beginUpdates];
+                    [self.tableView reloadRowsAtIndexPaths:@[indexPathForSlideCell] withRowAnimation:UITableViewRowAnimationAutomatic];
+                    [self.tableView endUpdates];
+                    [self redrawSlideshowWithDelay];
                     [self endPressAnimation];
+                    
+                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
+                    
                     return;
                 }
             } else if (loc.y > self.tableView.contentSize.height && loc.x < kSidebarWidth){
@@ -717,9 +721,7 @@ NSString* const playOption = @"Play";
     [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
     [self endPressAnimation];
     
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
-        
-    }];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
 }
 
 - (BOOL)shouldAutorotate {
@@ -784,9 +786,7 @@ NSString* const playOption = @"Play";
     [self.collectionView performBatchUpdates:^{
         [self.collectionView deleteItemsAtIndexPaths:@[self.photoStartIndex]];
     } completion:^(BOOL finished) {
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
-            
-        }];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
     }];
     [self removePhotoAnimation];
 }
@@ -938,18 +938,19 @@ NSString* const playOption = @"Play";
         self.mainRequest = [manager POST:[NSString stringWithFormat:@"slideshows"] parameters:@{@"slideshow":parameters,@"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success creating a slideshow: %@",responseObject);
             [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                if (self.lightTable){
-                    [self lightTableSelected:self.lightTable];
-                } else {
-                    [ProgressHUD dismiss];
-                }
-                [WFAlert show:[NSString stringWithFormat:@"\"%@\" created",self.slideshow.title] withTime:3.7f];
-                if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(slideshowCreated:)]){
-                    [self.slideshowDelegate slideshowCreated:self.slideshow];
-                }
-                self.mainRequest = nil;
-            }];
+            self.mainRequest = nil;
+            
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+            if (self.lightTable){
+                [self lightTableSelected:self.lightTable];
+            } else {
+                [ProgressHUD dismiss];
+            }
+            [WFAlert show:[NSString stringWithFormat:@"\"%@\" created",self.slideshow.title] withTime:3.7f];
+            if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(slideshowCreated:)]){
+                [self.slideshowDelegate slideshowCreated:self.slideshow];
+            }
+            
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to create a slideshow: %@",error.description);
             [WFAlert show:@"Sorry, but something went wrong while saving your slideshow to the cloud.\n\nWe've saved it locally in the meantime." withTime:3.7f];
@@ -962,18 +963,15 @@ NSString* const playOption = @"Play";
         self.mainRequest = [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",self.slideshow.identifier] parameters:@{@"slideshow":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success saving a slideshow: %@",responseObject);
             [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
+            [ProgressHUD dismiss];
+            [WFAlert show:[NSString stringWithFormat:@"\"%@\" saved",self.slideshow.title] withTime:3.7f];
+            self.mainRequest = nil;
             
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [ProgressHUD dismiss];
-                [WFAlert show:[NSString stringWithFormat:@"\"%@\" saved",self.slideshow.title] withTime:3.7f];
-                self.mainRequest = nil;
-            }];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to save a slideshow: %@",error.description);
             [WFAlert show:@"Sorry, but something went wrong while saving your slideshow to the cloud.\n\nWe've saved it locally in the meantime." withTime:3.7f];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
-                
-            }];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
             [ProgressHUD dismiss];
             self.mainRequest = nil;
         }];
@@ -1032,9 +1030,8 @@ NSString* const playOption = @"Play";
             [self shareToLightTable:lightTable];
         } else {
             [lightTable addSlideshow:self.slideshow];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [WFAlert show:[NSString stringWithFormat:@"Dropped to \"%@\"",lightTable.name] withTime:2.7f];
-            }];
+            [WFAlert show:[NSString stringWithFormat:@"Dropped to \"%@\"",lightTable.name] withTime:2.7f];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
         }
     }
 }
@@ -1127,10 +1124,9 @@ NSString* const playOption = @"Play";
     } else {
         [self.slideshow addPhoto:photo];
     }
+    [self.collectionView reloadData];
     
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        [self.collectionView reloadData];
-    }];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
 }
 
 - (void)endSearch {
@@ -1348,8 +1344,7 @@ NSString* const playOption = @"Play";
 - (void)saveSlideshowWithUI:(BOOL)showHUD {
     if (showHUD) [ProgressHUD show:@"Saving..."];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        //NSLog(@"Success saving slideshow? %u",success);
-        [ProgressHUD dismiss];
+        if (showHUD) [ProgressHUD dismiss];
     }];
 }
 

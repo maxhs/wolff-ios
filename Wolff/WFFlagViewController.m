@@ -13,11 +13,11 @@
 #import "WFFlagCell.h"
 #import "WFAlert.h"
 #import "WFArtMetadataViewController.h"
+#import "WFTracking.h"
 
 @interface WFFlagViewController () <UITextFieldDelegate> {
     AFHTTPRequestOperationManager *manager;
     WFAppDelegate *delegate;
-    UIBarButtonItem *doneButton;
     UIBarButtonItem *submitButton;
     UISwitch *copyrightSwitch;
     UISwitch *accuracySwitch;
@@ -48,40 +48,46 @@
     [super viewDidLoad];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
-    doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneEditing)];
     submitButton = [[UIBarButtonItem alloc] initWithTitle:@"Submit" style:UIBarButtonItemStylePlain target:self action:@selector(createFlag)];
     submitButton.enabled = NO;
     self.navigationItem.rightBarButtonItem = submitButton;
     copyrightSwitch = [[UISwitch alloc] init];
     accuracySwitch = [[UISwitch alloc] init];
     damagesSwitch = [[UISwitch alloc] init];
+    self.currentUser = [self.currentUser MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     
+    NSMutableDictionary *trackingParameters;
     if (self.art){
         [_headerLabel setText:[NSString stringWithFormat:@"Flagging \"%@\"",self.art.title]];
+        trackingParameters = [WFTracking generateTrackingPropertiesForArt:self.art];
     } else if (self.photo) {
         [_headerLabel setText:[NSString stringWithFormat:@"Flagging \"%@\"",self.photo.art.title]];
+        trackingParameters = [WFTracking generateTrackingPropertiesForPhoto:self.photo];
     } else {
         [_headerLabel setText:[NSString stringWithFormat:@"Adding a flag"]];
     }
-    self.currentUser = [self.currentUser MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+     [WFTracking trackEvent:@"Flag" withProperties:trackingParameters];
+    
     
     [_headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
     [_headerLabel setTextColor:[UIColor redColor]];
     self.tableView.tableHeaderView = _headerLabel;
-    self.tableView.rowHeight = 60.f;
-    [self.tableView setSeparatorColor:[UIColor colorWithWhite:0 alpha:.1]];
+    [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     [self registerForKeyboardNotifications];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    // rehydrate the nav bar
     [self.navigationController setNavigationBarHidden:NO animated:YES];
+    [self.navigationController.navigationBar setBackgroundImage:nil forBarMetrics:UIBarMetricsDefault]; // make the nav bar visible again
+    [self.navigationController.navigationBar setBackgroundColor:[UIColor clearColor]];
+    topInset = self.navigationController.navigationBar.frame.size.height;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    topInset = self.tableView.contentInset.top; // have to set it here, not viewDidLoad
     if (_copyright){
         [copyrightOwnerTextField becomeFirstResponder];
     } else {
@@ -249,14 +255,13 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0){
-        return 60.f;
+        return IDIOM == IPAD ? 60.f : 80.f;
     } else {
         return 100.f;
     }
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
-    self.navigationItem.rightBarButtonItem = doneButton;
     if (textField == copyrightOwnerTextField){
         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
         [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionTop animated:YES];
@@ -321,7 +326,7 @@
     [parameters setObject:flagDict forKey:@"flag"];
     
     [manager POST:@"flags" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success creating a flag: %@",responseObject);
+        //NSLog(@"Success creating a flag: %@",responseObject);
         WFArtMetadataViewController *vc = (WFArtMetadataViewController*)self.navigationController.viewControllers.firstObject;
         if (vc.metadataDelegate && [vc.metadataDelegate respondsToSelector:@selector(artFlagged:)]){
             [vc.metadataDelegate artFlagged:self.photo.art];
@@ -413,8 +418,8 @@
                           delay:0
                         options:curve | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
-                         self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight+34, 0);
-                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, keyboardHeight+34, 0);
+                         self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, keyboardHeight+14, 0);
+                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, keyboardHeight+14, 0);
                      }
                      completion:NULL];
 }
@@ -441,9 +446,7 @@
 }
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
 - (void)didReceiveMemoryWarning {

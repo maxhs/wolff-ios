@@ -24,6 +24,7 @@
 #import "Icon+helper.h"
 #import "WFCreditTextField.h"
 #import "WFUtilities.h"
+#import "WFTracking.h"
 
 @interface WFNewArtViewController () <UITableViewDataSource, UITableViewDelegate , UIScrollViewDelegate, UITextFieldDelegate, WFImagePickerControllerDelegate, WFSelectArtistsDelegate, WFSelectLocationsDelegate, WFSelectMaterialsDelegate, WFSelectIconsDelegate, WFSelectTagsDelegate, UIActionSheetDelegate> {
     WFAppDelegate *delegate;
@@ -112,6 +113,8 @@
     [_privacySwitch setOn:NO];
     
     self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
+    
+    [WFTracking trackEvent:@"New Art" withProperties:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated {

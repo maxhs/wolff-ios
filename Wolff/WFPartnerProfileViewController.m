@@ -16,6 +16,7 @@
 #import "WFWebViewController.h"
 #import "WFPartnerProfileHeader.h"
 #import "WFNoRotateNavController.h"
+#import "WFTracking.h"
 
 @interface WFPartnerProfileViewController () <UIViewControllerTransitioningDelegate, WFMetadataDelegate> {
     WFAppDelegate *delegate;
@@ -81,8 +82,11 @@
     self.loadPartnerRequest = [manager GET:[NSString stringWithFormat:@"partners/%@",self.partner.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success loading partner details: %@",responseObject);
         [self.partner populateFromDictionary:[responseObject objectForKey:@"partner"]];
+        self.title = self.partner.name;
+        
+        [WFTracking trackEvent:@"Partner Profile" withProperties:[WFTracking generateTrackingPropertiesForPartner:self.partner]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            self.title = self.partner.name;
+            
             [ProgressHUD dismiss];
             self.loadPartnerRequest = nil;
         }];

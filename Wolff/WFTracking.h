@@ -15,6 +15,9 @@
 #import "Tag+helper.h"
 #import "Slide+helper.h"
 #import "Slideshow+helper.h"
+#import "Partner+helper.h"
+#import "Material+helper.h"
+#import "LightTable+helper.h"
 
 @interface WFTracking : NSObject
 
@@ -34,6 +37,9 @@
 +(NSMutableDictionary*)generateTrackingPropertiesForArtist:(Artist*)artist;
 +(NSMutableDictionary*)generateTrackingPropertiesForIcon:(Icon*)icon;
 +(NSMutableDictionary*)generateTrackingPropertiesForTag:(Tag*)tag;
++(NSMutableDictionary*)generateTrackingPropertiesForMaterial:(Material*)material;
++(NSMutableDictionary*)generateTrackingPropertiesForPartner:(Partner*)partner;
++(NSMutableDictionary*)generateTrackingPropertiesForLightTable:(LightTable*)lightTable;
 +(void)incrementCatalogCount;
 +(void)incrementArtMetadataViewCount;
 

@@ -12,6 +12,7 @@
 #import "WFAlert.h"
 #import "WFNewTagCell.h"
 #import "WFTagCollectionCell.h"
+#import "WFTracking.h"
 
 @interface WFTagsViewController () <UITextFieldDelegate> {
     WFAppDelegate *delegate;
@@ -79,6 +80,8 @@ static NSString * const reuseIdentifier = @"TagCell";
         self.navigationItem.rightBarButtonItem = saveButton;
     }
     [self adjustTagButtonColor];
+    
+    [WFTracking trackEvent:@"Tags" withProperties:nil];
 }
 
 - (void)noTagsToggled {

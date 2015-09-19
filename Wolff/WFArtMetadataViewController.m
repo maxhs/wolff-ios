@@ -37,6 +37,7 @@
 #import "WFNewLightTableAnimator.h"
 #import "WFTransparentBGModalAnimator.h"
 #import "WFPartnerProfileViewController.h"
+#import "WFTracking.h"
 
 NSString* const unfavoriteOption = @"Unfavorite";
 NSString* const favoriteOption = @"Favorite";
@@ -84,6 +85,7 @@ NSString* const deleteOption = @"Delete";
     UIButton *_beginEraButton;
     UIButton *_endEraButton;
     UIBarButtonItem *moreButton;
+    UIBarButtonItem *dismissBarButton;
     UIBarButtonItem *saveBarButton;
     UIActionSheet *flagActionSheet;
     UIActionSheet *eraActionSheet;
@@ -123,15 +125,12 @@ NSString* const deleteOption = @"Delete";
     [self.photoScrollView setCanCancelContentTouches:YES];
     [self drawHeader];
     
-    if (IDIOM == IPAD){
-        //[self drawHeader];
-    } else {
-        moreButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"more"] style:UIBarButtonItemStylePlain target:self action:@selector(showiPhoneOptions)];
-        self.navigationItem.rightBarButtonItem = moreButton;
-        saveBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(saveMetadata)];
+    if (IDIOM != IPAD){
         [self.view setBackgroundColor:[UIColor whiteColor]];
-        UIBarButtonItem *dismissBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
-        self.navigationItem.leftBarButtonItem = dismissBarButton;
+        // we use a navigation bar on iPhone – create the buttons here
+        moreButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"more"] style:UIBarButtonItemStylePlain target:self action:@selector(showiPhoneOptions)];
+        saveBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(saveMetadata)];
+        dismissBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
     }
 }
 
@@ -140,16 +139,21 @@ NSString* const deleteOption = @"Delete";
     if (IDIOM == IPAD){
         [self.navigationController setNavigationBarHidden:YES animated:YES];
     } else {
+        self.navigationItem.rightBarButtonItem = moreButton;
+        self.navigationItem.leftBarButtonItem = dismissBarButton;
         [self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault]; // make the nav bar invisible
         [self.navigationController.navigationBar setBackgroundColor:[UIColor whiteColor]];
+        [self.navigationController.navigationBar setTintColor:[UIColor blackColor]];
         [self.dismissButton setHidden:YES]; // don't need this on the iphone
         
         NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
         [[UIDevice currentDevice] setValue:value forKey:@"orientation"]; // force portrait orientation
         
+        //reset these after the orientation switches again
+        width = screenWidth();
+        height = screenHeight();
     }
-    width = screenWidth();
-    height = screenHeight();
+    [WFTracking incrementArtMetadataViewCount];
 }
 
 - (void)viewDidAppear:(BOOL)animated {

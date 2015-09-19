@@ -43,14 +43,14 @@
     NSNumber *detailViewCount = [[NSUserDefaults standardUserDefaults] objectForKey:ART_METADATA_VIEW_COUNT];
     [[NSUserDefaults standardUserDefaults] setObject:@(detailViewCount.intValue+1) forKey:ART_METADATA_VIEW_COUNT];
     [self registerSuperProperties:@{ART_METADATA_VIEW_COUNT:@(detailViewCount.intValue+1)}];
-    NSLog(@"Detail view count: %@",[[NSUserDefaults standardUserDefaults] objectForKey:ART_METADATA_VIEW_COUNT]);
+    //NSLog(@"Detail view count: %@",[[NSUserDefaults standardUserDefaults] objectForKey:ART_METADATA_VIEW_COUNT]);
 }
 
 +(void)incrementCatalogCount {
     NSNumber *feedViewCount = [[NSUserDefaults standardUserDefaults] objectForKey:CATALOG_VIEW_COUNT];
     [[NSUserDefaults standardUserDefaults] setObject:@(feedViewCount.intValue+1) forKey:CATALOG_VIEW_COUNT];
     [self registerSuperProperties:@{CATALOG_VIEW_COUNT:@(feedViewCount.intValue+1)}];
-    NSLog(@"Feed view count: %@",[[NSUserDefaults standardUserDefaults] objectForKey:CATALOG_VIEW_COUNT]);
+    //NSLog(@"Feed view count: %@",[[NSUserDefaults standardUserDefaults] objectForKey:CATALOG_VIEW_COUNT]);
 }
 
 +(void)trackScreen:(NSString *)screenPath {
@@ -90,6 +90,27 @@
     Slideshow *slideshow = [s MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     if (slideshow){
         [trackingProperties setObject:slideshow.identifier forKey:@"SLIDESHOW ID"];
+        [trackingProperties setObject:@(slideshow.photos.count) forKey:@"PHOTO COUNT"];
+        if (slideshow.title.length){
+            [trackingProperties setObject:slideshow.title forKey:@"TITLE"];
+        }
+        
+        __block NSInteger slideTextsCount = 0; __block NSInteger slidePhotosCount = 0;
+        [slideshow.slides enumerateObjectsUsingBlock:^(Slide *slide, NSUInteger idx, BOOL * stop) {
+            if (slide.photoSlides.count){
+                slidePhotosCount += slide.photoSlides.count;
+            }
+            if (slide.slideTexts.count){
+                slidePhotosCount += slide.slideTexts.count;
+            }
+        }];
+        if (slideTextsCount > 0){
+            [trackingProperties setObject:@(slideTextsCount) forKey:@"SLIDE TEXTS COUNT"];
+        }
+        if (slidePhotosCount > 0){
+            [trackingProperties setObject:@(slidePhotosCount) forKey:@"SLIDE PHOTOS COUNT"];
+        }
+        
     } else {
         return nil;
     }
@@ -135,11 +156,43 @@
     return trackingProperties;
 }
 
++(NSMutableDictionary*)generateTrackingPropertiesForMaterial:(Material *)m {
+    Material *material = [m MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+    if (!material) return nil;
+    NSMutableDictionary *trackingProperties = [NSMutableDictionary dictionary];
+    [trackingProperties setObject:material.identifier forKey:@"MATERIAL ID"];
+    return trackingProperties;
+}
+
++(NSMutableDictionary*)generateTrackingPropertiesForLightTable:(LightTable *)l {
+    LightTable *lightTable = [l MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+    if (!lightTable) return nil;
+    NSMutableDictionary *trackingProperties = [NSMutableDictionary dictionary];
+    [trackingProperties setObject:lightTable.identifier forKey:@"LIGHT TABLE ID"];
+    [trackingProperties setObject:@(lightTable.users.count) forKey:@"MEMBER COUNT"];
+    [trackingProperties setObject:@(lightTable.photos.count) forKey:@"PHOTO COUNT"];
+    [trackingProperties setObject:@(lightTable.owners.count) forKey:@"OWNER COUNT"];
+    return trackingProperties;
+}
+
++(NSMutableDictionary*)generateTrackingPropertiesForPartner:(Partner *)p {
+    Partner *partner = [p MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+    if (!partner) return nil;
+    NSMutableDictionary *trackingProperties = [NSMutableDictionary dictionary];
+    [trackingProperties setObject:partner.identifier forKey:@"PARTNER ID"];
+    [trackingProperties setObject:partner.identifier forKey:@"PARTNER NAME"];
+    [trackingProperties setObject:@(partner.photos.count) forKey:@"PHOTO COUNT"];
+    return trackingProperties;
+}
+
 +(NSMutableDictionary*)generateTrackingPropertiesForPhoto:(Photo *)p {
     Photo *photo = [p MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     if (!photo) return nil;
     NSMutableDictionary *trackingProperties = [NSMutableDictionary dictionary];
     [trackingProperties setObject:photo.identifier forKey:@"PHOTO ID"];
+    if (photo.art){
+        [trackingProperties setObject:photo.art.title forKey:@"ART TITLE"];
+    }
     return trackingProperties;
 }
 

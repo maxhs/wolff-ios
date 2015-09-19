@@ -15,6 +15,7 @@
 #import "WFArtMetadataViewController.h"
 #import "WFWebViewController.h"
 #import "WFNoRotateNavController.h"
+#import "WFTracking.h"
 
 @interface WFProfileViewController () <UIViewControllerTransitioningDelegate, WFMetadataDelegate> {
     WFAppDelegate *delegate;
@@ -71,11 +72,12 @@
     }
     [manager GET:[NSString stringWithFormat:@"users/%@",_user.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success loading user details: %@",responseObject);
-        [_user populateFromDictionary:[responseObject objectForKey:@"user"]];
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            self.title = _user.fullName;
-            [self getPublicPhotos];
-        }];
+        [self.user populateFromDictionary:[responseObject objectForKey:@"user"]];
+        self.title = self.user.fullName;
+        [WFTracking trackEvent:@"Profile" withProperties:[WFTracking generateTrackingPropertiesForUser:self.user]];
+        [self getPublicPhotos];
+        
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
        
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to load user details: %@",error.description);
@@ -104,9 +106,7 @@
     }
     [vc setUrl:[NSURL URLWithString:urlString]];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {

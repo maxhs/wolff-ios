@@ -21,6 +21,7 @@
 #import "WFPartnerProfileViewController.h"
 #import "WFResizeImageOperation.h"
 #import "SlideText+helper.h"
+#import "WFTracking.h"
 
 #import "TiledImageBuilder.h"
 
@@ -117,6 +118,16 @@
     [self adjustMetadataPosition];
     
     currentPage == self.slideshow.slides.count ? [nextButton setEnabled:NO] : [nextButton setEnabled:YES]; // disable next button if there are no slides in this slideshow
+    
+    NSMutableDictionary *trackingParameters;
+    if (self.slideshow){
+        trackingParameters = [WFTracking generateTrackingPropertiesForSlideshow:self.slideshow];
+    } else if (self.photos.count) {
+        [self.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL * stop) {
+            [trackingParameters setObject:photo.identifier forKey:@"PHOTO ID"];
+        }];
+    }
+    [WFTracking trackEvent:@"Slideshow View" withProperties:trackingParameters];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -435,8 +446,7 @@
         } else if (self.currentSlide.slideTexts.count) {
             [cell.titleLabel setAttributedText:nil]; // slide text slide, so don't do anything
             [cell.metadataComponentsLabel setAttributedText:nil];
-        } else if (self.currentSlide) {
-    
+        } else if (self.currentSlide.photoSlides.count) {
             photoSlide = self.currentSlide.photoSlides[indexPath.item];
             [cell configureForPhoto:photoSlide.photo withPhotoCount:self.currentSlide.photoSlides.count];
             if (self.currentSlide.photoSlides.count < 2 && self.currentSlide.slideTexts.count < 2){
@@ -455,7 +465,6 @@
         componentsLabelFrame.size.height = componentsSize.height;
         componentsLabelFrame.origin.x = titleLabelFrame.origin.x;
         componentsLabelFrame.origin.y = titleLabelFrame.origin.y + titleLabelFrame.size.height + 7.f;
-        
         [cell.titleLabel setFrame:titleLabelFrame];
         [cell.metadataComponentsLabel setFrame:componentsLabelFrame];
         if (self.photos.count){
@@ -469,6 +478,8 @@
             photoSlide.metadataComponentsHeight = @(componentsSize.height);
             photoSlide.metadataComponentsY = @(componentsLabelFrame.origin.y + 7.f);
         }
+        
+        // draw/frame the postedByButton
         if (!cell.postedByButton){
             cell.postedByButton = [UIButton buttonWithType:UIButtonTypeCustom];
             [cell.contentView addSubview:cell.postedByButton];

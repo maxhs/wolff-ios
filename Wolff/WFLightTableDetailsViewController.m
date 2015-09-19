@@ -16,6 +16,7 @@
 #import "WFUsersViewController.h"
 #import "WFLightTableDetailsCell.h"
 #import "NSArray+ToSentence.h"
+#import "WFTracking.h"
 
 @interface WFLightTableDetailsViewController () < UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UITextFieldDelegate, UITextViewDelegate, WFSelectUsersDelegate, UITableViewDataSource, UITableViewDelegate> {
     WFAppDelegate *delegate;
@@ -73,12 +74,17 @@
     
     if (_lightTable){
         [_actionButton setTitle:@"SAVE" forState:UIControlStateNormal];
+        NSMutableDictionary *trackingParameters = [WFTracking generateTrackingPropertiesForLightTable:self.lightTable];
+        [trackingParameters setObject:@"Edit" forKey:@"VIEW"];
+        [WFTracking trackEvent:@"Light Table" withProperties:trackingParameters];
     } else if (_joinMode){
         [_actionButton setTitle:@"JOIN" forState:UIControlStateNormal];
         [self.switchModesButton setTitle:@"Create a light table instead" forState:UIControlStateNormal];
+        [WFTracking trackEvent:@"Light Table" withProperties:@{@"VIEW":@"Join"}.mutableCopy];
     } else {
         [_actionButton setTitle:@"CREATE" forState:UIControlStateNormal];
         [self.switchModesButton setTitle:@"Join a light table instead" forState:UIControlStateNormal];
+        [WFTracking trackEvent:@"Light Table" withProperties:@{@"VIEW":@"Create"}.mutableCopy];
     }
     [_actionButton addTarget:self action:@selector(post) forControlEvents:UIControlEventTouchUpInside];
     

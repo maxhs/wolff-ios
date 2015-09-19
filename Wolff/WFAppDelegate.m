@@ -99,6 +99,16 @@
             [self.currentUser populateFromDictionary:userDict];
             [self setUserDefaults];
             
+            if (signup){
+                [WFTracking aliasForCurrentUser:self.currentUser.identifier];
+            }
+            [WFTracking setPeopleProperty:self.currentUser.firstName to:@"$first_name"];
+            [WFTracking setPeopleProperty:self.currentUser.lastName to:@"$last_name"];
+            [WFTracking setPeopleProperty:self.currentUser.email to:@"$email"];
+            
+            NSMutableDictionary *trackingProperties = [WFTracking generateTrackingPropertiesForUser:self.currentUser];
+            [WFTracking trackEvent:signup ? @"Signup" : @"Login" withProperties:trackingProperties];
+            
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
                 if (self.loginDelegate && [self.loginDelegate respondsToSelector:@selector(loginSuccessful)]) {
                     [self.loginDelegate loginSuccessful];

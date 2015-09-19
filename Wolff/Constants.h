@@ -63,6 +63,8 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define CATALOG_VIEW_COUNT @"Catalog view count"
 #define SIGNUP_DATE @"Signup date"
 #define LAUNCH_DATE @"Launch date"
+#define kYes @"Yes"
+#define kNo @"No"
 
 #define kMuseoSansThin @"MuseoSans-100"
 #define kMuseoSansThinItalic @"MuseoSans-100Italic"

@@ -46,6 +46,7 @@
 #import "WFNoRotateNavController.h"
 #import "WFTransparentBGModalAnimator.h"
 #import "WFLoadingCell.h"
+#import "WFTracking.h"
 
 static NSString *const createALightTablePlaceholder            = @"Create a light table";
 static NSString *const joinLightTablePlaceholder            = @"Join one that exists";
@@ -112,6 +113,7 @@ static NSString *const logoutOption = @"Log out";
     CGFloat topInset;
     UIRefreshControl *tableViewRefresh;
     UIRefreshControl *collectionViewRefresh;
+    UIActivityIndicatorView *loadingSpinner;
     NSMutableOrderedSet *_selectedPhotos;
     
     UILongPressGestureRecognizer *comparison1LongPress;
@@ -322,6 +324,7 @@ static NSString *const logoutOption = @"Log out";
     if (sidebarIsVisible && _photos.count){
         [self.tableView reloadData];
     }
+    [WFTracking incrementCatalogCount];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -599,32 +602,32 @@ static NSString *const logoutOption = @"Log out";
             
             NSSortDescriptor *chronologicalSort = [NSSortDescriptor sortDescriptorWithKey:@"createdDate" ascending:NO];
             [_photos sortUsingDescriptors:@[chronologicalSort]];
-            
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                if (self.searchBar.text.length){
-                    [self filterContentForSearchText:searchText scope:nil];
-                    canSearchMore = photosDict.count ? YES : NO;
-                } else if (showMyArt){
-                    canLoadMoreOfMyArt = photosDict.count ? YES : NO;
-                    if (self.mainRequest && !self.mainRequest.isCancelled){
-                        [self.collectionView reloadData];
-                    }
-                } else {
-                    canLoadMore = photosDict.count ? YES : NO;
-                    if (self.mainRequest && !self.mainRequest.isCancelled){
-                        [self.collectionView reloadData];
-                    }
+            if (self.searchBar.text.length){
+                [self filterContentForSearchText:searchText scope:nil];
+                canSearchMore = photosDict.count ? YES : NO;
+            } else if (showMyArt){
+                canLoadMoreOfMyArt = photosDict.count ? YES : NO;
+                if (self.mainRequest && !self.mainRequest.isCancelled){
+                    [self.collectionView reloadData];
                 }
-                
-                self.mainRequest = nil;
-                [self endRefresh];
-            }];
+            } else {
+                canLoadMore = photosDict.count ? YES : NO;
+                if (self.mainRequest && !self.mainRequest.isCancelled){
+                    [self.collectionView reloadData];
+                }
+            }
+            
+            self.mainRequest = nil;
+            [self endRefresh];
+
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
         } else {
             canLoadMore = NO;
             canSearchMore = NO;
             canLoadMoreOfMyArt = NO;
             [self endRefresh];
             self.mainRequest = nil;
+            [loadingSpinner stopAnimating];
             NSLog(@"How many photos did we pull? %lu. Can we load more? %u",(unsigned long)photosDict.count, canLoadMore);
         }
         
@@ -635,6 +638,8 @@ static NSString *const logoutOption = @"Log out";
 
 - (void)endRefresh {
     [ProgressHUD dismiss];
+    [loadingSpinner stopAnimating];
+    
     if (tableViewRefresh.isRefreshing){
         [tableViewRefresh endRefreshing];
     }
@@ -651,18 +656,16 @@ static NSString *const logoutOption = @"Log out";
         self.dashboardRequest = [manager GET:[NSString stringWithFormat:@"users/%@/dashboard",self.currentUser.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success getting user dashboard: %@", responseObject);
             [self.currentUser populateFromDictionary:[responseObject objectForKey:@"user"]];
+            [self fetchMyPhotos];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
             
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [self fetchMyPhotos];
-
-                if (self.dashboardRequest && !self.dashboardRequest.isCancelled){
-                    [self.collectionView reloadData];
-                    [self.tableView reloadData];
-                }
-                
-                [self endRefresh];
-                self.dashboardRequest = nil;
-            }];
+            if (self.dashboardRequest && !self.dashboardRequest.isCancelled){
+                [self.collectionView reloadData];
+                [self.tableView reloadData];
+            }
+            
+            [self endRefresh];
+            self.dashboardRequest = nil;
             
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to get user art: %@",error.description);
@@ -698,14 +701,14 @@ static NSString *const logoutOption = @"Log out";
             
             //NSLog(@"Success getting user art: %@", responseObject);
             [self parsePhotos:[responseObject objectForKey:@"photos"]];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                [self fetchMyPhotos];
-                if (self.dashboardRequest && !self.dashboardRequest.isCancelled){
-                    [self.collectionView reloadData];
-                }
-                [self endRefresh];
-                self.dashboardRequest = nil;
-            }];
+            [self fetchMyPhotos];
+            if (self.dashboardRequest && !self.dashboardRequest.isCancelled){
+                [self.collectionView reloadData];
+            }
+            [self endRefresh];
+            self.dashboardRequest = nil;
+            
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
             
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             //NSLog(@"Failed to get user art: %@",error.description);
@@ -745,13 +748,12 @@ static NSString *const logoutOption = @"Log out";
                 [favorite populateFromDictionary:@{@"photo":favoriteDict}];
                 [_favoritePhotos addObject:favorite.photo];
             }
+            if (self.dashboardRequest && !self.dashboardRequest.isCancelled){
+                [self.collectionView reloadData];
+            }
+            self.dashboardRequest = nil;
             
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                if (self.dashboardRequest && !self.dashboardRequest.isCancelled){
-                    [self.collectionView reloadData];
-                }
-                self.dashboardRequest = nil;
-            }];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
             
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to get user favorites: %@",error.description);
@@ -1435,20 +1437,6 @@ static NSString *const logoutOption = @"Log out";
     }
 }
 
-#pragma mark – UICollectionViewDelegateFlowLayout
-
-- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (IDIOM == IPAD){
-        if (sidebarIsVisible){
-            return CGSizeMake((width-kSidebarWidth)/3,(width-kSidebarWidth)/3);
-        } else {
-            return CGSizeMake(width/4, width/4);
-        }
-    } else {
-        return CGSizeMake(width/2,width/2);
-    }
-}
-
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     width = size.width; height = size.height;
@@ -1467,61 +1455,97 @@ static NSString *const logoutOption = @"Log out";
     }];
 }
 
+
+
+#pragma mark - UICollectionView Datasource
+
+- (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
+    return 2;
+}
+
+- (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
+    if (section == 0){
+        if (self.searchBar.text.length){
+            return _filteredPhotos.count;
+        } else if (showMyArt){
+            self.searchBar.placeholder = @"Search my art";
+            return _myPhotos.count;
+        } else if (showLightTable){
+            if (self.lightTable && self.lightTable.name.length){
+                self.searchBar.placeholder = [NSString stringWithFormat:@"Search %@",self.lightTable.name];
+            } else {
+                self.searchBar.placeholder = @"Search light table";
+            }
+            return self.lightTable.photos.count;
+        } else if (showFavorites){
+            self.searchBar.placeholder = @"Search favorites";
+            return _favoritePhotos.count;
+        } else {
+            self.searchBar.placeholder = @"Search Wölff Catalog";
+            return _photos.count;
+        }
+    } else {
+        // loading cell
+        return 1;
+    }
+}
+
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0){
+        WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"PhotoCell" forIndexPath:indexPath];
+        Photo *photo;
+        if (self.searchBar.text.length){
+            photo = _filteredPhotos[indexPath.item];
+        } else if (showMyArt){
+            photo = _myPhotos[indexPath.item];
+        } else if (showLightTable && self.lightTable){
+            photo = self.lightTable.photos[indexPath.item];
+        } else if (showFavorites){
+            photo = _favoritePhotos[indexPath.item];
+        } else if (_photos.count){
+            photo = _photos[indexPath.item];
+        }
+        if (photo){
+            [cell configureForPhoto:photo];
+            [cell.checkmark setHidden:[_selectedPhotos containsObject:photo] ? NO : YES];
+        }
+        return cell;
+    } else {
+        WFLoadingCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"LoadingCell" forIndexPath:indexPath];
+        loadingSpinner = cell.loadingSpinner;
+        if (self.mainRequest || self.dashboardRequest || self.lightTableRequest || self.slideshowRequest){
+            [cell.loadingSpinner startAnimating];
+        } else {
+            [cell.loadingSpinner stopAnimating];
+        }
+        return cell;
+    }
+}
+
+#pragma mark – UICollectionViewDelegateFlowLayout
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0){
+        if (IDIOM == IPAD){
+            if (sidebarIsVisible){
+                return CGSizeMake((width-kSidebarWidth)/3,(width-kSidebarWidth)/3);
+            } else {
+                return CGSizeMake(width/4, width/4);
+            }
+        } else {
+            return CGSizeMake(width/2,width/2);
+        }
+    } else {
+        return CGSizeMake(width, 100);
+    }
+}
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
     return UIEdgeInsetsMake(0, 0, 0, 0);
 }
 
-#pragma mark - UICollectionView Datasource
-
-- (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
-    if (self.searchBar.text.length){
-        return _filteredPhotos.count;
-    } else if (showMyArt){
-        self.searchBar.placeholder = @"Search my art";
-        return _myPhotos.count;
-    } else if (showLightTable){
-        if (self.lightTable && self.lightTable.name.length){
-            self.searchBar.placeholder = [NSString stringWithFormat:@"Search %@",self.lightTable.name];
-        } else {
-            self.searchBar.placeholder = @"Search light table";
-        }
-        return self.lightTable.photos.count;
-    } else if (showFavorites){
-        self.searchBar.placeholder = @"Search favorites";
-        return _favoritePhotos.count;
-    } else {
-        self.searchBar.placeholder = @"Search Wölff Catalog";
-        return _photos.count;
-    }
-}
-
-- (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView {
-    return 1;
-}
-
-- (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"PhotoCell" forIndexPath:indexPath];
-    Photo *photo;
-    if (self.searchBar.text.length){
-        photo = _filteredPhotos[indexPath.item];
-    } else if (showMyArt){
-        photo = _myPhotos[indexPath.item];
-    } else if (showLightTable && self.lightTable){
-        photo = self.lightTable.photos[indexPath.item];
-    } else if (showFavorites){
-        photo = _favoritePhotos[indexPath.item];
-    } else if (_photos.count){
-        photo = _photos[indexPath.item];
-    }
-    if (photo){
-        [cell configureForPhoto:photo];
-        [cell.checkmark setHidden:[_selectedPhotos containsObject:photo] ? NO : YES];
-    }
-    return cell;
-}
-
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
-    if (self.searchBar.text.length || showFavorites || (showLightTable && self.lightTable) || showMyArt){
+    if (section == 0 && (self.searchBar.text.length || showFavorites || (showLightTable && self.lightTable) || showMyArt)){
         return CGSizeMake(collectionView.frame.size.width, 54);
     } else {
         return CGSizeMake(1, 0);
@@ -1532,19 +1556,22 @@ static NSString *const logoutOption = @"Log out";
     if (kind == UICollectionElementKindSectionHeader) {
         WFCatalogHeaderView *headerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:@"HeaderView" forIndexPath:indexPath];
         
-        [headerView.headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
-        if (showMyArt){
-            [headerView.headerLabel setText:@"My Art"];
-        } else if (showLightTable) {
-            [headerView.headerLabel setText:[NSString stringWithFormat:@"\"%@\" Art",self.lightTable.name]];
-        } else if (showFavorites) {
-            [headerView.headerLabel setText:@"Favorites"];
-        } else if (self.searchBar.text.length) {
-            [headerView.headerLabel setText:[NSString stringWithFormat:@"Search results for: \"%@\"",searchText]];
-            [headerView.headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
+        if (indexPath.section == 0){
+            [headerView.headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
+            if (showMyArt){
+                [headerView.headerLabel setText:@"My Art"];
+            } else if (showLightTable) {
+                [headerView.headerLabel setText:[NSString stringWithFormat:@"\"%@\" Art",self.lightTable.name]];
+            } else if (showFavorites) {
+                [headerView.headerLabel setText:@"Favorites"];
+            } else if (self.searchBar.text.length) {
+                [headerView.headerLabel setText:[NSString stringWithFormat:@"Search results for: \"%@\"",searchText]];
+                [headerView.headerLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSansLightItalic] size:0]];
+            }
+            [headerView.headerLabel setTextColor:[UIColor blackColor]];
+        } else {
+            [headerView.headerLabel setText:@""];
         }
-        
-        [headerView.headerLabel setTextColor:[UIColor blackColor]];
         return headerView;
     } else {
         return nil;
@@ -2352,7 +2379,7 @@ static NSString *const logoutOption = @"Log out";
         [self.popover dismissPopoverAnimated:YES];
     }
     if (self.currentUser.customerPlan.length){
-        Slideshow *slideshow = [Slideshow MR_findFirstByAttribute:@"identifier" withValue:s.identifier inContext:[NSManagedObjectContext MR_defaultContext]];
+        Slideshow *slideshow = [s MR_inContext:[NSManagedObjectContext MR_defaultContext]];
         WFSlideshowSplitViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SlideshowSplitView"];
         vc.slideshowDelegate = self;
         [vc setSlideshow:slideshow];
@@ -2700,6 +2727,10 @@ static NSString *const logoutOption = @"Log out";
     }
 
     [self.collectionView reloadData];
+    
+    if (!_filteredPhotos.count){
+        [loadingSpinner stopAnimating];
+    }
 }
 
 #pragma mark - WFSearchDelegate methods
@@ -2752,10 +2783,15 @@ static NSString *const logoutOption = @"Log out";
     }
     if (self.currentUser.customerPlan.length){
         if (slideshow){
+            // add the selected photos to the slideshow's nsorderered set Photos. enumerate through the selected photos to ensure we're only adding photos from the current context
             NSMutableOrderedSet *photoSet = slideshow.photos.mutableCopy;
-            [photoSet addObjectsFromArray:_selectedPhotos.array];
+            [_selectedPhotos enumerateObjectsUsingBlock:^(Photo *p, NSUInteger idx, BOOL * _Nonnull stop) {
+                Photo *photo = [p MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+                [photoSet addObject:photo];
+            }];
             slideshow.photos = photoSet;
             
+            // create an array of photo_ids for the purposes of sync'ing with the API
             __block NSMutableArray *photoIds = [NSMutableArray array];
             [slideshow.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
                 [photoIds addObject:photo.identifier];
@@ -2771,8 +2807,9 @@ static NSString *const logoutOption = @"Log out";
                     [manager PATCH:[NSString stringWithFormat:@"slideshows/%@/add_photos",slideshow.identifier] parameters:@{@"slideshow":@{@"photo_ids":photoIds}, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
                         //NSLog(@"Success dropping photos to slideshow: %@",responseObject);
                         [slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
+                        [self.tableView reloadData];
+                        
                         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                            [self.tableView reloadData];
                             [ProgressHUD dismiss];
                             [self editSlideshow:slideshow];
                         }];

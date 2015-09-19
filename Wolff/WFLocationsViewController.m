@@ -13,6 +13,7 @@
 #import "WFNewLocationCell.h"
 #import "WFAlert.h"
 #import "WFUtilities.h"
+#import "WFTracking.h"
 
 @interface WFLocationsViewController () <UITextFieldDelegate> {
     WFAppDelegate *delegate;
@@ -82,6 +83,8 @@ static NSString * const reuseIdentifier = @"LocationCell";
         self.navigationItem.rightBarButtonItem = saveButton;
     }
     [self adjustLocationButtonColor];
+    
+    [WFTracking trackEvent:@"Locations" withProperties:nil];
 }
 
 - (void)locationUnknownToggled {

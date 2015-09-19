@@ -14,6 +14,8 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     [self.loadingLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleBody forFont:kMuseoSans] size:0]];
+    [self.loadingSpinner setTintColor:[UIColor blackColor]];
+    [self.loadingSpinner setHidesWhenStopped:YES];
 }
 
 @end

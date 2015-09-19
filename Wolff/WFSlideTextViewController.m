@@ -42,13 +42,13 @@
     width = screenWidth();
     height = screenHeight();
     [self.view setBackgroundColor:[UIColor blackColor]];
-    _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    _panGesture.delegate = self;
-    [self.textView addGestureRecognizer:_panGesture];
-    _doubleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
-    _doubleTapGesture.delegate = self;
-    _doubleTapGesture.numberOfTapsRequired = 2;
-    [self.view addGestureRecognizer:_doubleTapGesture];
+//    _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+//    _panGesture.delegate = self;
+//    [self.textView addGestureRecognizer:_panGesture];
+//    _doubleTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
+//    _doubleTapGesture.delegate = self;
+//    _doubleTapGesture.numberOfTapsRequired = 2;
+//    [self.view addGestureRecognizer:_doubleTapGesture];
     
     [self.textView setKeyboardAppearance:UIKeyboardAppearanceDark];
     [self.textView setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleSubheadline forFont:kMuseoSansLight] size:0]];
@@ -83,7 +83,7 @@
     rightAlignButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"rightAlign"] style:UIBarButtonItemStylePlain target:self action:@selector(rightAlign:)];
     centerAlignButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"centerAlign"] style:UIBarButtonItemStylePlain target:self action:@selector(centerAlign:)];
     self.navigationItem.rightBarButtonItems = @[rightAlignButton, centerAlignButton, leftAlignButton];
-    backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(done)];
     self.navigationItem.leftBarButtonItem = backButton;
 }
 
@@ -158,7 +158,7 @@
         
         [self.textView setFrame:CGRectMake(10, 10+navBarHeight, width-20, height - 20 - navBarHeight - keyboardHeight)];
     } completion:^(BOOL finished) {
-        NSLog(@"handle double tap: %@",self.textView);
+        
     }];
 }
 
