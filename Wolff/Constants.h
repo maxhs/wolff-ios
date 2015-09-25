@@ -26,18 +26,21 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 #define kMediumAnimationDuration 1.4f
 #define kSlowAnimationDuration 2.3f
 
-#define kApiBaseUrl @"https://wolffapp.com/api/v1"
-#define kBaseUrl @"https://wolffapp.com"
-#define kTestFlightToken @"a37d3f4a-b21b-4f38-ac66-83c68b65a8a1"
-#define kStripePublishableKey @"pk_live_4sgQpIqXTKke1WwlPUSHAd6g"
-#define kStripePublishableKeyTest @"pk_test_ZXELq5hTeexZnsrdWXpEbHeL"
-
-#ifdef DBEUG
-#define MIXPANEL_TOKEN @"b091c81f24a93b828683bb5c3c260278"
+#if STAGING==1
+#define MIXPANEL_TOKEN @"383bda487c05ab54bd15f4f9a1220913"
+#define kApiBaseUrl @"https://wolffapp-staging.herokuapp.com/api/v1"
+#define kBaseUrl @"https://wolffapp-staging.herokuapp.com/"
+#define kStripePublishableKey @"pk_test_ZXELq5hTeexZnsrdWXpEbHeL"
+#define API_LOGIN @"wolff_mobile"
+#define API_KEY @"0fd11d82b574e0b13fc66b6227c4925c"
 #else
 #define MIXPANEL_TOKEN @"b091c81f24a93b828683bb5c3c260278"
+#define kApiBaseUrl @"https://wolffapp.com/api/v1"
+#define kBaseUrl @"https://wolffapp.com"
+#define kStripePublishableKey @"pk_live_4sgQpIqXTKke1WwlPUSHAd6g"
+#define API_LOGIN @"wolff_mobile"
+#define API_KEY @"0fd11d82b574e0b13fc66b6227c4925c"
 #endif
-
 
 #define kDarkBackgroundConstant 5298
 #define kBlurredBackgroundConstant 5299

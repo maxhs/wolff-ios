@@ -4,6 +4,11 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>Wolff Dev.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>7</integer>
+		</dict>
 		<key>Wolff.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -12,6 +17,11 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>50E321821BB1B03E00B9E55C</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>F28C77DF18E1E4950088B4C9</key>
 		<dict>
 			<key>primary</key>

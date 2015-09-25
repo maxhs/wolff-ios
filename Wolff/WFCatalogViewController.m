@@ -2739,8 +2739,14 @@ static NSString *const logoutOption = @"Log out";
         [self.popover dismissPopoverAnimated:YES];
     }
     if (self.currentUser.customerPlan.length){
+        // add the selected photos to the slideshow's nsorderered set Photos. enumerate through the selected photos to ensure we're only adding photos from the current context
         LightTable *lightTable = [l MR_inContext:[NSManagedObjectContext MR_defaultContext]];
-        [lightTable addPhotos:_selectedPhotos.array];
+        NSMutableOrderedSet *photoSet = lightTable.photos.mutableCopy;
+        [_selectedPhotos enumerateObjectsUsingBlock:^(Photo *p, NSUInteger idx, BOOL * _Nonnull stop) {
+            Photo *photo = [p MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+            [photoSet addObject:photo];
+        }];
+        lightTable.photos = photoSet;
         
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
             __block NSMutableArray *photoIds = [NSMutableArray arrayWithCapacity:lightTable.photos.count];

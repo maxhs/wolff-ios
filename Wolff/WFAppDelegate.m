@@ -25,7 +25,7 @@
     [MagicalRecord setShouldDeleteStoreOnModelMismatch:YES];
     [MagicalRecord setupAutoMigratingCoreDataStack];
     [MagicalRecord setLoggingLevel:MagicalRecordLoggingLevelError];
-    //[Stripe setDefaultPublishableKey:kStripePublishableKeyTest];
+    //[Stripe setDefaultPublishableKey:kStripePublishableKey];
     [self customizeAppearance];
     
     [Mixpanel sharedInstanceWithToken:MIXPANEL_TOKEN];
@@ -34,7 +34,7 @@
     
     _manager = [[AFHTTPRequestOperationManager manager] initWithBaseURL:[NSURL URLWithString:kApiBaseUrl]];
     [AFNetworkActivityIndicatorManager sharedManager].enabled = YES;
-    [_manager.requestSerializer setAuthorizationHeaderFieldWithUsername:@"wolff_mobile" password:@"0fd11d82b574e0b13fc66b6227c4925c"];
+    [_manager.requestSerializer setAuthorizationHeaderFieldWithUsername:API_LOGIN password:API_KEY];
     [_manager.requestSerializer setValue:(IDIOM == IPAD) ? @"2" : @"1" forHTTPHeaderField:@"device_type"];
     [self setupConnectionObserver];
 
@@ -42,7 +42,7 @@
     if (![[NSUserDefaults standardUserDefaults] objectForKey:LAUNCH_DATE]){
         [self newInstall];
     }
-    
+    NSLog(@"Base url: %@",kApiBaseUrl);
     if (IDIOM == IPAD && [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPadToken]){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPadToken] forKey:@"mobile_token"];
         [self connectWithParameters:parameters forSignup:NO];   // automatically log the user in

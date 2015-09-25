@@ -91,7 +91,7 @@
     if (slideshow){
         [trackingProperties setObject:slideshow.identifier forKey:@"SLIDESHOW ID"];
         [trackingProperties setObject:@(slideshow.photos.count) forKey:@"PHOTO COUNT"];
-        if (slideshow.title.length){
+        if (slideshow.title && slideshow.title.length){
             [trackingProperties setObject:slideshow.title forKey:@"TITLE"];
         }
         
