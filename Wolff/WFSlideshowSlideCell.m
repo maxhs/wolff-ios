@@ -90,10 +90,10 @@
             [self.containerView3 setHidden:YES];
         
             Photo *photo1 = photos[0];
-            NSURLRequest *artThumbUrlRequest1 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo1.thumbImageUrl]];
+            NSURLRequest *artmediumUrlRequest1 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo1.mediumImageUrl]];
             NSURLRequest *artOriginalUrlRequest1 = [NSURLRequest requestWithURL:[NSURL URLWithString:slide ? photo1.largeImageUrl : photo1.originalImageUrl]];
             
-            [_artImageView1 setImageWithURLRequest:artThumbUrlRequest1 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+            [_artImageView1 setImageWithURLRequest:artmediumUrlRequest1 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
                 [_artImageView1 setImage:image];
                 if (response){
                     [UIView animateWithDuration:.27 animations:^{
@@ -136,10 +136,10 @@
             [self.containerView3 setHidden:NO];
 
             Photo *photo2 = photos[0];
-            NSURLRequest *artThumbUrlRequest2 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo2.thumbImageUrl]];
+            NSURLRequest *artMediumUrlRequest2 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo2.mediumImageUrl]];
             NSURLRequest *artOriginalUrlRequest2 = [NSURLRequest requestWithURL:[NSURL URLWithString:slide ? photo2.largeImageUrl : photo2.originalImageUrl]];
             
-            [_artImageView2 setImageWithURLRequest:artThumbUrlRequest2 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+            [_artImageView2 setImageWithURLRequest:artMediumUrlRequest2 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
                 [_artImageView2 setImage:image];
                 if (response){
                     [UIView animateWithDuration:.27 animations:^{
@@ -161,10 +161,10 @@
             } failure:NULL];
             
             Photo *photo3 = photos[1];
-            NSURLRequest *artThumbUrlRequest3 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo3.thumbImageUrl]];
+            NSURLRequest *artMediumUrlRequest3 = [NSURLRequest requestWithURL:[NSURL URLWithString:photo3.mediumImageUrl]];
             NSURLRequest *artOriginalUrlRequest3 = [NSURLRequest requestWithURL:[NSURL URLWithString:slide ? photo3.largeImageUrl : photo3.originalImageUrl]];
             
-            [_artImageView3 setImageWithURLRequest:artThumbUrlRequest3 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
+            [_artImageView3 setImageWithURLRequest:artMediumUrlRequest3 placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
                 [_artImageView3 setImage:image];
                 if (response){
                     [UIView animateWithDuration:.27 animations:^{

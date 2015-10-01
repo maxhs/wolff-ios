@@ -28,8 +28,8 @@ static inline int screenWidth(){ return [UIScreen mainScreen].bounds.size.width;
 
 #if STAGING==1
 #define MIXPANEL_TOKEN @"383bda487c05ab54bd15f4f9a1220913"
-#define kApiBaseUrl @"https://wolffapp-staging.herokuapp.com/api/v1"
-#define kBaseUrl @"https://wolffapp-staging.herokuapp.com/"
+#define kApiBaseUrl @"https://staging.wolffapp.com/api/v1"
+#define kBaseUrl @"https://staging.wolffapp.com/"
 #define kStripePublishableKey @"pk_test_ZXELq5hTeexZnsrdWXpEbHeL"
 #define API_LOGIN @"wolff_mobile"
 #define API_KEY @"0fd11d82b574e0b13fc66b6227c4925c"

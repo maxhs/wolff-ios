@@ -351,12 +351,12 @@ NSString* const playOption = @"Play";
     }
 }
 
-- (void)redrawSlideshowWithDelay {
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .33f * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        [self.tableView reloadData];
-    });
-}
+//- (void)redrawSlideshowWithDelay {
+//    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .33f * NSEC_PER_SEC);
+//    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+//        [self.tableView reloadData];
+//    });
+//}
 
 - (void)removeArt:(UIMenuController*)menuController {
     if (!activeSlide) return;
@@ -369,19 +369,20 @@ NSString* const playOption = @"Play";
     }
     
     if (activeSlide.photoSlides.count){
-        [self.tableView beginUpdates];
-        [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
-        [self.tableView endUpdates];
+//        [self.tableView beginUpdates];
+//        [self.tableView reloadRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+//        [self.tableView endUpdates];
     } else {
         [self.slideshow removeSlide:activeSlide fromIndex:activeSlide.index.integerValue];
         [activeSlide MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-        [self.tableView beginUpdates];
-        [self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-        [self.tableView endUpdates];
+//        [self.tableView beginUpdates];
+//        [self.tableView deleteRowsAtIndexPaths:@[activeIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+//        [self.tableView endUpdates];
         activeSlide = nil;
     }
 
-    [self redrawSlideshowWithDelay];
+//    [self redrawSlideshowWithDelay];
+    [self.tableView reloadData];
     activeImageView = nil;
     activeIndexPath = nil;
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
@@ -389,14 +390,15 @@ NSString* const playOption = @"Play";
 
 - (void)newSlide:(UIMenuController*)menuController {
     Slide *newSlide = [Slide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-    NSIndexPath *indexPathToInsert = [NSIndexPath indexPathForRow:activeSlide.index.integerValue + 1 inSection:0];
+//    NSIndexPath *indexPathToInsert = [NSIndexPath indexPathForRow:activeSlide.index.integerValue + 1 inSection:0];
     [self.slideshow addSlide:newSlide atIndex:activeSlide.index.integerValue + 1];
     
-    [self.tableView beginUpdates];
-    [self.tableView insertRowsAtIndexPaths:@[indexPathToInsert] withRowAnimation:UITableViewRowAnimationAutomatic];
-    [self.tableView endUpdates];
+//    [self.tableView beginUpdates];
+//    [self.tableView insertRowsAtIndexPaths:@[indexPathToInsert] withRowAnimation:UITableViewRowAnimationAutomatic];
+//    [self.tableView endUpdates];
+//    [self redrawSlideshowWithDelay];
     
-    [self redrawSlideshowWithDelay];
+    [self.tableView reloadData];
     activeImageView = nil;
     activeIndexPath = nil;
 }
@@ -421,14 +423,16 @@ NSString* const playOption = @"Play";
 }
 
 - (void)createdSlideText:(SlideText *)slideText {
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:[self.slideshow.slides indexOfObject:activeSlide] inSection:0];
-    [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-    [self redrawSlideshowWithDelay];
+    [self.tableView reloadData];
+//    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:[self.slideshow.slides indexOfObject:activeSlide] inSection:0];
+//    [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+//    [self redrawSlideshowWithDelay];
 }
 
 - (void)updatedSlideText:(SlideText *)slideText {
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:[self.slideshow.slides indexOfObject:activeSlide] inSection:0];
-    [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self.tableView reloadData];
+//    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:[self.slideshow.slides indexOfObject:activeSlide] inSection:0];
+//    [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 // UIMenuController requires that we can become first responder or it won't display
@@ -541,7 +545,7 @@ NSString* const playOption = @"Play";
         
         if (loc.x > kSidebarWidth && self.slideshow.photos.count) {
             self.photoStartIndex = [self.collectionView indexPathForItemAtPoint:photoLoc];
-            if (self.photoStartIndex) {
+            if (self.photoStartIndex && self.photoStartIndex.item < self.slideshow.photos.count) {
                 self.selectedPhoto = self.slideshow.photos[self.photoStartIndex.item];
                 
                 if (IDIOM == IPAD){
@@ -566,11 +570,10 @@ NSString* const playOption = @"Play";
             }
         } else if (loc.x < kSidebarWidth && self.slideshow.slides.count){
             self.slideStartIndex = [self.tableView indexPathForRowAtPoint:slideLoc];
-            if (self.slideStartIndex && self.slideStartIndex.section != 1) {
+            if (self.slideStartIndex && self.slideStartIndex.section != 1 && self.slideStartIndex.row < self.slideshow.slides.count) {
                 WFSlideTableCell *cell = (WFSlideTableCell*)[self.tableView cellForRowAtIndexPath:self.slideStartIndex];
                 self.selectedSlide = self.slideshow.slides[self.slideStartIndex.row];
                 self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:nil];
-                
                 [cell.contentView setAlpha:0.1f];
                 [self.view addSubview:self.draggingView];
                 self.draggingView.center = loc;
@@ -605,7 +608,7 @@ NSString* const playOption = @"Play";
                 if (indexPathForSlideCell.section == 1){ // this means we should add a new slide
                     [self addSlideIntoSidebar];
                     return;
-                } else {
+                } else if (indexPathForSlideCell.row < self.slideshow.slides.count) {
                     // adding to existing slide
                     Slide *slide = [self.slideshow.slides objectAtIndex:indexPathForSlideCell.row];
                     
@@ -624,10 +627,11 @@ NSString* const playOption = @"Play";
                     } else {
                         [slide replacePhotoSlideAtIndex:0 withPhotoSlide:photoSlide];
                     }
-                    [self.tableView beginUpdates];
-                    [self.tableView reloadRowsAtIndexPaths:@[indexPathForSlideCell] withRowAnimation:UITableViewRowAnimationAutomatic];
-                    [self.tableView endUpdates];
-                    [self redrawSlideshowWithDelay];
+                    [self.tableView reloadData];
+//                    [self.tableView beginUpdates];
+//                    [self.tableView reloadRowsAtIndexPaths:@[indexPathForSlideCell] withRowAnimation:UITableViewRowAnimationAutomatic];
+//                    [self.tableView endUpdates];
+//                    [self redrawSlideshowWithDelay];
                     [self endPressAnimation];
                     
                     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
@@ -661,7 +665,8 @@ NSString* const playOption = @"Play";
                     Slide *slide = [self.slideshow.slides objectAtIndex:self.slideStartIndex.row];
                     [UIView animateWithDuration:kFastAnimationDuration animations:^{
                         [self.slideshow removeSlide:slide fromIndex:self.slideStartIndex.row];
-                        [self.tableView deleteRowsAtIndexPaths:@[self.slideStartIndex] withRowAnimation:UITableViewRowAnimationNone];
+                        //[self.tableView deleteRowsAtIndexPaths:@[self.slideStartIndex] withRowAnimation:UITableViewRowAnimationNone];
+                        [self.tableView reloadData];
                         self.draggingView.transform = CGAffineTransformIdentity;
                         [self.draggingView setAlpha:.77f];
                     } completion:^(BOOL finished) {
@@ -866,12 +871,7 @@ NSString* const playOption = @"Play";
     }
 }
 
-- (void)post {
-    if (self.mainRequest || !self.slideshow) return;
-    
-    if (self.popover) [self.popover dismissPopoverAnimated:YES];
-    if (titleTextField.isEditing) [titleTextField resignFirstResponder];
-    
+- (NSMutableDictionary *)generateParameters {
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     if (self.slideshow.title.length){
@@ -927,13 +927,18 @@ NSString* const playOption = @"Play";
         
         [parameters setObject:slideObject forKey:[NSString stringWithFormat:@"slides[%lu]",(unsigned long)idx]];
     }];
+    return parameters;
+}
+
+- (void)post {
+    if (self.mainRequest || !self.slideshow) return;
+    if (self.popover) [self.popover dismissPopoverAnimated:YES];
+    if (titleTextField.isEditing) [titleTextField resignFirstResponder];
+    
+    NSDictionary *parameters = [self generateParameters];
     
     if ([self.slideshow.identifier isEqualToNumber:@0]){
-        if (self.slideshow.title.length){
-            [ProgressHUD show:[NSString stringWithFormat:@"Creating \"%@\"...",self.slideshow.title]];
-        } else {
-            [ProgressHUD show:@"Creating your slideshow..."];
-        }
+        [ProgressHUD show:self.slideshow.title.length ? [NSString stringWithFormat:@"Creating \"%@\"...",self.slideshow.title] : @"Creating your slideshow..."];
         
         self.mainRequest = [manager POST:[NSString stringWithFormat:@"slideshows"] parameters:@{@"slideshow":parameters,@"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success creating a slideshow: %@",responseObject);
@@ -963,15 +968,17 @@ NSString* const playOption = @"Play";
         self.mainRequest = [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",self.slideshow.identifier] parameters:@{@"slideshow":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success saving a slideshow: %@",responseObject);
             [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+            
             [ProgressHUD dismiss];
             [WFAlert show:[NSString stringWithFormat:@"\"%@\" saved",self.slideshow.title] withTime:3.7f];
+            [self.tableView reloadData];
+            [self.collectionView reloadData];
             self.mainRequest = nil;
-            
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to save a slideshow: %@",error.description);
             [WFAlert show:@"Sorry, but something went wrong while saving your slideshow to the cloud.\n\nWe've saved it locally in the meantime." withTime:3.7f];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
             [ProgressHUD dismiss];
             self.mainRequest = nil;
         }];

@@ -43,6 +43,7 @@
         [self newInstall];
     }
     NSLog(@"Base url: %@",kApiBaseUrl);
+    NSLog(@"Bundle name: %@",[[[NSBundle mainBundle] infoDictionary] valueForKey:(id)kCFBundleNameKey]);
     if (IDIOM == IPAD && [[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPadToken]){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsiPadToken] forKey:@"mobile_token"];
         [self connectWithParameters:parameters forSignup:NO];   // automatically log the user in

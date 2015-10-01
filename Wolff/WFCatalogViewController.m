@@ -1441,9 +1441,7 @@ static NSString *const logoutOption = @"Log out";
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     width = size.width; height = size.height;
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        if (IDIOM == IPAD){
-            
-        } else {
+        if (IDIOM != IPAD){
             [self.collectionView reloadData];
         }
     } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
@@ -1529,7 +1527,7 @@ static NSString *const logoutOption = @"Log out";
     if (indexPath.section == 0){
         if (IDIOM == IPAD){
             if (sidebarIsVisible){
-                return CGSizeMake((width-kSidebarWidth)/3,(width-kSidebarWidth)/3);
+                return CGSizeMake(collectionView.frame.size.width/3, collectionView.frame.size.width/3);
             } else {
                 return CGSizeMake(width/4, width/4);
             }
@@ -1537,7 +1535,7 @@ static NSString *const logoutOption = @"Log out";
             return CGSizeMake(width/2,width/2);
         }
     } else {
-        return CGSizeMake(width, 100);
+        return CGSizeMake(width - (sidebarIsVisible ? kSidebarWidth : 0), 100);
     }
 }
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -1743,7 +1741,7 @@ static NSString *const logoutOption = @"Log out";
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
         self.startIndex = [self.collectionView indexPathForItemAtPoint:loc];
-        if (self.startIndex) {
+        if (self.startIndex && self.startIndex.section == 0) { // ensure we're grabbing a photo cell from section 0, not a loading cell from section 1
             WFPhotoCell *cell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.startIndex];
             self.dragViewStartLocation = [self.view convertPoint:cell.center fromView:nil];
             
@@ -2473,19 +2471,21 @@ static NSString *const logoutOption = @"Log out";
 - (void)showSidebar {
     CGFloat offsetWidth = IDIOM == IPAD ? kSidebarWidth : kSidebarWidth;
     if (sidebarIsVisible){
-        sidebarIsVisible = NO;
         //hide the light table sidebar
+        sidebarIsVisible = NO;
         CGRect collectionFrame = self.collectionView.frame;
         collectionFrame.origin.x = 0;
         collectionFrame.size.width = width;
         slideshowsButton.selected = NO;
         tablesButton.selected = NO;
         
+        [self.collectionView.collectionViewLayout invalidateLayout];
+        
         [UIView animateWithDuration:.35 delay:0 usingSpringWithDamping:.95 initialSpringVelocity:.0001 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             _tableView.transform = CGAffineTransformIdentity;
             _searchBarContainer.transform = CGAffineTransformIdentity;
             _comparisonContainerView.transform = CGAffineTransformIdentity;
-            [self.collectionView reloadData];
+            [self.collectionView.collectionViewLayout invalidateLayout];
             [self.collectionView setFrame:collectionFrame];
         } completion:^(BOOL finished) {
             if (self.searchBar.isFirstResponder){
@@ -2513,7 +2513,7 @@ static NSString *const logoutOption = @"Log out";
             _tableView.transform = CGAffineTransformMakeTranslation(offsetWidth, 0);
             _searchBarContainer.transform = CGAffineTransformMakeTranslation(offsetWidth, 0);
             _comparisonContainerView.transform = CGAffineTransformMakeTranslation(offsetWidth, 0);
-            [self.collectionView reloadData];
+            [self.collectionView.collectionViewLayout invalidateLayout];
             [self.collectionView setFrame:collectionFrame];
         } completion:^(BOOL finished) {
             if (self.searchBar.isFirstResponder) {

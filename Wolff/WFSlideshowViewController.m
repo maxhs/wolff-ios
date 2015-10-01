@@ -723,7 +723,7 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded){
         [self.collectionView setScrollEnabled:YES];
-        if (cell && self.currentSlide && self.currentSlide.photoSlides.count){
+        if (cell && self.currentSlide.photoSlides.count > 0){
             PhotoSlide *photoSlide;
             if (view == cell.artImageView1){
                 photoSlide = self.currentSlide.photoSlides[0];

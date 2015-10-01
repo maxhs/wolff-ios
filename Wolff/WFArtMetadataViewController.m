@@ -360,6 +360,8 @@ NSString* const deleteOption = @"Delete";
         [imageButton setShowsTouchWhenHighlighted:NO];
         [imageButton setAdjustsImageWhenHighlighted:NO];
         imageButton.imageView.contentMode = UIViewContentModeScaleAspectFill;
+        imageButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentFill;
+        imageButton.contentVerticalAlignment = UIControlContentVerticalAlignmentFill;
         [self.photoScrollView addSubview:imageButton];
         if (photo.isLandscape){
             if (IDIOM == IPAD){

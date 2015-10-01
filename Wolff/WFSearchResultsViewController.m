@@ -449,7 +449,7 @@
         }
         [_noResultsPrompt setText:@"Searching the full Wölff catalog..."];
         [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            //NSLog(@"Success searching from search reuslts view controller: %@",responseObject);
+            NSLog(@"Success searching from search results view controller: %@",responseObject);
             if ([responseObject objectForKey:@"photos"] && [[responseObject objectForKey:@"photos"] count]){
                 for (NSDictionary *dict in [responseObject objectForKey:@"photos"]) {
                     Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];

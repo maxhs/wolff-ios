@@ -27,7 +27,6 @@
     NSMutableOrderedSet *_tags;
     UIBarButtonItem *dismissButton;
     UIBarButtonItem *saveButton;
-    UIBarButtonItem *doneButton;
     UIButton *noTagsButton;
     UIBarButtonItem *noTagBarButton;
     UIBarButtonItem *spacerBarButton;
@@ -55,10 +54,9 @@ static NSString * const reuseIdentifier = @"TagCell";
     _filteredTags = [NSMutableOrderedSet orderedSet];
     _tags = [NSMutableOrderedSet orderedSetWithArray:[Tag MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
 
-    dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
+    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
     self.navigationItem.leftBarButtonItem = dismissButton;
     saveButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(save)];
-    doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneEditing)];
     
     noTagsButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [noTagsButton.titleLabel setFont:[UIFont fontWithName:kMuseoSans size:12]];
@@ -86,7 +84,7 @@ static NSString * const reuseIdentifier = @"TagCell";
 
 - (void)noTagsToggled {
     [self.selectedTags removeAllObjects];
-    [_collectionView reloadData];
+    [self.collectionView reloadData];
     [self adjustTagButtonColor];
 }
 
@@ -108,7 +106,6 @@ static NSString * const reuseIdentifier = @"TagCell";
 - (void)loadTagsWithSearch:(NSString *)searchString {
     if (self.mainRequest) return;
     if (searchString.length && !noResults){
-        
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]) {
             [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
@@ -116,33 +113,32 @@ static NSString * const reuseIdentifier = @"TagCell";
         if (searchString.length){
             [parameters setObject:searchString forKey:@"search"];
         }
+        
         [manager POST:@"tags/search" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success loading tags: %@",responseObject);
-            if ([responseObject objectForKey:@"tags"]){
-                NSDictionary *tagsDict = [responseObject objectForKey:@"tags"];
-                if (tagsDict.count){
-                    for (id dict in tagsDict){
-                        Tag *tag = [Tag MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
-                        if (!tag){
-                            tag = [Tag MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-                        }
-                        [tag populateFromDictionary:dict];
+            //NSLog(@"Success loading tags: %@",responseObject);
+            NSDictionary *tagsDict = [responseObject objectForKey:@"tags"];
+            if (tagsDict.count){
+                for (id dict in tagsDict){
+                    Tag *tag = [Tag MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+                    if (!tag){
+                        tag = [Tag MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                     }
-                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-                        _tags = [NSMutableOrderedSet orderedSetWithArray:[Tag MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
-                        [self filterContentForSearchText:searchText scope:nil];
-                        [ProgressHUD dismiss];
-                        self.mainRequest = nil;
-                    }];
-                } else {
-                    self.mainRequest = nil;
-                    noResults = YES;
+                    [tag populateFromDictionary:dict];
                 }
+                
+                [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
+                    [_tags addObjectsFromArray:[Tag MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
+                    [self filterContentForSearchText:searchText scope:nil]; // reloads data
+                    [ProgressHUD dismiss];
+                    self.mainRequest = nil;
+                }];
+                
             } else {
-                [self.searchBar resignFirstResponder];
+                [self doneEditing];
                 noResults = YES;
                 [ProgressHUD dismiss];
                 self.mainRequest = nil;
+                [self.collectionView reloadData];
             }
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             [WFAlert show:@"Sorry, something went wrong while trying to fetch tag info.\n\nPlease try again soon." withTime:3.3f];
@@ -166,7 +162,7 @@ static NSString * const reuseIdentifier = @"TagCell";
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if ((searching && indexPath.row == _filteredTags.count) || (indexPath.row == _tags.count)){
+    if ((searching && indexPath.row == _filteredTags.count) || (!searching && indexPath.row == _tags.count)){
         WFNewTagCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"NewTagCell" forIndexPath:indexPath];
         
         if (editing){
@@ -310,7 +306,7 @@ static NSString * const reuseIdentifier = @"TagCell";
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
-    self.navigationItem.rightBarButtonItems = @[doneButton, spacerBarButton, noTagBarButton];
+    
 }
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
@@ -437,7 +433,6 @@ static NSString * const reuseIdentifier = @"TagCell";
     if (self.searchBar.isFirstResponder){
         [self.searchBar resignFirstResponder];
     }
-    self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noTagBarButton];
 }
 
 - (void)dismiss {
