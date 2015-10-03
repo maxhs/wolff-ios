@@ -29,6 +29,7 @@
 @property (nonatomic, retain) NSString * bio;
 @property (nonatomic, retain) NSString * avatarSmall;
 @property (nonatomic, retain) NSString * avatarLarge;
+@property (nonatomic, retain) NSString * authenticationToken;
 @property (nonatomic, retain) NSOrderedSet *institutions;
 @property (nonatomic, retain) NSOrderedSet *lightTables;
 @property (nonatomic, retain) NSOrderedSet *ownedTables;

@@ -65,6 +65,9 @@ typedef enum {
     if ([dictionary objectForKey:@"customer_plan"] && [dictionary objectForKey:@"customer_plan"] != [NSNull null]){
         self.customerPlan = [dictionary objectForKey:@"customer_plan"];
     }
+    if ([dictionary objectForKey:@"authentication_token"] && [dictionary objectForKey:@"authentication_token"] != [NSNull null]){
+        self.authenticationToken = [dictionary objectForKey:@"authentication_token"];
+    }
     if ([dictionary objectForKey:@"prefix"] && [dictionary objectForKey:@"prefix"] != [NSNull null]){
         switch ([(NSNumber*)[dictionary objectForKey:@"prefix"] integerValue]) {
             case 0:

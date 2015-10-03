@@ -431,7 +431,7 @@
         CGRect titleLabelFrame = cell.titleLabel.frame;
         CGRect componentsLabelFrame = cell.metadataComponentsLabel.frame;
         
-        if (self.photos.count){
+        if (self.photos.count && indexPath.item < self.photos.count){
             [cell configureForPhoto:self.photos[indexPath.item] withPhotoCount:self.photos.count];
             if (self.photos.count <= 1){
                 titleLabelFrame.size.width = width-70;
@@ -446,7 +446,7 @@
         } else if (self.currentSlide.slideTexts.count) {
             [cell.titleLabel setAttributedText:nil]; // slide text slide, so don't do anything
             [cell.metadataComponentsLabel setAttributedText:nil];
-        } else if (self.currentSlide.photoSlides.count) {
+        } else if (self.currentSlide.photoSlides.count && indexPath.item < self.currentSlide.photoSlides.count) {
             photoSlide = self.currentSlide.photoSlides[indexPath.item];
             [cell configureForPhoto:photoSlide.photo withPhotoCount:self.currentSlide.photoSlides.count];
             if (self.currentSlide.photoSlides.count < 2 && self.currentSlide.slideTexts.count < 2){
@@ -494,9 +494,9 @@
 
 - (void)showProfile:(UIButton*)button {
     Photo *photo;
-    if (self.photos.count){
+    if (self.photos.count && button.tag < self.photos.count){
         photo = self.photos[button.tag];
-    } else {
+    } else if (button.tag < self.currentSlide.photoSlides.count) {
         PhotoSlide *ps = self.currentSlide.photoSlides[button.tag];
         photo = ps.photo;
     }
@@ -763,7 +763,7 @@
                 if (artImageView1.moved){
                     artImageView1.transform = CGAffineTransformIdentity;
                     [artImageView1 setFrame:kOriginalArtImageFrame1];
-                    if (self.currentSlide){
+                    if (self.currentSlide.photoSlides.count){
                         PhotoSlide *photoSlide = self.currentSlide.photoSlides[0];
                         [photoSlide resetFrame];
                     }
@@ -780,7 +780,7 @@
                 if (artImageView2.moved){
                     artImageView2.transform = CGAffineTransformIdentity;
                     [artImageView2 setFrame:kOriginalArtImageFrame2];
-                    if (self.currentSlide){
+                    if (self.currentSlide.photoSlides.count){
                         PhotoSlide *photoSlide = self.currentSlide.photoSlides[0];
                         [photoSlide resetFrame];
                     }
@@ -797,7 +797,7 @@
                 if (artImageView3.moved){
                     artImageView3.transform = CGAffineTransformIdentity;
                     [artImageView3 setFrame:kOriginalArtImageFrame3];
-                    if (self.currentSlide){
+                    if (self.currentSlide.photoSlides.count){
                         PhotoSlide *photoSlide = self.currentSlide.photoSlides[1];
                         [photoSlide resetFrame];
                     }
@@ -812,7 +812,7 @@
                 }
             }
         } completion:^(BOOL finished) {
-            if (self.currentSlide){
+            if (self.currentSlide.photoSlides.count){
                 PhotoSlide *photoSlide;
                 if (view == artImageView1){
                     photoSlide = self.currentSlide.photoSlides[0];

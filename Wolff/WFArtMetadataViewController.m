@@ -131,6 +131,7 @@ NSString* const deleteOption = @"Delete";
         moreButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"more"] style:UIBarButtonItemStylePlain target:self action:@selector(showiPhoneOptions)];
         saveBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(saveMetadata)];
         dismissBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
+        [self.dismissButton setHidden:YES]; // don't need this on the iphone
     }
 }
 
@@ -139,12 +140,11 @@ NSString* const deleteOption = @"Delete";
     if (IDIOM == IPAD){
         [self.navigationController setNavigationBarHidden:YES animated:YES];
     } else {
-        self.navigationItem.rightBarButtonItem = moreButton;
+        self.navigationItem.rightBarButtonItem = editMode ? saveBarButton : moreButton;
         self.navigationItem.leftBarButtonItem = dismissBarButton;
         [self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault]; // make the nav bar invisible
         [self.navigationController.navigationBar setBackgroundColor:[UIColor whiteColor]];
         [self.navigationController.navigationBar setTintColor:[UIColor blackColor]];
-        [self.dismissButton setHidden:YES]; // don't need this on the iphone
         
         NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
         [[UIDevice currentDevice] setValue:value forKey:@"orientation"]; // force portrait orientation

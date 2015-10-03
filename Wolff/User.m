@@ -41,5 +41,6 @@
 @dynamic customerPlan;
 @dynamic cards;
 @dynamic notes;
+@dynamic authenticationToken;
 
 @end

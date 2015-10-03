@@ -100,6 +100,9 @@
             [self.currentUser populateFromDictionary:userDict];
             [self setUserDefaults];
             
+            if (self.currentUser.authenticationToken){
+                [self.manager.requestSerializer setValue:self.currentUser.authenticationToken forKey:@"authentication_token"];
+            }
             if (signup){
                 [WFTracking aliasForCurrentUser:self.currentUser.identifier];
             }

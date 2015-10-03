@@ -162,30 +162,30 @@ if [[ "${ACTION}" == "install" ]]; then
 fi
 rm -f "$RESOURCES_TO_COPY"
 
-#if [[ -n "${WRAPPER_EXTENSION}" ]] && [ "`xcrun --find actool`" ] && [ -n "$XCASSET_FILES" ]
-#then
-#  case "${TARGETED_DEVICE_FAMILY}" in
-#    1,2)
-#      TARGET_DEVICE_ARGS="--target-device ipad --target-device iphone"
-#      ;;
-#    1)
-#      TARGET_DEVICE_ARGS="--target-device iphone"
-#      ;;
-#    2)
-#      TARGET_DEVICE_ARGS="--target-device ipad"
-#      ;;
-#    *)
-#      TARGET_DEVICE_ARGS="--target-device mac"
-#      ;;
-#  esac
-#
-#  # Find all other xcassets (this unfortunately includes those of path pods and other targets).
-#  OTHER_XCASSETS=$(find "$PWD" -iname "*.xcassets" -type d)
-#  while read line; do
-#    if [[ $line != "`realpath $PODS_ROOT`*" ]]; then
-#      XCASSET_FILES+=("$line")
-#    fi
-#  done <<<"$OTHER_XCASSETS"
-#
-#  printf "%s\0" "${XCASSET_FILES[@]}" | xargs -0 xcrun actool --output-format human-readable-text --notices --warnings --platform "${PLATFORM_NAME}" --minimum-deployment-target "${IPHONEOS_DEPLOYMENT_TARGET}" ${TARGET_DEVICE_ARGS} --compress-pngs --compile "${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
-#fi
+if [[ -n "${WRAPPER_EXTENSION}" ]] && [ "`xcrun --find actool`" ] && [ -n "$XCASSET_FILES" ]
+then
+  case "${TARGETED_DEVICE_FAMILY}" in
+    1,2)
+      TARGET_DEVICE_ARGS="--target-device ipad --target-device iphone"
+      ;;
+    1)
+      TARGET_DEVICE_ARGS="--target-device iphone"
+      ;;
+    2)
+      TARGET_DEVICE_ARGS="--target-device ipad"
+      ;;
+    *)
+      TARGET_DEVICE_ARGS="--target-device mac"
+      ;;
+  esac
+
+  # Find all other xcassets (this unfortunately includes those of path pods and other targets).
+  OTHER_XCASSETS=$(find "$PWD" -iname "*.xcassets" -type d)
+  while read line; do
+    if [[ $line != "`realpath $PODS_ROOT`*" ]]; then
+      XCASSET_FILES+=("$line")
+    fi
+  done <<<"$OTHER_XCASSETS"
+
+  printf "%s\0" "${XCASSET_FILES[@]}" | xargs -0 xcrun actool --output-format human-readable-text --notices --warnings --platform "${PLATFORM_NAME}" --minimum-deployment-target "${IPHONEOS_DEPLOYMENT_TARGET}" ${TARGET_DEVICE_ARGS} --compress-pngs --compile "${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
+fi

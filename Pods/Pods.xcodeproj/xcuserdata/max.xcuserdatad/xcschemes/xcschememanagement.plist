@@ -8,43 +8,31 @@
 		<dict>
 			<key>isShown</key>
 			<false/>
-			<key>orderHint</key>
-			<integer>1</integer>
 		</dict>
 		<key>DateTools.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
-			<key>orderHint</key>
-			<integer>2</integer>
 		</dict>
 		<key>MagicalRecord.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
-			<key>orderHint</key>
-			<integer>3</integer>
 		</dict>
 		<key>Mixpanel.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
-			<key>orderHint</key>
-			<integer>4</integer>
 		</dict>
 		<key>Pods.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
-			<key>orderHint</key>
-			<integer>5</integer>
 		</dict>
 		<key>Stripe.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
-			<key>orderHint</key>
-			<integer>6</integer>
 		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
@@ -54,12 +42,17 @@
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>40C5C402714BA9F79C0201C1D6D7FBA4</key>
+		<key>41B10EC600362FA9E104BFFEF35A775A</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>82F8D8CFBE7F324F7F6709629D4D6285</key>
+		<key>45A910183ECB6860EDA5864013457566</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>8DB79B8B2FDC9862C6C0928449B55B4B</key>
 		<dict>
 			<key>primary</key>
 			<true/>
@@ -69,12 +62,7 @@
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>FBA52862CB4E0E3ECC852ED050B93A2E</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>FC2FF6AE3A1B2EF0C2A63914BCD880EE</key>
+		<key>DC3FC3E5359F954FAA749831685B73BF</key>
 		<dict>
 			<key>primary</key>
 			<true/>

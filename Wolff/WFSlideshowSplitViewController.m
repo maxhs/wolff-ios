@@ -633,9 +633,7 @@ NSString* const playOption = @"Play";
 //                    [self.tableView endUpdates];
 //                    [self redrawSlideshowWithDelay];
                     [self endPressAnimation];
-                    
-                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
-                    
+                    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
                     return;
                 }
             } else if (loc.y > self.tableView.contentSize.height && loc.x < kSidebarWidth){
@@ -665,8 +663,7 @@ NSString* const playOption = @"Play";
                     Slide *slide = [self.slideshow.slides objectAtIndex:self.slideStartIndex.row];
                     [UIView animateWithDuration:kFastAnimationDuration animations:^{
                         [self.slideshow removeSlide:slide fromIndex:self.slideStartIndex.row];
-                        //[self.tableView deleteRowsAtIndexPaths:@[self.slideStartIndex] withRowAnimation:UITableViewRowAnimationNone];
-                        [self.tableView reloadData];
+                        [self.tableView deleteRowsAtIndexPaths:@[self.slideStartIndex] withRowAnimation:UITableViewRowAnimationNone];
                         self.draggingView.transform = CGAffineTransformIdentity;
                         [self.draggingView setAlpha:.77f];
                     } completion:^(BOOL finished) {

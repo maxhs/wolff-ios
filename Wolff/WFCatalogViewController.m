@@ -564,7 +564,9 @@ static NSString *const logoutOption = @"Log out";
 }
 
 - (void)loadBeforePhoto:(Photo*)lastPhoto {
-    if (self.mainRequest) return;
+    if (self.mainRequest) {
+        return;
+    }
     
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
     [parameters setObject:@(ART_THROTTLE) forKey:@"count"];
@@ -579,11 +581,13 @@ static NSString *const logoutOption = @"Log out";
         [parameters setObject:[NSNumber numberWithInt:round([lastPhoto.createdDate timeIntervalSince1970])] forKey:@"before_date"]; // last item in feed
     }
     if (loggedIn){
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         if (showMyArt){
             [parameters setObject:@YES forKey:@"my_art"];
         }
     }
+    
+    //infinite scroll indicator
+    [loadingSpinner startAnimating];
     
     self.mainRequest = [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         if (collectionViewRefresh.isRefreshing) [collectionViewRefresh endRefreshing];
@@ -1493,15 +1497,15 @@ static NSString *const logoutOption = @"Log out";
     if (indexPath.section == 0){
         WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"PhotoCell" forIndexPath:indexPath];
         Photo *photo;
-        if (self.searchBar.text.length){
+        if (self.searchBar.text.length && indexPath.item < _filteredPhotos.count){
             photo = _filteredPhotos[indexPath.item];
-        } else if (showMyArt){
+        } else if (showMyArt && indexPath.item < _myPhotos.count){
             photo = _myPhotos[indexPath.item];
-        } else if (showLightTable && self.lightTable){
+        } else if (showLightTable && self.lightTable && indexPath.item < self.lightTable.photos.count){
             photo = self.lightTable.photos[indexPath.item];
-        } else if (showFavorites){
+        } else if (showFavorites && indexPath.item < _favoritePhotos.count){
             photo = _favoritePhotos[indexPath.item];
-        } else if (_photos.count){
+        } else if (_photos.count && indexPath.item < _photos.count){
             photo = _photos[indexPath.item];
         }
         if (photo){
@@ -1512,11 +1516,6 @@ static NSString *const logoutOption = @"Log out";
     } else {
         WFLoadingCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"LoadingCell" forIndexPath:indexPath];
         loadingSpinner = cell.loadingSpinner;
-        if (self.mainRequest || self.dashboardRequest || self.lightTableRequest || self.slideshowRequest){
-            [cell.loadingSpinner startAnimating];
-        } else {
-            [cell.loadingSpinner stopAnimating];
-        }
         return cell;
     }
 }
@@ -1623,15 +1622,15 @@ static NSString *const logoutOption = @"Log out";
     if (!selectedIndexPath) return;
     
     Photo *photo;
-    if (showMyArt && _myPhotos.count){
+    if (showMyArt && selectedIndexPath.item < _myPhotos.count){
         photo = _myPhotos[selectedIndexPath.item];
-    } else if (showLightTable && self.lightTable.photos.count){
+    } else if (showLightTable && selectedIndexPath.item < self.lightTable.photos.count){
         photo = self.lightTable.photos[selectedIndexPath.item];
-    } else if (showFavorites && _favoritePhotos.count){
+    } else if (showFavorites && selectedIndexPath.item < _favoritePhotos.count){
         photo = _favoritePhotos[selectedIndexPath.item];
-    } else if (self.searchBar.text.length && _filteredPhotos.count){
+    } else if (self.searchBar.text.length && selectedIndexPath.item < _filteredPhotos.count){
         photo = _filteredPhotos[selectedIndexPath.item];
-    } else if (_photos.count > selectedIndexPath.item) {
+    } else if (selectedIndexPath.item < _photos.count) {
         photo = _photos[selectedIndexPath.item];
     }
     if (photo && selectedIndexPath){
