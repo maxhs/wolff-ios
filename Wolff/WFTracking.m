@@ -88,9 +88,9 @@
 +(NSMutableDictionary*)generateTrackingPropertiesForSlideshow:(Slideshow *)s {
     NSMutableDictionary *trackingProperties = [NSMutableDictionary dictionary];
     Slideshow *slideshow = [s MR_inContext:[NSManagedObjectContext MR_defaultContext]];
-    if (slideshow){
+    if (slideshow && slideshow.identifier){
         [trackingProperties setObject:slideshow.identifier forKey:@"SLIDESHOW ID"];
-        [trackingProperties setObject:@(slideshow.photos.count) forKey:@"PHOTO COUNT"];
+        [trackingProperties setObject:@(slideshow.slideshowPhotos.count) forKey:@"PHOTO COUNT"];
         if (slideshow.title && slideshow.title.length){
             [trackingProperties setObject:slideshow.title forKey:@"TITLE"];
         }

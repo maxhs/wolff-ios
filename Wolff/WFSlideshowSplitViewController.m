@@ -70,7 +70,7 @@ NSString* const playOption = @"Play";
 }
 
 @property (strong, nonatomic) User *currentUser;
-@property (strong, nonatomic) Photo *selectedPhoto;
+@property (strong, nonatomic) SlideshowPhoto *selectedSlideshowPhoto;
 @property (strong, nonatomic) Slide *selectedSlide;
 @property (strong, nonatomic) LightTable *lightTable;
 @property (nonatomic) WFInteractiveImageView *draggingView;
@@ -104,7 +104,15 @@ NSString* const playOption = @"Play";
     } else {
         self.slideshow = [Slideshow MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         self.slideshow.owner = self.currentUser;
-        self.slideshow.photos = self.selectedPhotos;
+        
+        //add photos to slideshow
+        [self.selectedPhotos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL * stop) {
+            SlideshowPhoto *slideshowPhoto = [SlideshowPhoto MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+            slideshowPhoto.slideshow = self.slideshow;
+            slideshowPhoto.photo = [photo MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+        }];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+        
         [self setUpTitleView];
         [self setUpNavButtons];
         [self redrawSlideshow];
@@ -254,7 +262,7 @@ NSString* const playOption = @"Play";
 }
 
 - (void)redrawSlideshow {
-    if (self.slideshow.photos.count){
+    if (self.slideshow.slideshowPhotos.count){
         [_lightBoxPlaceholderLabel setHidden:YES];
     } else {
         [_lightBoxPlaceholderLabel setText:@"You don't have any slides in this light table"];
@@ -351,13 +359,6 @@ NSString* const playOption = @"Play";
     }
 }
 
-//- (void)redrawSlideshowWithDelay {
-//    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .33f * NSEC_PER_SEC);
-//    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-//        [self.tableView reloadData];
-//    });
-//}
-
 - (void)removeArt:(UIMenuController*)menuController {
     if (!activeSlide) return;
     
@@ -381,7 +382,6 @@ NSString* const playOption = @"Play";
         activeSlide = nil;
     }
 
-//    [self redrawSlideshowWithDelay];
     [self.tableView reloadData];
     activeImageView = nil;
     activeIndexPath = nil;
@@ -488,20 +488,20 @@ NSString* const playOption = @"Play";
 }
 
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section {
-    return self.slideshow.photos.count;
+    return self.slideshow.slideshowPhotos.count;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    Photo *photo = self.slideshow.photos[indexPath.item];
+    SlideshowPhoto *slideshowPhoto = self.slideshow.slideshowPhotos[indexPath.item];
     if (IDIOM == IPAD){
         WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SlideshowArtCell" forIndexPath:indexPath];
         [cell.contentView setAlpha:1.0];
-        [cell configureForPhoto:photo];
+        [cell configureForPhoto:slideshowPhoto.photo];
         return cell;
     } else {
         WFPhotoTileCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"SlideshowArtCell" forIndexPath:indexPath];
         [cell.contentView setAlpha:1.0];
-        [cell configureForPhoto:photo];
+        [cell configureForPhoto:slideshowPhoto.photo];
         return cell;
     }
 }
@@ -519,7 +519,7 @@ NSString* const playOption = @"Play";
 
 #pragma mark - UICollectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    Photo *photo = [self.slideshow.photos objectAtIndex:indexPath.item];
+    Photo *photo = [(SlideshowPhoto*)[self.slideshow.slideshowPhotos objectAtIndex:indexPath.item] photo];
     [self showMetadata:photo];
 }
 
@@ -543,18 +543,19 @@ NSString* const playOption = @"Play";
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
         //NSLog(@"loc x: %f, loc y: %f", loc.x,loc.y);
         
-        if (loc.x > kSidebarWidth && self.slideshow.photos.count) {
+        if (loc.x > kSidebarWidth && self.slideshow.slideshowPhotos.count) {
+            // user has a slide from the slideshow light box
             self.photoStartIndex = [self.collectionView indexPathForItemAtPoint:photoLoc];
-            if (self.photoStartIndex && self.photoStartIndex.item < self.slideshow.photos.count) {
-                self.selectedPhoto = self.slideshow.photos[self.photoStartIndex.item];
+            if (self.photoStartIndex && self.photoStartIndex.item < self.slideshow.slideshowPhotos.count) {
+                self.selectedSlideshowPhoto = self.slideshow.slideshowPhotos[self.photoStartIndex.item];
                 
                 if (IDIOM == IPAD){
                     WFPhotoCell *cell = (WFPhotoCell*)[self.collectionView cellForItemAtIndexPath:self.photoStartIndex];
-                    self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:self.selectedPhoto];
+                    self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:self.selectedSlideshowPhoto.photo];
                     [cell.contentView setAlpha:0.1f];
                 } else {
                     WFPhotoTileCell *cell = (WFPhotoTileCell*)[self.collectionView cellForItemAtIndexPath:self.photoStartIndex];
-                    self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:self.selectedPhoto];
+                    self.draggingView = [[WFInteractiveImageView alloc] initWithImage:[cell getRasterizedImageCopy] andPhoto:self.selectedSlideshowPhoto.photo];
                     [cell.contentView setAlpha:0.1f];
                 }
                 
@@ -569,6 +570,7 @@ NSString* const playOption = @"Play";
                 }];
             }
         } else if (loc.x < kSidebarWidth && self.slideshow.slides.count){
+            // user has a slide from the make slideshow tableView
             self.slideStartIndex = [self.tableView indexPathForRowAtPoint:slideLoc];
             if (self.slideStartIndex && self.slideStartIndex.section != 1 && self.slideStartIndex.row < self.slideshow.slides.count) {
                 WFSlideTableCell *cell = (WFSlideTableCell*)[self.tableView cellForRowAtIndexPath:self.slideStartIndex];
@@ -603,10 +605,14 @@ NSString* const playOption = @"Play";
         CGPoint tableViewPoint = [gestureRecognizer locationInView:self.tableView];
         NSIndexPath *indexPathForSlideCell = [self.tableView indexPathForRowAtPoint:tableViewPoint];
         
-        if (_selectedPhoto){
-            if (indexPathForSlideCell){  //cell was dropped in the left sidebar
-                if (indexPathForSlideCell.section == 1){ // this means we should add a new slide
+        if (self.selectedSlideshowPhoto){
+            if (indexPathForSlideCell){
+                //cell was dropped in the left sidebar
+                
+                if (indexPathForSlideCell.section == 1){
+                    // this means we should add a new slide
                     [self addSlideIntoSidebar];
+                    
                     return;
                 } else if (indexPathForSlideCell.row < self.slideshow.slides.count) {
                     // adding to existing slide
@@ -619,7 +625,7 @@ NSString* const playOption = @"Play";
                     }
                     
                     PhotoSlide *photoSlide = [PhotoSlide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-                    [photoSlide setPhoto:self.selectedPhoto];
+                    [photoSlide setPhoto:self.selectedSlideshowPhoto.photo];
                     if (!slide.photos.count){
                         [slide addPhotoSlide:photoSlide];
                     } else if (loc.x > (kSidebarWidth/2) && slide.photos.count){
@@ -628,10 +634,6 @@ NSString* const playOption = @"Play";
                         [slide replacePhotoSlideAtIndex:0 withPhotoSlide:photoSlide];
                     }
                     [self.tableView reloadData];
-//                    [self.tableView beginUpdates];
-//                    [self.tableView reloadRowsAtIndexPaths:@[indexPathForSlideCell] withRowAnimation:UITableViewRowAnimationAutomatic];
-//                    [self.tableView endUpdates];
-//                    [self redrawSlideshowWithDelay];
                     [self endPressAnimation];
                     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
                     return;
@@ -643,7 +645,7 @@ NSString* const playOption = @"Play";
         }
         
         if (self.draggingView) {
-            if (_selectedPhoto){
+            if (self.selectedSlideshowPhoto){
                 if (loc.x > kSidebarWidth)  {
                     if (loc.y <= 0 || loc.y >= (self.view.frame.size.height - 23.f)){
                         [self removePhoto];
@@ -709,21 +711,16 @@ NSString* const playOption = @"Play";
 
 - (void)addSlideIntoSidebar {
     // create the slide and fill it up with delicious photos
-    Slide *slide = [Slide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     PhotoSlide *photoSlide = [PhotoSlide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-    [photoSlide setPhoto:self.selectedPhoto];
+    [photoSlide setPhoto:self.selectedSlideshowPhoto.photo];
+    Slide *slide = [Slide MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
     [slide addPhotoSlide:photoSlide];
     [slide setIndex:@(self.slideshow.slides.count)];
     [self.slideshow addSlide:slide atIndex:slide.index.integerValue];
     
-    // update the view
-    [self.tableView beginUpdates];
-    [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:(slide.index.integerValue) inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
-    [self.tableView endUpdates];
-    [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    [self.tableView reloadData];
     [self endPressAnimation];
-    
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
 }
 
 - (BOOL)shouldAutorotate {
@@ -768,7 +765,7 @@ NSString* const playOption = @"Play";
 //}
 
 - (void)confirmRemovePhoto {
-    removePhotoAlertView = [[UIAlertView alloc] initWithTitle:@"Please confirm" message:[NSString stringWithFormat:@"Are you sure you want to remove \"%@\" from this slideshow?",self.selectedPhoto.art.title] delegate:nil cancelButtonTitle:@"Cancel" otherButtonTitles:@"Remove",nil];
+    removePhotoAlertView = [[UIAlertView alloc] initWithTitle:@"Please confirm" message:[NSString stringWithFormat:@"Are you sure you want to remove \"%@\" from this slideshow?",self.selectedSlideshowPhoto.photo.art.title] delegate:nil cancelButtonTitle:@"Cancel" otherButtonTitles:@"Remove",nil];
     removePhotoAlertView.delegate = self;
     [removePhotoAlertView show];
 }
@@ -784,7 +781,7 @@ NSString* const playOption = @"Play";
 }
 
 - (void)removePhoto {
-    [self.slideshow removePhoto:self.selectedPhoto];
+    [self.slideshow removeSlideshowPhoto:self.selectedSlideshowPhoto];
     [self.collectionView performBatchUpdates:^{
         [self.collectionView deleteItemsAtIndexPaths:@[self.photoStartIndex]];
     } completion:^(BOOL finished) {
@@ -814,7 +811,7 @@ NSString* const playOption = @"Play";
     self.photoStartIndex = nil;
     self.slideStartIndex = nil;
     self.selectedSlide = nil;
-    self.selectedPhoto = nil;
+    self.selectedSlideshowPhoto = nil;
 }
 
 - (void)removePhotoAnimation {
@@ -880,9 +877,9 @@ NSString* const playOption = @"Play";
     [parameters setObject:self.slideshow.showTitleSlide forKey:@"show_title_slide"];
     [parameters setObject:self.slideshow.showMetadata forKey:@"show_metadata"];
     
-    NSMutableArray *slideshowPhotoArray = [NSMutableArray arrayWithCapacity:self.slideshow.photos.count];
-    [self.slideshow.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
-        [slideshowPhotoArray addObject:photo.identifier];
+    NSMutableArray *slideshowPhotoArray = [NSMutableArray arrayWithCapacity:self.slideshow.slideshowPhotos.count];
+    [self.slideshow.slideshowPhotos enumerateObjectsUsingBlock:^(SlideshowPhoto *slideshowPhoto, NSUInteger idx, BOOL *stop) {
+        [slideshowPhotoArray addObject:slideshowPhoto.photo.identifier];
     }];
     [parameters setObject:slideshowPhotoArray forKey:@"photo_ids"];
     
@@ -1098,7 +1095,11 @@ NSString* const playOption = @"Play";
 
 - (void)startSearch {
     WFSearchResultsViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"SearchResults"];
-    [vc setSlideshowPhotos:self.slideshow.photos.mutableCopy];
+    NSMutableOrderedSet *photos = [NSMutableOrderedSet orderedSet];
+    [self.slideshow.slideshowPhotos enumerateObjectsUsingBlock:^(SlideshowPhoto *slideshowPhoto, NSUInteger idx, BOOL * stop) {
+        [photos addObject:slideshowPhoto.photo];
+    }];
+    [vc setSlideshowPhotos:photos];
     vc.shouldShowSearchBar = YES;
     vc.shouldShowTiles = YES;
     vc.searchDelegate = self;
@@ -1113,24 +1114,26 @@ NSString* const playOption = @"Play";
         [self.popover presentPopoverFromBarButtonItem:searchButton permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     } else {
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-        [self presentViewController:nav animated:YES completion:^{
-            
-        }];
+        [self presentViewController:nav animated:YES completion:NULL];
     }
 }
 
 - (void)searchDidSelectPhoto:(Photo *)p {
     Photo *photo = [p MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     self.slideshow = [self.slideshow MR_inContext:[NSManagedObjectContext MR_defaultContext]];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"slideshow.identifier == %@ and photo.identifier == %@",self.slideshow.identifier, photo.identifier];
+    SlideshowPhoto *slideshowPhoto = [SlideshowPhoto MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
     
-    if ([self.slideshow.photos containsObject:photo]){
-        [self.slideshow removePhoto:photo];
+    if (slideshowPhoto){
+        [self.slideshow removeSlideshowPhoto:slideshowPhoto];
     } else {
-        [self.slideshow addPhoto:photo];
+        slideshowPhoto = [SlideshowPhoto MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+        slideshowPhoto.slideshow = self.slideshow;
+        slideshowPhoto.photo = photo;
     }
-    [self.collectionView reloadData];
     
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    [self.collectionView reloadData];
 }
 
 - (void)endSearch {
@@ -1354,15 +1357,10 @@ NSString* const playOption = @"Play";
 
 - (void)deleteSlideshow {
     if (self.deleteRequest) return;
-    
     [ProgressHUD show:@"Deleting..."];
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-    }
     
-    self.deleteRequest = [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",self.slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success deleting this slideshow: %@",responseObject);
+    self.deleteRequest = [manager DELETE:[NSString stringWithFormat:@"slideshows/%@",self.slideshow.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //NSLog(@"Success deleting this slideshow: %@",responseObject);
         [self deleteAndMoveOn];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to delete slideshow: %@", error.description);
@@ -1415,7 +1413,7 @@ NSString* const playOption = @"Play";
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
     [self cancelAutosave];
-    if (!self.slideshow.slides.count && !self.slideshow.photos.count && !self.slideshow.title.length){
+    if (!self.slideshow.slides.count && !self.slideshow.slideshowPhotos.count && !self.slideshow.title.length){
         [self.slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         [self saveSlideshowWithUI:NO];
     }

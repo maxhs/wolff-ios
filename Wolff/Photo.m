@@ -39,5 +39,6 @@
 @dynamic artists;
 @dynamic partners;
 @dynamic notifications;
+@dynamic assetUrl;
 
 @end

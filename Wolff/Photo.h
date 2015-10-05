@@ -27,6 +27,7 @@
 @property (nonatomic, retain) NSString * credit;
 @property (nonatomic, retain) NSString * notes;
 @property (nonatomic, retain) NSString * fileName;
+@property (nonatomic, retain) NSString * assetUrl;
 @property (nonatomic, retain) NSDate * createdDate;
 @property (nonatomic, retain) NSOrderedSet *slides;
 @property (nonatomic, retain) NSOrderedSet *photoSlides;

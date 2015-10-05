@@ -63,7 +63,7 @@
         _photos = [Photo MR_findAllSortedBy:@"createdDate" ascending:NO withPredicate:photoPredicate inContext:[NSManagedObjectContext MR_defaultContext]].mutableCopy;
     }
     if (self.slideshowPhotos.count){
-        selected = self.slideshowPhotos;
+        selected = self.slideshowPhotos; // these are actually Photo objects, not SlideshowPhoto objects. go figure.
     } else {
         selected = [NSMutableOrderedSet orderedSet];
     }

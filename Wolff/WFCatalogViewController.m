@@ -198,6 +198,8 @@ static NSString *const logoutOption = @"Log out";
     
     [self setUpSearch];
     [self loadBeforePhoto:nil];
+    [loadingSpinner startAnimating];
+    
     dispatch_async(dispatch_get_main_queue(), ^(void){
         [ProgressHUD show:@"Loading art..."];
     });
@@ -396,11 +398,16 @@ static NSString *const logoutOption = @"Log out";
                 [slideshow populateFromDictionary:dict];
                 [tempSet addObject:slideshow];
             }
-            for (Slideshow *slideshow in _slideshows){
+            [_slideshows enumerateObjectsUsingBlock:^(Slideshow *slideshow, NSUInteger idx, BOOL * stop) {
                 if (![tempSet containsObject:slideshow]){
-                    [slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+                    if (slideshow){
+                        // TO DO weird core data '-deleteObject: requires a non-nil argument' exception here
+                        [slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+                    }
+                    [_slideshows removeObject:slideshow];
                 }
-            }
+            }];
+        
             _slideshows = tempSet;
         }
         
@@ -481,19 +488,13 @@ static NSString *const logoutOption = @"Log out";
         [self loadMyArt];
     } else if (showFavorites){
         [_favoritePhotos removeAllObjects];
-        [[Favorite MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]] enumerateObjectsUsingBlock:^(Favorite *favorite, NSUInteger idx, BOOL * stop) {
-            [favorite MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-        }];
+        [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Favorite MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
         [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
         [self loadFavorites];
     } else {
         canLoadMore = YES;
-        [_photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
-            [photo MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-        }];
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-        
+        [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:_photos];
         [_filteredPhotos removeAllObjects];
         [_photos removeAllObjects];
         [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
@@ -2340,7 +2341,11 @@ static NSString *const logoutOption = @"Log out";
         // create the new slideshow
         Slideshow *newSlideshow = [Slideshow MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
         if (_selectedPhotos.count){
-            [newSlideshow setPhotos:_selectedPhotos];
+            [_selectedPhotos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL * _Nonnull stop) {
+                SlideshowPhoto *slideshowPhoto = [SlideshowPhoto MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+                slideshowPhoto.photo = photo;
+                slideshowPhoto.slideshow = newSlideshow;
+            }];
             [vc setSelectedPhotos:[NSMutableOrderedSet orderedSetWithOrderedSet:_selectedPhotos]];
         }
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
@@ -2418,6 +2423,8 @@ static NSString *const logoutOption = @"Log out";
 }
 
 - (void)shouldReloadSlideshows {
+    // refetch slideshows – likely because we just deleted one from the make slideshow view
+    _slideshows = [NSMutableOrderedSet orderedSetWithArray:[Slideshow MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
     if (sidebarIsVisible && slideshowSidebarMode){
         [self.tableView reloadData];
     }
@@ -2788,18 +2795,19 @@ static NSString *const logoutOption = @"Log out";
     }
     if (self.currentUser.customerPlan.length){
         if (slideshow){
-            // add the selected photos to the slideshow's nsorderered set Photos. enumerate through the selected photos to ensure we're only adding photos from the current context
-            NSMutableOrderedSet *photoSet = slideshow.photos.mutableCopy;
+            
             [_selectedPhotos enumerateObjectsUsingBlock:^(Photo *p, NSUInteger idx, BOOL * _Nonnull stop) {
                 Photo *photo = [p MR_inContext:[NSManagedObjectContext MR_defaultContext]];
-                [photoSet addObject:photo];
+                SlideshowPhoto *slideshowPhoto = [SlideshowPhoto MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+                slideshowPhoto.photo = photo;
+                slideshowPhoto.slideshow = slideshow;
             }];
-            slideshow.photos = photoSet;
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
             
             // create an array of photo_ids for the purposes of sync'ing with the API
             __block NSMutableArray *photoIds = [NSMutableArray array];
-            [slideshow.photos enumerateObjectsUsingBlock:^(Photo *photo, NSUInteger idx, BOOL *stop) {
-                [photoIds addObject:photo.identifier];
+            [slideshow.slideshowPhotos enumerateObjectsUsingBlock:^(SlideshowPhoto *slideshowPhoto, NSUInteger idx, BOOL *stop) {
+                [photoIds addObject:slideshowPhoto.photo.identifier];
             }];
             
             if (photoIds.count){

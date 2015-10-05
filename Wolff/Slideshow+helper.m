@@ -10,6 +10,7 @@
 #import "Slide+helper.h"
 #import "LightTable+helper.h"
 #import "User+helper.h"
+#import "SlideshowPhoto+helper.h"
 #import <MagicalRecord/MagicalRecord.h>
 
 @implementation Slideshow (helper)
@@ -50,19 +51,21 @@
         }
         self.slides = slides;
     }
-    if ([dictionary objectForKey:@"photos"] && [dictionary objectForKey:@"photos"] != [NSNull null]){
-        NSArray *photoArray = [dictionary objectForKey:@"photos"];
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithCapacity:photoArray.count];
-        for (id dict in photoArray){
+    if ([dictionary objectForKey:@"photo_slideshows"] && [dictionary objectForKey:@"photo_slideshows"] != [NSNull null]){
+        NSArray *slideshowPhotosArray = [dictionary objectForKey:@"photo_slideshows"];
+        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithCapacity:slideshowPhotosArray.count];
+        for (id dict in slideshowPhotosArray){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            Photo *photo = [Photo MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!photo){
-                photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+            SlideshowPhoto *slideshowPhoto = [SlideshowPhoto MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
+            if (!slideshowPhoto){
+                slideshowPhoto = [SlideshowPhoto MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
-            [photo populateFromDictionary:dict];
-            [set addObject:photo];
+            [slideshowPhoto populateFromDictionary:dict];
+            [set addObject:slideshowPhoto];
         }
-        self.photos = set;
+        NSSortDescriptor *slideshowPhotoSort = [NSSortDescriptor sortDescriptorWithKey:@"createdDate" ascending:YES];
+        [set sortUsingDescriptors:@[slideshowPhotoSort]];
+        self.slideshowPhotos = set;
     }
     if ([dictionary objectForKey:@"public_light_tables"] && [dictionary objectForKey:@"public_light_tables"] != [NSNull null]){
         NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
@@ -89,16 +92,16 @@
     }
 }
 
-- (void)addPhoto:(Photo *)photo {
-    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
-    [tempSet insertObject:photo atIndex:0]; // this ensures we're adding the photo to the TOP of the slideshow light table
-    self.photos = tempSet;
+- (void)addSlideshowPhoto:(SlideshowPhoto *)slideshowPhoto {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshowPhotos];
+    [tempSet insertObject:slideshowPhoto atIndex:0]; // this ensures we're adding the photo to the TOP of the slideshow light table
+    self.slideshowPhotos = tempSet;
 }
 
-- (void)removePhoto:(Photo *)photo {
-    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.photos];
-    [tempSet removeObject:photo];
-    self.photos = tempSet;
+- (void)removeSlideshowPhoto:(SlideshowPhoto *)slideshowPhoto {
+    NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshowPhotos];
+    [tempSet removeObject:slideshowPhoto];
+    self.slideshowPhotos = tempSet;
 }
 
 - (void)addSlide:(Slide *)slide atIndex:(NSInteger)index {

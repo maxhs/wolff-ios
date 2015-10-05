@@ -7,14 +7,14 @@
 //
 
 #import "Slideshow.h"
-#import "Photo+helper.h"
+#import "SlideshowPhoto+helper.h"
 #import "Slide+helper.h"
 
 @interface Slideshow (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
 - (void)addSlide:(Slide*)slide atIndex:(NSInteger)index;
 - (void)removeSlide:(Slide*)slide fromIndex:(NSInteger)index;
-- (void)addPhoto:(Photo*)photo;
-- (void)removePhoto:(Photo*)photo;
+- (void)addSlideshowPhoto:(SlideshowPhoto*)slideshowPhoto;
+- (void)removeSlideshowPhoto:(SlideshowPhoto*)slideshowPhoto;
 
 @end

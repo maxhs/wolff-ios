@@ -18,7 +18,7 @@
 @dynamic slideshowDescription;
 @dynamic slides;
 @dynamic discussions;
-@dynamic photos;
+@dynamic slideshowPhotos;
 @dynamic lightTables;
 @dynamic owner;
 

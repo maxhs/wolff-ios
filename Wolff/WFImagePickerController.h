@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <AssetsLibrary/AssetsLibrary.h>
+#import <Photos/Photos.h>
 
 @protocol WFImagePickerControllerDelegate <NSObject>
 
@@ -18,7 +18,6 @@
 @interface WFImagePickerController : UIViewController <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
-@property (strong, nonatomic) ALAssetsGroup *assetsGroup;
 @property (weak, nonatomic) id<WFImagePickerControllerDelegate> delegate;
 
 @end

@@ -1,0 +1,13 @@
+/Users/max/wolff-ios/Pods/DateTools/DateTools/DateTools.bundle
+/Users/max/wolff-ios/Pods/Mixpanel/Mixpanel/Media.xcassets/MPArrowLeft.imageset/MPArrowLeft.png
+/Users/max/wolff-ios/Pods/Mixpanel/Mixpanel/Media.xcassets/MPArrowLeft.imageset/MPArrowLeft@2x.png
+/Users/max/wolff-ios/Pods/Mixpanel/Mixpanel/Media.xcassets/MPArrowRight.imageset/MPArrowRight.png
+/Users/max/wolff-ios/Pods/Mixpanel/Mixpanel/Media.xcassets/MPArrowRight.imageset/MPArrowRight@2x.png
+/Users/max/wolff-ios/Pods/Mixpanel/Mixpanel/Media.xcassets/MPCheckmark.imageset/MPCheckmark.png
+/Users/max/wolff-ios/Pods/Mixpanel/Mixpanel/Media.xcassets/MPCheckmark.imageset/MPCheckmark@2x.png
+/Users/max/wolff-ios/Pods/Mixpanel/Mixpanel/Media.xcassets/MPCloseBtn.imageset/MPCloseBtn.png
+/Users/max/wolff-ios/Pods/Mixpanel/Mixpanel/Media.xcassets/MPCloseBtn.imageset/MPCloseBtn@2x.png
+/Users/max/wolff-ios/Pods/Mixpanel/Mixpanel/Media.xcassets/MPDismissKeyboard.imageset/MPDismissKeyboard.png
+/Users/max/wolff-ios/Pods/Mixpanel/Mixpanel/Media.xcassets/MPDismissKeyboard.imageset/MPDismissKeyboard@2x.png
+/Users/max/wolff-ios/Pods/Mixpanel/Mixpanel/Media.xcassets/MPLogo.imageset/MPLogo.png
+/Users/max/wolff-ios/Pods/Mixpanel/Mixpanel/Media.xcassets/MPLogo.imageset/MPLogo@2x.png

@@ -25,6 +25,7 @@
     UIBarButtonItem *doneButton;
     UIBarButtonItem *backButton;
     BOOL selectMode;
+    CGSize thumbnailSize;
 }
 
 @end
@@ -32,25 +33,21 @@
 @implementation WFImagePickerController
 static NSString * const reuseIdentifier = @"PhotoCell";
 
-@synthesize assetsGroup = _assetsGroup;
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     [_collectionView setBackgroundColor:[UIColor clearColor]];
     [self.view setBackgroundColor:[UIColor clearColor]];
+    [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     
     UIToolbar *backgroundToolbar = [[UIToolbar alloc] initWithFrame:self.view.frame];
     [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
     [backgroundToolbar setTranslucent:YES];
     [_collectionView setBackgroundView:backgroundToolbar];
+    width = screenWidth();
+    height = screenHeight();
     
-    if (IDIOM == IPAD){
-        width = screenWidth();
-        height = screenHeight();
-    } else {
-        width = screenWidth();
-        height = screenHeight();
-    }
+    thumbnailSize = IDIOM == IPAD ? CGSizeMake(width/10,width/10) : CGSizeMake(width/4, width/4);
+    
     _assets = [NSMutableArray array];
     _selectedAssets = [NSMutableOrderedSet orderedSet];
     [self loadPhotos];
@@ -74,29 +71,19 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 
 - (void)toggleSelectMode {
     selectMode ? (selectMode = NO) : (selectMode = YES);
-    if (selectMode){
-        self.navigationItem.leftBarButtonItem = backButton;
-        self.navigationItem.rightBarButtonItem = doneButton;
-    } else {
-        self.navigationItem.rightBarButtonItem = selectButton;
-        self.navigationItem.leftBarButtonItem = backButton;
-    }
+    self.navigationItem.rightBarButtonItem = selectMode ? doneButton : selectButton;
+    self.navigationItem.leftBarButtonItem = backButton;
 }
 
 - (void)loadPhotos {
-    if([ALAssetsLibrary authorizationStatus]) {
-        ALAssetsGroupEnumerationResultsBlock assetsEnumerationBlock = ^(ALAsset *result, NSUInteger index, BOOL *stop) {
-            if (result) { [_assets addObject:result]; }
-        };
-        ALAssetsFilter *onlyPhotosFilter = [ALAssetsFilter allPhotos];
-        [_assetsGroup setAssetsFilter:onlyPhotosFilter];
-        [_assetsGroup enumerateAssetsUsingBlock:assetsEnumerationBlock];
-        [self.collectionView reloadData];
-        [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:_assets.count-1 inSection:0] atScrollPosition:UICollectionViewScrollPositionBottom animated:NO];
-    } else {
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Permission Denied" message:@"Please allow the application to access your photo and videos in settings panel of your device" delegate:self cancelButtonTitle:@"Okay" otherButtonTitles: nil];
-        [alertView show];
-    }
+    PHFetchOptions *allPhotosOptions = [PHFetchOptions new];
+    allPhotosOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
+    PHFetchResult *allPhotosResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:allPhotosOptions];
+    [allPhotosResult enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL *stop) {
+        [_assets addObject:asset];
+    }];
+    [self.collectionView reloadData];
+    [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:_assets.count-1 inSection:0] atScrollPosition:UICollectionViewScrollPositionBottom animated:NO];
 }
 
 #pragma mark <UICollectionViewDataSource>
@@ -112,11 +99,18 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     WFImagePickerCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
     
-    ALAsset *asset = _assets[indexPath.item];
-    CGImageRef thumbnailImageRef = [asset thumbnail];
-    UIImage *thumbnail = [UIImage imageWithCGImage:thumbnailImageRef];
-    [cell.imageView setImage:thumbnail];
-    
+    PHAsset *asset = _assets[indexPath.item];
+    PHImageRequestOptions *initialRequestOptions = [[PHImageRequestOptions alloc] init];
+    initialRequestOptions.synchronous = NO;
+    initialRequestOptions.resizeMode = PHImageRequestOptionsResizeModeFast;
+    initialRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    [[PHImageManager defaultManager] requestImageForAsset:asset targetSize:CGSizeMake(thumbnailSize.width*2, thumbnailSize.width*2) contentMode:PHImageContentModeAspectFill options:initialRequestOptions resultHandler:^(UIImage * image, NSDictionary * info) {
+        if (image){
+            cell.imageView.contentMode = UIViewContentModeScaleAspectFill;
+            [cell.imageView setImage:image];
+        }
+    }];
+
     if ([_selectedAssets containsObject:asset]){
         [cell.checkmark setHidden:NO];
     } else {
@@ -129,11 +123,7 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 #pragma mark – UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (IDIOM == IPAD){
-        return CGSizeMake(width/10,width/10);
-    } else {
-        return CGSizeMake(width/4, width/4);
-    }
+    return thumbnailSize;
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -143,7 +133,7 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 #pragma mark <UICollectionViewDelegate>
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    ALAsset *asset = _assets[indexPath.item];
+    PHAsset *asset = _assets[indexPath.item];
     WFImagePickerCell *selectedCell = (WFImagePickerCell*)[collectionView cellForItemAtIndexPath:indexPath];
     
     if (selectMode){
@@ -197,30 +187,39 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 
 - (void)done {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (_selectedAssets.count == 1){
-            [ProgressHUD show:@"Fetching image..."];
-        } else {
-            [ProgressHUD show:@"Fetching images..."];
-        }
+        [ProgressHUD show:_selectedAssets.count == 1 ? @"Fetching image..." : @"Fetching images..."];
     });
     
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (double).07f * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        if (self.delegate && [self.delegate respondsToSelector:@selector(didFinishPickingPhotos:)]){
-            NSMutableArray *photoArray = [NSMutableArray arrayWithCapacity:_selectedAssets.count];
-            [_selectedAssets enumerateObjectsUsingBlock:^(ALAsset *asset, NSUInteger idx, BOOL *stop) {
-                ALAssetRepresentation *imageRep = [asset defaultRepresentation];
-                UIImage *fullImage = [UIImage imageWithCGImage:[imageRep fullResolutionImage] scale:imageRep.scale orientation:(UIImageOrientation)imageRep.orientation];
-                Photo *photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-                [photo setImage:fullImage];
-                [photo setFileName:[imageRep filename]];
-                [photoArray addObject:photo];
-            }];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(didFinishPickingPhotos:)]){
+        NSMutableArray *photoArray = [NSMutableArray arrayWithCapacity:_selectedAssets.count];
+        PHImageManager *defaultManager = [PHImageManager defaultManager];
+        PHImageRequestOptions *initialRequestOptions = [[PHImageRequestOptions alloc] init];
+        initialRequestOptions.synchronous = YES;
+        initialRequestOptions.resizeMode = PHImageRequestOptionsResizeModeFast;
+        initialRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+        
+        [_selectedAssets enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL *stop) {
+            @autoreleasepool {
+                [defaultManager requestImageForAsset:asset targetSize:CGSizeMake(width, width) contentMode:PHImageContentModeAspectFill options:initialRequestOptions resultHandler:^(UIImage * image, NSDictionary * info) {
+                    if (image){
+                        Photo *photo = [Photo MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+                        [photo setImage:image];
+                        NSArray *resources = [PHAssetResource assetResourcesForAsset:asset];
+                        [photo setFileName:((PHAssetResource*)resources[0]).originalFilename];
+                        [photo setAssetUrl:((PHAssetResource*)resources[0]).assetLocalIdentifier];
+                       [photoArray addObject:photo];
+                    }
+                }];
+            }
+        }];
+        if (photoArray.count){
             [self.delegate didFinishPickingPhotos:photoArray];
         } else {
-            [self dismiss];
+            NSLog(@"Error reading PHAssets");
         }
-    });
+    } else {
+        [self dismiss];
+    }
 }
 
 - (void)didReceiveMemoryWarning {

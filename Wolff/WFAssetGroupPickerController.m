@@ -128,13 +128,11 @@
     if ([segue.identifier isEqualToString:@"AssetGroupSelected"]) {
         WFImagePickerController *imagePicker = [segue destinationViewController];
         if ([self.navigationController.presentingViewController isKindOfClass:[WFNewArtViewController class]]){
-            
             imagePicker.delegate = (WFNewArtViewController*)self.navigationController.presentingViewController;
         } else if ([self.navigationController.presentingViewController isKindOfClass:[WFNoRotateNavController class]] && [[[(WFNoRotateNavController*)self.navigationController.presentingViewController viewControllers] firstObject] isKindOfClass:[WFNewArtViewController class]]){
             imagePicker.delegate = (WFNewArtViewController*)[[(WFNoRotateNavController*)self.navigationController.presentingViewController viewControllers] firstObject];
         }
-        NSIndexPath *selectedIndexPath = (NSIndexPath*)sender;
-        [imagePicker setAssetsGroup:_assetGroups[selectedIndexPath.row]];
+//        NSIndexPath *selectedIndexPath = (NSIndexPath*)sender;
     }
 }
 
@@ -183,9 +181,7 @@
 */
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-    
-    }];
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
 - (void)didReceiveMemoryWarning {

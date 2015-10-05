@@ -254,6 +254,10 @@
 		50B7B9381B580EF500701F9B /* whitePaintbrush.png in Resources */ = {isa = PBXBuildFile; fileRef = 50B7B9351B580EF500701F9B /* whitePaintbrush.png */; };
 		50B7B9391B580EF500701F9B /* whitePaintbrush@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50B7B9361B580EF500701F9B /* whitePaintbrush@2x.png */; };
 		50B7B93A1B580EF500701F9B /* whitePaintbrush@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50B7B9371B580EF500701F9B /* whitePaintbrush@3x.png */; };
+		50C49B831BC3216C00C14903 /* SlideshowPhoto+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C49B801BC3216C00C14903 /* SlideshowPhoto+helper.m */; settings = {ASSET_TAGS = (); }; };
+		50C49B841BC3216C00C14903 /* SlideshowPhoto+helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C49B801BC3216C00C14903 /* SlideshowPhoto+helper.m */; settings = {ASSET_TAGS = (); }; };
+		50C49B851BC3216C00C14903 /* SlideshowPhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C49B821BC3216C00C14903 /* SlideshowPhoto.m */; settings = {ASSET_TAGS = (); }; };
+		50C49B861BC3216C00C14903 /* SlideshowPhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C49B821BC3216C00C14903 /* SlideshowPhoto.m */; settings = {ASSET_TAGS = (); }; };
 		50C589511A8528970094DBBF /* WFDateMetadataCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589501A8528970094DBBF /* WFDateMetadataCell.m */; };
 		50C589541A8558070094DBBF /* WFMaterialsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589531A8558070094DBBF /* WFMaterialsViewController.m */; };
 		50C589571A8558450094DBBF /* WFMaterialCollectionCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50C589561A8558450094DBBF /* WFMaterialCollectionCell.m */; };
@@ -846,7 +850,6 @@
 		50E3234A1BB1B03E00B9E55C /* blackSettings@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 508DC9401A5B702200B1C008 /* blackSettings@3x.png */; };
 		50E3234B1BB1B03E00B9E55C /* whitePaintbrush@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50B7B9371B580EF500701F9B /* whitePaintbrush@3x.png */; };
 		50E3234C1BB1B03E00B9E55C /* paintbrushBlue.png in Resources */ = {isa = PBXBuildFile; fileRef = 50B7B9291B580E2600701F9B /* paintbrushBlue.png */; };
-		50E3234D1BB1B03E00B9E55C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F28C77EE18E1E4950088B4C9 /* InfoPlist.strings */; };
 		50E3234E1BB1B03E00B9E55C /* whiteFavorite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB440F1A54705B00856174 /* whiteFavorite@2x.png */; };
 		50E3234F1BB1B03E00B9E55C /* menuLogout.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AC92011A9A6AAA004148D2 /* menuLogout.png */; };
 		50E323501BB1B03E00B9E55C /* whiteFavorite@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 50DB44101A54705B00856174 /* whiteFavorite@3x.png */; };
@@ -966,7 +969,6 @@
 		F28C77E618E1E4950088B4C9 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F28C77E518E1E4950088B4C9 /* CoreGraphics.framework */; };
 		F28C77E818E1E4950088B4C9 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F28C77E718E1E4950088B4C9 /* UIKit.framework */; };
 		F28C77EA18E1E4950088B4C9 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F28C77E918E1E4950088B4C9 /* CoreData.framework */; };
-		F28C77F018E1E4950088B4C9 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F28C77EE18E1E4950088B4C9 /* InfoPlist.strings */; };
 		F28C77F218E1E4950088B4C9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C77F118E1E4950088B4C9 /* main.m */; };
 		F28C77F618E1E4950088B4C9 /* WFAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F28C77F518E1E4950088B4C9 /* WFAppDelegate.m */; };
 		F28C77FC18E1E4950088B4C9 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F28C77FA18E1E4950088B4C9 /* Main_iPad.storyboard */; };
@@ -1349,6 +1351,10 @@
 		50B7B9351B580EF500701F9B /* whitePaintbrush.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whitePaintbrush.png; sourceTree = "<group>"; };
 		50B7B9361B580EF500701F9B /* whitePaintbrush@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "whitePaintbrush@2x.png"; sourceTree = "<group>"; };
 		50B7B9371B580EF500701F9B /* whitePaintbrush@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "whitePaintbrush@3x.png"; sourceTree = "<group>"; };
+		50C49B7F1BC3216C00C14903 /* SlideshowPhoto+helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SlideshowPhoto+helper.h"; sourceTree = "<group>"; };
+		50C49B801BC3216C00C14903 /* SlideshowPhoto+helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SlideshowPhoto+helper.m"; sourceTree = "<group>"; };
+		50C49B811BC3216C00C14903 /* SlideshowPhoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SlideshowPhoto.h; sourceTree = "<group>"; };
+		50C49B821BC3216C00C14903 /* SlideshowPhoto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SlideshowPhoto.m; sourceTree = "<group>"; };
 		50C5894F1A8528970094DBBF /* WFDateMetadataCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFDateMetadataCell.h; sourceTree = "<group>"; };
 		50C589501A8528970094DBBF /* WFDateMetadataCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFDateMetadataCell.m; sourceTree = "<group>"; };
 		50C589521A8558070094DBBF /* WFMaterialsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFMaterialsViewController.h; sourceTree = "<group>"; };
@@ -1540,7 +1546,7 @@
 		50E068191B4EDA3A007FADC8 /* homeIconBlue@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "homeIconBlue@2x.png"; sourceTree = "<group>"; };
 		50E0681A1B4EDA3A007FADC8 /* homeIconBlue@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "homeIconBlue@3x.png"; sourceTree = "<group>"; };
 		50E323761BB1B03E00B9E55C /* Wolff Dev.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Wolff Dev.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		50E323771BB1B03E00B9E55C /* Wolff copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Wolff copy-Info.plist"; path = "/Users/max/wolff-ios/Wolff copy-Info.plist"; sourceTree = "<absolute>"; };
+		50E323771BB1B03E00B9E55C /* Dev-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Dev-Info.plist"; path = "/Users/max/wolff-ios/Dev-Info.plist"; sourceTree = "<absolute>"; };
 		50E323781BB4DDCA00B9E55C /* DevImages.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = DevImages.xcassets; sourceTree = "<group>"; };
 		50E3237A1BB4DDF200B9E55C /* icon-dev-29.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-dev-29.png"; sourceTree = "<group>"; };
 		50E3237B1BB4DDF200B9E55C /* icon-dev-40.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-dev-40.png"; sourceTree = "<group>"; };
@@ -1662,7 +1668,6 @@
 		F28C77E718E1E4950088B4C9 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		F28C77E918E1E4950088B4C9 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		F28C77ED18E1E4950088B4C9 /* Wolff-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Wolff-Info.plist"; sourceTree = "<group>"; };
-		F28C77EF18E1E4950088B4C9 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		F28C77F118E1E4950088B4C9 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		F28C77F418E1E4950088B4C9 /* WFAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WFAppDelegate.h; sourceTree = "<group>"; };
 		F28C77F518E1E4950088B4C9 /* WFAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WFAppDelegate.m; sourceTree = "<group>"; };
@@ -2306,7 +2311,6 @@
 				F28C77E218E1E4950088B4C9 /* Frameworks */,
 				F28C77E118E1E4950088B4C9 /* Products */,
 				FFE8C655854BDDF52E7834D8 /* Pods */,
-				50E323771BB1B03E00B9E55C /* Wolff copy-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -2386,7 +2390,7 @@
 			isa = PBXGroup;
 			children = (
 				F28C77ED18E1E4950088B4C9 /* Wolff-Info.plist */,
-				F28C77EE18E1E4950088B4C9 /* InfoPlist.strings */,
+				50E323771BB1B03E00B9E55C /* Dev-Info.plist */,
 				F28C77F118E1E4950088B4C9 /* main.m */,
 				F2139D7B193A561600EE5C96 /* Constants.h */,
 				50DB02211A5A6FDE005A4E2F /* WFUtilities.h */,
@@ -2527,6 +2531,10 @@
 				F2CE05AB199117990061DB94 /* Slideshow.m */,
 				F2CE05B019911A9A0061DB94 /* Slideshow+helper.h */,
 				F2CE05B119911A9A0061DB94 /* Slideshow+helper.m */,
+				50C49B811BC3216C00C14903 /* SlideshowPhoto.h */,
+				50C49B821BC3216C00C14903 /* SlideshowPhoto.m */,
+				50C49B7F1BC3216C00C14903 /* SlideshowPhoto+helper.h */,
+				50C49B801BC3216C00C14903 /* SlideshowPhoto+helper.m */,
 				50DB43AF1A5363C300856174 /* Comment.h */,
 				50DB43B01A5363C300856174 /* Comment.m */,
 				50DB43B21A5363D900856174 /* Comment+helper.h */,
@@ -3221,7 +3229,6 @@
 				50E3234A1BB1B03E00B9E55C /* blackSettings@3x.png in Resources */,
 				50E3234B1BB1B03E00B9E55C /* whitePaintbrush@3x.png in Resources */,
 				50E3234C1BB1B03E00B9E55C /* paintbrushBlue.png in Resources */,
-				50E3234D1BB1B03E00B9E55C /* InfoPlist.strings in Resources */,
 				50E3234E1BB1B03E00B9E55C /* whiteFavorite@2x.png in Resources */,
 				50E3234F1BB1B03E00B9E55C /* menuLogout.png in Resources */,
 				50E323501BB1B03E00B9E55C /* whiteFavorite@3x.png in Resources */,
@@ -3532,7 +3539,6 @@
 				508DC9461A5B702200B1C008 /* blackSettings@3x.png in Resources */,
 				50B7B93A1B580EF500701F9B /* whitePaintbrush@3x.png in Resources */,
 				50B7B92F1B580E2600701F9B /* paintbrushBlue.png in Resources */,
-				F28C77F018E1E4950088B4C9 /* InfoPlist.strings in Resources */,
 				50DB44151A54705B00856174 /* whiteFavorite@2x.png in Resources */,
 				50AC92071A9A6AAA004148D2 /* menuLogout.png in Resources */,
 				50DB44161A54705B00856174 /* whiteFavorite@3x.png in Resources */,
@@ -3747,6 +3753,7 @@
 				50E321D11BB1B03E00B9E55C /* TiledImageBuilder+Draw.m in Sources */,
 				50E321D21BB1B03E00B9E55C /* WFArtistsViewController.m in Sources */,
 				50E321D31BB1B03E00B9E55C /* Alternate+helper.m in Sources */,
+				50C49B861BC3216C00C14903 /* SlideshowPhoto.m in Sources */,
 				50E321D41BB1B03E00B9E55C /* WFArtMetadataViewController.m in Sources */,
 				50E321D51BB1B03E00B9E55C /* WFFlagViewController.m in Sources */,
 				50E321D61BB1B03E00B9E55C /* Favorite.m in Sources */,
@@ -3797,6 +3804,7 @@
 				50E322031BB1B03E00B9E55C /* WFSettingsViewController.m in Sources */,
 				50E322041BB1B03E00B9E55C /* WFNewArtistCell.m in Sources */,
 				50E322051BB1B03E00B9E55C /* Card.m in Sources */,
+				50C49B841BC3216C00C14903 /* SlideshowPhoto+helper.m in Sources */,
 				50E322061BB1B03E00B9E55C /* WFMenuViewController.m in Sources */,
 				50E322071BB1B03E00B9E55C /* WFProfileHeader.m in Sources */,
 				50E322081BB1B03E00B9E55C /* WFSlideshowTitleCell.m in Sources */,
@@ -3932,6 +3940,7 @@
 				509D84AD1B8FE99400433D98 /* TiledImageBuilder+Draw.m in Sources */,
 				50D6EC111A8284F200DAE52E /* WFArtistsViewController.m in Sources */,
 				503CD57A1A6F44DA00F4FF85 /* Alternate+helper.m in Sources */,
+				50C49B851BC3216C00C14903 /* SlideshowPhoto.m in Sources */,
 				F2CE057F198E929A0061DB94 /* WFArtMetadataViewController.m in Sources */,
 				503CD5921A715D5900F4FF85 /* WFFlagViewController.m in Sources */,
 				F20FB2C21A22AFC60007C905 /* Favorite.m in Sources */,
@@ -3982,6 +3991,7 @@
 				F2CE0595198EAB280061DB94 /* WFSettingsViewController.m in Sources */,
 				50D6EC231A832D8D00DAE52E /* WFNewArtistCell.m in Sources */,
 				50300ADF1A97A86700DBAC86 /* Card.m in Sources */,
+				50C49B831BC3216C00C14903 /* SlideshowPhoto+helper.m in Sources */,
 				50952E7B1A478EA100485831 /* WFMenuViewController.m in Sources */,
 				50DB444C1A564EB600856174 /* WFProfileHeader.m in Sources */,
 				503CD5981A72BF2B00F4FF85 /* WFSlideshowTitleCell.m in Sources */,
@@ -4037,14 +4047,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		F28C77EE18E1E4950088B4C9 /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				F28C77EF18E1E4950088B4C9 /* en */,
-			);
-			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
 		F28C77FA18E1E4950088B4C9 /* Main_iPad.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -4102,13 +4104,12 @@
 					"\"${PODS_ROOT}/Headers/Public/Stripe\"",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 				);
-				INFOPLIST_FILE = "Wolff copy-Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Dev-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/libturbojpeg\"",
 				);
-				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"-DLIBJPEG",
 					"$(inherited)",
@@ -4155,7 +4156,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -4184,13 +4185,12 @@
 					"\"${PODS_ROOT}/Headers/Public/Stripe\"",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 				);
-				INFOPLIST_FILE = "Wolff copy-Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Dev-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/libturbojpeg\"",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = (
 					"-DLIBJPEG",
 					"-DNS_BLOCK_ASSERTIONS=1",

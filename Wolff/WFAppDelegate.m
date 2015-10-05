@@ -32,10 +32,13 @@
     Mixpanel *mixpanel = [Mixpanel sharedInstance];
     [mixpanel track:@"Launch"];
     
-    _manager = [[AFHTTPRequestOperationManager manager] initWithBaseURL:[NSURL URLWithString:kApiBaseUrl]];
+    self.manager = [[AFHTTPRequestOperationManager manager] initWithBaseURL:[NSURL URLWithString:kApiBaseUrl]];
     [AFNetworkActivityIndicatorManager sharedManager].enabled = YES;
-    [_manager.requestSerializer setAuthorizationHeaderFieldWithUsername:API_LOGIN password:API_KEY];
-    [_manager.requestSerializer setValue:(IDIOM == IPAD) ? @"2" : @"1" forHTTPHeaderField:@"device_type"];
+    [self.manager.requestSerializer setAuthorizationHeaderFieldWithUsername:API_LOGIN password:API_KEY];
+    [self.manager.requestSerializer setValue:(IDIOM == IPAD) ? @"2" : @"1" forHTTPHeaderField:@"device_type"];
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsAuthToken]){
+        [self.manager.requestSerializer setValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsAuthToken] forHTTPHeaderField:@"authentication_token"];
+    }
     [self setupConnectionObserver];
 
     // LAUNCH_DATE gets set after the welcome walkthrough
@@ -100,8 +103,8 @@
             [self.currentUser populateFromDictionary:userDict];
             [self setUserDefaults];
             
-            if (self.currentUser.authenticationToken){
-                [self.manager.requestSerializer setValue:self.currentUser.authenticationToken forKey:@"authentication_token"];
+            if (self.currentUser.authenticationToken.length){
+                [self.manager.requestSerializer setValue:self.currentUser.authenticationToken forHTTPHeaderField:@"authentication_token"];
             }
             if (signup){
                 [WFTracking aliasForCurrentUser:self.currentUser.identifier];
@@ -177,6 +180,7 @@
     [[NSUserDefaults standardUserDefaults] setObject:self.currentUser.email forKey:kUserDefaultsEmail];
     [[NSUserDefaults standardUserDefaults] setObject:self.currentUser.firstName forKey:kUserDefaultsFirstName];
     [[NSUserDefaults standardUserDefaults] setObject:self.currentUser.lastName forKey:kUserDefaultsLastName];
+    [[NSUserDefaults standardUserDefaults] setObject:self.currentUser.authenticationToken forKey:kUserDefaultsAuthToken];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     [[Crashlytics sharedInstance] setUserIdentifier:self.currentUser.identifier.stringValue];
@@ -263,12 +267,12 @@
     self.currentUser = nil;
 
     //[self cleanAndResetDB];
-    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Photo MR_findAll]];
-    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Art MR_findAll]];
-    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Slideshow MR_findAll]];
-    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Slide MR_findAll]];
-    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[LightTable MR_findAll]];
-    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Favorite MR_findAll]];
+    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Photo MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
+    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Art MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
+    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Slideshow MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
+    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Slide MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
+    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[LightTable MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
+    [[NSManagedObjectContext MR_defaultContext] MR_deleteObjects:[Favorite MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
     
     NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];

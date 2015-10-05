@@ -220,6 +220,7 @@
         <relationship name="users" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="User" inverseName="partners" inverseEntity="User" syncable="YES"/>
     </entity>
     <entity name="Photo" representedClassName="Photo" syncable="YES">
+        <attribute name="assetUrl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="createdDate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="credit" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="fileName" optional="YES" attributeType="String" syncable="YES"/>
@@ -245,7 +246,7 @@
         <relationship name="notifications" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Notification" inverseName="photo" inverseEntity="Notification" syncable="YES"/>
         <relationship name="partners" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Partner" inverseName="photos" inverseEntity="Partner" syncable="YES"/>
         <relationship name="photoSlides" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="PhotoSlide" inverseName="photo" inverseEntity="PhotoSlide" syncable="YES"/>
-        <relationship name="slideshows" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Slideshow" inverseName="photos" inverseEntity="Slideshow" syncable="YES"/>
+        <relationship name="slideshowPhotos" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SlideshowPhoto" inverseName="photo" inverseEntity="SlideshowPhoto" syncable="YES"/>
         <relationship name="tables" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="LightTable" inverseName="photos" inverseEntity="LightTable" syncable="YES"/>
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="photos" inverseEntity="User" syncable="YES"/>
     </entity>
@@ -284,9 +285,15 @@
         <relationship name="lightTables" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="LightTable" inverseName="slideshows" inverseEntity="LightTable" syncable="YES"/>
         <relationship name="notifications" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Notification" inverseName="slideshow" inverseEntity="Notification" syncable="YES"/>
         <relationship name="owner" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="ownedSlideshows" inverseEntity="User" syncable="YES"/>
-        <relationship name="photos" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Photo" inverseName="slideshows" inverseEntity="Photo" syncable="YES"/>
         <relationship name="slides" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Slide" inverseName="slideshow" inverseEntity="Slide" syncable="YES"/>
+        <relationship name="slideshowPhotos" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="SlideshowPhoto" inverseName="slideshow" inverseEntity="SlideshowPhoto" syncable="YES"/>
         <relationship name="users" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="User" inverseName="slideshows" inverseEntity="User" syncable="YES"/>
+    </entity>
+    <entity name="SlideshowPhoto" representedClassName="SlideshowPhoto" syncable="YES">
+        <attribute name="createdDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="identifier" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <relationship name="photo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Photo" inverseName="slideshowPhotos" inverseEntity="Photo" syncable="YES"/>
+        <relationship name="slideshow" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Slideshow" inverseName="slideshowPhotos" inverseEntity="Slideshow" syncable="YES"/>
     </entity>
     <entity name="SlideText" representedClassName="SlideText" syncable="YES">
         <attribute name="alignment" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
@@ -360,12 +367,13 @@
         <element name="Note" positionX="288" positionY="342" width="128" height="135"/>
         <element name="Notification" positionX="288" positionY="342" width="128" height="253"/>
         <element name="Partner" positionX="288" positionY="342" width="128" height="210"/>
-        <element name="Photo" positionX="279" positionY="324" width="128" height="465"/>
+        <element name="Photo" positionX="279" positionY="324" width="128" height="480"/>
         <element name="PhotoSlide" positionX="297" positionY="351" width="128" height="240"/>
         <element name="Slide" positionX="297" positionY="315" width="128" height="150"/>
         <element name="Slideshow" positionX="288" positionY="306" width="128" height="240"/>
         <element name="SlideText" positionX="288" positionY="342" width="128" height="165"/>
         <element name="Tag" positionX="288" positionY="342" width="128" height="90"/>
         <element name="User" positionX="261" positionY="189" width="128" height="540"/>
+        <element name="SlideshowPhoto" positionX="288" positionY="342" width="128" height="105"/>
     </elements>
 </model>

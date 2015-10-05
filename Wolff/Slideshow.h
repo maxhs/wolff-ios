@@ -21,7 +21,7 @@
 @property (nonatomic, retain) NSString * slideshowDescription;
 @property (nonatomic, retain) NSOrderedSet *slides;
 @property (nonatomic, retain) NSOrderedSet *discussions;
-@property (nonatomic, retain) NSOrderedSet *photos;
+@property (nonatomic, retain) NSOrderedSet *slideshowPhotos;
 @property (nonatomic, retain) NSOrderedSet *lightTables;
 @property (nonatomic, retain) User * owner;
 @end

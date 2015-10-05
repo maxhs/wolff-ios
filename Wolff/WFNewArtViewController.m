@@ -10,7 +10,6 @@
 #import "WFAppDelegate.h"
 #import "WFNewArtCell.h"
 #import "Art+helper.h"
-#import "WFAssetGroupPickerController.h"
 #import "WFImagePickerController.h"
 #import "WFAlert.h"
 #import "WFArtistsViewController.h"
@@ -147,7 +146,8 @@
 }
 
 - (void)choosePhoto {
-    WFAssetGroupPickerController *imagePicker = [[self storyboard] instantiateViewControllerWithIdentifier:@"AssetGroupPicker"];
+    WFImagePickerController *imagePicker = [[self storyboard] instantiateViewControllerWithIdentifier:@"ImagePicker"];
+    imagePicker.delegate = self;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:imagePicker];
     [self presentViewController:nav animated:YES completion:NULL];
 }
@@ -402,8 +402,24 @@
             [formData appendPartWithFormData:[userId dataUsingEncoding:NSUTF8StringEncoding] name:@"photos[][user_id]"];
             [formData appendPartWithFormData:[[iconIds componentsJoinedByString:@","] dataUsingEncoding:NSUTF8StringEncoding]  name:@"photos[][icon_ids]"];
             
-            NSData *imageData = UIImageJPEGRepresentation(photo.image, 1);
-            [formData appendPartWithFileData:imageData name:@"photos[][image]" fileName:photo.fileName mimeType:@"image/jpg"];
+            if (photo.assetUrl.length){
+                PHFetchOptions *assetOptions = [PHFetchOptions new];
+                assetOptions.predicate = [NSPredicate predicateWithFormat:@"localIdentifier == %@",photo.assetUrl];
+                PHFetchResult *fetchResult = [PHAsset fetchAssetsWithMediaType:PHAssetMediaTypeImage options:assetOptions];
+                [fetchResult enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL *stop) {
+                    PHImageRequestOptions *initialRequestOptions = [[PHImageRequestOptions alloc] init];
+                    initialRequestOptions.synchronous = YES;
+                    initialRequestOptions.resizeMode = PHImageRequestOptionsResizeModeFast;
+                    initialRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+                    
+                    [[PHImageManager defaultManager] requestImageDataForAsset:asset options:initialRequestOptions resultHandler:^(NSData * imageData, NSString * dataUTI, UIImageOrientation orientation, NSDictionary * info) {
+                        [formData appendPartWithFileData:imageData name:@"photos[][image]" fileName:photo.fileName mimeType:@"image/jpg"];
+                    }];
+                }];
+            } else {
+                NSData *imageData = UIImageJPEGRepresentation(photo.image, 1);
+                [formData appendPartWithFileData:imageData name:@"photos[][image]" fileName:photo.fileName mimeType:@"image/jpg"];
+            }
         }
     } success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success creating art: %@",responseObject);
@@ -721,9 +737,7 @@
     vc.iconsDelegate = self;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     [nav.navigationBar setTintColor:[UIColor whiteColor]];
-    [self presentViewController:nav animated:YES completion:^{
-        
-    }];
+    [self presentViewController:nav animated:YES completion:NULL];
 }
 
 - (void)iconsSelected:(NSOrderedSet *)selectedIcons {
