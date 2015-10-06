@@ -80,8 +80,8 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.row == 0){
-        if (self.saveDelegate && [self.saveDelegate respondsToSelector:@selector(post)]){
-            [self.saveDelegate post];
+        if (self.saveDelegate && [self.saveDelegate respondsToSelector:@selector(postAndPlay:atIndex:)]){
+            [self.saveDelegate postAndPlay:NO atIndex:nil];
         }
     } else {
         if (self.saveDelegate && [self.saveDelegate respondsToSelector:@selector(enableOfflineMode)]){

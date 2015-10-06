@@ -37,7 +37,7 @@ NSString* const saveOption = @"Save";
 NSString* const settingsOption = @"Settings";
 NSString* const playOption = @"Play";
 
-@interface WFSlideshowSplitViewController () <UIViewControllerTransitioningDelegate, UIAlertViewDelegate, UIActionSheetDelegate, WFSearchDelegate, WFSlideTextDelegate, WFSlideshowSettingsDelegate, UIPopoverControllerDelegate,  UITextFieldDelegate, WFImageViewDelegate, WFSaveSlideshowDelegate, WFLightTablesDelegate> {
+@interface WFSlideshowSplitViewController () <UIViewControllerTransitioningDelegate, UIAlertViewDelegate, UIActionSheetDelegate, WFPlaySlideshowDelegate, WFSearchDelegate, WFSlideTextDelegate, WFSlideshowSettingsDelegate, UIPopoverControllerDelegate,  UITextFieldDelegate, WFImageViewDelegate, WFSaveSlideshowDelegate, WFLightTablesDelegate> {
     WFAppDelegate *delegate;
     AFHTTPRequestOperationManager *manager;
     CGFloat width;
@@ -233,7 +233,7 @@ NSString* const playOption = @"Play";
         [actionSheet dismissWithClickedButtonIndex:buttonIndex animated:YES];
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, .5f * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            [self playSlideshowFromStart];
+            [self postAndPlay:YES atIndex:nil];
         });
         
     }
@@ -443,7 +443,7 @@ NSString* const playOption = @"Play";
 - (void)slideDoubleTap:(UITapGestureRecognizer*)gestureRecognizer {
     CGPoint loc = [gestureRecognizer locationInView:self.tableView];
     NSIndexPath *selectedIndexPath = [self.tableView indexPathForRowAtPoint:loc];
-    [self playSlideshow:@(selectedIndexPath.row)];
+    [self postAndPlay:YES atIndex:@(selectedIndexPath.row)];
 }
 
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
@@ -857,7 +857,7 @@ NSString* const playOption = @"Play";
 - (void)save {
     if (self.slideshow.title.length) {
         [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            [self post];
+            [self postAndPlay:NO atIndex:nil];
         }];
     } else {
         titlePrompt = [[UIAlertView alloc] initWithTitle:@"No title!" message:@"Please make sure you've titled this slideshow before saving." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
@@ -867,7 +867,6 @@ NSString* const playOption = @"Play";
 
 - (NSMutableDictionary *)generateParameters {
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     if (self.slideshow.title.length){
         [parameters setObject:self.slideshow.title forKey:@"title"];
     }
@@ -924,7 +923,7 @@ NSString* const playOption = @"Play";
     return parameters;
 }
 
-- (void)post {
+- (void)postAndPlay:(BOOL)shouldPlay atIndex:(NSNumber*)index {
     if (self.mainRequest || !self.slideshow) return;
     if (self.popover) [self.popover dismissPopoverAnimated:YES];
     if (titleTextField.isEditing) [titleTextField resignFirstResponder];
@@ -932,24 +931,30 @@ NSString* const playOption = @"Play";
     NSDictionary *parameters = [self generateParameters];
     
     if ([self.slideshow.identifier isEqualToNumber:@0]){
-        [ProgressHUD show:self.slideshow.title.length ? [NSString stringWithFormat:@"Creating \"%@\"...",self.slideshow.title] : @"Creating your slideshow..."];
+        if (!shouldPlay) [ProgressHUD show:self.slideshow.title.length ? [NSString stringWithFormat:@"Creating \"%@\"...",self.slideshow.title] : @"Creating your slideshow..."];
         
-        self.mainRequest = [manager POST:[NSString stringWithFormat:@"slideshows"] parameters:@{@"slideshow":parameters,@"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        self.mainRequest = [manager POST:[NSString stringWithFormat:@"slideshows"] parameters:@{@"slideshow":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success creating a slideshow: %@",responseObject);
             [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
             self.mainRequest = nil;
             
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
             if (self.lightTable){
                 [self lightTableSelected:self.lightTable];
             } else {
                 [ProgressHUD dismiss];
             }
-            [WFAlert show:[NSString stringWithFormat:@"\"%@\" created",self.slideshow.title] withTime:3.7f];
+            
+            if (shouldPlay){
+                [self playSlideshow:index];
+            } else {
+                [WFAlert show:[NSString stringWithFormat:@"\"%@\" created",self.slideshow.title] withTime:3.7f];
+            }
+            
             if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(slideshowCreated:)]){
                 [self.slideshowDelegate slideshowCreated:self.slideshow];
             }
-            
+        
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to create a slideshow: %@",error.description);
             [WFAlert show:@"Sorry, but something went wrong while saving your slideshow to the cloud.\n\nWe've saved it locally in the meantime." withTime:3.7f];
@@ -958,17 +963,23 @@ NSString* const playOption = @"Play";
             self.mainRequest = nil;
         }];
     } else {
-        [ProgressHUD show:@"Saving..."];
-        self.mainRequest = [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",self.slideshow.identifier] parameters:@{@"slideshow":parameters, @"user_id":[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        if (!shouldPlay) [ProgressHUD show:@"Saving..."];
+        self.mainRequest = [manager PATCH:[NSString stringWithFormat:@"slideshows/%@",self.slideshow.identifier] parameters:@{@"slideshow":parameters} success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success saving a slideshow: %@",responseObject);
             [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
             [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-            
             [ProgressHUD dismiss];
-            [WFAlert show:[NSString stringWithFormat:@"\"%@\" saved",self.slideshow.title] withTime:3.7f];
+            
             [self.tableView reloadData];
             [self.collectionView reloadData];
             self.mainRequest = nil;
+            
+            if (shouldPlay){
+                [self playSlideshow:index];
+            } else {
+                [WFAlert show:[NSString stringWithFormat:@"\"%@\" saved",self.slideshow.title] withTime:3.7f];
+            }
+            
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Failed to save a slideshow: %@",error.description);
             [WFAlert show:@"Sorry, but something went wrong while saving your slideshow to the cloud.\n\nWe've saved it locally in the meantime." withTime:3.7f];
@@ -1050,7 +1061,6 @@ NSString* const playOption = @"Play";
             
         }];
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         [parameters setObject:self.slideshow.identifier forKey:@"slideshow_id"];
         self.deleteRequest = [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/remove_slideshow",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
             NSLog(@"Success removing slideshow from light table: %@",responseObject);
@@ -1077,7 +1087,6 @@ NSString* const playOption = @"Play";
        
     }];
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
     [parameters setObject:self.slideshow.identifier forKey:@"slideshow_id"];
     [manager POST:[NSString stringWithFormat:@"light_tables/%@/add_slideshow",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success adding slideshow to light table: %@",responseObject);
@@ -1128,8 +1137,11 @@ NSString* const playOption = @"Play";
         [self.slideshow removeSlideshowPhoto:slideshowPhoto];
     } else {
         slideshowPhoto = [SlideshowPhoto MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+        // this just ensures the new slideshow photo is inserted at the beginning
+        slideshowPhoto.createdDate = [NSDate date];
         slideshowPhoto.slideshow = self.slideshow;
         slideshowPhoto.photo = photo;
+        [self.slideshow orderPhotos];
     }
     
     [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
@@ -1185,7 +1197,9 @@ NSString* const playOption = @"Play";
     if (self.popover){
         [self.popover dismissPopoverAnimated:YES];
     }
-    [self playSlideshow:nil];
+    
+    [ProgressHUD show:self.slideshow.title.length ? [NSString stringWithFormat:@"Preparing \"%@\"...",self.slideshow.title] : @"Preparing..."];
+    [self postAndPlay:YES atIndex:nil];
 }
 
 - (void)resetTransitionBooleans {
@@ -1194,13 +1208,18 @@ NSString* const playOption = @"Play";
     transparentBG = NO;
 }
 
+- (void)willDismissPlayer {
+    
+}
+
 - (void)playSlideshow:(NSNumber*)startIndex {
     if (self.slideshow.slides.count){
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+        
         [self resetTransitionBooleans];
         showSlideshow = YES;
         
         WFSlideshowViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"Slideshow"];
+        vc.playSlideshowDelegate = self;
         [vc setStartIndex:startIndex];
         [vc setSlideshow:self.slideshow];
         
@@ -1401,7 +1420,7 @@ NSString* const playOption = @"Play";
     if (self.popover && self.popover.isPopoverVisible){
         [self.popover dismissPopoverAnimated:YES];
     }
-    [self saveSlideshowWithUI:NO];
+    //[self saveSlideshowWithUI:NO];
     if (self.mainRequest) [self.mainRequest cancel];
 }
 

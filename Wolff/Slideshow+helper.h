@@ -12,9 +12,11 @@
 
 @interface Slideshow (helper)
 - (void)populateFromDictionary:(NSDictionary*)dict;
+
 - (void)addSlide:(Slide*)slide atIndex:(NSInteger)index;
 - (void)removeSlide:(Slide*)slide fromIndex:(NSInteger)index;
 - (void)addSlideshowPhoto:(SlideshowPhoto*)slideshowPhoto;
 - (void)removeSlideshowPhoto:(SlideshowPhoto*)slideshowPhoto;
-
+- (void)orderPhotos;
+- (BOOL)isOwnedByUser:(User*)user;
 @end

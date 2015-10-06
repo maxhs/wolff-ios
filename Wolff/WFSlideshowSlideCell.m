@@ -48,7 +48,7 @@
     }
 }
 
-- (void)configureForPhotos:(NSOrderedSet *)photos inSlide:(Slide*)slide{
+- (void)configureForPhotos:(NSOrderedSet *)photos inSlide:(Slide*)slide withPrepositioning:(BOOL)shouldPreposition{
     CGFloat frameHeight = (IDIOM == IPAD) ? 660.f : 300.f;
     CGFloat singleWidth = (IDIOM == IPAD) ? 900.f : 460.f;
     CGFloat splitWidth = (IDIOM == IPAD) ? 480.f : 260.f;
@@ -78,7 +78,7 @@
         if (photos.count == 1){
             if (slide && slide.photoSlides.count){
                 PhotoSlide *photoSlide1 = slide.photoSlides[0];
-                if (photoSlide1.hasValidFrame){
+                if (photoSlide1.hasValidFrame && shouldPreposition){
                     [_artImageView1 setFrame:CGRectMake(photoSlide1.positionX.floatValue, photoSlide1.positionY.floatValue, photoSlide1.width.floatValue, photoSlide1.height.floatValue)];
                     NSLog(@"Pre-positioning slide 1: %@ %@, %@ %@",photoSlide1.positionX, photoSlide1.positionY, photoSlide1.width, photoSlide1.height);
                 } else {
@@ -117,14 +117,14 @@
         } else if (photos.count > 1) {
             if (slide && slide.photoSlides.count > 1){
                 PhotoSlide *photoSlide2 = slide.photoSlides[0];
-                if (photoSlide2.hasValidFrame){
+                if (photoSlide2.hasValidFrame && shouldPreposition){
                     [_artImageView2 setFrame:CGRectMake(photoSlide2.positionX.floatValue, photoSlide2.positionY.floatValue, photoSlide2.width.floatValue, photoSlide2.height.floatValue)];
                     NSLog(@"Pre-positioning slide 2: %@ %@, %@ %@",photoSlide2.positionX, photoSlide2.positionY, photoSlide2.width, photoSlide2.height);
                 } else {
                     [_artImageView2 setFrame:CGRectMake((width/4-splitWidth/2), (height/2-frameHeight/2), splitWidth, frameHeight)];
                 }
                 PhotoSlide *photoSlide3 = slide.photoSlides[1];
-                if (photoSlide3.hasValidFrame){
+                if (photoSlide3.hasValidFrame && shouldPreposition){
                     [_artImageView3 setFrame:CGRectMake(photoSlide3.positionX.floatValue, photoSlide3.positionY.floatValue, photoSlide3.width.floatValue, photoSlide3.height.floatValue)];
                     NSLog(@"Pre-positioning slide 3: %@ %@, %@ %@",photoSlide3.positionX, photoSlide3.positionY, photoSlide3.width, photoSlide3.height);
                 } else {

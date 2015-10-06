@@ -63,7 +63,7 @@
             [slideshowPhoto populateFromDictionary:dict];
             [set addObject:slideshowPhoto];
         }
-        NSSortDescriptor *slideshowPhotoSort = [NSSortDescriptor sortDescriptorWithKey:@"createdDate" ascending:YES];
+        NSSortDescriptor *slideshowPhotoSort = [NSSortDescriptor sortDescriptorWithKey:@"createdDate" ascending:NO];
         [set sortUsingDescriptors:@[slideshowPhotoSort]];
         self.slideshowPhotos = set;
     }
@@ -92,6 +92,13 @@
     }
 }
 
+- (void)orderPhotos {
+    NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshowPhotos];
+    NSSortDescriptor *slideshowPhotoSort = [NSSortDescriptor sortDescriptorWithKey:@"createdDate" ascending:NO];
+    [set sortUsingDescriptors:@[slideshowPhotoSort]];
+    self.slideshowPhotos = set;
+}
+
 - (void)addSlideshowPhoto:(SlideshowPhoto *)slideshowPhoto {
     NSMutableOrderedSet *tempSet = [NSMutableOrderedSet orderedSetWithOrderedSet:self.slideshowPhotos];
     [tempSet insertObject:slideshowPhoto atIndex:0]; // this ensures we're adding the photo to the TOP of the slideshow light table
@@ -118,5 +125,10 @@
         [slideSet removeObjectAtIndex:index];
     }
     self.slides = slideSet;
+}
+
+- (BOOL)isOwnedByUser:(User *)user {
+    if (!user) return false;
+    return [self.owner.identifier isEqualToNumber:user.identifier] ? true : false;
 }
 @end

@@ -523,6 +523,8 @@ static NSString *const logoutOption = @"Log out";
 #pragma mark - Login/Logout Delegate
 - (void)loginSuccessful {
     self.currentUser = [User MR_findFirstByAttribute:@"identifier" withValue:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] inContext:[NSManagedObjectContext MR_defaultContext]];
+    // reload user's slideshows
+    _slideshows = [NSMutableOrderedSet orderedSetWithArray:[Slideshow MR_findAllInContext:[NSManagedObjectContext MR_defaultContext]]];
     loggedIn = YES;
     [self setUpNavBar];
     if (sidebarIsVisible) [self.tableView reloadData];
@@ -2795,7 +2797,6 @@ static NSString *const logoutOption = @"Log out";
     }
     if (self.currentUser.customerPlan.length){
         if (slideshow){
-            
             [_selectedPhotos enumerateObjectsUsingBlock:^(Photo *p, NSUInteger idx, BOOL * _Nonnull stop) {
                 Photo *photo = [p MR_inContext:[NSManagedObjectContext MR_defaultContext]];
                 SlideshowPhoto *slideshowPhoto = [SlideshowPhoto MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
@@ -2807,7 +2808,9 @@ static NSString *const logoutOption = @"Log out";
             // create an array of photo_ids for the purposes of sync'ing with the API
             __block NSMutableArray *photoIds = [NSMutableArray array];
             [slideshow.slideshowPhotos enumerateObjectsUsingBlock:^(SlideshowPhoto *slideshowPhoto, NSUInteger idx, BOOL *stop) {
-                [photoIds addObject:slideshowPhoto.photo.identifier];
+                if (slideshowPhoto.photo.identifier){
+                    [photoIds addObject:slideshowPhoto.photo.identifier];
+                }
             }];
             
             if (photoIds.count){

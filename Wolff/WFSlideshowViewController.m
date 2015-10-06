@@ -402,7 +402,7 @@
         if (self.photos.count){
             WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
             
-            [cell configureForPhotos:self.photos.mutableCopy inSlide:nil];
+            [cell configureForPhotos:self.photos.mutableCopy inSlide:nil withPrepositioning:[self.slideshow isOwnedByUser:self.currentUser]];
             [self assignViewsForCell:cell];
             
             return cell;
@@ -416,7 +416,7 @@
             WFSlideshowSlideCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SlideCell" forIndexPath:indexPath];
             
             self.currentSlide = self.slideshow.slides[indexPath.item];
-            [cell configureForPhotos:self.currentSlide.photos inSlide:self.currentSlide];
+            [cell configureForPhotos:self.currentSlide.photos inSlide:self.currentSlide withPrepositioning:[self.slideshow isOwnedByUser:self.currentUser]];
             [self assignViewsForCell:cell];
             
             return cell;
@@ -915,6 +915,7 @@
     [super viewWillDisappear:animated];
     [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
     if (self.currentUser && self.slideshow && self.slideshow.owner && [self.currentUser.identifier isEqualToNumber:self.slideshow.owner.identifier]){
+        // only syn
         [self syncWithServer];
     }
 }
@@ -936,19 +937,19 @@
     }];
     
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId]){
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-    }
     if (photoSlideArray.count){
         [parameters setObject:photoSlideArray forKey:@"slideshow[photo_slides]"];
     }
     
     [manager PATCH:[NSString stringWithFormat:@"slideshows/%@/positioning",self.slideshow.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         //NSLog(@"Success saving slideshow: %@",responseObject);
-        [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            
-        }];
+        if ([responseObject objectForKey:@"slideshow"]){
+            [self.slideshow populateFromDictionary:[responseObject objectForKey:@"slideshow"]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+        }
+        if (self.playSlideshowDelegate && [self.playSlideshowDelegate respondsToSelector:@selector(willDismissPlayer)]){
+            [self.playSlideshowDelegate willDismissPlayer];
+        }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Failed to sync slideshow prepositioning with server: %@",error.description);
 

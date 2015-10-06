@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 @protocol WFSaveSlideshowDelegate <NSObject>
 
-- (void)post;
+- (void)postAndPlay:(BOOL)shouldPlay atIndex:(NSNumber*)index;
 - (void)enableOfflineMode;
 
 @end

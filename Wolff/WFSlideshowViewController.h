@@ -10,6 +10,10 @@
 #import "Slideshow+helper.h"
 #import "WFGesturableCollectionView.h"
 
+@protocol WFPlaySlideshowDelegate <NSObject>
+- (void)willDismissPlayer;
+@end
+
 @interface WFSlideshowViewController : UIViewController <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
 @property (weak, nonatomic) IBOutlet WFGesturableCollectionView *collectionView;
@@ -18,7 +22,7 @@
 @property (strong, nonatomic) Slideshow *slideshow;
 @property (strong, nonatomic) NSArray *photos; // comparison mode
 @property (strong, nonatomic) NSNumber *startIndex;
-
+@property (weak, nonatomic) id <WFPlaySlideshowDelegate> playSlideshowDelegate;
 - (void)dismiss;
 
 @end

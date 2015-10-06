@@ -23,6 +23,6 @@
 @property (weak, nonatomic) IBOutlet UIProgressView *progressView3;
 @property (weak, nonatomic) IBOutlet UILabel *mainTextLabel;
 
-- (void)configureForPhotos:(NSOrderedSet*)photos inSlide:(Slide*)slide;
+- (void)configureForPhotos:(NSOrderedSet*)photos inSlide:(Slide*)slide withPrepositioning:(BOOL)shouldPreposition;
 
 @end
