@@ -529,7 +529,6 @@ NSString* const deleteOption = @"Delete";
             WFLightTablesViewController *vc = [[self storyboard] instantiateViewControllerWithIdentifier:@"LightTables"];
             vc.lightTableDelegate = self;
             [vc setPhoto:self.photo];
-            [vc setLightTables:self.currentUser.lightTables.array.mutableCopy];
             
             if (IDIOM == IPAD){
                 if (self.popover){

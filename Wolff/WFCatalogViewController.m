@@ -88,6 +88,7 @@ static NSString *const logoutOption = @"Log out";
     BOOL expanded;
     BOOL metadata;
     BOOL loggedIn;
+    BOOL shouldBeginSearching;
 
     BOOL comparison;
     BOOL settings;
@@ -128,6 +129,8 @@ static NSString *const logoutOption = @"Log out";
     UIActionSheet *iPhoneMenu;
     NSString *searchText;
     UIImageView *navBarShadowView;
+    
+    NSTimer *searchTypingTimer;
 }
 
 @property (strong, nonatomic) User *currentUser;
@@ -187,6 +190,7 @@ static NSString *const logoutOption = @"Log out";
     canLoadMore = YES;
     canSearchMore = YES;
     canLoadMoreOfMyArt = YES;
+    shouldBeginSearching = YES;
     [self setUpNavBar]; //set up the nav buttons AND determine logged in status
     if (IDIOM != IPAD){
         CGRect tableFrame = self.tableView.frame;
@@ -199,10 +203,6 @@ static NSString *const logoutOption = @"Log out";
     [self setUpSearch];
     [self loadBeforePhoto:nil];
     [loadingSpinner startAnimating];
-    
-    dispatch_async(dispatch_get_main_queue(), ^(void){
-        [ProgressHUD show:@"Loading art..."];
-    });
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loginSuccessful) name:LOGGED_IN object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loggedOut) name:LOGGED_OUT object:nil];
@@ -307,8 +307,8 @@ static NSString *const logoutOption = @"Log out";
     
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
     topInset = self.navigationController.navigationBar.frame.size.height;
-    self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, topInset, 0);
-    self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, topInset, 0);
+    self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+    self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
     
     if (IDIOM == IPAD){
         self.navigationItem.titleView = self.searchBar;
@@ -333,6 +333,12 @@ static NSString *const logoutOption = @"Log out";
     [super viewDidAppear:animated];
     if (![[NSUserDefaults standardUserDefaults] boolForKey:kExistingUser]){
         [self showWalkthrough];
+    }
+    if (self.mainRequest.isExecuting) {
+        dispatch_async(dispatch_get_main_queue(), ^(void){
+            [ProgressHUD show:@"Loading art..."];
+            [loadingSpinner startAnimating];
+        });
     }
 }
 
@@ -480,7 +486,8 @@ static NSString *const logoutOption = @"Log out";
 }
 
 - (void)refreshCollectionView {
-    [ProgressHUD show:@"Refreshing Art..."];
+    // No need for a ProgressHUD because we're using the loading spinner thing
+    //[ProgressHUD show:@"Refreshing Art..."];
     [self doneEditing];
     if (showMyArt){
         [_myPhotos removeAllObjects];
@@ -569,6 +576,8 @@ static NSString *const logoutOption = @"Log out";
 - (void)loadBeforePhoto:(Photo*)lastPhoto {
     if (self.mainRequest) {
         return;
+    } else if (!collectionViewRefresh.isRefreshing) {
+        [loadingSpinner startAnimating];
     }
     
     NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
@@ -589,15 +598,12 @@ static NSString *const logoutOption = @"Log out";
         }
     }
     
-    //infinite scroll indicator
-    [loadingSpinner startAnimating];
-    
     self.mainRequest = [manager GET:@"photos" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         if (collectionViewRefresh.isRefreshing) [collectionViewRefresh endRefreshing];
         
         NSDictionary *photosDict = [responseObject objectForKey:@"photos"];
         if (photosDict.count){
-            NSLog(@"How many photos did we pull? %lu. Can we load more? %u",(unsigned long)photosDict.count, canLoadMore);
+            NSLog(@"Just loaded %lu images",(unsigned long)photosDict.count);
             for (id dict in photosDict) {
                 Photo *photo = [Photo MR_findFirstByAttribute:@"identifier" withValue:[dict objectForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
                 if (!photo){
@@ -607,18 +613,17 @@ static NSString *const logoutOption = @"Log out";
                 [_photos addObject:photo];
             }
             
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
             NSSortDescriptor *chronologicalSort = [NSSortDescriptor sortDescriptorWithKey:@"createdDate" ascending:NO];
             [_photos sortUsingDescriptors:@[chronologicalSort]];
-            if (self.searchBar.text.length){
+            
+            if (searchText){
                 [self filterContentForSearchText:searchText scope:nil];
-                canSearchMore = photosDict.count ? YES : NO;
             } else if (showMyArt){
-                canLoadMoreOfMyArt = photosDict.count ? YES : NO;
                 if (self.mainRequest && !self.mainRequest.isCancelled){
                     [self.collectionView reloadData];
                 }
             } else {
-                canLoadMore = photosDict.count ? YES : NO;
                 if (self.mainRequest && !self.mainRequest.isCancelled){
                     [self.collectionView reloadData];
                 }
@@ -626,16 +631,16 @@ static NSString *const logoutOption = @"Log out";
             
             self.mainRequest = nil;
             [self endRefresh];
+            [loadingSpinner stopAnimating];
 
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:NULL];
         } else {
             canLoadMore = NO;
             canSearchMore = NO;
             canLoadMoreOfMyArt = NO;
-            [self endRefresh];
+            
             self.mainRequest = nil;
+            [self endRefresh];
             [loadingSpinner stopAnimating];
-            NSLog(@"How many photos did we pull? %lu. Can we load more? %u",(unsigned long)photosDict.count, canLoadMore);
         }
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -645,7 +650,6 @@ static NSString *const logoutOption = @"Log out";
 
 - (void)endRefresh {
     [ProgressHUD dismiss];
-    [loadingSpinner stopAnimating];
     
     if (tableViewRefresh.isRefreshing){
         [tableViewRefresh endRefreshing];
@@ -656,7 +660,9 @@ static NSString *const logoutOption = @"Log out";
 }
 
 - (void)loadLightTables {
-    if (self.dashboardRequest) return;
+    if (self.dashboardRequest) {
+        return;
+    }
     
     if (self.currentUser){
         [ProgressHUD show:@"Refreshing your light tables..."];
@@ -874,7 +880,11 @@ static NSString *const logoutOption = @"Log out";
         if (section == 0){
             return 1;
         } else if (section == _lightTables.count + 1){
-            if (!_uncategorizesSlideshows) _uncategorizesSlideshows = [NSMutableOrderedSet orderedSet];
+            if (!_uncategorizesSlideshows) {
+                _uncategorizesSlideshows = [NSMutableOrderedSet orderedSet];
+            } else {
+                [_uncategorizesSlideshows removeAllObjects];
+            }
             [_slideshows enumerateObjectsUsingBlock:^(Slideshow *slideshow, NSUInteger idx, BOOL *stop) {
                 if (!slideshow.lightTables.count) [_uncategorizesSlideshows addObject:slideshow];
             }];
@@ -1152,71 +1162,55 @@ static NSString *const logoutOption = @"Log out";
 
 - (void)deleteLightTable:(LightTable *)lightTable atIndexPath:(NSIndexPath*)indexPath {
     WFLightTableCell *cell = (WFLightTableCell*)[_tableView cellForRowAtIndexPath:indexPath];
+    [cell.scrollView setContentOffset:CGPointZero animated:YES];
     
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    if (loggedIn){
-        [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
-    }
     if (![lightTable.identifier isEqualToNumber:@0]){
-       self.lightTableRequest = [manager DELETE:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success deleting this light table: %@",responseObject);
+       self.lightTableRequest = [manager DELETE:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            //NSLog(@"Success deleting this light table: %@",responseObject);
            self.lightTableRequest = nil;
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Failed to delete this light table: %@",error.description);
+            //NSLog(@"Failed to delete this light table: %@",error.description);
             self.lightTableRequest = nil;
         }];
     }
-    
-    [self.tableView beginUpdates];
+    [self.currentUser removeLightTable:lightTable];
     [lightTable MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        _lightTables = _lightTables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
-        
-        [UIView animateWithDuration:kFastAnimationDuration animations:^{
-            [cell.scrollView setContentOffset:CGPointZero];
-            if (_lightTables.count){
-                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
-            } else {
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:2] withRowAnimation:UITableViewRowAnimationNone];
-            }
-            [self.tableView endUpdates];
-        } completion:^(BOOL finished) {
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:2] withRowAnimation:UITableViewRowAnimationNone];
-        }];
-    }];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    _lightTables = _lightTables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
+    
+    // reset the tableview and catalog without resetting the catalog, which would dismiss the tableView by default
+    [self resetArtBooleans];
+    self.lightTable = nil;
+    [self.collectionView reloadData];
+    [self.tableView reloadData];
 }
 
 - (void)leaveLightTable:(LightTable *)lightTable atIndexPath:(NSIndexPath*)indexPath {
     WFLightTableCell *cell = (WFLightTableCell*)[_tableView cellForRowAtIndexPath:indexPath];
+    [cell.scrollView setContentOffset:CGPointZero animated:YES];
+    
     if (![lightTable.identifier isEqualToNumber:@0]){
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
         [parameters setObject:[[NSUserDefaults standardUserDefaults] objectForKey:kUserDefaultsId] forKey:@"user_id"];
         self.lightTableRequest = [manager DELETE:[NSString stringWithFormat:@"light_tables/%@/leave",lightTable.identifier] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-            NSLog(@"Success leaving table: %@",responseObject);
+            //NSLog(@"Success leaving table: %@",responseObject);
             self.lightTableRequest = nil;
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"Error leaving light table: %@",error.description);
+            //NSLog(@"Error leaving light table: %@",error.description);
             self.lightTableRequest = nil;
         }];
     }
     
-    [self.tableView beginUpdates];
+    [self.currentUser removeLightTable:lightTable];
     [lightTable MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        _lightTables = _lightTables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
-        
-        [UIView animateWithDuration:kFastAnimationDuration animations:^{
-            [cell.scrollView setContentOffset:CGPointZero];
-            if (_lightTables.count){
-                [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
-            } else {
-                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:2] withRowAnimation:UITableViewRowAnimationNone];
-            }
-            [self.tableView endUpdates];
-        } completion:^(BOOL finished) {
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:2] withRowAnimation:UITableViewRowAnimationNone];
-        }];
-    }];
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+    _lightTables = _lightTables ? self.currentUser.lightTables.array.mutableCopy : [NSMutableArray arrayWithArray:self.currentUser.lightTables.array];
+    
+    // reset the tableview and catalog without resetting the catalog, which would dismiss the tableView by default
+    [self resetArtBooleans];
+    self.lightTable = nil;
+    [self.collectionView reloadData];
+    [self.tableView reloadData];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -1338,19 +1332,18 @@ static NSString *const logoutOption = @"Log out";
     if (self.lightTableRequest) return;
     
     if (lightTable && ![lightTable.identifier isEqualToNumber:@0]){
-        NSString *title = lightTable.name.length ? [NSString stringWithFormat:@"\"%@\"",lightTable.name] : @"\"table without a name\"";
-        [ProgressHUD show:[NSString stringWithFormat:@"Loading %@",title]];
+        NSString *title = lightTable.name.length ? [NSString stringWithFormat:@"\"%@\"",lightTable.name] : @"this \"table without a name\"";
+        [ProgressHUD show:[NSString stringWithFormat:@"Loading %@...",title]];
         self.lightTableRequest = [manager GET:[NSString stringWithFormat:@"light_tables/%@",lightTable.identifier] parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
             //NSLog(@"Success loading light table: %@",responseObject);
-            [self.lightTable populateFromDictionary:[responseObject objectForKey:@"table"]];
-            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError *error) {
-                if (self.lightTableRequest && !self.lightTableRequest.isCancelled){
-                    [self.collectionView reloadData];
-                }
-                
-                [self endRefresh];
-                self.lightTableRequest = nil;
-            }];
+            [self.lightTable populateFromDictionary:[responseObject objectForKey:@"light_table"]];
+            [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+            
+            [self.collectionView reloadData];
+            [self.tableView reloadData];
+            
+            [self endRefresh];
+            self.lightTableRequest = nil;
             
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"Error loading light table: %@",error.description);
@@ -1446,10 +1439,11 @@ static NSString *const logoutOption = @"Log out";
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    width = size.width; height = size.height;
+    //width = size.width;
+    //height = size.height;
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
         if (IDIOM != IPAD){
-            [self.collectionView reloadData];
+            [self.collectionView.collectionViewLayout invalidateLayout];
         }
     } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
         if (IDIOM != IPAD){
@@ -1459,8 +1453,6 @@ static NSString *const logoutOption = @"Log out";
         }
     }];
 }
-
-
 
 #pragma mark - UICollectionView Datasource
 
@@ -1500,14 +1492,14 @@ static NSString *const logoutOption = @"Log out";
     if (indexPath.section == 0){
         WFPhotoCell *cell = [cv dequeueReusableCellWithReuseIdentifier:@"PhotoCell" forIndexPath:indexPath];
         Photo *photo;
-        if (self.searchBar.text.length && indexPath.item < _filteredPhotos.count){
-            photo = _filteredPhotos[indexPath.item];
-        } else if (showMyArt && indexPath.item < _myPhotos.count){
+        if (showMyArt && indexPath.item < _myPhotos.count){
             photo = _myPhotos[indexPath.item];
         } else if (showLightTable && self.lightTable && indexPath.item < self.lightTable.photos.count){
             photo = self.lightTable.photos[indexPath.item];
         } else if (showFavorites && indexPath.item < _favoritePhotos.count){
             photo = _favoritePhotos[indexPath.item];
+        } else if (self.searchBar.text.length && indexPath.item < _filteredPhotos.count){
+            photo = _filteredPhotos[indexPath.item];
         } else if (_photos.count && indexPath.item < _photos.count){
             photo = _photos[indexPath.item];
         }
@@ -1531,13 +1523,13 @@ static NSString *const logoutOption = @"Log out";
             if (sidebarIsVisible){
                 return CGSizeMake(collectionView.frame.size.width/3, collectionView.frame.size.width/3);
             } else {
-                return CGSizeMake(width/4, width/4);
+                return CGSizeMake(collectionView.frame.size.width/4, collectionView.frame.size.width/4);
             }
         } else {
-            return CGSizeMake(width/2,width/2);
+            return CGSizeMake(collectionView.frame.size.width/2,collectionView.frame.size.width/2);
         }
     } else {
-        return CGSizeMake(width - (sidebarIsVisible ? kSidebarWidth : 0), 100);
+        return CGSizeMake(collectionView.frame.size.width - (sidebarIsVisible ? kSidebarWidth : 0), 100);
     }
 }
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
@@ -1636,6 +1628,7 @@ static NSString *const logoutOption = @"Log out";
     } else if (selectedIndexPath.item < _photos.count) {
         photo = _photos[selectedIndexPath.item];
     }
+    NSLog(@"selected photo: %@, art title: %@",photo.identifier, photo.art.title);
     if (photo && selectedIndexPath){
         if ([_selectedPhotos containsObject:photo]){
             [_selectedPhotos removeObject:photo];
@@ -2001,14 +1994,14 @@ static NSString *const logoutOption = @"Log out";
         return;
     }
     Photo *photo;
-    if (self.searchBar.text.length && indexPath.item < _filteredPhotos.count){
-        photo = _filteredPhotos[indexPath.item];
-    } else if (showMyArt && indexPath.item < _myPhotos.count){
+    if (showMyArt && indexPath.item < _myPhotos.count){
         photo = _myPhotos[indexPath.item];
     } else if (showLightTable && indexPath.item < self.lightTable.photos.count){
         photo = self.lightTable.photos[indexPath.item];
     } else if (showFavorites && indexPath.item < _favoritePhotos.count){
         photo = _favoritePhotos[indexPath.item];
+    } else if (self.searchBar.text.length && indexPath.item < _filteredPhotos.count){
+        photo = _filteredPhotos[indexPath.item];
     } else if (indexPath.item < _photos.count){
         photo = _photos[indexPath.item];
     }
@@ -2163,9 +2156,7 @@ static NSString *const logoutOption = @"Log out";
         transparentBG = YES;
         selectedNav.transitioningDelegate = self;
         selectedNav.modalPresentationStyle = UIModalPresentationCustom;
-        [self presentViewController:selectedNav animated:YES completion:^{
-            
-        }];
+        [self presentViewController:selectedNav animated:YES completion:NULL];
     }
 }
 
@@ -2430,6 +2421,10 @@ static NSString *const logoutOption = @"Log out";
     if (sidebarIsVisible && slideshowSidebarMode){
         [self.tableView reloadData];
     }
+    if (IDIOM == IPAD){
+        // dismiss everything on iPhone
+        [self dismissViewControllerAnimated:YES completion:NULL];
+    }
 }
 
 - (void)showSlideshows {
@@ -2672,9 +2667,30 @@ static NSString *const logoutOption = @"Log out";
     [self.searchBar setSearchBarStyle:UISearchBarStyleMinimal];
 }
 
+- (BOOL)searchBarShouldBeginEditing:(UISearchBar *)searchBar {
+    BOOL boolToReturn = shouldBeginSearching;
+    shouldBeginSearching = YES;
+    return boolToReturn;
+}
+
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
     if (!_filteredPhotos) _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_photos];
     if (self.popover) [self.popover dismissPopoverAnimated:YES];
+    [self resetSearchTypingTimer];
+}
+
+- (void)resetSearchTypingTimer {
+    [searchTypingTimer invalidate];
+    searchTypingTimer = nil;
+    searchTypingTimer = [NSTimer scheduledTimerWithTimeInterval:.77f target:self selector:@selector(timerFinished) userInfo:nil repeats:NO];
+}
+
+- (void)timerFinished {
+    if (!_filteredPhotos.count) {
+        canSearchMore = YES;
+        NSLog(@"Loading from search timer");
+        [self loadBeforePhoto:nil];
+    }
 }
 
 - (void)searchDidSelectPhoto:(Photo *)photo {
@@ -2682,12 +2698,17 @@ static NSString *const logoutOption = @"Log out";
 }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)text {
-    [self filterContentForSearchText:text scope:nil];
+    if (searchBar.text.length){
+        [self filterContentForSearchText:text scope:nil];
+    } else {
+        shouldBeginSearching = NO;
+    }
 }
 
 - (void)filterContentForSearchText:(NSString*)text scope:(NSString*)scope {
     searchText = text;
     if (text.length) {
+        [self resetSearchTypingTimer];
         [_filteredPhotos removeAllObjects];
         NSOrderedSet *photosToIterateThrough;
         if (showLightTable && self.lightTable){
@@ -2698,10 +2719,10 @@ static NSString *const logoutOption = @"Log out";
             photosToIterateThrough = _favoritePhotos;
         } else {
             photosToIterateThrough = _photos;
-            
         }
+        
         for (Photo *photo in photosToIterateThrough){
-            // evaluate the art metadata, but actually add the photo to _filteredPhotos
+            // evaluate the art metadata then actually add the photo to _filteredPhotos
             Art *art = photo.art;
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF contains[cd] %@", text];
             if([predicate evaluateWithObject:art.title]) {
@@ -2722,8 +2743,7 @@ static NSString *const logoutOption = @"Log out";
                 [_filteredPhotos addObject:photo];
             }
         }
-        
-        if (!_filteredPhotos.count) [self loadBeforePhoto:nil];
+
     } else if (showLightTable) {
         _filteredPhotos = [NSMutableOrderedSet orderedSetWithOrderedSet:_lightTable.photos];
     } else if (showMyArt) {
@@ -2735,10 +2755,6 @@ static NSString *const logoutOption = @"Log out";
     }
 
     [self.collectionView reloadData];
-    
-    if (!_filteredPhotos.count){
-        [loadingSpinner stopAnimating];
-    }
 }
 
 #pragma mark - WFSearchDelegate methods
@@ -2784,7 +2800,16 @@ static NSString *const logoutOption = @"Log out";
         [self.popover dismissPopoverAnimated:YES];
     }
     if (self.currentUser.customerPlan.length){
-        [self newLightTable];
+        if (IDIOM == IPAD){
+            // go straight to the light table form on the iPad
+            [self newLightTableWithJoinBool:NO];
+        } else {
+            // on iPhone, we first need to dismiss the batch selection modal before presenting the light table stuff. There's no need to show the iPhone action sheet presenting "new light table" or "join" here, since the user has already selected join
+            [self dismissViewControllerAnimated:YES completion:^{
+                [self newLightTableWithJoinBool:NO];
+            }];
+        }
+        
     } else {
         [WFAlert show:@"Creating new light tables requires a billing plan.\n\nPlease either set up an individual billing plan OR add yourself as a member to an institution that's been registered with Wölff." withTime:5.f];
     }
@@ -2797,7 +2822,7 @@ static NSString *const logoutOption = @"Log out";
     }
     if (self.currentUser.customerPlan.length){
         if (slideshow){
-            [_selectedPhotos enumerateObjectsUsingBlock:^(Photo *p, NSUInteger idx, BOOL * _Nonnull stop) {
+            [_selectedPhotos enumerateObjectsUsingBlock:^(Photo *p, NSUInteger idx, BOOL * stop) {
                 Photo *photo = [p MR_inContext:[NSManagedObjectContext MR_defaultContext]];
                 SlideshowPhoto *slideshowPhoto = [SlideshowPhoto MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
                 slideshowPhoto.photo = photo;
@@ -2943,10 +2968,10 @@ static NSString *const logoutOption = @"Log out";
                           delay:0
                         options:(animationCurve << 16)
                      animations:^{
-                         self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, topInset, 0);
-                         self.collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, topInset, 0);
-                         self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, topInset, 0);
-                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, topInset, 0);
+                         self.collectionView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+                         self.collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, 0, 0);
+                         self.tableView.contentInset = UIEdgeInsetsMake(topInset, 0, 0, 0);
+                         self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(topInset, 0, 0, 0);
                      }
                      completion:NULL];
 }

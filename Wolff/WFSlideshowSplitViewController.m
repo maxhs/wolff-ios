@@ -212,6 +212,11 @@ NSString* const playOption = @"Play";
 }
 
 - (void)showSlideshowOptionsActionSheet {
+    if (titleTextField.isFirstResponder){
+        // make sure the keyboard goes down when the action sheet comes up
+        [titleTextField resignFirstResponder];
+    }
+    
     UIActionSheet *slideshowOptions = [[UIActionSheet alloc] initWithTitle:@"Your slideshow options"
                                                                   delegate:self
                                                          cancelButtonTitle:@"Cancel"
@@ -723,10 +728,6 @@ NSString* const playOption = @"Play";
     [self endPressAnimation];
 }
 
-- (BOOL)shouldAutorotate {
-    return NO;
-}
-
 //- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
 //    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 //    width = size.width;
@@ -1005,7 +1006,6 @@ NSString* const playOption = @"Play";
     vc.lightTableDelegate = self;
     vc.slideshowShareMode = YES;
     [vc setSlideshow:self.slideshow];
-    [vc setLightTables:self.currentUser.lightTables.array.mutableCopy];
     if (IDIOM == IPAD){
         if (self.popover){
             [self.popover dismissPopoverAnimated:YES];
@@ -1021,9 +1021,7 @@ NSString* const playOption = @"Play";
         transparentBG = YES;
         nav.transitioningDelegate = self;
         nav.modalPresentationStyle = UIModalPresentationCustom;
-        [self presentViewController:nav animated:YES completion:^{
-            
-        }];
+        [self presentViewController:nav animated:YES completion:NULL];
     }
 }
 
@@ -1393,14 +1391,12 @@ NSString* const playOption = @"Play";
 
 - (void)deleteAndMoveOn {
     [self.slideshow MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-    [[NSManagedObjectContext MR_defaultContext]MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-        if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(shouldReloadSlideshows)]){
-            [self.slideshowDelegate shouldReloadSlideshows];
-        }
-        [ProgressHUD dismiss];
-        [self dismiss];
-        self.deleteRequest = nil;
-    }];
+    if (self.slideshowDelegate && [self.slideshowDelegate respondsToSelector:@selector(shouldReloadSlideshows)]){
+        [self.slideshowDelegate shouldReloadSlideshows];
+    }
+    [ProgressHUD dismiss];
+    [self dismiss];
+    self.deleteRequest = nil;
 }
 
 - (void)willHideEditMenu:(id)sender {
@@ -1412,7 +1408,7 @@ NSString* const playOption = @"Play";
 }
 
 - (void)dismiss {
-    [self dismissViewControllerAnimated:YES completion:NULL];
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -1420,7 +1416,6 @@ NSString* const playOption = @"Play";
     if (self.popover && self.popover.isPopoverVisible){
         [self.popover dismissPopoverAnimated:YES];
     }
-    //[self saveSlideshowWithUI:NO];
     if (self.mainRequest) [self.mainRequest cancel];
 }
 

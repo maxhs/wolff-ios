@@ -23,7 +23,6 @@
     NSString *searchText;
     BOOL searching;
     BOOL loading;
-    BOOL editing;
     BOOL noResults;
     NSMutableOrderedSet *_filteredLocations;
     NSMutableOrderedSet *_locations;
@@ -164,55 +163,53 @@ static NSString * const reuseIdentifier = @"LocationCell";
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     if ((searching && indexPath.row == _filteredLocations.count) || (indexPath.row == _locations.count)){
         WFNewLocationCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"NewLocationCell" forIndexPath:indexPath];
+        [cell.locationPrompt setHidden:YES];
+        [cell.nameLabel setHidden:NO];
+        [cell.cityLabel setHidden:NO];
+        [cell.countryLabel setHidden:NO];
         
-        if (editing){
-            [cell.locationPrompt setHidden:YES];
-            [cell.nameLabel setHidden:NO];
-            [cell.cityLabel setHidden:NO];
-            [cell.countryLabel setHidden:NO];
-            
-            [cell.countryTextField setHidden:NO];
-            [cell.countryTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
-            [cell.countryTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
-            [cell.countryTextField setReturnKeyType:UIReturnKeyDone];
+        [cell.countryTextField setHidden:NO];
+        [cell.countryTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
+        [cell.countryTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
+        [cell.countryTextField setReturnKeyType:UIReturnKeyDone];
+    
+        [cell.nameTextField becomeFirstResponder];
+        [cell.nameTextField setPlaceholder:kAddLocationPlaceholder];
+        [cell.nameTextField setHidden:NO];
+        [cell.nameTextField setReturnKeyType:UIReturnKeyNext];
+        [cell.nameTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
+        [cell.nameTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
+        [cell.nameTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
+        cell.nameTextField.delegate = self;
         
-            [cell.nameTextField becomeFirstResponder];
-            [cell.nameTextField setPlaceholder:kAddLocationPlaceholder];
-            [cell.nameTextField setHidden:NO];
-            [cell.nameTextField setReturnKeyType:UIReturnKeyNext];
-            [cell.nameTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
-            [cell.nameTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
-            [cell.nameTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
-            cell.nameTextField.delegate = self;
-            
-            [cell.cityTextField setHidden:NO];
-            [cell.cityTextField setReturnKeyType:UIReturnKeyNext];
-            [cell.cityTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
-            [cell.cityTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
-            [cell.cityTextField setPlaceholder:@"City"];
-            
-            [cell.createButton setHidden:NO];
-            [cell.createButton addTarget:self action:@selector(createLocation) forControlEvents:UIControlEventTouchUpInside];
-            
-            (searchText.length) ? [cell.nameTextField setText:searchText] : [cell.nameTextField setText:@""];
-            
-            cityTextField = cell.cityTextField;
-            stateTextField = cell.stateTextField;
-            countryTextField = cell.countryTextField;
-            locationNameTextField = cell.nameTextField;
-        } else {
-            [cell.locationPrompt setHidden:NO];
-            [cell.nameTextField setHidden:YES];
-            [cell.nameLabel setHidden:YES];
-            [cell.countryTextField setHidden:YES];
-            [cell.countryLabel setHidden:YES];
-            if (searchText.length){
-                [cell.locationPrompt setText:[NSString stringWithFormat:@"+ add \"%@\"",searchText]];
-            } else {
-                [cell.locationPrompt setText:@"+  add a new location"];
-            }
-            [cell.createButton setHidden:YES];
-        }
+        [cell.cityTextField setHidden:NO];
+        [cell.cityTextField setReturnKeyType:UIReturnKeyNext];
+        [cell.cityTextField setKeyboardAppearance:UIKeyboardAppearanceDark];
+        [cell.cityTextField setAutocapitalizationType:UITextAutocapitalizationTypeWords];
+        [cell.cityTextField setPlaceholder:@"City"];
+        
+        [cell.createButton setHidden:NO];
+        [cell.createButton addTarget:self action:@selector(createLocation) forControlEvents:UIControlEventTouchUpInside];
+        
+        (searchText.length) ? [cell.nameTextField setText:searchText] : [cell.nameTextField setText:@""];
+        
+        cityTextField = cell.cityTextField;
+        stateTextField = cell.stateTextField;
+        countryTextField = cell.countryTextField;
+        locationNameTextField = cell.nameTextField;
+//        } else {
+//            [cell.locationPrompt setHidden:NO];
+//            [cell.nameTextField setHidden:YES];
+//            [cell.nameLabel setHidden:YES];
+//            [cell.countryTextField setHidden:YES];
+//            [cell.countryLabel setHidden:YES];
+//            if (searchText.length){
+//                [cell.locationPrompt setText:[NSString stringWithFormat:@"+ add \"%@\"",searchText]];
+//            } else {
+//                [cell.locationPrompt setText:@"+  add a new location"];
+//            }
+//            [cell.createButton setHidden:YES];
+//        }
         return cell;
     } else {
         WFLocationCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
@@ -247,16 +244,10 @@ static NSString * const reuseIdentifier = @"LocationCell";
 
 #pragma mark <UICollectionViewDelegate>
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    if ((searching && indexPath.row == _filteredLocations.count) || (indexPath.row == _locations.count)){
-        [self toggleEditMode];
+    if ((searching && indexPath.item == _filteredLocations.count) || (indexPath.item == _locations.count)){
         [collectionView reloadItemsAtIndexPaths:@[indexPath]];
     } else {
         Location *location = searching ? _filteredLocations[indexPath.item] : _locations[indexPath.item];
-        /*if ([self.selectedLocations containsObject:location]){
-            [self.selectedLocations removeObject:location];
-        } else {
-            [self.selectedLocations addObject:location];
-        }*/
         [self.selectedLocations removeAllObjects];
         [self.selectedLocations addObject:location];
         [collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
@@ -264,10 +255,6 @@ static NSString * const reuseIdentifier = @"LocationCell";
         [collectionView deselectItemAtIndexPath:indexPath animated:YES];
     }
     [self adjustLocationButtonColor];
-}
-
-- (void) toggleEditMode {
-    editing = editing ? NO : YES ;
 }
 
 /*

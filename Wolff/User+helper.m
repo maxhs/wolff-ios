@@ -152,7 +152,7 @@ typedef enum {
     }
     
     if ([dictionary objectForKey:@"light_tables"] && [dictionary objectForKey:@"light_tables"] != [NSNull null]){
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
+        NSMutableOrderedSet *lightTableSet = [NSMutableOrderedSet orderedSet];
         for (id dict in [dictionary objectForKey:@"light_tables"]){
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
             LightTable *table = [LightTable MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
@@ -160,33 +160,14 @@ typedef enum {
                 table = [LightTable MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
             [table populateFromDictionary:dict];
-            [set addObject:table];
+            [lightTableSet addObject:table];
         }
-        for (LightTable *table in self.lightTables){
-            if (![set containsObject:table]){
-                [table MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
+        for (LightTable *lightTable in self.lightTables){
+            if (![lightTableSet containsObject:lightTable]){
+                [lightTable MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
             }
         }
-        self.lightTables = set;
-    }
-    
-    if ([dictionary objectForKey:@"public_light_tables"] && [dictionary objectForKey:@"public_light_tables"] != [NSNull null]){
-        NSMutableOrderedSet *set = [NSMutableOrderedSet orderedSet];
-        for (id dict in [dictionary objectForKey:@"public_light_tables"]){
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"identifier == %@", [dict objectForKey:@"id"]];
-            LightTable *table = [LightTable MR_findFirstWithPredicate:predicate inContext:[NSManagedObjectContext MR_defaultContext]];
-            if (!table){
-                table = [LightTable MR_createEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-            }
-            [table populateFromDictionary:dict];
-            [set addObject:table];
-        }
-        for (LightTable *table in self.lightTables){
-            if (![set containsObject:table]){
-                [table MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-            }
-        }
-        self.lightTables = set;
+        self.lightTables = lightTableSet;
     }
     
     if ([dictionary objectForKey:@"institutions"] && [dictionary objectForKey:@"institutions"] != [NSNull null]){

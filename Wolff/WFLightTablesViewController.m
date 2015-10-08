@@ -19,6 +19,8 @@
     UIImageView *navBarShadowView;
 }
 @property (strong, nonatomic) User *currentUser;
+@property (strong, nonatomic) NSMutableOrderedSet *lightTables;
+@property (weak, nonatomic) IBOutlet UITableView *tableView;
 @end
 
 @implementation WFLightTablesViewController
@@ -35,28 +37,15 @@
     [super viewDidLoad];
     delegate = (WFAppDelegate*)[UIApplication sharedApplication].delegate;
     manager = delegate.manager;
+    width = screenWidth(); height = screenHeight();
     self.currentUser = [delegate.currentUser MR_inContext:[NSManagedObjectContext MR_defaultContext]];
     [self.tableView setSeparatorColor:[UIColor colorWithWhite:0 alpha:.07]];
     self.tableView.rowHeight = 54.f;
     
-    NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
-    _lightTables = self.currentUser.ownedTables.array.mutableCopy;
-    [_lightTables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
-    [_lightTables enumerateObjectsUsingBlock:^(LightTable *lightTable, NSUInteger idx, BOOL *stop) {
-        if ([lightTable.identifier isEqualToNumber:@0]){
-            [lightTable MR_deleteEntityInContext:[NSManagedObjectContext MR_defaultContext]];
-        }
-    }];
-    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
-    
     if (IDIOM == IPAD){
         [self.view setBackgroundColor:[UIColor clearColor]];
         [self.tableView setBackgroundColor:[UIColor clearColor]];
-        if (SYSTEM_VERSION >= 8.f){
-            width = screenWidth(); height = screenHeight();
-        } else {
-            width = screenHeight(); height = screenWidth();
-        }
+
         UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
         self.navigationItem.leftBarButtonItem = backButton;
     } else {
@@ -66,8 +55,7 @@
         [backgroundToolbar setBarStyle:UIBarStyleBlackTranslucent];
         backgroundToolbar.translucent = YES;
         [self.tableView setBackgroundView:backgroundToolbar];
-        
-        width = screenWidth(); height = screenHeight();
+    
         [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
         if (self.navigationController.viewControllers.count <= 1){
             UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
@@ -85,9 +73,9 @@
     [self loadLightTables];
     
     if (_slideshowShareMode){
-        [self setPreferredContentSize:CGSizeMake(420, (54.f*_lightTables.count)+34.f)];
+        [self setPreferredContentSize:CGSizeMake(420, (54.f * self.lightTables.count)+34.f)];
     } else {
-        [self setPreferredContentSize:CGSizeMake(420, 54.f*(_lightTables.count+1))];
+        [self setPreferredContentSize:CGSizeMake(420, 54.f*(self.lightTables.count+1))];
     }
 }
 
@@ -104,9 +92,8 @@
                 [self.currentUser addLightTable:lightTable];
             }
         }
-        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL success, NSError *error) {
-            [self.tableView reloadData];
-        }];
+        [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreAndWait];
+        [self.tableView reloadData];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error getting groups: %@",error.description);
     }];
@@ -116,10 +103,10 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     NSSortDescriptor *alphabeticalTableSort = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
-    _lightTables = self.currentUser.ownedTables.array.mutableCopy;
-    [_lightTables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
+    self.lightTables = self.currentUser.ownedTables.mutableCopy;
+    [self.lightTables sortUsingDescriptors:[NSArray arrayWithObject:alphabeticalTableSort]];
     if (_slideshowShareMode){
-        [self setPreferredContentSize:CGSizeMake(420, (54.f*_lightTables.count)+34.f)];
+        [self setPreferredContentSize:CGSizeMake(420, (54.f * self.lightTables.count)+34.f)];
         return 1;
     } else {
         return 2;
@@ -130,7 +117,7 @@
     if (section == 0 && !_slideshowShareMode){
         return 1;
     } else {
-        return _lightTables.count;
+        return self.lightTables.count;
     }
 }
 
@@ -142,11 +129,7 @@
     
     if (indexPath.section == 0 && !_slideshowShareMode){
         if (indexPath.row == 0){
-            if (IDIOM == IPAD){
-                [cell.imageView setImage:[UIImage imageNamed:@"plus"]];
-            } else {
-                [cell.imageView setImage:[UIImage imageNamed:@"whitePlus"]];
-            }
+            [cell.imageView setImage:[UIImage imageNamed:IDIOM == IPAD ? @"plus" : @"whitePlus"]];
             [cell.textLabel setText:@"New Table"];
         } else {
             [cell.imageView setImage:[UIImage imageNamed:@"favorite"]];
@@ -154,7 +137,7 @@
         }
     } else {
         
-        LightTable *table = (LightTable*)_lightTables[indexPath.row];
+        LightTable *table = self.lightTables[indexPath.row];
         [cell configureForTable:table];
         if (_slideshow){
             if ([_slideshow.lightTables containsObject:table]){
@@ -206,7 +189,7 @@
             [self favorite];
         }
     } else {
-        LightTable *lightTable = (LightTable*)_lightTables[indexPath.row];
+        LightTable *lightTable = self.lightTables[indexPath.row];
         if (_slideshow && [_slideshow.lightTables containsObject:lightTable]){
             if (self.lightTableDelegate && [self.lightTableDelegate respondsToSelector:@selector(lightTableDeselected:)]){
                 [self.lightTableDelegate lightTableDeselected:lightTable];

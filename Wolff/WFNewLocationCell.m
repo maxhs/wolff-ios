@@ -23,6 +23,7 @@
     [_createButton.titleLabel setFont:[UIFont fontWithDescriptor:[UIFontDescriptor preferredCustomFontForTextStyle:UIFontTextStyleCaption1 forFont:kMuseoSans] size:0]];
     [_createButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_createButton setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
+    [_createButton setTitle:@"Add New Location" forState:UIControlStateNormal];
     _createButton.layer.cornerRadius = 7.f;
     _createButton.clipsToBounds = YES;
     

@@ -27,8 +27,6 @@
 @property BOOL slideshowShareMode;
 @property (strong, nonatomic) Photo *photo;
 @property (strong, nonatomic) Slideshow *slideshow;
-@property (strong, nonatomic) NSMutableArray *lightTables;
-@property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) id<WFLightTablesDelegate> lightTableDelegate;
 
 -(id)initWithPanTarget:(id<WFLightTablesDelegate>)lightTableDelegate;

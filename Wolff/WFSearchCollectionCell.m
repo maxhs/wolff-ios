@@ -24,14 +24,6 @@
     [self.imageView setAlpha:0.0];
 }
 
-- (UIImage *)getRasterizedImageCopy {
-    UIGraphicsBeginImageContextWithOptions(self.bounds.size, self.isOpaque, 0.0f);
-    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return image;
-}
-
 - (void)configureForPhoto:(Photo *)photo {
     if (photo.thumbImageUrl.length){
         [self setBackgroundColor:[UIColor colorWithWhite:1 alpha:.14]];
@@ -48,7 +40,17 @@
         } failure:NULL];
         
     } else {
+        // no image url. oops.
         [self setBackgroundColor:[UIColor clearColor]];
     }
 }
+
+- (UIImage *)getRasterizedImageCopy {
+    UIGraphicsBeginImageContextWithOptions(self.bounds.size, self.isOpaque, 0.0f);
+    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return image;
+}
+
 @end

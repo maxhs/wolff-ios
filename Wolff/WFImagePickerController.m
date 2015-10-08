@@ -35,6 +35,8 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [self setAutomaticallyAdjustsScrollViewInsets:NO];
+    [self.collectionView setContentInset:UIEdgeInsetsMake(self.navigationController.navigationBar.frame.size.height, 0, 0, 0)];
     [_collectionView setBackgroundColor:[UIColor clearColor]];
     [self.view setBackgroundColor:[UIColor clearColor]];
     [self.navigationController.navigationBar setTintColor:[UIColor whiteColor]];
@@ -55,8 +57,9 @@ static NSString * const reuseIdentifier = @"PhotoCell";
 
     selectMode = YES;
     
-    backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(back)];
-    doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(done)];
+    backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"dismissWhite"] style:UIBarButtonItemStylePlain target:self action:@selector(dismiss)];
+    doneButton = [[UIBarButtonItem alloc] initWithTitle:@"Select" style:UIBarButtonItemStylePlain target:self action:@selector(done)];
+    doneButton.enabled = NO;
     
     self.navigationItem.rightBarButtonItem = doneButton;
     self.navigationItem.leftBarButtonItem = backButton;
@@ -82,8 +85,12 @@ static NSString * const reuseIdentifier = @"PhotoCell";
     [allPhotosResult enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL *stop) {
         [_assets addObject:asset];
     }];
-    [self.collectionView reloadData];
-    [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:_assets.count-1 inSection:0] atScrollPosition:UICollectionViewScrollPositionBottom animated:NO];
+    if (_assets.count){
+        [self.collectionView reloadData];
+        NSInteger lastItem = [self.collectionView numberOfItemsInSection:0];
+        NSIndexPath *lastItemIndexPath = [NSIndexPath indexPathForItem:lastItem-1 inSection:0];
+        [self.collectionView scrollToItemAtIndexPath:lastItemIndexPath atScrollPosition:UICollectionViewScrollPositionBottom animated:NO];
+    }
 }
 
 #pragma mark <UICollectionViewDataSource>
@@ -110,13 +117,9 @@ static NSString * const reuseIdentifier = @"PhotoCell";
             [cell.imageView setImage:image];
         }
     }];
-
-    if ([_selectedAssets containsObject:asset]){
-        [cell.checkmark setHidden:NO];
-    } else {
-        [cell.checkmark setHidden:YES];
-    }
     
+    [cell.checkmark setHidden:[_selectedAssets containsObject:asset] ? NO : YES];
+
     return cell;
 }
 
@@ -146,51 +149,31 @@ static NSString * const reuseIdentifier = @"PhotoCell";
         self.title = viewTitle;
         [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
     } else {
-//        if (focusImageView){
-//            [UIView animateWithDuration:.23f animations:^{
-//                [selectedCell.contentView setAlpha:1.f];
-//                focusImageView.transform = CGAffineTransformIdentity;
-//            } completion:^(BOOL finished) {
-//                [focusImageView removeFromSuperview];
-//                focusImageView = nil;
-//            }];
-//        } else {
-            [_selectedAssets addObject:asset];
-            [selectedCell.contentView setAlpha:0.23f];
-            [self.view addSubview:focusImageView];
-            [self.view bringSubviewToFront:focusImageView];
-            focusImageView.frame = selectedCell.frame;
-            CGRect newFrame = CGRectMake(width/2-400, height/2-300, 800, 600);
-            
-            [UIView animateWithDuration:.23f animations:^{
-                [focusImageView setFrame:newFrame];
-            }];
-        //}
+
+        [_selectedAssets addObject:asset];
+        [selectedCell.contentView setAlpha:0.23f];
+        [self.view addSubview:focusImageView];
+        [self.view bringSubviewToFront:focusImageView];
+        focusImageView.frame = selectedCell.frame;
+        CGRect newFrame = CGRectMake(width/2-400, height/2-300, 800, 600);
+        
+        [UIView animateWithDuration:.23f animations:^{
+            [focusImageView setFrame:newFrame];
+        }];
     }
-}
-
-#pragma mark - Segue support
-
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    
+    doneButton.enabled = _selectedAssets.count;
 }
 
 - (void)dismiss {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
-        
-    }];
-}
-
-- (void)back {
-    [self.navigationController popViewControllerAnimated:YES];
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
 - (void)done {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [ProgressHUD show:_selectedAssets.count == 1 ? @"Fetching image..." : @"Fetching images..."];
-    });
-    
-    if (self.delegate && [self.delegate respondsToSelector:@selector(didFinishPickingPhotos:)]){
+    if (_selectedAssets.count && self.delegate && [self.delegate respondsToSelector:@selector(didFinishPickingPhotos:)]){
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [ProgressHUD show:_selectedAssets.count == 1 ? @"Fetching image..." : @"Fetching images..."];
+        });
+        
         NSMutableArray *photoArray = [NSMutableArray arrayWithCapacity:_selectedAssets.count];
         PHImageManager *defaultManager = [PHImageManager defaultManager];
         PHImageRequestOptions *initialRequestOptions = [[PHImageRequestOptions alloc] init];
@@ -215,7 +198,7 @@ static NSString * const reuseIdentifier = @"PhotoCell";
         if (photoArray.count){
             [self.delegate didFinishPickingPhotos:photoArray];
         } else {
-            NSLog(@"Error reading PHAssets");
+            [self dismiss];
         }
     } else {
         [self dismiss];

@@ -23,7 +23,7 @@
 }
 
 - (void)configureForPhoto:(Photo*)photo {
-    NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:photo.thumbImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
+    NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:photo.mediumImageUrl] cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60];
     [self.artImageView setImageWithURLRequest:urlRequest placeholderImage:nil success:^(NSURLRequest * request, NSHTTPURLResponse * response, UIImage * image) {
         [self.artImageView setImage:image];
         if (response){
@@ -46,4 +46,5 @@
     UIGraphicsEndImageContext();
     return image;
 }
+
 @end
