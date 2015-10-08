@@ -2957,7 +2957,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Q27-78-xxu" userLabel="Location Name Label">
-                                                    <rect key="frame" x="190.00000018423253" y="10" width="220" height="164"/>
+                                                    <rect key="frame" x="190" y="10" width="220" height="164"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                     <animations/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -2986,20 +2986,12 @@
                                         </connections>
                                     </collectionViewCell>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="NewLocationCell" id="ztE-rg-9uX" customClass="WFNewLocationCell">
-                                        <rect key="frame" x="-49" y="184" width="512" height="192"/>
+                                        <rect key="frame" x="0.0" y="184" width="414" height="240"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                            <rect key="frame" x="0.0" y="0.0" width="512" height="192"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="240"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="6sp-aw-nu4" userLabel="Location Prompt">
-                                                    <rect key="frame" x="56" y="16" width="400" height="159"/>
-                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                    <animations/>
-                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                    <nil key="highlightedColor"/>
-                                                </label>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="OEo-hc-1TP" userLabel="Name Label Prompt">
                                                     <rect key="frame" x="10" y="0.0" width="240" height="27"/>
                                                     <autoresizingMask key="autoresizingMask"/>
@@ -3009,8 +3001,8 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" minimumFontSize="17" id="g0h-Tq-DYz" userLabel="Name Text Field">
-                                                    <rect key="frame" x="10" y="24" width="240" height="40"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <rect key="frame" x="10" y="24" width="396" height="40"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                     <animations/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <textInputTraits key="textInputTraits"/>
@@ -3024,14 +3016,14 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" minimumFontSize="17" id="j7Y-BH-qmt" userLabel="City Text Field">
-                                                    <rect key="frame" x="10" y="86" width="240" height="40"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <rect key="frame" x="10" y="86" width="396" height="40"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                     <animations/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <textInputTraits key="textInputTraits"/>
                                                 </textField>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="JQf-Xc-GKs" userLabel="Country Prompt">
-                                                    <rect key="frame" x="256" y="62" width="240" height="27"/>
+                                                    <rect key="frame" x="10" y="122" width="240" height="27"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <animations/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -3039,17 +3031,17 @@
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" minimumFontSize="17" id="gke-md-5Xn" userLabel="Country Text Field">
-                                                    <rect key="frame" x="256" y="86" width="240" height="40"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <rect key="frame" x="10" y="146" width="396" height="40"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                     <animations/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                     <textInputTraits key="textInputTraits"/>
                                                 </textField>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="dlt-3Y-c1q">
-                                                    <rect key="frame" x="176" y="134" width="160" height="44"/>
+                                                    <rect key="frame" x="78" y="194" width="260" height="44"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <animations/>
-                                                    <state key="normal" title="ADD">
+                                                    <state key="normal" title="ADD NEW LOCATION">
                                                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                                     </state>
                                                 </button>
@@ -3058,14 +3050,13 @@
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         </view>
                                         <animations/>
-                                        <size key="customSize" width="512" height="192"/>
+                                        <size key="customSize" width="414" height="240"/>
                                         <connections>
                                             <outlet property="cityLabel" destination="rRy-EQ-yct" id="vhM-rn-Efa"/>
                                             <outlet property="cityTextField" destination="j7Y-BH-qmt" id="xk9-7I-Nzt"/>
                                             <outlet property="countryLabel" destination="JQf-Xc-GKs" id="9Gb-mg-qPF"/>
                                             <outlet property="countryTextField" destination="gke-md-5Xn" id="qqI-TT-Hi0"/>
                                             <outlet property="createButton" destination="dlt-3Y-c1q" id="hYc-R0-LbB"/>
-                                            <outlet property="locationPrompt" destination="6sp-aw-nu4" id="yzI-OC-iKe"/>
                                             <outlet property="nameLabel" destination="OEo-hc-1TP" id="cc2-zO-8Ce"/>
                                             <outlet property="nameTextField" destination="g0h-Tq-DYz" id="Ay0-fa-m22"/>
                                         </connections>

@@ -27,11 +27,8 @@
     NSMutableOrderedSet *_filteredLocations;
     NSMutableOrderedSet *_locations;
     UIBarButtonItem *dismissButton;
-    UIBarButtonItem *saveButton;
-    UIBarButtonItem *doneButton;
     UIButton *locationUnknownButton;
-    UIBarButtonItem *noLocationBarButton;
-    UIBarButtonItem *spacerBarButton;
+    UIBarButtonItem *clearLocationBarButton;
     UITextField *locationNameTextField;
     UITextField *countryTextField;
     UITextField *cityTextField;
@@ -56,31 +53,23 @@ static NSString * const reuseIdentifier = @"LocationCell";
     _filteredLocations = [NSMutableOrderedSet orderedSet];
     _locations = [NSMutableOrderedSet orderedSetWithArray:[Location MR_findAllSortedBy:@"name" ascending:YES inContext:[NSManagedObjectContext MR_defaultContext]]];
 
-    dismissButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(dismiss)];
+    dismissButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"left"] style:UIBarButtonItemStylePlain target:self action:@selector(save)];
     self.navigationItem.leftBarButtonItem = dismissButton;
-    saveButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(save)];
-    doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneEditing)];
     
     locationUnknownButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [locationUnknownButton.titleLabel setFont:[UIFont fontWithName:kMuseoSans size:12]];
     
     [locationUnknownButton addTarget:self action:@selector(locationUnknownToggled) forControlEvents:UIControlEventTouchUpInside];
     [locationUnknownButton setFrame:CGRectMake(0, 0, 170.f, 44.f)];
-    [locationUnknownButton setTitle:@"NO LOCATION" forState:UIControlStateNormal];
-    noLocationBarButton = [[UIBarButtonItem alloc] initWithCustomView:locationUnknownButton];
-    spacerBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    spacerBarButton.width = 23.f;
+    [locationUnknownButton setTitle:@"CLEAR LOCATION" forState:UIControlStateNormal];
+    clearLocationBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(locationUnknownToggled)];
     
     [self registerKeyboardNotifications];
     topInset = self.navigationController.navigationBar.frame.size.height;
     [self setUpSearch];
     
     navBarShadowView = [WFUtilities findNavShadow:self.navigationController.navigationBar];
-    if (IDIOM == IPAD){
-        self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noLocationBarButton];
-    } else {
-        self.navigationItem.rightBarButtonItem = saveButton;
-    }
+    self.navigationItem.rightBarButtonItem = clearLocationBarButton;
     [self adjustLocationButtonColor];
     
     [WFTracking trackEvent:@"Locations" withProperties:nil];
@@ -234,7 +223,7 @@ static NSString * const reuseIdentifier = @"LocationCell";
             return CGSizeMake(width/4,height/3);
         }
     } else {
-        return CGSizeMake(width,height/4);
+        return CGSizeMake(collectionView.frame.size.width,height/4);
     }
 }
 
@@ -244,16 +233,12 @@ static NSString * const reuseIdentifier = @"LocationCell";
 
 #pragma mark <UICollectionViewDelegate>
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    if ((searching && indexPath.item == _filteredLocations.count) || (indexPath.item == _locations.count)){
-        [collectionView reloadItemsAtIndexPaths:@[indexPath]];
-    } else {
-        Location *location = searching ? _filteredLocations[indexPath.item] : _locations[indexPath.item];
-        [self.selectedLocations removeAllObjects];
-        [self.selectedLocations addObject:location];
-        [collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
-        //[collectionView reloadItemsAtIndexPaths:@[indexPath]];
-        [collectionView deselectItemAtIndexPath:indexPath animated:YES];
-    }
+    Location *location = searching ? _filteredLocations[indexPath.item] : _locations[indexPath.item];
+    [self.selectedLocations removeAllObjects];
+    [self.selectedLocations addObject:location];
+    [collectionView reloadSections:[NSIndexSet indexSetWithIndex:0]];
+    //[collectionView deselectItemAtIndexPath:indexPath animated:YES];
+    [collectionView reloadItemsAtIndexPaths:@[indexPath]];
     [self adjustLocationButtonColor];
 }
 
@@ -355,10 +340,6 @@ static NSString * const reuseIdentifier = @"LocationCell";
     [self.collectionView reloadData];
 }
 
-- (void)textFieldDidBeginEditing:(UITextField *)textField {
-    self.navigationItem.rightBarButtonItems = @[doneButton, spacerBarButton, noLocationBarButton];
-}
-
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
     if (textField == locationNameTextField && [string isEqualToString:@"\n"]) {
         [countryTextField becomeFirstResponder];
@@ -375,7 +356,6 @@ static NSString * const reuseIdentifier = @"LocationCell";
     if (self.searchBar.isFirstResponder){
         [self.searchBar resignFirstResponder];
     }
-    self.navigationItem.rightBarButtonItems = @[saveButton, spacerBarButton, noLocationBarButton];
 }
 
 - (void)createLocation {
